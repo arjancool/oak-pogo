@@ -12,7 +12,7 @@ from zoneinfo import ZoneInfo
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import HTMLResponse, StreamingResponse
 from pydantic import BaseModel, Field
-from sqlalchemy import and_, func, not_, or_, select
+from sqlalchemy import String, and_, func, not_, or_, select, type_coerce
 from sqlalchemy.orm import Session
 
 from app.api.deps import AuthContext, get_auth, get_container, get_session, owned_account
@@ -86,6 +86,11 @@ def recommendations(
     favorite: bool | None = None,
     vintage: bool | None = None,
     unknown_date: bool | None = None,
+    gym: str | None = Query(
+        default=None,
+        pattern="^(best|in_gym)$",
+        description="best: de beste gymverdediger per soort; in_gym: staat nu in een gym",
+    ),
     sort: str = Query(default="priority", pattern="^(priority|cp|-cp|name|iv|battle|-battle|keep|-keep)$"),
     page: int = Query(1, ge=1),
     page_size: int = Query(100, ge=1, le=500),
@@ -111,6 +116,11 @@ def recommendations(
     date_unknown = or_(Pokemon.caught_year.is_(None), Pokemon.caught_year < FIRST_GAME_YEAR)
     if unknown_date is not None:
         stmt = stmt.where(date_unknown if unknown_date else not_(date_unknown))
+    if gym == "best":
+        # Roles are stored as compact JSON with sorted keys, so this text is exact.
+        stmt = stmt.where(type_coerce(PokemonAnalysis.roles, String).like('%"role":"best_gym"%'))
+    elif gym == "in_gym":
+        stmt = stmt.where(Pokemon.in_gym.is_(True))
     order = {
         "priority": [PokemonAnalysis.priority.desc(), Pokemon.cp.desc()],
         "cp": [Pokemon.cp.asc()],

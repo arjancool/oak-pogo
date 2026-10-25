@@ -117,3 +117,27 @@ def test_gym_overview_marks_pokemon_in_a_gym(
         pokemon.in_gym = True
     defenders = owner.get("/api/v1/battles/gym-defenders", account_id=account).json()["defenders"]
     assert next(d for d in defenders if d["pokemon_id"] == pokemon.id)["in_gym"] is True
+
+
+def test_gym_filter_shows_best_defenders_and_pokemon_in_a_gym(
+    owner: Api, container: Any, gamedata: GameData, export: dict[str, Any]
+) -> None:
+    account = _imported(owner, container, export)
+    everything = _items(owner, account)
+    best = {i["pokemon"]["id"] for i in everything if any(r["role"] == "best_gym" for r in i["roles"])}
+    assert best
+    response = owner.get("/api/v1/cleanup/recommendations", account_id=account, gym="best", page_size=500)
+    assert response.status_code == 200, response.text
+    assert {i["pokemon"]["id"] for i in response.json()["items"]} == best
+    assert response.json()["total"] == len(best)
+
+    in_gym = owner.get("/api/v1/cleanup/recommendations", account_id=account, gym="in_gym").json()
+    assert in_gym["total"] == 0
+    with container.db.transaction() as session:
+        pokemon = session.get(Pokemon, everything[0]["pokemon"]["id"])
+        assert pokemon is not None
+        pokemon.in_gym = True
+    in_gym = owner.get("/api/v1/cleanup/recommendations", account_id=account, gym="in_gym").json()
+    assert [i["pokemon"]["id"] for i in in_gym["items"]] == [everything[0]["pokemon"]["id"]]
+
+    assert owner.get("/api/v1/cleanup/recommendations", account_id=account, gym="other").status_code == 422

@@ -127,6 +127,11 @@ const TRISTATE = [
   { value: "true", text: "alleen" },
   { value: "false", text: "zonder" },
 ];
+const GYM_FILTERS = [
+  { value: "", text: "Gyms: alle" },
+  { value: "best", text: "Gyms: beste verdediger per soort" },
+  { value: "in_gym", text: "Gyms: staat nu in een gym" },
+];
 
 function Recommendations({ accountId }: { accountId: number }) {
   const [state, update] = useUrlState();
@@ -136,11 +141,12 @@ function Recommendations({ accountId }: { accountId: number }) {
   const page = Number(state.page ?? 1);
   const favorite = state.favorite ?? "";
   const vintage = state.vintage ?? "";
+  const gym = state.gym ?? "";
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [message, setMessage] = useState<string | null>(null);
   const [pending, setPending] = useState<ConfirmationItem[]>([]);
   const query = useQuery({
-    queryKey: ["cleanup", accountId, status, sort, page, favorite, vintage],
+    queryKey: ["cleanup", accountId, status, sort, page, favorite, vintage, gym],
     queryFn: async () =>
       cleanupPage.parse(
         await api.get("/api/v1/cleanup/recommendations", {
@@ -148,6 +154,7 @@ function Recommendations({ accountId }: { accountId: number }) {
           status: status === "ALL" ? null : status,
           favorite: favorite || null,
           vintage: vintage || null,
+          gym: gym || null,
           sort,
           page,
           page_size: PAGE_SIZE,
@@ -238,6 +245,18 @@ function Recommendations({ accountId }: { accountId: number }) {
           {TRISTATE.map((o) => (
             <option key={o.value} value={o.value}>
               Vintage (2016–2019): {o.text}
+            </option>
+          ))}
+        </Select>
+        <Select
+          value={gym}
+          // A best defender is usually kept, so a gym filter looks at every status.
+          onChange={(e) => update(e.target.value ? { gym: e.target.value, status: "ALL" } : { gym: null })}
+          aria-label="Gyms"
+        >
+          {GYM_FILTERS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.text}
             </option>
           ))}
         </Select>

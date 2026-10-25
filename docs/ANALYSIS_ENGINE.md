@@ -101,6 +101,21 @@ Purify is niet terug te draaien en een level kun je niet verlagen. Een Shadow Ma
 
 Is je trainerlevel onbekend, dan gaat OAK uit van trainerlevel 25 of hoger en zegt dat erbij. Het cleanupadvies beoordeelt een Pokémon zoals hij nu is.
 
+## Pokédex
+
+De Pokédex zoekt in de actieve Game Data, op naam of op Pokédex-nummer. Hoofdletters, accenten en leestekens tellen niet mee, dus `flabebe` vindt Flabébé. Je hoeft een Pokémon niet zelf te hebben om hem op te zoeken.
+
+Per vorm toont OAK de types, de basiswaarden, de buddy-afstand, of hij te ruilen is en in een gym mag, de kosten van een tweede charged-aanval en van purify, en de aanvallen met Elite TM en legacy. De CP met 15/15/15 staat erbij voor level 20 (raids en onderzoek), level 25 (met weerbonus), level 40 en het hoogste normale level. De plaats van de soort per league komt van PvPoke, en de plaats als gymverdediger is dezelfde rangorde als bij de gymverdedigers hierboven.
+
+De Game Master heeft voor veel soorten een basisvorm naast de vorm `NORMAL`. Dat is dezelfde Pokémon. De Pokédex toont er één van en zoekt naar allebei.
+
+Met een gekozen traineraccount zie je ook wat je collectie ermee kan:
+
+- Hoeveel je van deze soort hebt, in welke vorm dan ook. Een andere vorm dan de gekozen vorm krijgt een label.
+- Welke Pokémon uit je collectie ernaartoe kunnen evolueren, met de stappen, de candy, het item en de voorwaarden zoals in de evolutieplanner. De CP na evolutie rekent OAK uit met het level en de IV's van dat exemplaar. De sterkste uitkomst staat bovenaan.
+- Of je het evolutie-item in je tas hebt. Dat aantal komt uit de export. Zit er geen itemtas in de import, dan zegt OAK dat het aantal onbekend is.
+- Hoeveel candy je voor de familie hebt. PGSharp exporteert geen candy. Heb je het zelf ingevuld bij *Stardust & Candy*, dan toont OAK dat getal, anders meldt hij dat het onbekend is.
+
 ## Cleanup-advies
 
 ADR-0019 legt de keuzes vast. Iedere Pokémon wordt geanalyseerd en vergeleken, ook beschermde, favoriete en vintage Pokémon. Bescherming bepaalt alleen de uiteindelijke status.

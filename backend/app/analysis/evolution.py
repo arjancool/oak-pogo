@@ -39,6 +39,13 @@ class EvolutionPath:
         return total
 
 
+def path_candy(steps: list[EvolutionStep], *, purified: bool) -> int | None:
+    """Candy for the whole path. A Purified Pokémon pays the lower cost where the Game Master has one."""
+    if any(s.candy is None for s in steps):
+        return None
+    return sum(s.candy_purified if purified and s.candy_purified is not None else (s.candy or 0) for s in steps)
+
+
 def _conditions(evo: Mapping[str, Any]) -> list[str]:
     result: list[str] = []
     for flag in (

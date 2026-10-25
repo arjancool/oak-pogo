@@ -33,7 +33,7 @@ De backend volgt een hexagonale indeling. Domeinlogica is pure Python en kent ge
 |---|---|
 | `app/domain` | Genormaliseerde Pokémon, importclassificatie, wijzigingsdetectie, de zoeksyntax en de vintage-regel. Puur. |
 | `app/normalizers` | Van PGSharp-export naar het domeinmodel, het opschonen van opgeslagen exports, de structuursamenvatting voor diagnose en het lezen van de eventkalender. Puur. |
-| `app/analysis` | Statistieken, CP en HP, PvP-rangtabellen, power-upkosten, evoluties, purify, aanvallen, het raidmodel en gymverdedigers. Puur. |
+| `app/analysis` | Statistieken, CP en HP, PvP-rangtabellen, power-upkosten, evoluties, purify, aanvallen, het raidmodel, gymverdedigers en het zoeken in de Pokédex. Puur. |
 | `app/recommendations` | Cleanup-regels, de twee scores, de regels voor events en de Cleanup-engine. Puur. |
 | `app/gamedata` | Downloaden, omzetten en valideren van Game Data, de aanvullende spelregels (ADR-0022) en het versiebeheer. |
 | `app/ingestion` | Ontvangen en decoderen van exports, importjobs, synchronisatie en afgeleide kolommen. |

@@ -243,3 +243,87 @@ export const actionListUpdate = actionList.extend({
   needs_confirmation: z.array(confirmationItem),
 });
 export type ActionListUpdate = z.infer<typeof actionListUpdate>;
+
+const pokedexStep = z.object({
+  from_key: z.string(),
+  to_key: z.string(),
+  to_name: z.string(),
+  candy: z.number().nullable(),
+  candy_purified: z.number().nullable(),
+  item: z.string().nullable(),
+  item_name: z.string().nullable(),
+  item_cost: z.number().nullable(),
+  item_have: z.number().nullable().optional(),
+  lure: z.string().nullable(),
+  lure_name: z.string().nullable(),
+  buddy_km: z.number().nullable(),
+  conditions: z.array(z.string()),
+  quest: z.string().nullable(),
+  no_candy_cost_via_trade: z.boolean(),
+});
+
+const pokedexMove = z.object({ key: z.string(), name: z.string(), type: z.string().nullable(), elite: z.boolean(), legacy: z.boolean() });
+
+export const pokedexSearch = z.object({
+  game_data_version: z.number(),
+  results: z.array(z.object({ dex: z.number(), name: z.string(), types: z.array(z.string()) })),
+});
+
+export const pokedexSpecies = z.object({
+  game_data_version: z.number(),
+  dex: z.number(),
+  name: z.string(),
+  forms: z.array(z.object({ key: z.string(), name: z.string() })),
+  form: z.object({
+    key: z.string(),
+    name: z.string(),
+    label: z.string().nullable(),
+    types: z.array(z.string()),
+    stats: z.object({ atk: z.number().nullable(), def: z.number().nullable(), sta: z.number().nullable() }).nullable(),
+    class: z.string().nullable(),
+    family: z.string().nullable(),
+    deployable: z.boolean().nullable(),
+    tradable: z.boolean().nullable(),
+    transferable: z.boolean().nullable(),
+    buddy_km: z.number().nullable(),
+    third_move: z.object({ stardust: z.number().nullable().optional(), candy: z.number().nullable().optional() }).nullable(),
+    shadow: z.object({ purify_stardust: z.number().nullable(), purify_candy: z.number().nullable() }).nullable(),
+    mega: z.array(z.string()),
+  }),
+  moves: z.object({ fast: z.array(pokedexMove), charged: z.array(pokedexMove) }),
+  cp_table: z.array(z.object({ level: z.number(), label: z.string(), cp: z.number() })),
+  leagues: z.array(
+    z.object({
+      league: z.string(),
+      name: z.string(),
+      max_cp: z.number().nullable(),
+      species_rank: z.number().nullable(),
+      shadow_rank: z.number().nullable(),
+      moveset: z.array(z.string()),
+    }),
+  ),
+  gym: z.object({ rank: z.number(), target_key: z.string(), target_name: z.string(), is_evolution: z.boolean() }).nullable(),
+  evolves_from: z.array(z.object({ key: z.string(), dex: z.number(), name: z.string() })),
+  evolves_to: z.array(pokedexStep.extend({ dex: z.number() })),
+  collection: z
+    .object({
+      account_id: z.number(),
+      owned_total: z.number(),
+      owned: z.array(pokemonSummary.extend({ same_form: z.boolean() })),
+      candidate_total: z.number(),
+      candidates: z.array(
+        z.object({
+          pokemon: pokemonSummary,
+          steps: z.array(pokedexStep),
+          total_candy: z.number().nullable(),
+          cp_after: z.number().nullable(),
+          hp_after: z.number().nullable(),
+        }),
+      ),
+      candy: z.object({ family: z.string().nullable(), quantity: z.number().nullable() }),
+      items_known: z.boolean(),
+    })
+    .nullable(),
+});
+export type PokedexSpecies = z.infer<typeof pokedexSpecies>;
+export type PokedexStep = z.infer<typeof pokedexStep>;

@@ -14,7 +14,9 @@ the list is read, exported or completed, and any reason that was not part of the
 needs a new one, also when the Pokémon was already protected for another reason (audit A03).
 
 Rule protection is computed from the current Pokémon, its metadata and the account's rules,
-never from the stored analysis, which may be missing or outdated (audit A02).
+never from the stored analysis, which may be missing or outdated (audit A02). The catch year is
+read from the current catch date as well as from the stored year, so a projection that is behind
+can never lift the vintage protection (audit F01 of 25 October).
 """
 
 from __future__ import annotations
@@ -22,6 +24,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -41,14 +44,20 @@ OWN_CHECKS = ("VINTAGE", "MANUAL", "TAG")
 class GuardContext:
     rules: CleanupRules
     protecting_tags: dict[str, str]
+    tz: ZoneInfo
 
 
-def guard_context(session: Session, account: TrainerAccount) -> GuardContext:
+def guard_context(session: Session, account: TrainerAccount, tz: ZoneInfo) -> GuardContext:
     protecting = {
         t.tag_id: t.label
         for t in session.scalars(select(TagLabel).where(TagLabel.trainer_account_id == account.id, TagLabel.protects))
     }
-    return GuardContext(rules_for(account), protecting)
+    return GuardContext(rules_for(account), protecting, tz)
+
+
+def _catch_years(pokemon: Pokemon, tz: ZoneInfo) -> tuple[int | None, int | None]:
+    """The stored catch year and the year of the current catch date."""
+    return pokemon.caught_year, pokemon.caught_at.astimezone(tz).year if pokemon.caught_at else None
 
 
 @dataclass(slots=True)
@@ -76,7 +85,8 @@ def check_transfer(pokemon: Pokemon, metadata: PokemonUserMetadata | None, conte
     if metadata is not None and metadata.protected:
         check.blocked = "Handmatig beschermd"
         return check
-    year = vintage_year(pokemon.caught_year)
+    years = _catch_years(pokemon, context.tz)
+    year = next((vintage_year(y) for y in years if vintage_year(y) is not None), None)
     overridden = metadata is not None and metadata.override_status == "TRANSFER_CANDIDATE"
     if year is not None:
         if not overridden:
@@ -89,7 +99,7 @@ def check_transfer(pokemon: Pokemon, metadata: PokemonUserMetadata | None, conte
         check.needs.append("favorite")
         check.messages.append("Favoriet")
         check.reasons["favorite"] = "Favoriet"
-    if not catch_date_known(pokemon.caught_year):
+    if not all(catch_date_known(y) for y in years):
         check.needs.append("unknown_date")
         check.messages.append("Vangstdatum onbekend")
         check.reasons["unknown_date"] = "Vangstdatum onbekend"

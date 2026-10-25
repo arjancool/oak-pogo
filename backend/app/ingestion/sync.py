@@ -102,7 +102,9 @@ def apply_export(
         was_missing = row.inventory_status == NOT_IN_INVENTORY
         if diff.has_changes:
             _write_state(row, observed)
-        if diff.significant or was_missing or row.derived_version_id != (gd.version_id if gd else None):
+        # Any change, also a quiet one such as a corrected catch date, recomputes the derived
+        # columns: the catch year drives the vintage protection (audit F01 of 25 October).
+        if diff.has_changes or was_missing or row.derived_version_id != (gd.version_id if gd else None):
             apply_derived(row, gd, tz)
         row.last_seen_at = now
         row.last_seen_sync_id = run.id

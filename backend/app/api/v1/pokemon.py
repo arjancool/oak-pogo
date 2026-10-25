@@ -814,7 +814,7 @@ def bulk_action(
     transfer_actions = body.action == "transfer_candidate" or (
         body.action == "add_to_list" and (body.value or "cleanup") == "cleanup"
     )
-    guard = guard_context(session, account)
+    guard = guard_context(session, account, container.settings.tz)
     for pokemon in rows:
         metadata = _metadata(session, pokemon, now)
         confirmed_kinds: list[str] = []

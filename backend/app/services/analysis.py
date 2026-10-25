@@ -122,6 +122,15 @@ class AnalysisService:
             ).first()
             last_partial = last_job is not None and last_job.status == "partial"
             events = event_infos(session, account, gd)
+            snapshot = [(p, m) for p, m in rows]
+            for p, m in snapshot:
+                session.expunge(p)
+                if m is not None:
+                    session.expunge(m)
+        # Registered in a short write transaction of its own. A read snapshot cannot become a
+        # write once another connection committed after it started (audit F06 of 25 October).
+        # The fingerprint describes what was read, so a change in between makes the run stale.
+        with self.db.transaction() as session:
             run = AnalysisRun(
                 trainer_account_id=account_id,
                 status="running",
@@ -135,11 +144,6 @@ class AnalysisService:
             session.add(run)
             session.flush()
             run_id = run.id
-            snapshot = [(p, m) for p, m in rows]
-            for p, m in snapshot:
-                session.expunge(p)
-                if m is not None:
-                    session.expunge(m)
 
         views: list[PokemonView] = []
         for pokemon, meta in snapshot:

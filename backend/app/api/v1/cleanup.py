@@ -7,6 +7,7 @@ import html
 import io
 from collections import defaultdict
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import HTMLResponse, StreamingResponse
@@ -340,7 +341,7 @@ def update_action_list(
     )
     found = {p.id: (p, m, a) for p, m, a in rows}
     confirmed = set(body.confirmed_ids)
-    guard = guard_context(session, account)
+    guard = guard_context(session, account, container.settings.tz)
     skipped: list[dict[str, Any]] = []
     needs_confirmation: list[dict[str, Any]] = []
     if body.mode in ("replace", "clear"):
@@ -412,7 +413,7 @@ def _action_list(
         .order_by(Pokemon.cp.desc() if sort == "-cp" else Pokemon.cp.asc(), Pokemon.id)
     ).all()
     gd = container.gamedata.active()
-    guard = _guard_for(session, account_id)
+    guard = _guard_for(session, account_id, container.settings.tz)
     items = []
     for action, pokemon, meta, analysis in rows:
         summary = summarize(pokemon, meta, analysis, gd)
@@ -449,11 +450,11 @@ def _action_list(
     }
 
 
-def _guard_for(session: Session, account_id: int) -> GuardContext:
+def _guard_for(session: Session, account_id: int, tz: ZoneInfo) -> GuardContext:
     account = session.get(TrainerAccount, account_id)
     if account is None:  # callers resolve the account through owned_account first
         raise NotFoundError("Onbekend traineraccount.")
-    return guard_context(session, account)
+    return guard_context(session, account, tz)
 
 
 def search_hint(items: list[dict[str, Any]]) -> dict[str, Any]:

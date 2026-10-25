@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import sqlite3
+from contextlib import closing
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -40,7 +41,9 @@ def backup_database(settings: Settings, label: str) -> Path | None:
         return None
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     target = settings.backups_dir / f"oak-{label}-{stamp}.db"
-    with sqlite3.connect(source) as src, sqlite3.connect(target) as dst:
+    # closing(): a sqlite3 connection's own context manager ends the transaction, not the
+    # connection (audit F10 of 25 October).
+    with closing(sqlite3.connect(source)) as src, closing(sqlite3.connect(target)) as dst:
         src.backup(dst)
     return target
 

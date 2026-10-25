@@ -28,6 +28,7 @@ import { BoxPage } from "./pages/pokemon/BoxPage";
 import { ComparePage } from "./pages/pokemon/ComparePage";
 import { DetailPage } from "./pages/pokemon/DetailPage";
 import { PlannerPage } from "./pages/pokemon/PlannerPage";
+import { PokedexPage } from "./pages/pokedex/PokedexPage";
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { status, loading } = useAuth();
@@ -59,6 +60,8 @@ export function App() {
         <Route index element={<DashboardPage />} />
         <Route path="pokemon" element={<BoxPage />} />
         <Route path="pokemon/:id" element={<DetailPage />} />
+        <Route path="pokedex" element={<PokedexPage />} />
+        <Route path="pokedex/:dex" element={<PokedexPage />} />
         <Route path="compare" element={<ComparePage />} />
         <Route path="cleanup" element={<CleanupPage />} />
         <Route path="planner" element={<PlannerPage />} />

@@ -5,6 +5,7 @@ import {
   Archive,
   BarChart3,
   Backpack,
+  BookOpen,
   Boxes,
   Brush,
   CalendarDays,
@@ -53,6 +54,7 @@ const sections: { title: string; items: NavItem[] }[] = [
     title: "Pokémon",
     items: [
       { to: "/pokemon", label: "Pokémon Box", icon: <Boxes className="h-4 w-4" /> },
+      { to: "/pokedex", label: "Pokédex", icon: <BookOpen className="h-4 w-4" /> },
       { to: "/compare", label: "Vergelijken", icon: <GitCompare className="h-4 w-4" /> },
       { to: "/cleanup", label: "Cleanup Manager", icon: <Brush className="h-4 w-4" /> },
       { to: "/planner", label: "Evolutieplanner", icon: <Wand2 className="h-4 w-4" /> },

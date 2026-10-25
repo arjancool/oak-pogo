@@ -38,8 +38,9 @@ OAK vraagt nooit om je Pokémon GO-wachtwoord. Het leest alleen de export die PG
 - **Synchronisatie** met PGSharp via een persoonlijke webhook, of door een export te uploaden. Iedere import wordt gecontroleerd op volledigheid, en dubbele imports worden herkend.
 - **Overzicht** met aantallen shiny's, lucky's, hundo's, favorieten, vintage Pokémon, nieuwe vangsten en wat er sinds de vorige synchronisatie veranderde.
 - **Pokémon Box** met filters, een eigen zoeksyntax, sorteren, kaarten of een tabel, bulkacties op je OAK-gegevens en een CSV-export.
+- **Pokédex** om iedere Pokémon uit de Game Data op te zoeken, ook als je hem niet hebt. Je ziet zijn waarden en aanvallen, hoeveel je er hebt en welke Pokémon uit je collectie ernaartoe kunnen evolueren, met de kosten en de CP na evolutie.
 - **Detailpagina** per Pokémon met IV's, level, aanvallen, league-analyse, evoluties, power-upkosten, cleanup-advies en historie.
-- **Cleanup Manager** met harde en zachte bescherming, twee scores, dubbelen, vergelijkbare exemplaren, een actielijst en zoekteksten voor in het spel.
+- **Cleanup Manager** met harde en zachte bescherming, twee scores, dubbelen, vergelijkbare exemplaren, een actielijst en zoekteksten voor in het spel. Je kunt filteren op je beste gymverdedigers en op Pokémon die nu in een gym staan.
 - **Komende events** uit de kalender van LeekDuck.com. Een Pokémon blijft bewaard tot na de Community Day van zijn evolutielijn, en bij dubbele Transfer Candy krijg je een tip om te wachten.
 - **PvP** voor Great, Ultra en Master League: IV-rang, soortrang, inzetbaarheid, movesetadvies en een Team Builder.
 - **PvE**: raidcounters, Team GO Rocket-counters, Max Battles en je beste gymverdedigers.

@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.analysis.evolution import EvolutionStep, evolution_paths
+from app.analysis.evolution import evolution_paths, path_candy
 from app.analysis.league import LEAGUES, Subject, analyze_leagues, league_cap
 from app.analysis.moves import availability, moveset_needs
 from app.analysis.powerup import power_up_cost, reachable_max_level
@@ -569,7 +569,7 @@ def pokemon_evolutions(
                 "target_name": f"{target['name']} ({target['label']})" if target.get("label") else target["name"],
                 "types": target.get("types", []),
                 "steps": [asdict(s) for s in path.steps],
-                "total_candy": _evolution_candy(path.steps, purified=subject.purified),
+                "total_candy": path_candy(path.steps, purified=subject.purified),
                 "cp_after": cp_after,
                 "hp_after": hp_after,
                 "leagues": leagues,
@@ -578,13 +578,6 @@ def pokemon_evolutions(
             }
         )
     return {"available": True, "game_data_version": gd.version_id, "scenario": scenario_info, "paths": paths}
-
-
-def _evolution_candy(steps: list[EvolutionStep], *, purified: bool) -> int | None:
-    """Candy for the whole path. A Purified Pokémon pays the lower cost where the Game Master has one."""
-    if any(s.candy is None for s in steps):
-        return None
-    return sum(s.candy_purified if purified and s.candy_purified is not None else (s.candy or 0) for s in steps)
 
 
 @router.get("/{pokemon_id}/powerups", response_model=dict[str, Any])

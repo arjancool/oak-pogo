@@ -1,0 +1,73 @@
+{
+  "app": {
+    "tagline": "Pokémon GO Manager"
+  },
+  "common": {
+    "unknown": "unknown",
+    "never": "never",
+    "justNow": "just now"
+  },
+  "language": {
+    "label": "Language"
+  },
+  "nav": {
+    "sections": {
+      "dashboard": "Dashboard",
+      "pokemon": "Pokémon",
+      "battles": "Battles",
+      "account": "Account",
+      "admin": "Admin"
+    },
+    "overview": "Overview",
+    "newPokemon": "New Pokémon",
+    "box": "Pokémon Box",
+    "pokedex": "Pokédex",
+    "compare": "Compare",
+    "cleanup": "Cleanup Manager",
+    "planner": "Evolution planner",
+    "events": "Upcoming events",
+    "great": "Great League",
+    "ultra": "Ultra League",
+    "master": "Master League",
+    "cups": "Cups",
+    "teamBuilder": "Team Builder",
+    "rocket": "Team GO Rocket",
+    "raids": "Raids",
+    "max": "Max Battles",
+    "gyms": "Gym defenders",
+    "trainer": "Trainer statistics",
+    "items": "Item Bag",
+    "resources": "Stardust & Candy",
+    "history": "History",
+    "accounts": "Trainer accounts",
+    "sync": "PGSharp Sync",
+    "gamedata": "Game Data",
+    "settings": "Settings",
+    "backups": "Backups"
+  },
+  "shell": {
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "trainerAccount": "Trainer account",
+    "createTrainerAccount": "Create trainer account",
+    "logout": "Log out",
+    "sync": {
+      "connected": "Synced",
+      "processing": "Processing…",
+      "warning": "Partial",
+      "error": "Error",
+      "waiting": "Waiting for export"
+    }
+  },
+  "login": {
+    "firstUse": "First use",
+    "firstUseText": "Create the owner account. This user manages OAK and can add other users later.",
+    "username": "Username",
+    "password": "Password",
+    "passwordHint": "at least 10 characters",
+    "repeatPassword": "Repeat password",
+    "mismatch": "The passwords do not match.",
+    "createOwner": "Create owner",
+    "submit": "Log in"
+  }
+}

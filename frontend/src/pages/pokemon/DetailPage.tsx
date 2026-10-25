@@ -267,8 +267,8 @@ function PurifySummary({ scenario }: { scenario: PurifyScenario }) {
   return (
     <div className="mt-3 rounded-lg border border-line bg-surface-2 p-3 text-sm">
       <p>
-        Na purify: level {level(scenario.level)}, IV {scenario.ivs.attack}/{scenario.ivs.defense}/{scenario.ivs.stamina}, CP {num(scenario.cp, "onbekend")}.
-        Purify kost {num(scenario.cost.stardust, "onbekend")} stardust en {num(scenario.cost.candy, "onbekend")} candy.
+        Na purify: level {level(scenario.level)}, IV {scenario.ivs.attack}/{scenario.ivs.defense}/{scenario.ivs.stamina}, CP {num(scenario.cp)}.
+        Purify kost {num(scenario.cost.stardust)} stardust en {num(scenario.cost.candy)} candy.
       </p>
       {scenario.assumption && <p className="mt-1 text-xs text-amber-300">{scenario.assumption}</p>}
       {scenario.source && <p className="mt-1 text-xs text-muted">Regels voor level en IV's: {scenario.source}.</p>}
@@ -423,7 +423,7 @@ function EvolutionsCard({ pokemonId, scenario }: { pokemonId: number; scenario: 
             <li key={path.target_key} className="rounded-lg border border-line p-3 text-sm">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="font-medium">{path.target_name}</p>
-                <span className="tabular-nums">CP na evolutie: {num(path.cp_after, "onbekend")}</span>
+                <span className="tabular-nums">CP na evolutie: {num(path.cp_after)}</span>
               </div>
               <p className="mt-1 text-xs text-muted">
                 {num(path.total_candy, "?")} candy

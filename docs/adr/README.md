@@ -20,6 +20,7 @@ Iedere ADR beschrijft één besluit, met de context en de gevolgen. Een geaccept
 | [0021](ADR-0021-event-data.md) | Eventgegevens van LeekDuck via ScrapedDuck |
 | [0022](ADR-0022-supplementary-game-rules.md) | Spelregels die niet in de Game Master staan |
 | [0024](ADR-0024-public-baseline.md) | Een openbare repository met alleen de huidige stand |
+| [0025](ADR-0025-languages.md) | Meertaligheid |
 | [0026](ADR-0026-gym-value.md) | Gymverdedigers in het cleanupadvies |
 | [0027](ADR-0027-pvp-cups.md) | PvP-cups uit PvPoke |
 

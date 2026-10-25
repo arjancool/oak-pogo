@@ -1,41 +1,50 @@
-/** Dutch formatting. Timestamps arrive in UTC and are shown in the configured time zone. */
+/** Formatting in the active language. Timestamps arrive in UTC and are shown in the configured
+ * time zone. */
+import i18n from "i18next";
 
 let timeZone = "Europe/Amsterdam";
+let locale = "nl-NL";
+let numberFormat = new Intl.NumberFormat(locale);
 
 export function setTimeZone(zone: string): void {
   timeZone = zone;
 }
 
-const numberFormat = new Intl.NumberFormat("nl-NL");
+/** Called by the translations when the language changes. */
+export function setLocale(tag: string): void {
+  locale = tag;
+  numberFormat = new Intl.NumberFormat(locale);
+}
 
-export function num(value: number | null | undefined, fallback = "onbekend"): string {
-  return value === null || value === undefined ? fallback : numberFormat.format(value);
+export function num(value: number | null | undefined, fallback?: string): string {
+  if (value === null || value === undefined) return fallback ?? i18n.t("common.unknown");
+  return numberFormat.format(value);
 }
 
 export function pct(value: number | null | undefined, digits = 1): string {
   if (value === null || value === undefined) return "–";
-  return `${value.toLocaleString("nl-NL", { minimumFractionDigits: digits, maximumFractionDigits: digits })}%`;
+  return `${value.toLocaleString(locale, { minimumFractionDigits: digits, maximumFractionDigits: digits })}%`;
 }
 
 export function level(value: number | null | undefined): string {
   if (value === null || value === undefined) return "?";
-  return Number.isInteger(value) ? String(value) : value.toLocaleString("nl-NL", { minimumFractionDigits: 1 });
+  return Number.isInteger(value) ? String(value) : value.toLocaleString(locale, { minimumFractionDigits: 1 });
 }
 
 export function dateTime(iso: string | null | undefined): string {
   if (!iso) return "–";
-  return new Date(iso).toLocaleString("nl-NL", { timeZone, dateStyle: "medium", timeStyle: "short" });
+  return new Date(iso).toLocaleString(locale, { timeZone, dateStyle: "medium", timeStyle: "short" });
 }
 
 export function date(iso: string | null | undefined): string {
   if (!iso) return "–";
-  return new Date(iso).toLocaleDateString("nl-NL", { timeZone, day: "numeric", month: "short", year: "numeric" });
+  return new Date(iso).toLocaleDateString(locale, { timeZone, day: "numeric", month: "short", year: "numeric" });
 }
 
 export function relative(iso: string | null | undefined, now: Date = new Date()): string {
-  if (!iso) return "nooit";
+  if (!iso) return i18n.t("common.never");
   const seconds = Math.round((now.getTime() - new Date(iso).getTime()) / 1000);
-  const rtf = new Intl.RelativeTimeFormat("nl-NL", { numeric: "auto" });
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
   const units: [Intl.RelativeTimeFormatUnit, number][] = [
     ["year", 31_536_000],
     ["month", 2_592_000],
@@ -46,7 +55,7 @@ export function relative(iso: string | null | undefined, now: Date = new Date())
   for (const [unit, size] of units) {
     if (Math.abs(seconds) >= size) return rtf.format(-Math.round(seconds / size), unit);
   }
-  return "zojuist";
+  return i18n.t("common.justNow");
 }
 
 export function ivs(a: number | null, d: number | null, s: number | null): string {
@@ -63,5 +72,5 @@ export function bytes(value: number | null | undefined): string {
     size /= 1024;
     unit += 1;
   }
-  return `${size.toLocaleString("nl-NL", { maximumFractionDigits: 1 })} ${units[unit]}`;
+  return `${size.toLocaleString(locale, { maximumFractionDigits: 1 })} ${units[unit]}`;
 }

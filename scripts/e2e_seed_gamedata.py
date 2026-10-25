@@ -29,6 +29,7 @@ FILES = {
     "pvpoke-rankings-great": "pvpoke-rankings-great-subset.json",
     "pvpoke-rankings-ultra": "pvpoke-rankings-ultra-subset.json",
     "pvpoke-rankings-master": "pvpoke-rankings-master-subset.json",
+    "pvpoke-rankings-fantasy-1500": "pvpoke-rankings-fantasy-1500-subset.json",
 }
 SUBSET_LIMITS = ValidationLimits(min_species=10, min_forms=20, min_moves=20, min_cpm_entries=80)
 

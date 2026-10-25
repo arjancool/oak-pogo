@@ -28,6 +28,14 @@ Inzetbaarheid heeft vijf waarden. *Direct inzetbaar* betekent dat de huidige CP 
 
 Voor evoluties rekent OAK met dezelfde IV's op de geëvolueerde vorm, en vermeldt het de candy- en itemkosten uit de Game Data.
 
+## Cups
+
+Naast de drie leagues kent OAK de cups die PvPoke op zijn site toont, zoals de Fantasy Cup (ADR-0027). Bij het bijwerken van de Game Data past OAK de regels van iedere cup toe zoals PvPoke dat doet: welke types, welke soorten en welke vormen mee mogen, en welke juist niet. Een cup met regels die OAK niet kan toepassen, laat OAK weg.
+
+De analyse van een cup werkt als die van een league. OAK neemt alleen doelen mee die de cup toelaat, ook na evolutie. Een Eevee verschijnt in de Fantasy Cup dus als toekomstige Sylveon, en niet als Vaporeon. Heeft een cup een levelgrens, zoals level 50 in de Little Cup, dan rekent OAK daar niet boven. De soortrang komt uit de ranglijst van PvPoke voor die cup. Ontbreekt die ranglijst, dan sorteert OAK alleen op IV-rang en zegt dat erbij.
+
+Een Shadow Pokémon telt als de Shadow-vorm, want sommige cups sluiten Shadow Pokémon uit. Een vorm die PvPoke niet kent, kan OAK niet toetsen en blijft buiten de cup. Cups tellen niet mee in het cleanupadvies.
+
 ## Power-up-kosten
 
 Stardust en candy per halve level komen uit de Game Data. Shadow kost 20 procent meer stardust en candy, Purified 10 procent minder. Lucky halveert alleen de stardust. Het spel documenteert niet hoe gebroken candy wordt afgerond. OAK rondt naar boven af, zodat een kostenraming nooit te laag uitvalt.

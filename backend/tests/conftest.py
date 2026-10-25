@@ -32,6 +32,7 @@ def gamedata_files() -> dict[str, bytes]:
         "pvpoke-rankings-great": (base / "pvpoke-rankings-great-subset.json").read_bytes(),
         "pvpoke-rankings-ultra": (base / "pvpoke-rankings-ultra-subset.json").read_bytes(),
         "pvpoke-rankings-master": (base / "pvpoke-rankings-master-subset.json").read_bytes(),
+        "pvpoke-rankings-fantasy-1500": (base / "pvpoke-rankings-fantasy-1500-subset.json").read_bytes(),
     }
 
 

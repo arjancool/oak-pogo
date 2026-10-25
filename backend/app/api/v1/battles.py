@@ -53,22 +53,72 @@ def _form_label(form: Any) -> str:
     return f"{form['name']} ({form['label']})" if form.get("label") else str(form["name"])
 
 
+# A league (great) or a cup (fantasy-1500, ADR-0027).
+LEAGUE_ID = r"^[a-z0-9]{1,40}(-[0-9]{1,6})?$"
+LEAGUE_METHOD = (
+    "Per Pokémon de meest competitieve soort die hij kan worden (PvPoke-rang), met zijn IV-rang voor die soort."
+)
+CUP_METHOD = " Alleen Pokémon die volgens de regels van de cup mee mogen, zoals PvPoke ze beschrijft."
+UNRANKED_CUP_METHOD = (
+    " PvPoke heeft voor deze cup geen ranglijst."
+    " De volgorde volgt daarom alleen de IV-rang, niet hoe sterk een soort is."
+)
+
+
+def league_info(gd: GameData, league_id: str) -> dict[str, Any] | None:
+    ranked = gd.rankings.get(league_id, {}).get("count")
+    data = gd.leagues.get(league_id)
+    if data is not None:
+        return {
+            "id": league_id,
+            "kind": "league",
+            "name": data["name"],
+            "max_cp": league_cap(gd, league_id),
+            "level_cap": None,
+            "banned": data.get("banned", []),
+            "ranked_species": ranked,
+            "eligible_species": None,
+            "rules": [],
+            "conditions": [],
+            "party_size": None,
+            "link": None,
+            "source": data.get("source"),
+        }
+    cup = gd.cups.get(league_id)
+    if cup is None:
+        return None
+    return {
+        "id": league_id,
+        "kind": "cup",
+        "name": cup["name"],
+        "max_cp": league_cap(gd, league_id),
+        "level_cap": cup.get("level_cap"),
+        "banned": [],
+        "ranked_species": ranked,
+        "eligible_species": len(cup.get("eligible", [])),
+        "rules": cup.get("rules", []),
+        "conditions": cup.get("conditions", []),
+        "party_size": cup.get("party_size"),
+        "link": cup.get("link"),
+        "source": "PvPoke",
+    }
+
+
+def _known_league(gd: GameData, league_id: str) -> dict[str, Any]:
+    info = league_info(gd, league_id)
+    if info is None:
+        raise NotFoundError("Onbekende league of cup. Misschien staat hij niet meer in de Game Data.")
+    return info
+
+
 @router.get("/leagues", response_model=list[dict[str, Any]])
 def leagues(
     auth: AuthContext = Depends(get_auth), container: Container = Depends(get_container)
 ) -> list[dict[str, Any]]:
+    """The three leagues, then the cups PvPoke currently shows."""
     gd = _gd(container)
-    return [
-        {
-            "id": league_id,
-            "name": data["name"],
-            "max_cp": league_cap(gd, league_id),
-            "banned": data.get("banned", []),
-            "ranked_species": gd.rankings.get(league_id, {}).get("count"),
-            "source": data.get("source"),
-        }
-        for league_id, data in gd.leagues.items()
-    ]
+    cups = sorted(gd.cups, key=lambda cup_id: (gd.cups[cup_id]["name"].lower(), cup_id))
+    return [info for league_id in (*gd.leagues, *cups) if (info := league_info(gd, league_id))]
 
 
 @router.get("/league/{league}", response_model=dict[str, Any])
@@ -85,18 +135,19 @@ def league_overview(
     if sort.removeprefix("-") not in LEAGUE_SORTS:
         raise ValidationFailedError(f"Onbekende sortering '{sort}'.", code="UNKNOWN_SORT")
     gd = _gd(container)
-    if league not in gd.leagues:
-        raise NotFoundError("Onbekende league.")
+    info = _known_league(gd, league)
     account = owned_account(session, auth.user, account_id)
     wanted = tuple(r for r in (readiness or "").split(",") if r) or None
     candidates = sort_candidates(league_candidates(session, gd, account.id, league, readiness=wanted), sort)
+    method = LEAGUE_METHOD
+    if info["kind"] == "cup":
+        method += CUP_METHOD + ("" if info["ranked_species"] else UNRANKED_CUP_METHOD)
     return {
         "league": league,
+        "info": info,
         "sort": sort,
         "max_cp": league_cap(gd, league),
-        "method": (
-            "Per Pokémon de meest competitieve soort die hij kan worden (PvPoke-rang), met zijn IV-rang voor die soort."
-        ),
+        "method": method,
         "items": [
             {
                 "pokemon_id": c.pokemon.id,
@@ -170,7 +221,7 @@ def pokemon_battle(
 
 class TeamBuilderRequest(BaseModel):
     account_id: int
-    league: str = Field(pattern="^(great|ultra|master)$")
+    league: str = Field(pattern=LEAGUE_ID)
     stardust_budget: int | None = Field(default=100_000, ge=0, le=10_000_000)
     include: list[int] = Field(default_factory=list, max_length=3)
 
@@ -183,6 +234,7 @@ def team_builder(
     container: Container = Depends(get_container),
 ) -> dict[str, Any]:
     gd = _gd(container)
+    _known_league(gd, body.league)
     account = owned_account(session, auth.user, body.account_id)
     variants = build_teams(session, gd, account.id, body.league, budget=body.stardust_budget, include=body.include)
     return {
@@ -198,7 +250,7 @@ class TeamIn(BaseModel):
     account_id: int
     name: str = Field(min_length=1, max_length=64)
     kind: str = Field(default="pvp", pattern="^(pvp|raid|max|rocket)$")
-    league: str | None = Field(default=None, pattern="^(great|ultra|master)$")
+    league: str | None = Field(default=None, pattern=LEAGUE_ID)
     notes: str | None = Field(default=None, max_length=2000)
     members: list[dict[str, Any]] = Field(default_factory=list, max_length=6)
 

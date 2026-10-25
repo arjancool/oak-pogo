@@ -66,7 +66,7 @@ class PvpRanking(Base):
     __table_args__ = (Index("ix_pvp_rankings_account_league", "trainer_account_id", "league"),)
 
     pokemon_id: Mapped[int] = mapped_column(ForeignKey("pokemon.id", ondelete="CASCADE"), primary_key=True)
-    league: Mapped[str] = mapped_column(String(16), primary_key=True)
+    league: Mapped[str] = mapped_column(String(48), primary_key=True)
     target_form_key: Mapped[str] = mapped_column(String(80), primary_key=True)
     trainer_account_id: Mapped[int] = mapped_column(ForeignKey("trainer_accounts.id", ondelete="CASCADE"))
     analysis_run_id: Mapped[int] = mapped_column(ForeignKey("analysis_runs.id", ondelete="CASCADE"))
@@ -92,7 +92,7 @@ class BattleTeam(Base):
     trainer_account_id: Mapped[int] = mapped_column(ForeignKey("trainer_accounts.id", ondelete="CASCADE"), index=True)
     name: Mapped[str] = mapped_column(String(64))
     kind: Mapped[str] = mapped_column(String(16))  # pvp | raid | max | rocket
-    league: Mapped[str | None] = mapped_column(String(16))
+    league: Mapped[str | None] = mapped_column(String(48))
     notes: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime)

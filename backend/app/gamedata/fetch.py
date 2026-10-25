@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
@@ -12,7 +13,10 @@ from typing import Any
 import httpx
 
 from app.core.config import Settings
+from app.gamedata.cups import build_cups, ranking_downloads
 from app.gamedata.transform import RANKING_FILES
+
+log = logging.getLogger("oak.gamedata")
 
 USER_AGENT = "OAK-PokemonGO-Manager/2.0 (+https://github.com/arjancool/oak-pogo)"
 
@@ -63,19 +67,33 @@ def _client(settings: Settings) -> httpx.Client:
     )
 
 
+def _download(client: httpx.Client, source_id: str, url: str) -> Downloaded:
+    response = client.get(url)
+    response.raise_for_status()
+    return Downloaded(
+        id=source_id,
+        url=url,
+        content=response.content,
+        etag=response.headers.get("etag"),
+        retrieved_at=datetime.now(UTC).isoformat(),
+    )
+
+
 def download_all(settings: Settings) -> dict[str, Downloaded]:
     results: dict[str, Downloaded] = {}
+    base = settings.gamedata_pvpoke_base_url.rstrip("/")
     with _client(settings) as client:
         for source_id, url in source_urls(settings).items():
-            response = client.get(url)
-            response.raise_for_status()
-            results[source_id] = Downloaded(
-                id=source_id,
-                url=url,
-                content=response.content,
-                etag=response.headers.get("etag"),
-                retrieved_at=datetime.now(UTC).isoformat(),
-            )
+            results[source_id] = _download(client, source_id, url)
+        # The cups PvPoke shows decide which cup rankings exist (ADR-0027). A missing cup ranking
+        # leaves that cup without species ranks; it does not stop the update.
+        cups, _notes = build_cups(results["pvpoke"].json())
+        for source_id, (cup, cp) in ranking_downloads(cups).items():
+            url = f"{base}/rankings/{cup}/overall/rankings-{cp}.json"
+            try:
+                results[source_id] = _download(client, source_id, url)
+            except httpx.HTTPError as exc:
+                log.warning("cup ranking unavailable", extra={"source": source_id, "error": str(exc)[:200]})
     return results
 
 

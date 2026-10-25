@@ -146,29 +146,34 @@ class AnalysisService:
             run_id = run.id
 
         views: list[PokemonView] = []
+        # Cups are stored next to the leagues for the battle pages, but stay out of the cleanup
+        # advice: a cup runs for a few weeks and should not decide what you keep (ADR-0027).
+        cup_targets: dict[int, dict[str, list[LeagueTarget]]] = {}
         for pokemon, meta in snapshot:
             view = pokemon_view(pokemon, meta, protecting)
             if gd is not None:
                 form = gd.forms.get(pokemon.form_key or "") or {}
                 view.family = form.get("family") or (gd.species_record(pokemon.species_id) or {}).get("family")
             if gd is not None and pokemon.form_key and view.has_ivs:
-                view.leagues = analyze_leagues(
-                    gd,
-                    Subject(
-                        form_key=pokemon.form_key,
-                        ivs=IVs(pokemon.iv_attack, pokemon.iv_defense, pokemon.iv_stamina),  # type: ignore[arg-type]
-                        level=pokemon.level,
-                        cp=pokemon.cp,
-                        shadow=pokemon.alignment == Alignment.SHADOW,
-                        purified=pokemon.alignment == Alignment.PURIFIED,
-                        lucky=bool(pokemon.lucky),
-                        trainer_level=trainer_level,
-                    ),
-                    max_level=rules.max_level,
-                    include_best_buddy=rules.include_best_buddy,
-                    ready_cp_fraction=rules.ready_cp_fraction,
-                    elite_tm_available=rules.elite_tm_available,
+                subject = Subject(
+                    form_key=pokemon.form_key,
+                    ivs=IVs(pokemon.iv_attack, pokemon.iv_defense, pokemon.iv_stamina),  # type: ignore[arg-type]
+                    level=pokemon.level,
+                    cp=pokemon.cp,
+                    shadow=pokemon.alignment == Alignment.SHADOW,
+                    purified=pokemon.alignment == Alignment.PURIFIED,
+                    lucky=bool(pokemon.lucky),
+                    trainer_level=trainer_level,
                 )
+                options = {
+                    "max_level": rules.max_level,
+                    "include_best_buddy": rules.include_best_buddy,
+                    "ready_cp_fraction": rules.ready_cp_fraction,
+                    "elite_tm_available": rules.elite_tm_available,
+                }
+                view.leagues = analyze_leagues(gd, subject, **options)
+                if gd.cups:
+                    cup_targets[pokemon.id] = analyze_leagues(gd, subject, **options, leagues=tuple(gd.cups))
                 view.raid = raid_potential(
                     gd,
                     pokemon.form_key,
@@ -231,7 +236,7 @@ class AnalysisService:
                     "computed_at": finished,
                 }
             )
-            for league, targets in view.leagues.items():
+            for league, targets in [*view.leagues.items(), *cup_targets.get(view.id, {}).items()]:
                 for target in targets:
                     ranking_rows.append(_ranking_row(view.id, account_id, run_id, league, target))
 

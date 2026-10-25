@@ -15,6 +15,7 @@ import { ItemsPage } from "./pages/account/ItemsPage";
 import { ResourcesPage } from "./pages/account/ResourcesPage";
 import { TrainerPage } from "./pages/account/TrainerPage";
 import { LoginPage } from "./pages/auth/LoginPage";
+import { CupsPage } from "./pages/battles/CupsPage";
 import { LeaguePage } from "./pages/battles/LeaguePage";
 import { GymPage } from "./pages/battles/GymPage";
 import { MaxBattlePage } from "./pages/battles/MaxBattlePage";
@@ -66,6 +67,7 @@ export function App() {
         <Route path="cleanup" element={<CleanupPage />} />
         <Route path="planner" element={<PlannerPage />} />
         <Route path="events" element={<EventsPage />} />
+        <Route path="battles/cups" element={<CupsPage />} />
         <Route path="battles/team-builder" element={<TeamBuilderPage />} />
         <Route path="battles/raids" element={<RaidPage />} />
         <Route path="battles/rocket" element={<RocketPage />} />

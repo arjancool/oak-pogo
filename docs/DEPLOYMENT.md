@@ -19,13 +19,11 @@ Iedere push naar `main` publiceert `ghcr.io/arjancool/oak-pogo:latest` en `ghcr.
 
 Publiceren is de laatste stap van de CI-run voor die commit. Hij start pas als de backend-, frontend- en browsertests, de Docker-build, de beveiligingscontroles en de kwetsbaarheidsscan allemaal zijn geslaagd. Faalt er één, dan verschijnt er geen nieuwe image. Een handmatige run via **Actions → CI → Run workflow** doorloopt dezelfde controles en publiceert alleen vanaf `main` of een versietag. De controles draaien op amd64. De arm64-image wordt uit dezelfde commit gebouwd, maar niet apart getest.
 
-Het pakket hoort bij een privé-repository en is daarom ook privé. Een server moet één keer inloggen met een GitHub-token dat alleen `read:packages` mag:
+Staat het pakket op privé, dan moet een server één keer inloggen met een GitHub-token dat alleen `read:packages` mag:
 
 ```bash
 docker login ghcr.io -u <github-gebruikersnaam>
 ```
-
-Wie geen login wil, kan het pakket openbaar maken in de pakketinstellingen op GitHub. De broncode blijft dan privé.
 
 Een minimale compose-definitie:
 

@@ -1,6 +1,6 @@
 # Architectuurbesluiten
 
-Iedere ADR beschrijft één besluit, met de context en de gevolgen. Een geaccepteerde ADR verandert alleen via een nieuwe ADR die hem vervangt. De besluiten van de eigenaar staan ook in [`docs/DECISIONS.md`](../DECISIONS.md).
+Iedere ADR beschrijft één besluit, met de context en de gevolgen. Een geaccepteerde ADR verandert alleen via een nieuwe ADR die hem vervangt.
 
 | ADR | Onderwerp |
 |---|---|
@@ -19,6 +19,6 @@ Iedere ADR beschrijft één besluit, met de context en de gevolgen. Een geaccept
 | [0020](ADR-0020-artwork-and-sprite-licences.md) | Geen meegeleverde afbeeldingen, en de licentie van sprites |
 | [0021](ADR-0021-event-data.md) | Eventgegevens van LeekDuck via ScrapedDuck |
 | [0022](ADR-0022-supplementary-game-rules.md) | Spelregels die niet in de Game Master staan |
-| [0023](ADR-0023-public-repository.md) | Een openbare repository zonder oude versies |
+| [0024](ADR-0024-public-baseline.md) | Een openbare repository met alleen de huidige stand |
 
-De nummers 0002, 0004, 0005, 0006, 0008, 0011 en 0018 hoorden bij ADR's die door een latere ADR zijn vervangen. Ze zijn verwijderd toen de repository openbaar werd (ADR-0023). De ADR die ze verving, beschrijft wat er veranderde.
+De nummers 0002, 0004, 0005, 0006, 0008, 0011, 0018 en 0023 hoorden bij ADR's die later zijn vervangen. Een vervangen ADR staat niet in de repository (ADR-0024).

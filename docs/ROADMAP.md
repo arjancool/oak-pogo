@@ -4,7 +4,7 @@ Dit overzicht volgt de fasen uit de oorspronkelijke opdracht. Het zegt wat er in
 
 ## Fase 0: repository en ontwerp
 
-Klaar. De besluiten staan in `docs/DECISIONS.md` en in de ADR's in `docs/adr/`. Architectuur, datamodel, PGSharp-koppeling, databronnen en analyse zijn beschreven in `docs/`.
+Klaar. De besluiten staan in de ADR's in `docs/adr/`. Architectuur, datamodel, PGSharp-koppeling, databronnen en analyse zijn beschreven in `docs/`.
 
 ## Fase 1: werkende Docker-basis
 

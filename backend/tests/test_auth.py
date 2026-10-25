@@ -273,14 +273,3 @@ def test_owner_changes_own_password_only_with_the_current_one(owner: Api) -> Non
     response = owner.patch(f"/api/v1/users/{own_id}", {"password": "een heel nieuw wachtwoord"})
     assert response.status_code == 422
     assert owner.login("eigenaar").status_code == 200
-
-
-def test_language_is_saved_with_the_user(owner: Api) -> None:
-    response = owner.put("/api/v1/auth/me/preferences", {"preferences": {"language": "en"}})
-    assert response.status_code == 200, response.text
-    assert response.json()["preferences"]["language"] == "en"
-    assert owner.get("/api/v1/auth/status").json()["user"]["preferences"]["language"] == "en"
-    for wrong in ("english", "EN", 3, "e"):
-        response = owner.put("/api/v1/auth/me/preferences", {"preferences": {"language": wrong}})
-        assert response.status_code == 422, wrong
-    assert owner.get("/api/v1/auth/me").json()["preferences"]["language"] == "en"

@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createContext, useContext, useEffect, type ReactNode } from "react";
+import { createContext, useContext, type ReactNode } from "react";
 
-import { changeLanguage, isLanguage } from "../i18n";
 import { api } from "./api";
 import type { AuthStatus, User } from "./types";
 
@@ -29,12 +28,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const setupMutation = useMutation({
     mutationFn: (body: { username: string; password: string }) => api.post<AuthStatus>("/api/v1/auth/setup", body),
   });
-
-  // A language saved with the user wins over the choice on this device.
-  const saved = status.data?.user?.preferences?.language;
-  useEffect(() => {
-    if (isLanguage(saved)) void changeLanguage(saved);
-  }, [saved]);
 
   const value: AuthContextValue = {
     status: status.data,

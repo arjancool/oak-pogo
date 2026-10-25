@@ -78,14 +78,13 @@ Fouten hebben één vorm:
 
 ## Frontend
 
-React 19 met TypeScript in strict mode, gebouwd met Vite. Data komt via TanStack Query, tabellen via TanStack Table, opmaak via Tailwind. Teksten komen uit de vertaalbestanden in `src/i18n` (ADR-0025). Nederlands is de brontaal, Engels is in opbouw.
+React 19 met TypeScript in strict mode, gebouwd met Vite. Data komt via TanStack Query, tabellen via TanStack Table, opmaak via Tailwind. Alle teksten zijn Nederlands.
 
 | Map | Inhoud |
 |---|---|
 | `src/pages` | Pagina's per onderdeel: dashboard, Pokémon, cleanup, battles, account en beheer. |
 | `src/components` | Gedeelde bouwstenen (`ui`), Pokémon-weergave, de opmaak met zijbalk en de bevestigingsdialoog voor transferlijsten. |
-| `src/i18n` | De vertaalbestanden per taal en de taalkeuze. |
-| `src/lib` | API-client, Zod-schema's, opmaak van getallen en datums in de gekozen taal, labels van spelbegrippen, sessie en actief account. |
+| `src/lib` | API-client, Zod-schema's, opmaak van getallen en datums, vertalingen, sessie en actief account. |
 
 Zod-schema's controleren ieder antwoord met ID's. Een numeriek Pokémon-ID wordt geweigerd, omdat JavaScript zo'n getal niet exact kan bewaren. Filters in de Pokémon Box staan in de URL, zodat een gefilterde weergave te bewaren en te delen is.
 

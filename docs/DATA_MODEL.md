@@ -46,7 +46,7 @@ Alle tabellen onder een traineraccount verwijzen ernaar met `ON DELETE CASCADE`.
 
 Eén rij per Pokémon per traineraccount. De identiteit is `trainer_account_id` plus `source_pokemon_id` (uniek). Twee Pokémon van dezelfde soort met dezelfde CP zijn dus nooit vanzelf hetzelfde exemplaar.
 
-- **Brongegevens** uit de export: soort en vorm, kostuum, geslacht, shiny, Shadow of Purified, lucky, favoriet, CP en HP, IV's, CP-multiplier, aanvallen, power-ups, lengte en gewicht, vangstmoment, ruilmoment, herkomst, achtergrond, Dynamax-stand en Max Moves, mega-voortgang, bijnaam, buddy- en gevechtsgegevens, tag-ID's en onbekende extra velden (`extra`).
+- **Brongegevens** uit de export: soort en vorm, kostuum, geslacht, shiny, Shadow of Purified, lucky, favoriet, CP en HP, IV's, CP-multiplier, aanvallen, power-ups, lengte en gewicht, vangstmoment, ruilmoment, herkomst, of de Pokémon nu in een gym staat (`in_gym`), achtergrond, Dynamax-stand en Max Moves, mega-voortgang, bijnaam, buddy- en gevechtsgegevens, tag-ID's en onbekende extra velden (`extra`).
 - **Afgeleide kolommen** uit Game Data en tijdzone: IV-percentage, vangstjaar, level, soortnaam, vormsleutel, vormlabel, hoe de vorm is gevonden (`form_resolution`), typen, klasse (Legendary, Mythical of Ultra Beast), familie en de sleutels van de aanvallen. `derived_version_id` zegt met welke Game Data-versie ze berekend zijn. Na een Game Data-wissel berekent OAK ze opnieuw.
 - **Inventarisstatus**: `in_inventory` of `not_in_inventory`, met de eerste en laatste synchronisatie waarin de Pokémon voorkwam en het moment van verdwijnen.
 
@@ -108,5 +108,6 @@ Een nieuwe analyse vervangt de vorige projectie van dat traineraccount in één 
 | `0002` | `battle_score`, `keep_score` en `scores` in `cleanup_recommendations` (ADR-0019). |
 | `0003` | `confirmed` in `planned_actions`: de bevestigde beschermingen per Pokémon op een actielijst. |
 | `0004` | `game_events`: de eventkalender en eigen events (ADR-0021). |
+| `0005` | `in_gym` in `pokemon`: of een Pokémon nu in een gym staat (ADR-0026). |
 
 OAK voert migraties zelf uit bij het starten en maakt daarvoor een back-up in `backups/`.

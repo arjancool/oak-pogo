@@ -90,6 +90,7 @@ class PokemonSummary(BaseModel):
     location_card: int | None
     traded: bool
     hatched_from_egg: bool | None
+    in_gym: bool | None
     hundo: bool
     shundo: bool
     caught_at: UtcDatetime | None
@@ -205,6 +206,7 @@ def summarize(
         location_card=pokemon.location_card,
         traded=pokemon.traded_at is not None,
         hatched_from_egg=pokemon.hatched_from_egg,
+        in_gym=pokemon.in_gym,
         hundo=hundo,
         shundo=hundo and bool(pokemon.shiny),
         caught_at=pokemon.caught_at,

@@ -32,7 +32,8 @@ NOTES = [
     "Iedere soort mag maar één keer in dezelfde gym. Daarom staat per soort alleen je sterkste exemplaar in de lijst.",
     "Hoe snel een verdediger motivatie verliest, staat niet in de Game Data. Volgens metingen uit de community gaat "
     "dat sneller bij een hogere CP. OAK rekent daar niet mee.",
-    "OAK ziet niet of een Pokémon al in een gym staat. Zo'n Pokémon kun je niet nog een keer plaatsen.",
+    "Staat een Pokémon al in een gym, dan zie je dat bij de laatste import. Zo'n Pokémon kun je niet nog een keer "
+    "plaatsen. OAK leest dat uit de export. Of PGSharp het altijd meestuurt, is nog niet vastgesteld.",
     "Kies bij voorkeur een type dat de andere verdedigers in de gym nog niet hebben.",
 ]
 OUTDATED = "De actieve Game Data zegt nog niet welke Pokémon in een gym mogen. Werk de Game Data bij."
@@ -150,6 +151,7 @@ def gym_defenders(session: Session, gd: GameData, account_id: int, limit: int = 
                 if name
             ],
             "reasons": reasons,
+            "in_gym": pokemon.in_gym,
             "confidence": _confidence(pokemon).value,
         }
         if dex not in best or bulk > best[dex]["bulk"]:

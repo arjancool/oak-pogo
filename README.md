@@ -240,7 +240,7 @@ OAK houdt een paar begrippen bewust uit elkaar.
 - **IV-rang** (1 tot 4096) zegt hoe goed de IV's zijn binnen de soort voor een league. Rang 1 is de beste combinatie.
 - **Soortrang** komt uit PvPoke en zegt hoe sterk de soort is in die league. Een rang-1-IV-combinatie van een zwakke soort blijft zwak.
 - **Inzetbaarheid** zegt of dit exemplaar nu bruikbaar is, na power-ups of na evolutie.
-- **Bruikbaarheidsscore** (0 tot 100) is de feitelijke waarde in gevechten: de hoogste waarde van de leagues en de raidpositie. Favoriet en vangstjaar tellen niet mee.
+- **Bruikbaarheidsscore** (0 tot 100) is de feitelijke waarde in gevechten: de hoogste waarde van de leagues, de raidpositie en de positie als gymverdediger. Favoriet en vangstjaar tellen niet mee.
 - **Bewaarscore** (0 tot 100) is hoeveel reden er is om te bewaren: een deel van de bruikbaarheid, beste exemplaar, bijzondere kenmerken, favoriet en je eigen plannen.
 - **Betrouwbaarheid** zegt hoe zeker het advies is. Laag betekent ontbrekende gegevens, een vorm die OAK niet exact kent of een gedeeltelijke import.
 

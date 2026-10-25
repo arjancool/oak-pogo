@@ -8,6 +8,7 @@ from sqlalchemy import select
 
 from app.jobs.tasks import schedule_outdated_analyses
 from app.models import AnalysisRun, BackgroundJob, PlannedAction, Pokemon
+from app.recommendations.rules import ENGINE_VERSION
 
 SAMPLE_POKEMON = 67
 SAMPLE_FAVORITES = 7
@@ -32,7 +33,7 @@ def test_every_pokemon_is_scored_and_explained(
     account = _imported(owner, container, export)
     data = owner.get("/api/v1/cleanup/recommendations", account_id=account, page_size=500).json()
     assert data["total"] == SAMPLE_POKEMON and data["analysis"]["stale"] is False
-    assert data["analysis"]["engine_version"] == "cleanup-2.1"
+    assert data["analysis"]["engine_version"] == ENGINE_VERSION
     for item in data["items"]:
         assert item["reasons"], item["status"]
         assert item["keep_score"] is not None

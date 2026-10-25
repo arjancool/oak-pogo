@@ -88,7 +88,8 @@ Wat OAK niet meeneemt:
 
 - De eigen aanvallen van de verdediger.
 - Het verlies van motivatie. Hoe snel dat gaat, staat niet in de Game Data. Volgens metingen uit de community gaat het sneller bij een hogere CP.
-- Of een Pokémon al in een gym staat. OAK bewaart geen gegevens over gyms uit de export.
+
+Staat een Pokémon nu in een gym, dan toont het overzicht dat. OAK leest dat uit de export (`deployedFortId`) en bewaart alleen ja of nee, nooit welke gym (ADR-0026). Of PGSharp dat veld vult, is nog niet met een echte export vastgesteld.
 
 ## Purify
 
@@ -127,7 +128,13 @@ raidwaarde = 100 · max(0, 1 − (raidpositie − 1) / 25)
 
 Plaats 1 telt volledig, de waarde loopt lineair af tot 0 na plaats 25 (`raid_top_n`).
 
-De bruikbaarheidsscore is de hoogste van de league- en raidwaarden, niet de som. Dezelfde IV's tellen in iedere league mee, en optellen zou ze dus meerdere keren laten meewegen. De interface toont alle deelwaarden en welke de doorslag gaf.
+```
+gymwaarde = 100 · max(0, 1 − (gympositie − 1) / 20)
+```
+
+De gympositie is de plaats die dit exemplaar, of een vorm waarin het kan evolueren, zou innemen tussen alle vormen die in een gym mogen. OAK vergelijkt Defense maal HP (zie *Gymverdedigers*) op het ingestelde maximale level met de eigen IV's, tegen ieder ander op het hoogste normale level met perfecte IV's. Andere vormen van dezelfde soort tellen niet mee. De waarde loopt lineair af tot 0 na plaats 20 (`gym_top_n`, ADR-0026).
+
+De bruikbaarheidsscore is de hoogste van de league-, raid- en gymwaarden, niet de som. Dezelfde IV's tellen in iedere league mee, en optellen zou ze dus meerdere keren laten meewegen. De interface toont alle deelwaarden en welke de doorslag gaf.
 
 ### Bewaarscore (0 tot 100)
 
@@ -170,7 +177,7 @@ OAK beslist in deze volgorde:
 1. Een status die je zelf hebt ingesteld, gaat voor. Heft die de bescherming van een vintage Pokémon op, dan blijft een waarschuwing zichtbaar.
 2. Een harde reden geeft `PROTECT`.
 3. Zonder Game Data, zonder IV's of level, of bij een onbekende soort geeft OAK `UNKNOWN`.
-4. De beste kandidaat voor een league-doel, het beste Master League-exemplaar en de beste raid-aanvaller binnen relevante soorten krijgen `KEEP`, of `BUILD` als ze nog power-ups of een evolutie nodig hebben en hun IV-rang goed genoeg is (`build_iv_rank_threshold`).
+4. De beste kandidaat voor een league-doel, het beste Master League-exemplaar, de beste raid-aanvaller binnen relevante soorten en de beste gymverdediger binnen de beste verdedigerssoorten krijgen `KEEP`, of `BUILD` als ze nog power-ups of een evolutie nodig hebben en hun IV-rang goed genoeg is (`build_iv_rank_threshold`).
 5. Een bewaarscore vanaf 70 (`keep_threshold`) geeft `KEEP`.
 6. Goede PvP-IV's (rang tot 100) terwijl er een beter exemplaar is, een eigen reviewverzoek of een onzekere vorm geven `REVIEW`.
 7. Een bewaarscore vanaf 40 (`review_threshold`) geeft `REVIEW`.
@@ -179,7 +186,7 @@ OAK beslist in deze volgorde:
 Daarna volgen drie correcties:
 
 - Het beste exemplaar van iedere groep blijft altijd bewaard, en er blijven minstens `keep_min_per_species` exemplaren. Zo heeft iedere transfer-kandidaat een beter of gelijkwaardig exemplaar dat blijft.
-- Een transfer-kandidaat wordt `REVIEW` als hij favoriet is, als zijn vangstdatum onbekend is, of als de laatste import niet volledig was.
+- Een transfer-kandidaat wordt `REVIEW` als hij favoriet is, als zijn vangstdatum onbekend is, als hij nu in een gym staat, of als de laatste import niet volledig was.
 - Bij iedere transfer-kandidaat en ieder te beoordelen exemplaar noemt OAK het betere exemplaar dat bewaard blijft en waarin het beter is. Bij een vintage Pokémon noemt OAK ter vergelijking het nieuwere exemplaar dat beter is voor gevechten.
 
 ### Komende events
@@ -212,7 +219,7 @@ OAK zet zelf nooit iets over. De actielijst is een hulpmiddel om in het spel af 
 
 ## Herberekening
 
-Een analyse is een projectie en kan altijd opnieuw worden berekend. OAK berekent opnieuw na iedere import, na een wijziging van regels of OAK-gegevens, na een Game Data-wissel, als een event binnen de termijn komt of voorbij is, en bij het starten als de engineversie is veranderd. De huidige engineversie is `cleanup-2.1`.
+Een analyse is een projectie en kan altijd opnieuw worden berekend. OAK berekent opnieuw na iedere import, na een wijziging van regels of OAK-gegevens, na een Game Data-wissel, als een event binnen de termijn komt of voorbij is, en bij het starten als de engineversie is veranderd. De huidige engineversie is `cleanup-2.2`.
 
 ## Controle op een echte export
 

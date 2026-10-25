@@ -14,6 +14,7 @@ from typing import Any
 
 from sqlalchemy import delete, func, insert, select
 
+from app.analysis.gym import gym_potential
 from app.analysis.league import LeagueTarget, Subject, analyze_leagues
 from app.analysis.raid import raid_potential
 from app.analysis.stats import IVs
@@ -173,6 +174,14 @@ class AnalysisService:
                     current_moves=view.moves,
                     elite_tm_available=rules.elite_tm_available,
                 )
+                view.gym = gym_potential(
+                    gd,
+                    pokemon.form_key,
+                    pokemon.iv_defense,  # type: ignore[arg-type]
+                    pokemon.iv_stamina,  # type: ignore[arg-type]
+                    level=rules.max_level,
+                    shadow=view.shadow,
+                )
             views.append(view)
         recommendations = evaluate(
             views,
@@ -280,6 +289,7 @@ def pokemon_view(pokemon: Pokemon, meta: PokemonUserMetadata | None, protecting:
         nicknamed=bool(pokemon.nickname),
         mega_progress=bool(pokemon.has_mega_evolved),
         traded=pokemon.traded_at is not None,
+        in_gym=bool(pokemon.in_gym),
         form_resolution=pokemon.form_resolution,
         manual_protected=bool(meta and meta.protected),
         manual_reason=meta.protection_reason if meta else None,

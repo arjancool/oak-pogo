@@ -124,7 +124,7 @@ Andere velden zonder privacygevoelige naam bewaart OAK alleen als ze een waarde 
 
 OAK verwijdert bij ontvangst, nog voor er iets op schijf komt:
 
-- Locaties: `capturedS2CellId` en de coördinaten en ID's van gyms, PokéStops en stations.
+- Locaties: `capturedS2CellId` en de coördinaten en ID's van gyms, PokéStops en stations. Van `deployedFortId` bewaart OAK alleen of de Pokémon nu in een gym staat, als `inGym` (ADR-0026).
 - Namen en hashes van andere spelers: `ownerName`, `originalOwnerNickname`, `tradingOriginalOwnerHash`.
 - Interne spelers-ID's en accountvelden die OAK niet gebruikt.
 - Velden waarvan de naam op locatie, speler, account, apparaat, sessie of token wijst.

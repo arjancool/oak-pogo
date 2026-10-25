@@ -250,6 +250,29 @@ def assign_roles(views: list[PokemonView], rules: CleanupRules) -> dict[int, lis
                         "competitors": len(candidates) - 1,
                     }
                 )
+    if rules.keep_best_gym:
+        # Per species a top defender can become, the copy that would absorb the most (ADR-0026).
+        by_gym: dict[str, list[PokemonView]] = defaultdict(list)
+        for view in views:
+            if view.gym is not None and view.gym.rank <= rules.gym_top_n:
+                by_gym[view.gym.target_key].append(view)
+        for candidates in by_gym.values():
+            view = max(
+                candidates,
+                key=lambda v: (v.gym.bulk if v.gym else 0.0, v.iv_percent or 0, v.level or 0, -v.id),
+            )
+            gym = view.gym
+            assert gym is not None
+            roles[view.id].append(
+                {
+                    "role": "best_gym",
+                    "league": None,
+                    "target": gym.target_name,
+                    "target_key": gym.target_key,
+                    "rank": gym.rank,
+                    "competitors": len(candidates) - 1,
+                }
+            )
     return roles
 
 
@@ -492,7 +515,7 @@ def _role_recommendation(
         pvp_roles
         and not only_future_pvp
         and all(r["rank"] > rules.build_iv_rank_threshold for r in pvp_roles)
-        and not any(r["role"] in ("best_master", "best_raid") for r in roles)
+        and not any(r["role"] in ("best_master", "best_raid", "best_gym") for r in roles)
     )
     if weak_best:
         reasons.append(
@@ -525,6 +548,8 @@ def _role_text(role: dict[str, Any]) -> str:
         return f"Beste Master League-exemplaar voor {role['target']}"
     if kind == "best_raid":
         return f"Beste raid-aanvaller (Attack-IV) voor {role['target']}"
+    if kind == "best_gym":
+        return f"Beste gymverdediger (Defense en HP) voor {role['target']}"
     if kind == "minimum":
         return "Minimaal aantal exemplaren per soort"
     return kind
@@ -595,8 +620,9 @@ def _soften(
     rules: CleanupRules,
     context: CollectionContext,
 ) -> None:
-    """Transfer advice OAK will not give directly: after a partial import, for a favorite, and
-    for a Pokémon with an unknown catch date. These become REVIEW and say why."""
+    """Transfer advice OAK will not give directly: after a partial import, for a favorite, for a
+    Pokémon with an unknown catch date, and for one that defends a gym right now. These become
+    REVIEW and say why."""
     for view in views:
         result = results[view.id]
         if result.overridden or result.status is not Status.TRANSFER_CANDIDATE:
@@ -614,6 +640,8 @@ def _soften(
             )
         if not view.catch_date_known:
             softened.append(_reason("UNKNOWN_DATE", "Vangstdatum onbekend: dit kan een vintage Pokémon zijn"))
+        if view.in_gym:
+            softened.append(_reason("IN_GYM", "Staat nu in een gym. Overzetten kan pas als hij terug is."))
         if softened:
             result.status = Status.REVIEW
             result.reasons = [*softened, *result.reasons]

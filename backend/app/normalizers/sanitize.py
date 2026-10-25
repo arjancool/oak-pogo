@@ -21,6 +21,7 @@ from app.normalizers.pgsharp import (
     SENSITIVE_KEY_PATTERN,
     SENSITIVE_POKEMON_KEYS,
     TRAINER_STAT_KEYS,
+    in_gym,
     scrub_nested,
 )
 
@@ -99,4 +100,7 @@ def _sanitize_pokemon(record: Any) -> Any:
             continue
         # Below the top level, location and identity fields go at every depth (audit A05).
         clean[key] = scrub_nested(value)
+    deployed = in_gym(record)
+    if deployed is not None:
+        clean["inGym"] = deployed
     return clean

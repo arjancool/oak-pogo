@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from app.analysis.gym import GymPotential
 from app.analysis.league import LeagueTarget
 from app.analysis.raid import RaidPotential
 from app.domain.pokemon import IV_MAX, catch_date_known, vintage_year
@@ -49,6 +50,9 @@ class PokemonView:
     leagues: dict[str, list[LeagueTarget]] = field(default_factory=dict)
     primary: dict[str, LeagueTarget | None] = field(default_factory=dict)
     raid: RaidPotential | None = None
+    gym: GymPotential | None = None
+    # Defends a gym right now, so it cannot be transferred until it returns.
+    in_gym: bool = False
 
     @property
     def has_ivs(self) -> bool:

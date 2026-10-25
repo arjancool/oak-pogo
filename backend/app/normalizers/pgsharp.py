@@ -60,6 +60,8 @@ KNOWN_POKEMON_KEYS = frozenset(
         "creationTimeMs",
         "tradedTimeMs",
         "hatchedFromEgg",
+        # Written by the sanitizer in place of deployedFortId: only whether it defends a gym.
+        "inGym",
         "fromFort",
         "originDetail",
         "originEvents",
@@ -492,6 +494,19 @@ def _bool(value: Any) -> bool | None:
     return value if isinstance(value, bool) else None
 
 
+def in_gym(record: Mapping[str, Any]) -> bool | None:
+    """True while the Pokémon defends a gym: PGSharp then fills ``deployedFortId``. That id points
+    to a place, so the sanitizer stores only this answer, as ``inGym``. Unknown when the export
+    has neither field."""
+    stored = record.get("inGym")
+    if isinstance(stored, bool):
+        return stored
+    value = record.get("deployedFortId")
+    if not isinstance(value, str):
+        return None
+    return bool(value.strip())
+
+
 def _str(value: Any, limit: int = MAX_STRING_EXTRA) -> str | None:
     if isinstance(value, str) and value.strip():
         return value.strip()[:limit]
@@ -751,6 +766,7 @@ def _normalize_pokemon(
         caught_at=_epoch_ms(record.get("creationTimeMs")),
         traded_at=_epoch_ms(record.get("tradedTimeMs")),
         hatched_from_egg=_bool(record.get("hatchedFromEgg")),
+        in_gym=in_gym(record),
         from_fort=_bool(record.get("fromFort")),
         origin_case=origin_case,
         origin_events=origin_events,

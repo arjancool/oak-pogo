@@ -25,7 +25,9 @@ import {
   X,
   Zap,
 } from "lucide-react";
+import type { ParseKeys } from "i18next";
 import { useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { NavLink, Outlet, useNavigate } from "react-router";
 
 import { useAccount } from "../../lib/account";
@@ -33,62 +35,63 @@ import { api } from "../../lib/api";
 import { useAuth } from "../../lib/auth";
 import { relative } from "../../lib/format";
 import type { SyncStatus } from "../../lib/types";
+import { LanguageSelect } from "../LanguageSelect";
 import { Select } from "../ui";
 
 interface NavItem {
   to: string;
-  label: string;
+  label: ParseKeys;
   icon: ReactNode;
 }
 
-const sections: { title: string; items: NavItem[] }[] = [
+const sections: { title: ParseKeys; items: NavItem[] }[] = [
   {
-    title: "Dashboard",
+    title: "nav.sections.dashboard",
     items: [
-      { to: "/", label: "Overzicht", icon: <LayoutDashboard className="h-4 w-4" /> },
-      { to: "/history?kind=new", label: "Nieuwe Pokémon", icon: <Sparkles className="h-4 w-4" /> },
+      { to: "/", label: "nav.overview", icon: <LayoutDashboard className="h-4 w-4" /> },
+      { to: "/history?kind=new", label: "nav.newPokemon", icon: <Sparkles className="h-4 w-4" /> },
     ],
   },
   {
-    title: "Pokémon",
+    title: "nav.sections.pokemon",
     items: [
-      { to: "/pokemon", label: "Pokémon Box", icon: <Boxes className="h-4 w-4" /> },
-      { to: "/compare", label: "Vergelijken", icon: <GitCompare className="h-4 w-4" /> },
-      { to: "/cleanup", label: "Cleanup Manager", icon: <Brush className="h-4 w-4" /> },
-      { to: "/planner", label: "Evolutieplanner", icon: <Wand2 className="h-4 w-4" /> },
-      { to: "/events", label: "Komende events", icon: <CalendarDays className="h-4 w-4" /> },
+      { to: "/pokemon", label: "nav.box", icon: <Boxes className="h-4 w-4" /> },
+      { to: "/compare", label: "nav.compare", icon: <GitCompare className="h-4 w-4" /> },
+      { to: "/cleanup", label: "nav.cleanup", icon: <Brush className="h-4 w-4" /> },
+      { to: "/planner", label: "nav.planner", icon: <Wand2 className="h-4 w-4" /> },
+      { to: "/events", label: "nav.events", icon: <CalendarDays className="h-4 w-4" /> },
     ],
   },
   {
-    title: "Battles",
+    title: "nav.sections.battles",
     items: [
-      { to: "/battles/great", label: "Great League", icon: <Trophy className="h-4 w-4" /> },
-      { to: "/battles/ultra", label: "Ultra League", icon: <Trophy className="h-4 w-4" /> },
-      { to: "/battles/master", label: "Master League", icon: <Trophy className="h-4 w-4" /> },
-      { to: "/battles/team-builder", label: "Team Builder", icon: <Users className="h-4 w-4" /> },
-      { to: "/battles/rocket", label: "Team GO Rocket", icon: <Swords className="h-4 w-4" /> },
-      { to: "/battles/raids", label: "Raids", icon: <Zap className="h-4 w-4" /> },
-      { to: "/battles/max", label: "Max Battles", icon: <Activity className="h-4 w-4" /> },
-      { to: "/battles/gyms", label: "Gymverdedigers", icon: <Shield className="h-4 w-4" /> },
+      { to: "/battles/great", label: "nav.great", icon: <Trophy className="h-4 w-4" /> },
+      { to: "/battles/ultra", label: "nav.ultra", icon: <Trophy className="h-4 w-4" /> },
+      { to: "/battles/master", label: "nav.master", icon: <Trophy className="h-4 w-4" /> },
+      { to: "/battles/team-builder", label: "nav.teamBuilder", icon: <Users className="h-4 w-4" /> },
+      { to: "/battles/rocket", label: "nav.rocket", icon: <Swords className="h-4 w-4" /> },
+      { to: "/battles/raids", label: "nav.raids", icon: <Zap className="h-4 w-4" /> },
+      { to: "/battles/max", label: "nav.max", icon: <Activity className="h-4 w-4" /> },
+      { to: "/battles/gyms", label: "nav.gyms", icon: <Shield className="h-4 w-4" /> },
     ],
   },
   {
-    title: "Account",
+    title: "nav.sections.account",
     items: [
-      { to: "/trainer", label: "Trainerstatistieken", icon: <BarChart3 className="h-4 w-4" /> },
-      { to: "/items", label: "Item Bag", icon: <Backpack className="h-4 w-4" /> },
-      { to: "/resources", label: "Stardust & Candy", icon: <Sparkles className="h-4 w-4" /> },
-      { to: "/history", label: "Historie", icon: <History className="h-4 w-4" /> },
+      { to: "/trainer", label: "nav.trainer", icon: <BarChart3 className="h-4 w-4" /> },
+      { to: "/items", label: "nav.items", icon: <Backpack className="h-4 w-4" /> },
+      { to: "/resources", label: "nav.resources", icon: <Sparkles className="h-4 w-4" /> },
+      { to: "/history", label: "nav.history", icon: <History className="h-4 w-4" /> },
     ],
   },
   {
-    title: "Beheer",
+    title: "nav.sections.admin",
     items: [
-      { to: "/admin/accounts", label: "Traineraccounts", icon: <Users className="h-4 w-4" /> },
-      { to: "/admin/sync", label: "PGSharp Sync", icon: <RefreshCw className="h-4 w-4" /> },
-      { to: "/admin/gamedata", label: "Game Data", icon: <Database className="h-4 w-4" /> },
-      { to: "/admin/settings", label: "Instellingen", icon: <Cog className="h-4 w-4" /> },
-      { to: "/admin/backups", label: "Back-ups", icon: <Archive className="h-4 w-4" /> },
+      { to: "/admin/accounts", label: "nav.accounts", icon: <Users className="h-4 w-4" /> },
+      { to: "/admin/sync", label: "nav.sync", icon: <RefreshCw className="h-4 w-4" /> },
+      { to: "/admin/gamedata", label: "nav.gamedata", icon: <Database className="h-4 w-4" /> },
+      { to: "/admin/settings", label: "nav.settings", icon: <Cog className="h-4 w-4" /> },
+      { to: "/admin/backups", label: "nav.backups", icon: <Archive className="h-4 w-4" /> },
     ],
   },
 ];
@@ -100,15 +103,16 @@ const stateStyles: Record<string, string> = {
   error: "bg-red-500",
   waiting: "bg-slate-500",
 };
-const stateLabels: Record<string, string> = {
-  connected: "Gesynchroniseerd",
-  processing: "Verwerken…",
-  warning: "Gedeeltelijk",
-  error: "Fout",
-  waiting: "Wacht op export",
+const stateLabels: Record<SyncStatus["state"], ParseKeys> = {
+  connected: "shell.sync.connected",
+  processing: "shell.sync.processing",
+  warning: "shell.sync.warning",
+  error: "shell.sync.error",
+  waiting: "shell.sync.waiting",
 };
 
 function SyncPill() {
+  const { t } = useTranslation();
   const { accountId } = useAccount();
   const status = useQuery({
     queryKey: ["sync-status", accountId],
@@ -125,19 +129,20 @@ function SyncPill() {
       title={data.message}
     >
       <span className={clsx("h-2 w-2 rounded-full", stateStyles[data.state])} />
-      {stateLabels[data.state]}
+      {t(stateLabels[data.state])}
       {data.last_successful_sync_at && <span className="opacity-70">· {relative(data.last_successful_sync_at)}</span>}
     </NavLink>
   );
 }
 
 function Navigation({ onNavigate }: { onNavigate?: () => void }) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   return (
     <nav className="space-y-5 px-3 py-4">
       {sections.map((section) => (
         <div key={section.title}>
-          <p className="mb-1 px-3 text-[11px] font-semibold uppercase tracking-wider text-muted">{section.title}</p>
+          <p className="mb-1 px-3 text-[11px] font-semibold uppercase tracking-wider text-muted">{t(section.title)}</p>
           <ul className="space-y-0.5">
             {section.items
               .filter((item) => user?.role === "owner" || !["/admin/gamedata", "/admin/backups"].includes(item.to))
@@ -155,7 +160,7 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
                     }
                   >
                     {item.icon}
-                    {item.label}
+                    {t(item.label)}
                   </NavLink>
                 </li>
               ))}
@@ -167,6 +172,7 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 export function AppShell() {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const { accounts, accountId, setAccountId } = useAccount();
   const [open, setOpen] = useState(false);
@@ -178,7 +184,7 @@ export function AppShell() {
         <div className="flex items-center gap-2 px-6 py-4">
           <img src="/oak.svg" alt="" className="h-7 w-7" />
           <span className="font-semibold">OAK</span>
-          <span className="text-xs text-muted">Pokémon GO Manager</span>
+          <span className="text-xs text-muted">{t("app.tagline")}</span>
         </div>
         <Navigation />
       </aside>
@@ -187,7 +193,7 @@ export function AppShell() {
           <aside className="h-full w-72 overflow-y-auto border-r border-line bg-surface-2" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-4">
               <span className="font-semibold">OAK</span>
-              <button onClick={() => setOpen(false)} aria-label="Menu sluiten">
+              <button onClick={() => setOpen(false)} aria-label={t("shell.closeMenu")}>
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -197,12 +203,12 @@ export function AppShell() {
       )}
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="no-print sticky top-0 z-30 flex items-center gap-3 border-b border-line bg-surface/90 px-4 py-2.5 backdrop-blur">
-          <button className="lg:hidden" onClick={() => setOpen(true)} aria-label="Menu openen">
+          <button className="lg:hidden" onClick={() => setOpen(true)} aria-label={t("shell.openMenu")}>
             <Menu className="h-5 w-5" />
           </button>
           {accounts.length > 0 ? (
             <Select
-              aria-label="Traineraccount"
+              aria-label={t("shell.trainerAccount")}
               value={accountId ?? ""}
               onChange={(event) => setAccountId(Number(event.target.value))}
               className="max-w-48"
@@ -215,11 +221,12 @@ export function AppShell() {
             </Select>
           ) : (
             <button className="text-sm text-oak-400" onClick={() => navigate("/admin/accounts")}>
-              Traineraccount aanmaken
+              {t("shell.createTrainerAccount")}
             </button>
           )}
           <SyncPill />
           <div className="ml-auto flex items-center gap-3 text-sm">
+            <LanguageSelect className="w-32" />
             <span className="hidden items-center gap-1 text-muted sm:flex">
               <Shield className="h-4 w-4" />
               {user?.username}
@@ -231,7 +238,7 @@ export function AppShell() {
                 navigate("/login");
               }}
             >
-              <LogOut className="h-4 w-4" /> Uitloggen
+              <LogOut className="h-4 w-4" /> {t("shell.logout")}
             </button>
           </div>
         </header>

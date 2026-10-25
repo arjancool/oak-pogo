@@ -50,6 +50,7 @@ Playwright heeft eenmalig een browser nodig: `npx playwright install chromium`.
 - Domeinlogica in `app/domain`, `app/analysis`, `app/recommendations` en `app/normalizers` importeert geen database, webframework of netwerk.
 - Pokémon-ID's en tag-ID's zijn overal tekst. Gebruik in de frontend nooit een `Number` voor zo'n ID.
 - Nieuwe functionaliteit krijgt tests. Gedrag dat verandert, krijgt bijgewerkte documentatie.
+- Een tekst in de interface komt in `frontend/src/i18n/nl.json`, met dezelfde sleutel in iedere andere taal. Een test faalt als een sleutel in een taal ontbreekt (ADR-0025).
 - Geen geheimen, echte exports of Pokémon-artwork in de repository.
 
 ## Licentie

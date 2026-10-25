@@ -34,6 +34,7 @@ from app.schemas.common import ApiModel, UtcDatetime
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 USERNAME_PATTERN = re.compile(r"^[a-zA-Z0-9_.\-]{3,32}$")
+LANGUAGE = re.compile(r"[a-z]{2}")
 
 
 class LoginRequest(ApiModel):
@@ -305,6 +306,10 @@ def update_preferences(
     session: Session = Depends(get_session),
 ) -> UserOut:
     allowed = {"active_account_id", "box_view", "box_columns", "page_size", "theme", "language"}
+    language = body.preferences.get("language")
+    # Which languages exist is up to the frontend (ADR-0025); here only the form is checked.
+    if language is not None and not (isinstance(language, str) and LANGUAGE.fullmatch(language)):
+        raise ValidationFailedError("Taal: een code van twee letters, zoals nl of en.")
     user = session.get(User, auth.user.id)
     assert user is not None
     user.preferences = {

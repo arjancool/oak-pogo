@@ -1,0 +1,26 @@
+# Only what the image needs goes into the build context.
+**/.git
+**/node_modules
+**/__pycache__
+**/*.pyc
+**/.venv
+**/.pytest_cache
+**/.ruff_cache
+**/.mypy_cache
+**/*.db
+**/*.db-wal
+**/*.db-shm
+**/.env
+**/.env.*
+backend/.oak-test-data
+backend/.oak-dev
+backend/app/static
+backend/tests
+frontend/dist
+frontend/test-results
+frontend/playwright-report
+frontend/tests
+docs
+fixtures
+scripts
+.github

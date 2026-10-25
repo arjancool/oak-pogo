@@ -1,0 +1,51 @@
+# OAK bouwen en starten vanuit de broncode:
+#
+#   cp .env.example .env      # pas OAK_BASE_URL en eventueel de poort aan
+#   docker compose up -d --build
+#
+# Zonder eigen build gebruik je de kant-en-klare image: zet OAK_IMAGE op
+# ghcr.io/arjancool/oak-pogo:latest en start met 'docker compose up -d --no-build'.
+#
+# Iedere OAK_*-instelling uit .env komt in de container, ook de instellingen die hieronder
+# niet staan, zoals OAK_MAX_IMPORT_MB. De lijst onder 'environment' geeft alleen standaarden
+# en zet de paden binnen de container vast. Vereist Docker Compose 2.24 of nieuwer.
+
+services:
+  oak:
+    build:
+      context: .
+      args:
+        OAK_VERSION: ${OAK_VERSION:-dev}
+    image: ${OAK_IMAGE:-oak-pogo:local}
+    container_name: ${OAK_CONTAINER_NAME:-oak}
+    restart: unless-stopped
+    ports:
+      - "${OAK_HOST_PORT:-8080}:8080"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      OAK_TIMEZONE: ${OAK_TIMEZONE:-Europe/Amsterdam}
+      OAK_BASE_URL: ${OAK_BASE_URL:-http://localhost:8080}
+      OAK_SECRET_KEY: ${OAK_SECRET_KEY:-}
+      OAK_TRUSTED_PROXY_CIDRS: ${OAK_TRUSTED_PROXY_CIDRS:-}
+      OAK_ALLOW_REGISTRATION: ${OAK_ALLOW_REGISTRATION:-false}
+      OAK_GAMEDATA_AUTO_UPDATE: ${OAK_GAMEDATA_AUTO_UPDATE:-true}
+      OAK_EVENTS_AUTO_UPDATE: ${OAK_EVENTS_AUTO_UPDATE:-true}
+      OAK_RAW_IMPORT_RETENTION_DAYS: ${OAK_RAW_IMPORT_RETENTION_DAYS:-14}
+      OAK_LOG_LEVEL: ${OAK_LOG_LEVEL:-INFO}
+      # Fixed: the volume below and the port mapping above assume these values.
+      OAK_DATA_DIR: /data
+      OAK_PORT: "8080"
+    volumes:
+      - ${OAK_DATA_PATH:-./data}:/data
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"

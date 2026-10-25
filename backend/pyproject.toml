@@ -1,0 +1,83 @@
+[build-system]
+requires = ["hatchling==1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "oak"
+version = "2.0.0"
+description = "OAK — self-hosted Pokémon GO Manager. FastAPI backend."
+requires-python = ">=3.13"
+license = { text = "Apache-2.0" }
+
+# Exact pins: OAK is a deployed application, so a reproducible dependency set matters more
+# than resolver flexibility. Renovate/Dependabot updates these deliberately.
+dependencies = [
+    "alembic==1.20.1",
+    "argon2-cffi==25.1.0",
+    "fastapi==0.161.1",
+    "httpx==0.28.1",
+    "numpy==2.4.4",
+    "pydantic==2.14.1",
+    "pydantic-settings==2.16.1",
+    "python-multipart==0.0.32",
+    "sqlalchemy==2.1.6",
+    "uvicorn==0.54.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pyright==1.1.414",
+    "pytest==9.1.1",
+    "pytest-cov==7.1.0",
+    "ruff==0.17.2",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+extend-exclude = ["migrations/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "PT", "RET", "SIM", "TID", "ARG", "RUF", "PL"]
+ignore = [
+    "PLR0911",  # many returns are clearer than nesting in classification code
+    "PLR0912",
+    "PLR0913",
+    "PLR0915",
+    "PLR2004",  # named constants are used for domain values; small literals in tests are fine
+    "RUF001",   # Dutch UI strings contain typographic characters on purpose
+    "RUF002",
+    "RUF003",
+    "B008",     # FastAPI dependency injection uses calls in defaults
+    "PLR0917",  # keyword-heavy signatures are clearer than parameter objects here
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ARG001", "PLC0415", "PT018", "E501"]
+# Route handlers declare `auth` purely for authentication and authorization.
+"app/api/*" = ["ARG001"]
+"migrations/*" = ["E501"]
+# SQLAlchemy TypeDecorator hooks have a fixed signature.
+"app/models/base.py" = ["ARG002"]
+
+[tool.pyright]
+include = ["app", "tests"]
+venvPath = "."
+venv = ".venv"
+pythonVersion = "3.13"
+typeCheckingMode = "standard"
+reportMissingTypeStubs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+markers = [
+    "slow: benchmark-achtige tests met grote synthetische collecties",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["app"]

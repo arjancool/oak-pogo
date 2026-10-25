@@ -1,0 +1,170 @@
+import { useMutation } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { Link } from "react-router";
+
+import { RequireAccount } from "../../components/layout/RequireAccount";
+import { TypeBadge } from "../../components/pokemon";
+import { Alert, Badge, Button, Card, EmptyState, PageHeader, Spinner } from "../../components/ui";
+import { api, errorMessage } from "../../lib/api";
+import { level, num } from "../../lib/format";
+import { SpeciesPicker, type SpeciesOption } from "./shared";
+
+interface MaxPokemon {
+  pokemon_id: number;
+  name: string | null;
+  cp: number | null;
+  level: number | null;
+  gigantamax: boolean;
+  types: string[];
+  max_attack_type: string | null;
+  max_attack_name: string | null;
+  max_attack_source: "gmax_move" | "fast_move" | null;
+  max_attack_unknown_reason: string | null;
+  fast_move: string | null;
+  max_moves: Record<string, number>;
+  next_upgrade_cost: Record<string, { mpCost?: number; candyCost?: number; xlCandyCost?: number } | null>;
+  bread_group: string | null;
+  attack_effectiveness: number | null;
+  incoming_effectiveness: number | null;
+}
+
+const moveNames: Record<string, string> = { attack: "Max Attack", guard: "Max Guard", spirit: "Max Spirit" };
+
+function MaxBattles({ accountId }: { accountId: number }) {
+  const [boss, setBoss] = useState<SpeciesOption | null>(null);
+  const run = useMutation({
+    mutationFn: (bossKey: string | null) =>
+      api.post<{ pokemon: MaxPokemon[]; advice: { attackers: MaxPokemon[]; defenders: MaxPokemon[] } | null; notes: string[]; method: string }>(
+        "/api/v1/battles/max-counters",
+        { account_id: accountId, boss_key: bossKey },
+      ),
+  });
+  const { mutate } = run;
+  useEffect(() => mutate(boss?.key ?? null), [boss, mutate]);
+  const data = run.data;
+  return (
+    <>
+      <PageHeader title="Max Battles" description="Dynamax- en Gigantamax-Pokémon uit je collectie, hun Max Moves en wat een upgrade kost." />
+      <Card className="mb-5">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="w-full max-w-md">
+            <SpeciesPicker onPick={setBoss} placeholder="Max Battle-tegenstander zoeken" />
+          </div>
+          {boss && (
+            <>
+              <span className="font-medium">{boss.name}</span>
+              {boss.types.map((t) => (
+                <TypeBadge key={t} type={t} />
+              ))}
+              <Button size="sm" variant="ghost" onClick={() => setBoss(null)}>
+                Wissen
+              </Button>
+            </>
+          )}
+        </div>
+      </Card>
+      {run.isPending && <Spinner />}
+      {run.error && <Alert tone="error">{errorMessage(run.error)}</Alert>}
+      {data && (
+        <>
+          <Alert tone="info">{data.notes.join(" ")}</Alert>
+          {data.advice && (
+            <div className="mt-4 grid gap-4 lg:grid-cols-2">
+              <Card title="Aanvallers (Max Attack-type)">
+                <ul className="space-y-1 text-sm">
+                  {data.advice.attackers.map((p) => (
+                    <li key={p.pokemon_id}>
+                      <Link to={`/pokemon/${p.pokemon_id}`} className="hover:text-oak-300">
+                        {p.name}
+                      </Link>{" "}
+                      <span className="text-muted">
+                        · {p.max_attack_source === "gmax_move" ? p.max_attack_name : p.fast_move} · ×{p.attack_effectiveness?.toLocaleString("nl-NL")}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+              <Card title="Verdedigers (weerstand)">
+                <ul className="space-y-1 text-sm">
+                  {data.advice.defenders.map((p) => (
+                    <li key={p.pokemon_id}>
+                      <Link to={`/pokemon/${p.pokemon_id}`} className="hover:text-oak-300">
+                        {p.name}
+                      </Link>{" "}
+                      <span className="text-muted">· inkomend ×{p.incoming_effectiveness?.toLocaleString("nl-NL")}</span>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            </div>
+          )}
+          <Card className="mt-4" title={`${data.pokemon.length} Dynamax/Gigantamax-Pokémon`}>
+            {data.pokemon.length === 0 ? (
+              <EmptyState title="Geen Dynamax-Pokémon">De export bevat geen Pokémon met Dynamax- of Gigantamax-status.</EmptyState>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm [&_td]:pr-3 [&_th]:pr-3">
+                  <thead className="text-left text-xs text-muted">
+                    <tr>
+                      <th className="py-2">Pokémon</th>
+                      <th>Max Attack-type</th>
+                      <th>Max Moves</th>
+                      <th>Volgende upgrade</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.pokemon.map((p) => (
+                      <tr key={p.pokemon_id} className="border-t border-line align-top">
+                        <td className="py-2 pr-3">
+                          <Link to={`/pokemon/${p.pokemon_id}`} className="font-medium hover:text-oak-300">
+                            {p.name}
+                          </Link>
+                          {p.gigantamax && <Badge className="ml-1" color="#f43f5e">Gigantamax</Badge>}
+                          <span className="block text-xs text-muted">
+                            CP {num(p.cp, "?")} · L{level(p.level)}
+                          </span>
+                        </td>
+                        <td className="pr-3">
+                          {p.max_attack_type ? (
+                            <>
+                              <TypeBadge type={p.max_attack_type} />
+                              {p.max_attack_name && <span className="mt-1 block text-xs text-muted">{p.max_attack_name}</span>}
+                            </>
+                          ) : (
+                            <span className="text-xs text-muted" title={p.max_attack_unknown_reason ?? undefined}>
+                              onbekend
+                              {p.max_attack_unknown_reason && <span className="block">{p.max_attack_unknown_reason}</span>}
+                            </span>
+                          )}
+                        </td>
+                        <td className="pr-3 text-xs">
+                          {Object.entries(p.max_moves).map(([move, lvl]) => (
+                            <span key={move} className="block">
+                              {moveNames[move] ?? move} niveau {lvl}
+                            </span>
+                          ))}
+                        </td>
+                        <td className="text-xs text-muted">
+                          {Object.entries(p.next_upgrade_cost).map(([move, cost]) => (
+                            <span key={move} className="block">
+                              {moveNames[move]}: {cost ? `${num(cost.mpCost ?? null)} MP, ${cost.candyCost ? `${cost.candyCost} candy` : `${cost.xlCandyCost ?? "?"} XL`}` : "maximaal"}
+                            </span>
+                          ))}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
+          <p className="mt-3 text-xs text-muted">{data.method}</p>
+        </>
+      )}
+    </>
+  );
+}
+
+export function MaxBattlePage() {
+  return <RequireAccount>{(id) => <MaxBattles accountId={id} />}</RequireAccount>;
+}

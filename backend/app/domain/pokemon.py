@@ -98,6 +98,8 @@ class NormalizedPokemon:
     caught_at: datetime | None = None
     traded_at: datetime | None = None
     hatched_from_egg: bool | None = None
+    # Whether it defends a gym right now. Only this fact is kept, never which gym or where.
+    in_gym: bool | None = None
     from_fort: bool | None = None
     origin_case: int | None = None
     origin_events: list[str] = field(default_factory=list)

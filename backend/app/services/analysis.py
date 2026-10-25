@@ -14,6 +14,7 @@ from typing import Any
 
 from sqlalchemy import delete, func, insert, select
 
+from app.analysis.gym import gym_potential
 from app.analysis.league import LeagueTarget, Subject, analyze_leagues
 from app.analysis.raid import raid_potential
 from app.analysis.stats import IVs
@@ -121,6 +122,15 @@ class AnalysisService:
             ).first()
             last_partial = last_job is not None and last_job.status == "partial"
             events = event_infos(session, account, gd)
+            snapshot = [(p, m) for p, m in rows]
+            for p, m in snapshot:
+                session.expunge(p)
+                if m is not None:
+                    session.expunge(m)
+        # Registered in a short write transaction of its own. A read snapshot cannot become a
+        # write once another connection committed after it started (audit F06 of 25 October).
+        # The fingerprint describes what was read, so a change in between makes the run stale.
+        with self.db.transaction() as session:
             run = AnalysisRun(
                 trainer_account_id=account_id,
                 status="running",
@@ -134,11 +144,6 @@ class AnalysisService:
             session.add(run)
             session.flush()
             run_id = run.id
-            snapshot = [(p, m) for p, m in rows]
-            for p, m in snapshot:
-                session.expunge(p)
-                if m is not None:
-                    session.expunge(m)
 
         views: list[PokemonView] = []
         for pokemon, meta in snapshot:
@@ -172,6 +177,14 @@ class AnalysisService:
                     shadow=view.shadow,
                     current_moves=view.moves,
                     elite_tm_available=rules.elite_tm_available,
+                )
+                view.gym = gym_potential(
+                    gd,
+                    pokemon.form_key,
+                    pokemon.iv_defense,  # type: ignore[arg-type]
+                    pokemon.iv_stamina,  # type: ignore[arg-type]
+                    level=rules.max_level,
+                    shadow=view.shadow,
                 )
             views.append(view)
         recommendations = evaluate(
@@ -280,6 +293,7 @@ def pokemon_view(pokemon: Pokemon, meta: PokemonUserMetadata | None, protecting:
         nicknamed=bool(pokemon.nickname),
         mega_progress=bool(pokemon.has_mega_evolved),
         traded=pokemon.traded_at is not None,
+        in_gym=bool(pokemon.in_gym),
         form_resolution=pokemon.form_resolution,
         manual_protected=bool(meta and meta.protected),
         manual_reason=meta.protection_reason if meta else None,

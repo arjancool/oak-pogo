@@ -560,7 +560,7 @@ export function DetailPage() {
           </div>
           <StatusBadges pokemon={p} />
           <p className="text-sm text-muted">
-            #{p.species_id} · gevangen {date(p.caught_at)} · {p.inventory_status === "in_inventory" ? "in inventaris" : "niet meer in inventaris"}
+            #{p.species_id} · {p.hatched_from_egg ? "uitgebroed" : "gevangen"} {date(p.caught_at)} · {p.inventory_status === "in_inventory" ? "in inventaris" : "niet meer in inventaris"}
           </p>
           <button
             className="inline-flex items-center gap-1 font-mono text-xs text-muted hover:text-ink"

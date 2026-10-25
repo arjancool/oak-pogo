@@ -60,6 +60,7 @@ QUIET_FIELDS = (
     "extra",
     "caught_at",
     "hatched_from_egg",
+    "in_gym",
     "from_fort",
     "origin_case",
     "origin_events",

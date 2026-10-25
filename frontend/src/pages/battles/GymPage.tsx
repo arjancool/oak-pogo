@@ -25,6 +25,7 @@ interface Defender {
   reasons: string[];
   confidence: "high" | "medium" | "low";
   same_species: number;
+  in_gym: boolean | null;
 }
 
 interface GymOverview {
@@ -100,6 +101,7 @@ function Gyms({ accountId }: { accountId: number }) {
                           <TypeBadge key={t} type={t} />
                         ))}
                         {d.shadow && <Badge color="#a855f7">Shadow</Badge>}
+                        {d.in_gym && <Badge color="#38bdf8">Staat in een gym</Badge>}
                         <ScoreMeter label="Verdedigingswaarde" value={d.value} />
                       </div>
                       <p className="mt-1 text-xs text-muted">

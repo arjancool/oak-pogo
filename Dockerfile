@@ -19,15 +19,16 @@ RUN npm run build
 
 # --- backend dependencies -----------------------------------------------------------------------
 FROM python:3.13.17-slim-bookworm@sha256:e32be0e55814a08977501ca863271d9bd02443710db8f2afaf8372e2c4508530 AS backend-deps
-ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1 PYTHONDONTWRITEBYTECODE=1
+ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1 PYTHONDONTWRITEBYTECODE=1 UV_PYTHON_DOWNLOADS=never
 WORKDIR /src
-COPY backend/pyproject.toml ./
-# Only the runtime dependencies, exactly as pinned in pyproject.toml. The application code is
-# copied into the final stage, so a code change does not reinstall the dependencies.
-RUN python -c "import tomllib; print('\n'.join(tomllib.load(open('pyproject.toml', 'rb'))['project']['dependencies']))" \
-        > requirements.txt \
+COPY backend/build-requirements.txt backend/pyproject.toml backend/uv.lock ./
+# Only the runtime dependencies, also the indirect ones, exactly as locked in uv.lock and checked
+# against their hashes (audit F08). uv itself is pinned by hash and stays in this stage. The
+# application code is copied into the final stage, so a code change does not reinstall anything.
+RUN python -m pip install --require-hashes -r build-requirements.txt \
+    && uv export --locked --no-dev --no-emit-project --format requirements-txt -o requirements.txt \
     && python -m venv /opt/venv \
-    && /opt/venv/bin/pip install --require-virtualenv -r requirements.txt
+    && /opt/venv/bin/pip install --require-virtualenv --require-hashes --no-deps -r requirements.txt
 
 # --- runtime ------------------------------------------------------------------------------------
 FROM python:3.13.17-slim-bookworm@sha256:e32be0e55814a08977501ca863271d9bd02443710db8f2afaf8372e2c4508530 AS runtime

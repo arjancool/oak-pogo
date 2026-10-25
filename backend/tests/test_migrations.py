@@ -34,6 +34,7 @@ def test_upgrade_from_first_revision_keeps_data(tmp_path: Path) -> None:
     columns = {c["name"] for c in inspect(engine).get_columns("cleanup_recommendations")}
     assert {"battle_score", "keep_score", "scores"} <= columns
     assert "confirmed" in {c["name"] for c in inspect(engine).get_columns("planned_actions")}
+    assert "in_gym" in {c["name"] for c in inspect(engine).get_columns("pokemon")}
     assert {"external_id", "starts_at", "ends_at", "featured", "trainer_account_id"} <= {
         c["name"] for c in inspect(engine).get_columns("game_events")
     }

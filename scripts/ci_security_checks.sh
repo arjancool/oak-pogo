@@ -3,7 +3,8 @@
 #
 #   scripts/ci_security_checks.sh <container> <image> <base-url>
 #
-# The container must run in production mode without OAK_SECRET_KEY, as in CI.
+# The container must run in production mode without OAK_SECRET_KEY, as in CI. With OAK_PLATFORM
+# (for example linux/arm64) the extra containers it starts use that platform.
 set -euo pipefail
 
 container="$1"
@@ -56,7 +57,7 @@ echo "OAK draait niet als root en de geheime sleutel heeft de rechten 600."
 # The image refuses to run OAK as root, also when asked to.
 for variable in PUID PGID; do
   set +e
-  output=$(timeout 60 docker run --rm -e "$variable=0" "$image" 2>&1)
+  output=$(timeout 120 docker run --rm ${OAK_PLATFORM:+--platform "$OAK_PLATFORM"} -e "$variable=0" "$image" 2>&1)
   status=$?
   set -e
   [ "$status" -ne 0 ] && [ "$status" -ne 124 ] || fail "$variable=0 werd niet geweigerd (exitcode $status)"

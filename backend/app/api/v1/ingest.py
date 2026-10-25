@@ -1,5 +1,12 @@
 """PGSharp webhook (spec §4.2). Authenticated by the token in the URL, because PGSharp cannot
-send headers. The token is never logged (see app/core/logging.py)."""
+send headers. The token is never logged (see app/core/logging.py).
+
+A webhook works only while its credential is active, still belongs to the trainer account and
+the user who owns that account is active. That is checked before the body is read and again in
+the transaction that stores the import, so revoking a webhook or disabling a user also stops an
+upload that was already under way (audit F04 and F05 of 25 October). A disabled user's webhooks
+stay stored and work again when the user is enabled again.
+"""
 
 from __future__ import annotations
 
@@ -10,13 +17,14 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from app.api.deps import get_container
 from app.auth.tokens import constant_time_equal, parse_webhook_token, sha256_hex
 from app.core.container import Container
 from app.core.errors import NotFoundError, PayloadTooLargeError, RateLimitedError
 from app.ingestion.receive import IncomingPayload, create_import_job, decode_payload, is_connection_test
-from app.models import TrainerAccount, WebhookCredential
+from app.models import TrainerAccount, User, WebhookCredential
 
 router = APIRouter(prefix="/ingest", tags=["ingest"])
 log = logging.getLogger("oak.ingest")
@@ -75,6 +83,17 @@ async def pgsharp_webhook(token: str, request: Request, container: Container = D
     return JSONResponse(result, status_code=status_code)
 
 
+def _usable_account(session: Session, cred: WebhookCredential | None, account_id: int) -> TrainerAccount | None:
+    """The trainer account, while the credential is active, belongs to it and its user is active."""
+    if cred is None or cred.status != "active" or cred.trainer_account_id != account_id:
+        return None
+    account = session.get(TrainerAccount, account_id)
+    if account is None:
+        return None
+    user = session.get(User, account.user_id)
+    return account if user is not None and user.status == "active" else None
+
+
 def _find_credential(container: Container, identifier: str | None, token: str) -> tuple[int, int] | None:
     if identifier is None:
         return None
@@ -87,14 +106,16 @@ def _find_credential(container: Container, identifier: str | None, token: str) -
         ).first()
         if cred is None or not constant_time_equal(cred.token_hash, sha256_hex(token)):
             return None
+        if _usable_account(session, cred, cred.trainer_account_id) is None:
+            return None
         return cred.id, cred.trainer_account_id
 
 
 def _accept(container: Container, credential_id: int, account_id: int, incoming: IncomingPayload) -> dict[str, Any]:
     decoded = decode_payload(incoming, container.settings.max_import_bytes)
     with container.db.transaction() as session:
-        account = session.get(TrainerAccount, account_id)
         cred = session.get(WebhookCredential, credential_id)
+        account = _usable_account(session, cred, account_id)
         if account is None or cred is None:
             raise NotFoundError("Onbekende webhook.", code="UNKNOWN_WEBHOOK")
         now = container.clock.now()

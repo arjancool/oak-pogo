@@ -22,7 +22,7 @@ from typing import Any
 
 from app.core.errors import ValidationFailedError
 
-ENGINE_VERSION = "cleanup-2.1"
+ENGINE_VERSION = "cleanup-2.2"
 SCORE_MAX = 100
 MAX_KEEP_MIN = 10
 MAX_EVENT_HOLD_DAYS = 60
@@ -54,6 +54,7 @@ class CleanupRules:
     keep_best_ultra: bool = True
     keep_best_master: bool = True
     keep_best_raid: bool = True
+    keep_best_gym: bool = True
 
     # --- battle analysis --------------------------------------------------------------------
     # Species within this PvPoke league rank count as meta-relevant for that league.
@@ -64,6 +65,8 @@ class CleanupRules:
     # A Pokémon that would rank in this top of all attackers of a type has raid value; #1 counts
     # fully, the value drops linearly to zero just past this rank.
     raid_top_n: int = 25
+    # The same for gym defenders, among all species the Game Data allows in a gym (ADR-0026).
+    gym_top_n: int = 20
     # IV rank (out of 4096) from which a non-best copy still goes to review instead of transfer.
     good_iv_rank_threshold: int = 100
     # Only the best copy with an IV rank at or below this value is advised as a BUILD
@@ -112,7 +115,14 @@ class CleanupRules:
             raise ValidationFailedError("keep_min_per_species moet tussen 0 en 10 liggen.")
         if not 0.5 <= self.ready_cp_fraction <= 1.0:
             raise ValidationFailedError("ready_cp_fraction moet tussen 0,5 en 1 liggen.")
-        if min(self.meta_rank_threshold, self.good_iv_rank_threshold, self.raid_top_n, self.species_rank_full) < 1:
+        thresholds = (
+            self.meta_rank_threshold,
+            self.good_iv_rank_threshold,
+            self.raid_top_n,
+            self.gym_top_n,
+            self.species_rank_full,
+        )
+        if min(thresholds) < 1:
             raise ValidationFailedError("Drempels moeten positief zijn.")
         if self.species_rank_full > self.meta_rank_threshold:
             raise ValidationFailedError("species_rank_full mag niet boven meta_rank_threshold liggen.")

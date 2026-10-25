@@ -21,6 +21,8 @@ dependencies = [
     "pydantic-settings==2.16.1",
     "python-multipart==0.0.32",
     "sqlalchemy==2.1.6",
+    # IANA time zones where the system has none, such as on Windows (audit F09 of 25 October).
+    "tzdata==2026.5",
     "uvicorn==0.54.0",
 ]
 

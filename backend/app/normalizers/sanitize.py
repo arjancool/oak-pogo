@@ -21,11 +21,13 @@ from app.normalizers.pgsharp import (
     SENSITIVE_KEY_PATTERN,
     SENSITIVE_POKEMON_KEYS,
     TRAINER_STAT_KEYS,
+    in_gym,
     scrub_nested,
 )
 
 # Raised whenever the filter drops more. Stored exports from an older revision are filtered again.
-SANITIZER_REVISION = 2
+# 3: a root that is not an object, and a non-text export time (audit F03 of 25 October).
+SANITIZER_REVISION = 3
 ACCOUNT_KEYS = ("name", "team", "maxPokemonStorage", "maxItemStorage", "creationTimeMs")
 COMBAT_LOG_KEYS = ("currentSeasonResults", "lifetimeResults")
 PLAYER_EXTRA_KEYS = ("level", "numPokemonCaughtByType")
@@ -35,11 +37,15 @@ EGG_DROP_KEYS = frozenset({"eggDistribution", "eggTelemetry", "eggIncubatorId"})
 
 
 def sanitize_export(raw: Any) -> Any:
+    # Not an export, but it is stored until the import is rejected: filter it all the same.
     if not isinstance(raw, Mapping):
-        return raw
+        return scrub_nested(raw)
     result: dict[str, Any] = {}
     if "time" in raw:
-        result["time"] = raw["time"]
+        # The export time is text. Anything else is unreadable for the normalizer either way, so
+        # an empty object takes its place: the import gets the same warning, and nothing nested
+        # reaches the disk.
+        result["time"] = raw["time"] if isinstance(raw["time"], str) else {}
     account = raw.get("account")
     if isinstance(account, Mapping):
         clean = _pick(account, ACCOUNT_KEYS)
@@ -99,4 +105,7 @@ def _sanitize_pokemon(record: Any) -> Any:
             continue
         # Below the top level, location and identity fields go at every depth (audit A05).
         clean[key] = scrub_nested(value)
+    deployed = in_gym(record)
+    if deployed is not None:
+        clean["inGym"] = deployed
     return clean

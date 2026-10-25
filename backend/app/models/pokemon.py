@@ -64,6 +64,7 @@ class Pokemon(Base):
     caught_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
     traded_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
     hatched_from_egg: Mapped[bool | None] = mapped_column(Boolean)
+    in_gym: Mapped[bool | None] = mapped_column(Boolean)
     from_fort: Mapped[bool | None] = mapped_column(Boolean)
     origin_case: Mapped[int | None] = mapped_column(Integer)
     origin_events: Mapped[list[str]] = mapped_column(JSONText, default=list)

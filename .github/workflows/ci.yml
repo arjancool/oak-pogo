@@ -6,6 +6,8 @@
 #   push naar main      → latest, sha-<kort>
 #   tag v2.1.0          → 2.1.0, 2.1, sha-<kort>
 #   handmatig (main/tag) → dezelfde tags, na dezelfde controles
+# De releasejob bouwt de image één keer voor amd64 en arm64, zet hem zonder tag op ghcr.io,
+# test precies die image per platform en geeft hem pas daarna de tags (audit F08).
 name: CI
 
 on:
@@ -19,6 +21,10 @@ on:
 
 permissions:
   contents: read
+
+env:
+  # Python comes from setup-python; uv must never download one of its own.
+  UV_PYTHON_DOWNLOADS: never
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -38,11 +44,14 @@ jobs:
         with:
           python-version: "3.13"
           cache: pip
-          cache-dependency-path: backend/pyproject.toml
+          cache-dependency-path: |
+            backend/build-requirements.txt
+            backend/uv.lock
       - name: Afhankelijkheden installeren
+        # Exactly the versions and hashes in uv.lock; fails when the lock is out of date.
         run: |
-          python -m venv .venv
-          .venv/bin/pip install -e ".[dev]"
+          python -m pip install --require-hashes -r build-requirements.txt
+          uv sync --locked --extra dev
       - name: Ruff
         run: |
           .venv/bin/ruff check .
@@ -51,6 +60,29 @@ jobs:
         run: .venv/bin/pyright
       - name: Pytest
         run: .venv/bin/pytest
+
+  windows:
+    name: Backend op Windows (opstartcontrole)
+    runs-on: windows-2025
+    defaults:
+      run:
+        working-directory: backend
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: |
+            backend/build-requirements.txt
+            backend/uv.lock
+      - name: Afhankelijkheden installeren
+        run: |
+          python -m pip install --require-hashes -r build-requirements.txt
+          uv sync --locked
+      - name: OAK starten
+        run: .venv/Scripts/python ../scripts/startup_check.py
 
   frontend:
     name: Frontend (lint, typecheck, Vitest, build)
@@ -85,7 +117,9 @@ jobs:
         with:
           python-version: "3.13"
           cache: pip
-          cache-dependency-path: backend/pyproject.toml
+          cache-dependency-path: |
+            backend/build-requirements.txt
+            backend/uv.lock
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "22"
@@ -94,8 +128,8 @@ jobs:
       - name: Backend installeren
         working-directory: backend
         run: |
-          python -m venv .venv
-          .venv/bin/pip install -e .
+          python -m pip install --require-hashes -r build-requirements.txt
+          uv sync --locked
       - name: Frontend installeren en bouwen
         working-directory: frontend
         run: |
@@ -169,6 +203,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+    env:
+      IMAGE: ghcr.io/${{ github.repository }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
@@ -191,13 +227,13 @@ jobs:
           labels: |
             org.opencontainers.image.title=OAK
             org.opencontainers.image.licenses=Apache-2.0
-      - name: Bouwen en publiceren
+      - name: Eén keer bouwen en zonder tag op ghcr.io zetten
+        id: build
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
           platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          outputs: type=image,name=ghcr.io/${{ github.repository }},push-by-digest=true,name-canonical=true,push=true
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             OAK_VERSION=${{ steps.meta.outputs.version }}
@@ -208,3 +244,55 @@ jobs:
           cache-to: type=gha,mode=max
           provenance: true
           sbom: true
+      - name: Precies die image testen, per platform
+        # Each platform of the pushed digest is started (arm64 through QEMU), checked for health
+        # and security, and scanned. Only when all of that passes do the tags follow.
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          for platform in linux/amd64 linux/arm64; do
+            arch="${platform#linux/}"
+            local_tag="oak-release:$arch"
+            name="oak-release-$arch"
+            data="$RUNNER_TEMP/oak-data-$arch"
+            mkdir -p "$data"
+            docker pull --platform "$platform" "$IMAGE@$DIGEST"
+            docker tag "$IMAGE@$DIGEST" "$local_tag"
+            machine=$(docker run --rm --platform "$platform" --entrypoint uname "$local_tag" -m)
+            case "$arch:$machine" in
+              amd64:x86_64 | arm64:aarch64) ;;
+              *) echo "Verwacht $arch, kreeg $machine"; exit 1 ;;
+            esac
+            docker run -d --name "$name" --platform "$platform" -p 8080:8080 \
+              -e OAK_GAMEDATA_AUTO_UPDATE=false \
+              -e OAK_EVENTS_AUTO_UPDATE=false \
+              -v "$data:/data" "$local_tag"
+            ready=false
+            for attempt in $(seq 1 90); do
+              if curl -fsS http://127.0.0.1:8080/health/ready >/dev/null 2>&1; then ready=true; break; fi
+              sleep 4
+            done
+            docker logs "$name"
+            test "$ready" = true
+            curl -fsS http://127.0.0.1:8080/ | grep -q '<div id="root">'
+            OAK_PLATFORM="$platform" scripts/ci_security_checks.sh "$name" "$local_tag" http://127.0.0.1:8080
+            # --platform is needed with the containerd image store; an older Docker without it
+            # keeps one platform per tag anyway.
+            docker save --platform "$platform" "$local_tag" -o "$RUNNER_TEMP/oak-$arch.tar" \
+              || docker save "$local_tag" -o "$RUNNER_TEMP/oak-$arch.tar"
+            docker run --rm -v "$RUNNER_TEMP/oak-$arch.tar:/image.tar:ro" \
+              ghcr.io/anchore/grype:v0.121.0@sha256:621d56d1d68106b787022c81546f7e0a36202a25d1239f0c20195fab8c16f7ea \
+              docker-archive:/image.tar --only-fixed --fail-on high
+            docker rm -f "$name"
+            docker image rm "$local_tag" "$IMAGE@$DIGEST" >/dev/null 2>&1 || true
+            rm -f "$RUNNER_TEMP/oak-$arch.tar"
+          done
+      - name: De geteste image de tags geven
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          META: ${{ steps.meta.outputs.json }}
+        run: |
+          tags=$(jq -r '.tags[]' <<< "$META" | sed 's/^/-t /' | tr '\n' ' ')
+          # shellcheck disable=SC2086
+          docker buildx imagetools create $tags "$IMAGE@$DIGEST"
+          docker buildx imagetools inspect "$IMAGE@$DIGEST"

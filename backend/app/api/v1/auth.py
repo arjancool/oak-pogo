@@ -240,9 +240,11 @@ def login(
 ) -> AuthStatus:
     username = body.username.strip().lower()
     ip = _client_ip(request)
+    # The address first: a blocked address is refused before anything about the username is
+    # looked at or stored (audit F02 of 25 October).
     for limiter, key in (
-        (container.login_by_user, f"user:{username}"),
         (container.login_by_ip, f"ip:{ip}"),
+        (container.login_by_user, f"user:{username}"),
     ):
         retry = limiter.blocked(key)
         if retry:

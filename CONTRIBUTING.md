@@ -10,10 +10,12 @@ Je hebt Python 3.13 en Node 22 nodig.
 
 ```bash
 cd backend
-python3.13 -m venv .venv
-.venv/bin/pip install -e ".[dev]"
+python3.13 -m pip install --require-hashes -r build-requirements.txt   # uv, vastgezet met controlesommen
+uv sync --locked --extra dev
 OAK_ENV=development OAK_DATA_DIR=.oak-dev OAK_GAMEDATA_AUTO_UPDATE=false .venv/bin/python -m app
 ```
+
+Op Windows werkt het hetzelfde. De programma's staan dan in `.venv\Scripts` in plaats van `.venv/bin`. CI start OAK ook op Windows.
 
 De backend draait dan op <http://localhost:8080>. Met `OAK_ENV=development` staat de API-documentatie op <http://localhost:8080/api/docs>. Laat `OAK_GAMEDATA_AUTO_UPDATE` weg als je de echte Game Data wilt downloaden.
 
@@ -46,6 +48,7 @@ Playwright heeft eenmalig een browser nodig: `npx playwright install chromium`.
 
 ## Regels
 
+- Iedere Python-afhankelijkheid staat met controlesom in `backend/uv.lock`. Wijzig je `pyproject.toml`, werk de lock dan bij met `uv lock` en commit beide. CI faalt als ze niet bij elkaar passen.
 - Iedere schemawijziging krijgt een Alembic-migratie: `cd backend && .venv/bin/alembic revision --autogenerate -m "korte omschrijving"`. Controleer de gegenereerde migratie altijd met de hand.
 - Domeinlogica in `app/domain`, `app/analysis`, `app/recommendations` en `app/normalizers` importeert geen database, webframework of netwerk.
 - Pokémon-ID's en tag-ID's zijn overal tekst. Gebruik in de frontend nooit een `Number` voor zo'n ID.

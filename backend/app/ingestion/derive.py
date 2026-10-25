@@ -12,6 +12,10 @@ from app.domain.pokemon import iv_percent
 from app.gamedata.model import GameData
 from app.models import Pokemon
 
+# Raised when stored derived columns may be wrong and must be recomputed once for every Pokémon.
+# 2: a catch date corrected by a later import did not update the catch year (audit F01).
+DERIVE_REVISION = 2
+
 
 def apply_derived(row: Pokemon, gd: GameData | None, tz: ZoneInfo) -> None:
     row.iv_percent = iv_percent(row.iv_attack, row.iv_defense, row.iv_stamina)

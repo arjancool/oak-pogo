@@ -7,8 +7,9 @@ from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
 from sqlalchemy import func, select
+from sqlalchemy.exc import OperationalError
 
-from app.ingestion.derive import apply_derived
+from app.ingestion.derive import DERIVE_REVISION, apply_derived
 from app.ingestion.receive import load_payload, write_payload
 from app.models import AnalysisRun, BackgroundJob, ImportJob, Pokemon, TrainerAccount
 from app.normalizers.sanitize import SANITIZER_REVISION, sanitize_export
@@ -22,6 +23,8 @@ if TYPE_CHECKING:
 
 log = logging.getLogger("oak.jobs")
 REDERIVE_BATCH = 500
+# A busy database is worth one more try before the job counts as failed (audit F06).
+ANALYSIS_ATTEMPTS = 2
 
 
 def register_tasks(container: Container) -> None:
@@ -33,8 +36,16 @@ def register_tasks(container: Container) -> None:
             container.processor.process(job.ref_id)
 
     def analysis_task(job: BackgroundJob) -> None:
-        if job.trainer_account_id is not None:
-            analysis.run(job.trainer_account_id)
+        if job.trainer_account_id is None:
+            return
+        for attempt in range(1, ANALYSIS_ATTEMPTS + 1):
+            try:
+                analysis.run(job.trainer_account_id)
+                return
+            except OperationalError as exc:
+                if attempt == ANALYSIS_ATTEMPTS or "locked" not in str(exc):
+                    raise
+                log.warning("analysis retried after a database conflict", extra={"account_id": job.trainer_account_id})
 
     def gamedata_task(_: BackgroundJob) -> None:
         result = container.gamedata.update_from_network()
@@ -54,6 +65,7 @@ def register_tasks(container: Container) -> None:
     runner.register("rederive", rederive_task)
     runner.register("events_update", events_task)
     runner.maintenance.append(lambda: resanitize_payloads(container))
+    runner.maintenance.append(lambda: refresh_derived(container))
     runner.maintenance.append(lambda: purge_payloads(container))
     runner.maintenance.append(lambda: schedule_gamedata_check(container))
     runner.maintenance.append(lambda: schedule_events_check(container))
@@ -88,6 +100,16 @@ def enqueue(container: Container, kind: str, account_id: int | None = None) -> N
 
 def enqueue_rederive(container: Container) -> None:
     enqueue(container, "rederive")
+
+
+def refresh_derived(container: Container) -> None:
+    """Recompute every derived column once after a fix in how they are derived."""
+    with container.db.read() as session:
+        if (get_setting(session, DERIVE_KEY) or 0) >= DERIVE_REVISION:
+            return
+    enqueue_rederive(container)
+    with container.db.transaction() as session:
+        set_setting(session, DERIVE_KEY, DERIVE_REVISION)
 
 
 def rederive_all(container: Container) -> None:
@@ -155,6 +177,7 @@ def schedule_event_analyses(container: Container, analysis: AnalysisService) -> 
 
 
 SANITIZER_KEY = "imports.sanitizer_revision"
+DERIVE_KEY = "pokemon.derive_revision"
 
 
 def resanitize_payloads(container: Container) -> None:

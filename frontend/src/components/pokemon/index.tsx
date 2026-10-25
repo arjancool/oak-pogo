@@ -157,6 +157,7 @@ export function StatusBadges({ pokemon, compact }: { pokemon: PokemonSummary; co
   if (pokemon.costume) badges.push({ key: "costume", text: "Kostuum", color: "#14b8a6" });
   if (pokemon.location_card) badges.push({ key: "bg", text: "Achtergrond", color: "#22d3ee" });
   if (pokemon.traded) badges.push({ key: "traded", text: "Geruild" });
+  if (pokemon.in_gym) badges.push({ key: "in_gym", text: "In gym", color: "#38bdf8" });
   if (pokemon.metadata?.protected) badges.push({ key: "prot", text: "Beschermd", color: "#38bdf8", icon: <Shield className="h-3 w-3" /> });
   if (pokemon.is_new) badges.push({ key: "new", text: "Nieuw", color: "#34d399" });
   if (pokemon.inventory_status === "not_in_inventory") badges.push({ key: "gone", text: "Niet meer in inventaris", color: "#94a3b8" });

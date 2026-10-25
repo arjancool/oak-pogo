@@ -61,6 +61,7 @@ export const pokemonSummary = z.object({
   location_card: z.number().nullable(),
   traded: z.boolean(),
   hatched_from_egg: z.boolean().nullable(),
+  in_gym: z.boolean().nullable(),
   hundo: z.boolean(),
   shundo: z.boolean(),
   caught_at: z.string().nullable(),

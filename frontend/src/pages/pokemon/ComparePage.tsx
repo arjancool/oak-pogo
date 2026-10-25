@@ -54,7 +54,7 @@ export function ComparePage() {
     ["IV%", (p) => <IvPercent value={p.iv_percent} />],
     ["Snelle aanval", (p) => p.fast_move?.name ?? "?"],
     ["Geladen aanvallen", (p) => p.charged_moves.map((m) => m.name).join(" / ")],
-    ["Gevangen", (p) => date(p.caught_at)],
+    ["Gevangen of uitgebroed", (p) => `${date(p.caught_at)}${p.hatched_from_egg ? " (uit ei)" : ""}`],
     ["Cleanup", (p) => <CleanupBadge status={p.cleanup?.status} />],
     ["Eigenschappen", (p) => <StatusBadges pokemon={p} />],
   ];

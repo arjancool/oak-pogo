@@ -36,6 +36,7 @@ export function pokemonFixture(overrides: Partial<PokemonSummary> = {}): Pokemon
     location_card: null,
     traded: false,
     hatched_from_egg: false,
+    in_gym: false,
     hundo: true,
     shundo: false,
     caught_at: "2024-05-01T10:00:00+00:00",

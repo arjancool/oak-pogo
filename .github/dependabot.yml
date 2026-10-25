@@ -2,7 +2,8 @@
 # ecosysteem in één pull request; een nieuwe hoofdversie krijgt een eigen pull request.
 version: 2
 updates:
-  - package-ecosystem: pip
+  # uv updates pyproject.toml and the lock with every indirect package (backend/uv.lock).
+  - package-ecosystem: uv
     directory: /backend
     schedule:
       interval: weekly

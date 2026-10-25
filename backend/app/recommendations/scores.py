@@ -106,6 +106,10 @@ def raid_value(rank: int, rules: CleanupRules) -> float:
     return max(0.0, 1.0 - (rank - 1) / rules.raid_top_n)
 
 
+def gym_value(rank: int, rules: CleanupRules) -> float:
+    return max(0.0, 1.0 - (rank - 1) / rules.gym_top_n)
+
+
 def battle_score(view: PokemonView, rules: CleanupRules) -> Score:
     parts: list[dict[str, Any]] = []
     for league, label in LEAGUE_LABELS.items():
@@ -148,8 +152,20 @@ def battle_score(view: PokemonView, rules: CleanupRules) -> Score:
                 dps=raid.dps,
             )
         )
+    if view.gym is not None:
+        gym = view.gym
+        parts.append(
+            _part(
+                "GYM",
+                f"Gyms: {gym.target_name} zou #{gym.rank} van alle verdedigers zijn",
+                SCORE_MAX * gym_value(gym.rank, rules),
+                target=gym.target_name,
+                rank=gym.rank,
+                bulk=gym.bulk,
+            )
+        )
     if not parts:
-        return Score(0, [_part("NO_BATTLE_ROLE", "Geen league- of raidwaarde gevonden", 0.0)], None)
+        return Score(0, [_part("NO_BATTLE_ROLE", "Geen league-, raid- of gymwaarde gevonden", 0.0)], None)
     best = max(parts, key=lambda p: p["value"])
     return Score(round(best["value"]), parts, best["code"])
 

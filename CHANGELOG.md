@@ -16,7 +16,7 @@ De eerste openbare versie van OAK.
 - Game Data van PokeMiners en PvPoke, met versiebeheer, controle vóór activering, terugrollen en installatie zonder internet. Spelregels die daar niet in staan, zoals die voor purify, levert OAK zelf aan met bron (ADR-0022).
 - Komende events uit de kalender van LeekDuck.com via ScrapedDuck (ADR-0021). Een transfer-kandidaat uit de evolutielijn van een Pokémon met een Community Day in de komende 14 dagen blijft bewaard tot na het event. Bij dubbele Transfer Candy krijg je een tip om te wachten. Per traineraccount kun je een event negeren of zelf een event toevoegen.
 - PvP-analyse voor Great, Ultra en Master League, movesetadvies, een evolutie- en power-upplanner en een Team Builder. De league- en raidtabellen zijn te sorteren.
-- Raid-, Rocket- en Max Battle-overzichten en je beste gymverdedigers.
+- Raid-, Rocket- en Max Battle-overzichten en je beste gymverdedigers. De waarde als gymverdediger telt mee in het cleanupadvies, en de beste verdediger per soort blijft bewaard (ADR-0026). Een Pokémon die in een gym staat, stelt OAK niet voor als transfer.
 - Op de detailpagina van een Shadow Pokémon rekenen met de Pokémon zoals hij is of zoals hij na purify wordt.
 - Cleanup Manager met harde bescherming, zachte bescherming voor favorieten, vintage-bescherming voor 2016–2019, een bruikbaarheidsscore en een bewaarscore (ADR-0019) en dubbelen. Een actielijst met bevestiging per Pokémon en per beschermingsreden, zoekteksten voor in het spel, een CSV-export en een printbare checklist.
 - Nederlandstalige React-interface met standaard dark mode en een responsive opmaak.
@@ -24,3 +24,16 @@ De eerste openbare versie van OAK.
 - Docker-image met PUID/PGID, healthcheck en `compose.yaml`, voor Docker Compose 2.24 of nieuwer. De basisimages staan vast op een digest.
 - CI met tests, end-to-endtests, een Docker-controle, beveiligingscontroles tegen de draaiende container, een kwetsbaarheidsscan met Grype en `npm audit`. De image wordt alleen gepubliceerd naar `ghcr.io/arjancool/oak-pogo`, voor amd64 en arm64, als alle controles slagen. Dependabot stelt iedere week updates voor.
 - Documentatie in `docs/` en deze changelog.
+
+### Beveiliging
+
+Herstel na de audit van 25 oktober 2026:
+
+- Een vangstdatum die bij een latere import verandert, past nu ook het vangstjaar aan. De transferlijst kijkt bovendien naar de actuele vangstdatum, zodat een Pokémon uit 2016–2019 nooit zonder bevestiging op de lijst komt. OAK berekent de afgeleide gegevens van alle Pokémon een keer opnieuw.
+- De limiet op inlogpogingen houdt zijn geheugengebruik begrensd. Een geweigerd verzoek legt niets meer vast.
+- Het privacyfilter werkt ook voor een bestand dat geen export blijkt te zijn, en bewaart het exporttijdstip alleen als tekst. Eerder opgeslagen exports filtert OAK opnieuw.
+- Een webhook stopt zodra de gebruiker wordt uitgeschakeld of de webhook wordt ingetrokken, ook als de upload al bezig was.
+- Een analyse mislukt niet meer als tegelijk iets anders wordt opgeslagen.
+- Alle Python-pakketten, ook de indirecte, staan met controlesom in `backend/uv.lock`. De releasejob publiceert precies de image die hij per platform heeft getest.
+- `tzdata` hoort bij de installatie, zodat OAK ook op Windows de tijdzones kent.
+- Een back-up sluit zijn databaseverbindingen.

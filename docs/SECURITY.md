@@ -17,7 +17,7 @@ OAK is vaak via internet bereikbaar, omdat PGSharp de webhook vanaf je telefoon 
 - **Verlopen:** een sessie verloopt na 168 uur zonder gebruik en altijd na 30 dagen. Uitloggen trekt de sessie in. Een nieuw wachtwoord of het uitschakelen van een gebruiker trekt de andere sessies van die gebruiker in.
 - **Wachtwoord opnieuw instellen:** de eigenaar kan voor een andere gebruiker een nieuw wachtwoord instellen. Alle sessies van die gebruiker eindigen dan meteen. Het auditlog vermeldt dat het wachtwoord opnieuw is ingesteld, nooit het wachtwoord zelf. Zijn eigen wachtwoord wijzigt ook de eigenaar alleen met zijn huidige wachtwoord, zodat een overgenomen sessie het eigenaaraccount niet kan overnemen.
 - **CSRF:** ieder verzoek dat iets wijzigt, heeft de header `X-CSRF-Token` nodig. Die waarde is een HMAC van het sessietoken met de geheime sleutel. De frontend leest hem uit het cookie `oak_csrf`.
-- **Throttling:** na 10 mislukte pogingen per gebruikersnaam of 30 per IP-adres in 15 minuten weigert OAK tijdelijk (instelbaar). Registratie heeft ook een limiet per IP-adres.
+- **Throttling:** na 10 mislukte pogingen per gebruikersnaam of 30 per IP-adres in 15 minuten weigert OAK tijdelijk (instelbaar). OAK kijkt eerst naar het IP-adres, en een geweigerd verzoek legt niets vast. De administratie ruimt verlopen pogingen zelf op en houdt hoogstens 10.000 sleutels per limiet bij. Registratie heeft ook een limiet per IP-adres.
 
 ## Webhook
 
@@ -25,6 +25,7 @@ OAK is vaak via internet bereikbaar, omdat PGSharp de webhook vanaf je telefoon 
 - De database bewaart alleen de SHA-256-hash. De volledige URL zie je één keer, direct na het maken.
 - OAK vergelijkt de hash in constante tijd.
 - Per traineraccount is er hoogstens één actieve webhook. Een nieuwe URL maakt de oude direct ongeldig. Intrekken kan altijd.
+- Een webhook werkt alleen zolang hij actief is en de gebruiker van het traineraccount actief is. OAK controleert dat voor het lezen van de export en opnieuw in de transactie die de import opslaat. Intrekken of uitschakelen stopt dus ook een upload die al bezig was. Wordt een uitgeschakelde gebruiker weer actief, dan werkt zijn bestaande webhook weer. Wil je dat niet, trek de webhook dan in.
 - Per webhook zijn standaard 60 verzoeken per uur toegestaan. Na 20 verzoeken met een ongeldig token blokkeert OAK het IP-adres 10 minuten.
 - Een verzoek mag na het uitpakken hoogstens `OAK_MAX_IMPORT_MB` (64 MB) groot zijn. Gecomprimeerde inhoud wordt begrensd uitgepakt, zodat een zip-bom geen geheugen opeet.
 - Een upload via de interface wordt pas gelezen na de inlogcontrole, en nooit verder dan de limiet. Een te grote `Content-Length` wordt meteen geweigerd, en zonder die header stopt OAK zodra de limiet bereikt is.
@@ -43,12 +44,12 @@ De eigenaar beheert de installatie: gebruikers, Game Data, sprites, back-ups en 
 - **CORS:** OAK zet geen CORS-headers. Een andere website kan dus niet namens je browser de API gebruiken.
 - **Invoer:** Pydantic controleert iedere invoer. Zoektermen worden met parameters naar SQL vertaald, ook bij `LIKE`. React ontsnapt alle tekst. CSV-exports beschermen tegen formule-injectie in spreadsheets.
 - **Logboek:** OAK schrijft geen request-bodies, wachtwoorden, sessietokens of webhook-tokens weg. Een filter maskeert tokens ook als ze per ongeluk in een melding terechtkomen. Het toegangslog van uvicorn staat uit.
-- **Opgeslagen exports** zijn opgeschoond (zonder locaties, namen van andere spelers en interne spelers-ID's) en worden na 14 dagen verwijderd.
+- **Opgeslagen exports** zijn opgeschoond (zonder locaties, namen van andere spelers en interne spelers-ID's) en worden na 14 dagen verwijderd. Dat geldt ook voor een bestand dat geen export blijkt te zijn: een lijst of ander onverwacht formaat gaat door hetzelfde filter, en het exporttijdstip wordt alleen als tekst bewaard.
 - **Geheime sleutel:** zonder `OAK_SECRET_KEY` maakt OAK eenmalig een sleutel van 48 willekeurige bytes in `/data/.secret_key`, met rechten 0600. De status meldt welke van de twee in gebruik is.
 - **Productie:** `OAK_ENV` staat standaard op `production`. Dan zijn de interactieve API-documentatie en het API-schema (`/api/openapi.json`) uit.
 - **Auditlogboek:** inloggen en mislukte inlogpogingen, wachtwoordwijzigingen, het aanmaken en verwijderen van accounts en webhooks, Game Data-wissels, instellingen en back-ups komen in `audit_log`.
 - **Container:** OAK draait als gewone gebruiker, zonder capabilities en met `no-new-privileges`.
-- **Afhankelijkheden:** alle Python- en npm-pakketten staan op een exacte versie. De basisimages staan vast op een versie en een digest, de GitHub Actions op een commit-hash. Dependabot stelt iedere week updates voor. CI laat `npm audit` op alle npm-pakketten draaien, ook de ontwikkelgereedschappen, en faalt bij een melding met ernst hoog of kritiek. De release maakt een SBOM en een provenance-attestatie, en volgt pas als alle controles voor dezelfde commit zijn geslaagd.
+- **Afhankelijkheden:** alle Python- en npm-pakketten staan op een exacte versie, ook de indirecte. Voor Python legt `backend/uv.lock` iedere versie met controlesom vast. De Docker-build en CI installeren alleen wat daarin staat, en controleren iedere controlesom. De basisimages staan vast op een versie en een digest, de GitHub Actions op een commit-hash. Dependabot stelt iedere week updates voor. CI laat `npm audit` op alle npm-pakketten draaien, ook de ontwikkelgereedschappen, en faalt bij een melding met ernst hoog of kritiek. De release maakt een SBOM en een provenance-attestatie, en volgt pas als alle controles voor dezelfde commit zijn geslaagd. De releasejob bouwt de image één keer voor amd64 en arm64 en zet die zonder tag op ghcr.io. Daarna start hij precies die image per platform (arm64 via emulatie), voert dezelfde beveiligingscontroles en scan uit en geeft hem pas dan de tags. Wat je downloadt, is dus de geteste image.
 
 ## Controles in CI
 
@@ -66,12 +67,15 @@ Daarna scant [Grype](https://github.com/anchore/grype) de image op bekende kwets
 
 - Dependabot-meldingen over kwetsbaarheden, Dependabot-beveiligingsupdates en secret scanning staan los van `.github/dependabot.yml`. De eigenaar zet ze aan in de repository-instellingen van GitHub, onder *Code security*, voor zover ze voor het account beschikbaar zijn.
 - De image wordt niet ondertekend, bijvoorbeeld met cosign.
-- De gepubliceerde image voor arm64 wordt in CI niet gestart. CI test een aparte amd64-build van dezelfde broncode.
+- De arm64-image start in CI onder emulatie, niet op echte arm64-hardware.
 - Inloggen met een tweede factor of via OpenID Connect bestaat nog niet.
+- Branchbescherming staat niet in de repository zelf. De eigenaar stelt in GitHub een ruleset in voor `main`: wijzigingen alleen via een pull request, de controles Backend, Frontend, End-to-end en Docker-build verplicht, en geen verwijderen of geforceerd overschrijven.
 
 ## Wat je zelf moet regelen
 
 - Zet OAK achter https. Zonder https gaan wachtwoord en sessie onversleuteld over het netwerk.
+- Maak het eigenaaraccount aan voordat OAK via internet bereikbaar is. Zolang er geen eigenaar is, kan de eerste bezoeker die aanmaken.
+- Draait je reverse proxy op dezelfde machine, publiceer de poort dan alleen lokaal: `127.0.0.1:8080:8080` in plaats van `8080:8080`.
 - Stel `OAK_TRUSTED_PROXY_CIDRS` in op het netwerk van je reverse proxy. Anders delen alle bezoekers één limiet voor inlogpogingen.
 - Zet het toegangslog van je proxy uit voor `/api/v1/ingest/`, of maskeer het pad.
 - Bewaar back-ups van `/data` op een veilige plek. Daarin staan je hele collectie en de geheime sleutel.

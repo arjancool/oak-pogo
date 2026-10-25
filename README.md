@@ -52,7 +52,7 @@ OAK vraagt nooit om je Pokémon GO-wachtwoord. Het leest alleen de export die PG
 - **PGSharp** met de functie **Settings → Export Account Data (Beta)**. Welke versienummers die functie hebben, is niet vastgesteld. Zie [docs/PGSHARP_INTEGRATION.md](docs/PGSHARP_INTEGRATION.md).
 - **Een machine met Docker**, bijvoorbeeld een Linux-server, een NAS of een computer met Docker Desktop. De image wordt gebouwd voor amd64 en arm64. De arm64-versie is nog niet op echte hardware getest.
 - **Voor de webhook** moet OAK bereikbaar zijn vanaf je telefoon. Dat kan thuis via wifi, of via internet achter een reverse proxy met https. Voor alleen uploaden is dat niet nodig.
-- **Internet op de server**, om Game Data te downloaden. Zonder internet kun je de Game Data ook handmatig uploaden.
+- **Internet op de server**, om Game Data en de eventkalender te downloaden. Zonder internet kun je de Game Data ook handmatig uploaden.
 
 ## Docker installeren
 
@@ -99,7 +99,7 @@ Vervang `OAK_BASE_URL` door het adres waarop je OAK opent. Dat adres komt ook in
 docker compose up -d
 ```
 
-Het pakket op ghcr.io is privé zolang de repository privé is. Log dan eerst één keer in met een GitHub-token dat alleen `read:packages` mag: `docker login ghcr.io`.
+Geeft `docker compose up` de melding *denied*, dan staat het pakket op ghcr.io op privé. Log dan eerst één keer in met een GitHub-token dat alleen `read:packages` mag: `docker login ghcr.io`.
 
 ### Vanuit de broncode
 
@@ -120,7 +120,7 @@ Bij het eerste bezoek vraagt OAK om een eigenaaraccount. Kies een gebruikersnaam
 
 ![Eerste gebruik](docs/images/setup.png)
 
-De eigenaar beheert de installatie. Andere gebruikers voeg je toe onder **Beheer → Instellingen → Gebruikers**, met een gebruikersnaam en een beginwachtwoord. Na het inloggen maakt iedere gebruiker zelf zijn traineraccounts en webhooks aan, en wijzigt hij zijn wachtwoord onder **Wachtwoord wijzigen**. Vergeet iemand zijn wachtwoord, dan stelt de eigenaar via **Wachtwoord opnieuw instellen** een nieuw in.
+De eigenaar beheert de installatie. Andere gebruikers voeg je toe onder **Beheer → Instellingen → Gebruikers**, met een gebruikersnaam en een beginwachtwoord. Na het inloggen maakt iedere gebruiker zelf traineraccounts en webhooks aan. Het eigen wachtwoord wijzig je onder **Wachtwoord wijzigen**. Is een wachtwoord vergeten, dan stelt de eigenaar via **Wachtwoord opnieuw instellen** een nieuw in.
 
 Begint `OAK_BASE_URL` met `https://`, dan stuurt OAK het inlogcookie alleen via https. Open OAK dan ook via dat https-adres.
 
@@ -166,7 +166,7 @@ De Box toont al je Pokémon als tabel of als kaarten. Filters staan in de URL, d
 
 ![Pokémon Box](docs/images/box.png)
 
-Klik op een Pokémon voor de detailpagina, met IV's, level, aanvallen, de league-analyse, evoluties, power-upkosten, het cleanup-advies en de historie. Daar leg je ook je eigen gegevens vast: bescherming, notities, OAK-tags en plannen.
+Klik op een Pokémon voor de detailpagina, met IV's, level, aanvallen, de league-analyse, evoluties, power-upkosten, het cleanup-advies en de historie. Bij een Shadow Pokémon kies je of OAK rekent met de Pokémon zoals hij is of zoals hij na purify wordt. Daar leg je ook je eigen gegevens vast: bescherming, notities, OAK-tags en plannen.
 
 ![Detailpagina](docs/images/detail.png)
 
@@ -285,7 +285,7 @@ Bij het starten voert OAK database-migraties zelf uit, na een automatische back-
 | Probleem | Oplossing |
 |---|---|
 | De container wordt niet *healthy* | Bekijk `docker logs oak`. Vaak kan OAK niet schrijven in de datamap. Controleer `PUID` en `PGID`. |
-| `docker compose pull` geeft *denied* | Het pakket is privé. Log in met `docker login ghcr.io`. |
+| `docker compose pull` geeft *denied* | Het pakket staat op privé. Log in met `docker login ghcr.io`. |
 | Na inloggen sta je weer op het inlogscherm | `OAK_BASE_URL` begint met `https://`, maar je opent OAK via http. Open het https-adres, of pas `OAK_BASE_URL` aan. |
 | "Te veel mislukte inlogpogingen" | Wacht hooguit een kwartier. Draait OAK achter een reverse proxy, stel dan `OAK_TRUSTED_PROXY_CIDRS` in. |
 | De poort is al in gebruik | Kies een andere hostpoort in `ports`, bijvoorbeeld `"8093:8080"`. |
@@ -310,7 +310,6 @@ Bij het starten voert OAK database-migraties zelf uit, na een automatische back-
 | [docs/SECURITY.md](docs/SECURITY.md) | Beveiliging |
 | [docs/BACKUP_RESTORE.md](docs/BACKUP_RESTORE.md) | Back-up en herstel |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Wat klaar is en wat nog komt |
-| [docs/DECISIONS.md](docs/DECISIONS.md) | Besluiten van de eigenaar |
 | [docs/adr/](docs/adr/) | Architectuurbesluiten |
 
 Wil je meebouwen, lees dan [CONTRIBUTING.md](CONTRIBUTING.md).

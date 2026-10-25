@@ -2,12 +2,10 @@
 
 - Status: Accepted
 - Date: 2026-10-23
-- Supersedes: ADR-0011
-- Besluit: DEC-003
 
 ## Context
 
-OAK v1 was ontworpen rond Calcy IV-CSV-exports. Die bevatten geen stabiele identiteit per Pokémon, waardoor een categorisch matchingalgoritme nodig was (ADR-0011). De PGSharp-functie *Export Account Data* levert per Pokémon het interne 64-bitsidentificatienummer uit de game. Een echte export (oktober 2026, 983 Pokémon) bevestigt dat dit veld uniek en stabiel aanwezig is.
+OAK moet iedere Pokémon over meerdere synchronisaties heen herkennen. Exports van scanapps zoals Calcy IV bevatten geen stabiele identiteit per Pokémon. Dan kun je exemplaren alleen koppelen op zichtbare eigenschappen, en dat gaat mis bij twee gelijke exemplaren. De PGSharp-functie *Export Account Data* levert per Pokémon het interne 64-bitsidentificatienummer uit de game. Een echte export (oktober 2026, 983 Pokémon) bevestigt dat dit veld uniek en stabiel aanwezig is.
 
 ## Besluit
 
@@ -15,7 +13,7 @@ OAK v1 was ontworpen rond Calcy IV-CSV-exports. Die bevatten geen stabiele ident
 - `source_pokemon_id` is het PGSharp-veld `id`, opgeslagen en verstuurd als decimale string.
 - Webhook en handmatige upload gebruiken exact dezelfde verwerkingspijplijn.
 - Fuzzy matching op soort, CP of IV wordt niet gebruikt. Twee Pokémon met dezelfde soort en CP zijn nooit automatisch hetzelfde exemplaar.
-- Calcy IV-import valt buiten OAK 2.0. De oude parser staat in `archive/oak-v1/`.
+- Import uit Calcy IV valt buiten OAK.
 
 ## Gevolgen
 

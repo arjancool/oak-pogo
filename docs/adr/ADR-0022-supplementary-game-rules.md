@@ -2,7 +2,6 @@
 
 - Status: Accepted
 - Date: 2026-10-25
-- Besluit: DEC-007
 - Vult aan: ADR-0017
 
 ## Context

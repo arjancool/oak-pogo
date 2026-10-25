@@ -80,8 +80,6 @@ Over de licentie van die repository, gecontroleerd op 23 oktober 2026:
 
 Pokémon-afbeeldingen zijn auteursrechtelijk beschermd door The Pokémon Company, los van welke licentie een repository noemt. Wie een spritebron aanzet, doet dat op eigen verantwoordelijkheid.
 
-Een eerdere ADR noemde de spriterepository ten onrechte CC0. ADR-0020 verving die met de gecontroleerde gegevens. Het besluit zelf veranderde niet.
-
 ## Referentieprojecten
 
 Deze projecten zijn bekeken als functionele referentie. OAK neemt er geen code, data of vormgeving uit over.

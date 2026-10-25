@@ -5,7 +5,7 @@ Deze regels gelden voor iedere AI-agent en iedere automatisering die in deze rep
 ## Volgorde van gezag
 
 1. Veiligheids- en beveiligingsinvarianten hieronder.
-2. Expliciete besluiten van de eigenaar in `docs/DECISIONS.md`.
+2. Expliciete besluiten van de eigenaar, in de opdracht of in een ADR.
 3. Geaccepteerde ADR's in `docs/adr/`.
 4. De documentatie in `docs/`.
 5. API-contracten (OpenAPI van de backend).

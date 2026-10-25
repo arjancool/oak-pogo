@@ -1,6 +1,6 @@
 # Architectuur
 
-OAK is één container met drie onderdelen: een FastAPI-backend, een React-frontend en een SQLite-database in `/data`. Er zijn geen andere services nodig. De besluiten daarachter staan in ADR-0012 tot en met ADR-0020.
+OAK is één container met drie onderdelen: een FastAPI-backend, een React-frontend en een SQLite-database in `/data`. Er zijn geen andere services nodig. De besluiten daarachter staan in de ADR's in `docs/adr/`.
 
 ```
 PGSharp ──webhook──▶ ┌────────────────────────────── container ──────────────────────────────┐
@@ -12,7 +12,7 @@ browser ──https────▶ │   ├─ /api/v1/…   REST-API, sessies,
                      │  SQLite  /data/oak.db   ·   Game Data  /data/gamedata                 │
                      └──────────────────────────────────────────────────────────────────────┘
                                          ▲
-             PokeMiners en PvPoke ───────┘  (Game Data, alleen ophalen)
+    PokeMiners, PvPoke, ScrapedDuck ─────┘  (Game Data en events, alleen ophalen)
 ```
 
 ## Uitgangspunten
@@ -32,12 +32,12 @@ De backend volgt een hexagonale indeling. Domeinlogica is pure Python en kent ge
 | Map | Inhoud |
 |---|---|
 | `app/domain` | Genormaliseerde Pokémon, importclassificatie, wijzigingsdetectie, de zoeksyntax en de vintage-regel. Puur. |
-| `app/normalizers` | Van PGSharp-export naar het domeinmodel, het opschonen van opgeslagen exports en de structuursamenvatting voor diagnose. Puur. |
-| `app/analysis` | Statistieken, CP en HP, PvP-rangtabellen, power-upkosten, evoluties, aanvallen en het raidmodel. Puur. |
-| `app/recommendations` | Cleanup-regels, de twee scores en de Cleanup-engine. Puur. |
-| `app/gamedata` | Downloaden, omzetten en valideren van Game Data, en het versiebeheer. |
+| `app/normalizers` | Van PGSharp-export naar het domeinmodel, het opschonen van opgeslagen exports, de structuursamenvatting voor diagnose en het lezen van de eventkalender. Puur. |
+| `app/analysis` | Statistieken, CP en HP, PvP-rangtabellen, power-upkosten, evoluties, purify, aanvallen, het raidmodel en gymverdedigers. Puur. |
+| `app/recommendations` | Cleanup-regels, de twee scores, de regels voor events en de Cleanup-engine. Puur. |
+| `app/gamedata` | Downloaden, omzetten en valideren van Game Data, de aanvullende spelregels (ADR-0022) en het versiebeheer. |
 | `app/ingestion` | Ontvangen en decoderen van exports, importjobs, synchronisatie en afgeleide kolommen. |
-| `app/services` | Analyse per account, weergave van Pokémon, battle-overzichten, instellingen en de transferregels. |
+| `app/services` | Analyse per account, weergave van Pokémon, battle-overzichten, events, instellingen en de transferregels. |
 | `app/repositories` | Box-filters en zoektermen vertaald naar SQL. |
 | `app/models` | SQLAlchemy 2-modellen. Zie `docs/DATA_MODEL.md`. |
 | `app/api` | FastAPI-routes onder `/api/v1`, afhankelijkheden voor sessie, CSRF en eigendom. |
@@ -60,7 +60,7 @@ Upload en webhook gebruiken vanaf stap 2 precies dezelfde code.
 
 ### Achtergrondverwerking
 
-De verwerker is een thread in hetzelfde proces. De wachtrij staat in de tabel `background_jobs`, zodat werk een herstart overleeft: bij het starten zet OAK onderbroken taken terug in de wachtrij. Taken zijn imports, analyses, Game Data-updates en het opnieuw afleiden na een Game Data-wissel. Ieder uur draait onderhoud: opgeslagen exports opruimen na de bewaartermijn en zo nodig op nieuwe Game Data controleren.
+De verwerker is een thread in hetzelfde proces. De wachtrij staat in de tabel `background_jobs`, zodat werk een herstart overleeft: bij het starten zet OAK onderbroken taken terug in de wachtrij. Taken zijn imports, analyses, Game Data-updates, het opnieuw afleiden na een Game Data-wissel en het ophalen van de eventkalender. Ieder uur draait onderhoud: opgeslagen exports opnieuw filteren als het privacyfilter strenger werd, ze opruimen na de bewaartermijn, zo nodig op nieuwe Game Data en een nieuwe eventkalender controleren, en analyses opnieuw inplannen als een event binnen de termijn komt of voorbij is.
 
 ### Database
 

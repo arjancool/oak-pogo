@@ -2,12 +2,10 @@
 
 - Status: Accepted
 - Date: 2026-10-23
-- Supersedes: ADR-0002
-- Besluit: DEC-003
 
 ## Context
 
-ADR-0002 koos Vue 3. Er was nog geen frontendcode geschreven. De OAK 2.0-opdracht schrijft React met TypeScript voor.
+OAK heeft een webinterface nodig. Er was nog geen frontendcode. De opdracht voor OAK 2.0 schrijft React met TypeScript voor.
 
 ## Besluit
 

@@ -2,7 +2,6 @@
 
 - Status: Accepted
 - Date: 2026-10-23
-- Besluit: DEC-004
 
 ## Context
 

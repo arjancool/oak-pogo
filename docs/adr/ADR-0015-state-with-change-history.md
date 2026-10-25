@@ -2,12 +2,10 @@
 
 - Status: Accepted
 - Date: 2026-10-23
-- Supersedes: ADR-0005, ADR-0006
-- Besluit: DEC-003
 
 ## Context
 
-ADR-0005 en ADR-0006 schreven volledige event sourcing en CQRS voor. Een PGSharp-export is telkens een volledige momentopname van de inventaris. De vraag die de gebruiker stelt is vooral wat de huidige staat is en wat er tussen twee synchronisaties veranderde.
+Een PGSharp-export is telkens een volledige momentopname van de inventaris. De vraag die de gebruiker stelt is vooral wat de huidige staat is en wat er tussen twee synchronisaties veranderde.
 
 ## Besluit
 
@@ -24,4 +22,4 @@ ADR-0005 en ADR-0006 schreven volledige event sourcing en CQRS voor. Een PGSharp
 
 ## Verworpen alternatieven
 
-Volledige event sourcing is verworpen omdat de bron zelf al momentopnamen levert en replay van duizenden gebeurtenissen per sync geen toegevoegde waarde heeft.
+Volledige event sourcing met CQRS is verworpen omdat de bron zelf al momentopnamen levert en replay van duizenden gebeurtenissen per sync geen toegevoegde waarde heeft.

@@ -2,12 +2,10 @@
 
 - Status: Accepted
 - Date: 2026-10-23
-- Supersedes: ADR-0008
-- Besluit: DEC-003
 
 ## Context
 
-ADR-0008 beschreef tenants met lidmaatschappen en rollen. OAK 2.0 kent gebruikers die meerdere Pokémon GO-traineraccounts beheren.
+OAK kent gebruikers die meerdere Pokémon GO-traineraccounts beheren. Een model met tenants, lidmaatschappen en rollen is daarvoor zwaarder dan nodig.
 
 ## Besluit
 

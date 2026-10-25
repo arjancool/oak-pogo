@@ -2,10 +2,11 @@
 
 Usage:
     python scripts/build_test_gamedata.py <pokeminers latest.json> <pvpoke gamemaster.json> \
-        <rankings-1500.json> <rankings-2500.json> <rankings-10000.json>
+        <rankings-1500.json> <rankings-2500.json> <rankings-10000.json> <fantasy rankings-1500.json>
 
 Writes fixtures/gamedata/*.json. The subset keeps every global template OAK reads, the
-species below with all their forms, the moves they reference and their PvPoke entries.
+species below with all their forms, the moves they reference and their PvPoke entries, and the
+cups in ``CUPS`` with their format and the Fantasy Cup ranking (ADR-0027).
 """
 
 from __future__ import annotations
@@ -26,10 +27,31 @@ GLOBAL_TEMPLATES = (
     "BREAD_MOVE_MAPPING_SETTINGS", "SOURDOUGH_MOVE_MAPPING_SETTINGS",
 )
 OUT = Path(__file__).resolve().parents[1] / "fixtures" / "gamedata"
+# One cup with a type filter and one with an evolution filter and a level cap.
+CUPS = (("fantasy", 1500), ("little", 500))
+
+
+def ranking_subset(data: list[dict], pv_ids: set[str]) -> list[dict]:
+    """Keep the real rank positions: entries outside the subset are replaced by placeholders."""
+    subset = [r if r["speciesId"] in pv_ids else {"speciesId": f"_other_{i}"} for i, r in enumerate(data)]
+    last = max((i for i, r in enumerate(subset) if not r["speciesId"].startswith("_other_")), default=0)
+    return [
+        {k: r[k] for k in ("speciesId", "score", "moveset", "moves", "scores") if k in r}
+        for r in subset[: last + 1]
+    ]
+
+
+def cup_subset(pvpoke: dict) -> dict:
+    names = {name for name, _cp in CUPS}
+    return {
+        "cups": [c for c in pvpoke["cups"] if c["name"] in names],
+        "formats": [f for f in pvpoke["formats"] if (f["cup"], f["cp"]) in CUPS and f.get("showFormat")],
+        "greatLeagueIneligible": pvpoke["greatLeagueIneligible"],
+    }
 
 
 def main(argv: list[str]) -> None:
-    pokeminers, pvpoke, *rankings = (json.loads(Path(p).read_text()) for p in argv[1:6])
+    pokeminers, pvpoke, *rankings, fantasy = (json.loads(Path(p).read_text()) for p in argv[1:7])
     keep_species: set[str] = set()
     selected = []
     move_refs: set[str] = set()
@@ -64,18 +86,13 @@ def main(argv: list[str]) -> None:
     pv_subset = {
         "timestamp": pvpoke["timestamp"], "id": pvpoke["id"], "title": pvpoke["title"],
         "pokemon": pv_pokemon, "moves": [m for m in pvpoke["moves"] if m["moveId"] in pv_moves],
+        **cup_subset(pvpoke),
     }
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "pokeminers-subset.json").write_text(json.dumps(selected, separators=(",", ":")))
     (OUT / "pvpoke-subset.json").write_text(json.dumps(pv_subset, separators=(",", ":")))
-    for name, data in zip(("great", "ultra", "master"), rankings, strict=True):
-        # Keep the real rank positions: entries outside the subset are replaced by placeholders.
-        subset = [r if r["speciesId"] in pv_ids else {"speciesId": f"_other_{i}"} for i, r in enumerate(data)]
-        last = max((i for i, r in enumerate(subset) if not r["speciesId"].startswith("_other_")), default=0)
-        trimmed = [
-            {k: r[k] for k in ("speciesId", "score", "moveset", "moves", "scores") if k in r}
-            for r in subset[: last + 1]
-        ]
+    for name, data in (*zip(("great", "ultra", "master"), rankings, strict=True), ("fantasy-1500", fantasy)):
+        trimmed = ranking_subset(data, pv_ids)
         (OUT / f"pvpoke-rankings-{name}-subset.json").write_text(json.dumps(trimmed, separators=(",", ":")))
     print(f"templates={len(selected)} pvpoke={len(pv_pokemon)}")
 

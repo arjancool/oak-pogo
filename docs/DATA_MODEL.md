@@ -85,7 +85,7 @@ Een nieuwe kalender vervangt alle `leekduck`-events in één transactie. Eigen e
 |---|---|
 | `analysis_runs` | Iedere analyse per traineraccount: engineversie, Game Data-versie, regels met hun hash, een vingerafdruk van de invoer en een samenvatting. Is de invoer veranderd, dan meldt de Cleanup Manager dat het advies verouderd is. |
 | `cleanup_recommendations` | Per Pokémon het laatste advies: status, prioriteit, betrouwbaarheid, beschermingsredenen, redenen, rollen, vergelijkbare Pokémon, waarschuwingen, de beste league-rangen, de bruikbaarheidsscore, de bewaarscore en de opbouw van beide scores (`scores`). |
-| `pvp_rankings` | Per Pokémon, league en doelsoort: IV-rang, statproduct, percentage van de beste, beste CP en level, inzetbaarheid, kosten en de soortrang uit PvPoke. |
+| `pvp_rankings` | Per Pokémon, league of cup en doelsoort: IV-rang, statproduct, percentage van de beste, beste CP en level, inzetbaarheid, kosten en de soortrang uit PvPoke. Een cup staat er onder zijn ID, zoals `fantasy-1500` (ADR-0027). |
 | `battle_teams`, `battle_team_members` | Teams die je in de Team Builder bewaart. |
 
 Een nieuwe analyse vervangt de vorige projectie van dat traineraccount in één transactie.
@@ -109,5 +109,6 @@ Een nieuwe analyse vervangt de vorige projectie van dat traineraccount in één 
 | `0003` | `confirmed` in `planned_actions`: de bevestigde beschermingen per Pokémon op een actielijst. |
 | `0004` | `game_events`: de eventkalender en eigen events (ADR-0021). |
 | `0005` | `in_gym` in `pokemon`: of een Pokémon nu in een gym staat (ADR-0026). |
+| `0006` | De kolom `league` in `pvp_rankings` en `battle_teams` is 48 tekens breed, voor cup-ID's (ADR-0027). |
 
 OAK voert migraties zelf uit bij het starten en maakt daarvoor een back-up in `backups/`.

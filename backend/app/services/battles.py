@@ -87,19 +87,21 @@ def league_candidates(
             PvpRanking.league == league,
         )
     ).all()
+    # A cup PvPoke has no ranking for still lists its Pokémon, ordered by IV quality only.
+    ranked = league in gd.rankings
     best: dict[int, tuple[Pokemon, PvpRanking]] = {}
     for pokemon, ranking in rows:
-        if ranking.species_rank is None or ranking.readiness in ("not_suitable", "unknown"):
+        if (ranked and ranking.species_rank is None) or ranking.readiness in ("not_suitable", "unknown"):
             continue
         if readiness and ranking.readiness not in readiness:
             continue
         if max_stardust is not None and (ranking.stardust_cost or 0) > max_stardust:
             continue
         current = best.get(pokemon.id)
-        if current is None or (ranking.species_rank, ranking.rank) < (
-            current[1].species_rank,
+        if current is None or (ranking.species_rank or 0, ranking.rank) < (
+            current[1].species_rank or 0,
             current[1].rank,
-        ):  # type: ignore[operator]
+        ):
             best[pokemon.id] = (pokemon, ranking)
     candidates = []
     for pokemon, ranking in best.values():
@@ -107,7 +109,7 @@ def league_candidates(
         if form is None:
             continue
         entry = gd.ranking(league, form.get("pvpoke_id"), shadow=_shadow(pokemon)) or {}
-        species_score = float(entry.get("score") or 0)
+        species_score = float(entry.get("score") or 0) if ranked else 100.0
         recommended = list(entry.get("moveset", []))
         current = [pokemon.move_fast_key, pokemon.move_charged_1_key, pokemon.move_charged_2_key]
         quality = moveset_quality(current, recommended) if not ranking.is_evolution else "after_evolution"

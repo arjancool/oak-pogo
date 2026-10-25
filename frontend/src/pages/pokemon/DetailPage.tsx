@@ -21,6 +21,7 @@ import {
 } from "../../lib/i18n";
 import { pokemonDetail, type PokemonDetail } from "../../lib/schemas";
 import type { EvolutionPath, HistoryEvent, PokemonAnalysis, PowerUps, PurifyScenario, Scenario } from "../../lib/types";
+import { useLeagues } from "../battles/shared";
 
 const MEASURE_DIGITS = 2;
 // Overrides that lift the hard protection of a vintage Pokémon; the API asks for a confirmation.
@@ -492,6 +493,56 @@ function PowerUpCard({ pokemonId, scenario }: { pokemonId: number; scenario: Sce
   );
 }
 
+interface CupRanking {
+  league: string;
+  target: string;
+  rank: number;
+  percent: number;
+  best_cp: number;
+  readiness: string;
+  species_rank: number | null;
+}
+
+/** The cups this Pokémon, or an evolution of it, may enter (ADR-0027). */
+function CupsCard({ pokemonId }: { pokemonId: number }) {
+  const leagues = useLeagues();
+  const query = useQuery({
+    queryKey: ["pokemon-battle", pokemonId],
+    queryFn: () => api.get<{ rankings: CupRanking[] }>(`/api/v1/battles/pokemon/${pokemonId}`),
+  });
+  const cups = (leagues.data ?? []).filter((l) => l.kind === "cup");
+  if (!cups.length || !query.data) return null;
+  const rows = cups
+    .map((cup) => {
+      const usable = query.data.rankings.filter((r) => r.league === cup.id && r.readiness !== "not_suitable" && r.readiness !== "unknown");
+      const best = usable.sort((a, b) => (a.species_rank ?? 9999) - (b.species_rank ?? 9999) || a.rank - b.rank)[0];
+      return best ? { cup, best } : null;
+    })
+    .filter((row) => row !== null);
+  return (
+    <Card title="Cups">
+      {rows.length === 0 ? (
+        <p className="text-sm text-muted">Deze Pokémon past in geen van de cups die PvPoke nu toont, ook niet na evolutie.</p>
+      ) : (
+        <ul className="space-y-2 text-sm">
+          {rows.map(({ cup, best }) => (
+            <li key={cup.id} className="flex flex-wrap items-center justify-between gap-2">
+              <Link to={`/battles/${cup.id}`} className="font-medium hover:text-oak-300">
+                {cup.name}
+              </Link>
+              <span className="text-xs text-muted">
+                {best.target} · IV-rang {best.rank} · beste CP {num(best.best_cp)}
+                {best.species_rank !== null ? ` · soortrang ${best.species_rank}` : ""}
+              </span>
+              <ReadinessBadge readiness={best.readiness} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </Card>
+  );
+}
+
 function HistoryCard({ pokemonId }: { pokemonId: number }) {
   const query = useQuery({ queryKey: ["pokemon-history", pokemonId], queryFn: () => api.get<HistoryEvent[]>(`/api/v1/pokemon/${pokemonId}/history`) });
   const events = query.data ?? [];
@@ -600,6 +651,7 @@ export function DetailPage() {
           <AnalysisCard pokemonId={p.id} scenario={chosen} />
           <EvolutionsCard pokemonId={p.id} scenario={chosen} />
           <PowerUpCard pokemonId={p.id} scenario={chosen} />
+          {chosen === "current" && <CupsCard pokemonId={p.id} />}
         </div>
         <div className="space-y-5">
           <Card title="Waarden">

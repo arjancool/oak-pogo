@@ -35,6 +35,8 @@ class GameData:
         self._cpm_by_level = dict(zip(self._cpm_levels, self._cpm_values, strict=True))
         self.type_chart: Mapping[str, Mapping[str, float]] = dataset["type_chart"]
         self.leagues: dict[str, Mapping[str, Any]] = {lg["id"]: lg for lg in dataset["leagues"]}
+        self.cups: dict[str, Mapping[str, Any]] = {cup["id"]: cup for cup in dataset.get("cups", [])}
+        self._cup_species = {cup_id: frozenset(cup["eligible"]) for cup_id, cup in self.cups.items()}
         self.rankings: Mapping[str, Any] = dataset.get("rankings", {})
         self.items: Mapping[str, Mapping[str, Any]] = dataset.get("items", {})
         self._name_to_dex = {record["key"]: int(dex) for dex, record in self.species.items()}
@@ -142,6 +144,15 @@ class GameData:
         for defender in defender_types:
             result *= row.get(defender, 1.0)
         return result
+
+    def cup_allows(self, cup_id: str, form: Mapping[str, Any], *, shadow: bool) -> bool | None:
+        """Whether this form may enter the cup. ``None`` when PvPoke does not know the form, so
+        the rules cannot be applied to it (ADR-0027)."""
+        species = self._cup_species.get(cup_id)
+        pvpoke_id = form.get("pvpoke_id")
+        if species is None or not pvpoke_id:
+            return None
+        return f"{pvpoke_id}_shadow" in species if shadow else pvpoke_id in species
 
     def ranking(self, league: str, pvpoke_id: str | None, *, shadow: bool = False) -> Mapping[str, Any] | None:
         if not pvpoke_id:

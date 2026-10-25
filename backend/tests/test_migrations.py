@@ -35,6 +35,9 @@ def test_upgrade_from_first_revision_keeps_data(tmp_path: Path) -> None:
     assert {"battle_score", "keep_score", "scores"} <= columns
     assert "confirmed" in {c["name"] for c in inspect(engine).get_columns("planned_actions")}
     assert "in_gym" in {c["name"] for c in inspect(engine).get_columns("pokemon")}
+    for table in ("pvp_rankings", "battle_teams"):
+        league = next(c for c in inspect(engine).get_columns(table) if c["name"] == "league")
+        assert getattr(league["type"], "length", None) == 48, f"{table}.league holds a cup ID"
     assert {"external_id", "starts_at", "ends_at", "featured", "trainer_account_id"} <= {
         c["name"] for c in inspect(engine).get_columns("game_events")
     }

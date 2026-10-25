@@ -10,7 +10,7 @@ Three different things are kept apart, as §10.2 requires:
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -74,7 +74,7 @@ def _levels(gd: GameData, maximum: float) -> list[tuple[float, float]]:
 
 
 def league_cap(gd: GameData, league: str) -> int | None:
-    cap = gd.leagues.get(league, {}).get("max_cp")
+    cap = (gd.leagues.get(league) or gd.cups.get(league) or {}).get("max_cp")
     if cap is None or cap >= NO_CAP_THRESHOLD:
         return None
     return int(cap)
@@ -109,8 +109,11 @@ def analyze_leagues(
     include_best_buddy: bool,
     ready_cp_fraction: float,
     elite_tm_available: bool,
+    leagues: Sequence[str] = LEAGUES,
 ) -> dict[str, list[LeagueTarget]]:
-    result: dict[str, list[LeagueTarget]] = {league: [] for league in LEAGUES}
+    """Targets per league. A cup (``gd.cups``) only takes forms its rules allow, and caps the
+    level where the cup does (ADR-0027)."""
+    result: dict[str, list[LeagueTarget]] = {league: [] for league in leagues}
     form = gd.forms.get(subject.form_key) if subject.form_key else None
     if form is None or subject.ivs is None:
         return result
@@ -135,16 +138,21 @@ def analyze_leagues(
         item = next((s.item for s in path.steps if s.item), None)
         targets.append((target_form, True, candy, item))
 
-    for league in LEAGUES:
+    for league in leagues:
         cap = league_cap(gd, league)
         banned = set(gd.leagues.get(league, {}).get("banned", []))
+        cup = gd.cups.get(league)
+        level_cap = cup.get("level_cap") if cup else None
+        league_levels = [lv for lv in levels if lv[0] <= level_cap] if level_cap else levels
         for target_form, is_evolution, candy, item in targets:
             if target_form["species"] in banned:
+                continue
+            if cup is not None and gd.cup_allows(league, target_form, shadow=subject.shadow) is not True:
                 continue
             base = base_stats_of(dict(target_form))
             if base is None:
                 continue
-            table = RANK_TABLES.get(gd.version_id, base, cap, levels)
+            table = RANK_TABLES.get(gd.version_id, base, cap, league_levels)
             entry = table.lookup(subject.ivs.attack, subject.ivs.defense, subject.ivs.stamina)
             if entry is None:
                 continue

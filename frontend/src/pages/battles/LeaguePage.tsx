@@ -8,6 +8,7 @@ import { api, errorMessage } from "../../lib/api";
 import { ivs, level, num, pct } from "../../lib/format";
 import { leagueNames } from "../../lib/i18n";
 import { useUrlState } from "../../lib/useUrlState";
+import { CupRules, type LeagueInfo } from "./shared";
 
 interface LeagueItem {
   pokemon_id: number;
@@ -53,7 +54,7 @@ function League({ accountId, league }: { accountId: number; league: string }) {
   const query = useQuery({
     queryKey: ["league", league, accountId, readiness, sort],
     queryFn: () =>
-      api.get<{ max_cp: number | null; method: string; items: LeagueItem[]; total: number }>(`/api/v1/battles/league/${league}`, {
+      api.get<{ max_cp: number | null; method: string; info: LeagueInfo; items: LeagueItem[]; total: number }>(`/api/v1/battles/league/${league}`, {
         account_id: accountId,
         readiness: readiness || undefined,
         sort,
@@ -66,7 +67,7 @@ function League({ accountId, league }: { accountId: number; league: string }) {
   return (
     <>
       <PageHeader
-        title={leagueNames[league] ?? league}
+        title={query.data?.info.name ?? leagueNames[league] ?? league}
         description={query.data ? `${query.data.max_cp ? `Maximaal ${num(query.data.max_cp)} CP. ` : "Geen CP-limiet. "}${query.data.method}` : undefined}
         actions={
           <div className="flex flex-wrap gap-2">
@@ -84,12 +85,23 @@ function League({ accountId, league }: { accountId: number; league: string }) {
           </div>
         }
       />
+      {query.data?.info.kind === "cup" && (
+        <Card className="mb-5" title="Regels van deze cup">
+          <CupRules info={query.data.info} />
+          <p className="mt-2 text-xs text-muted">
+            Zoals PvPoke ze beschrijft. Controleer in het spel of de cup nu loopt en of de regels gelijk zijn.{" "}
+            <Link to="/battles/cups" className="underline">
+              Alle cups
+            </Link>
+          </p>
+        </Card>
+      )}
       {query.isLoading ? (
         <Spinner />
       ) : query.error ? (
         <Alert tone="error">{errorMessage(query.error)}</Alert>
       ) : !query.data?.items.length ? (
-        <EmptyState title="Geen geschikte Pokémon">Er zijn geen Pokémon die (na evolutie of power-up) in deze league passen, of de analyse moet nog draaien.</EmptyState>
+        <EmptyState title="Geen geschikte Pokémon">Er zijn geen Pokémon die (na evolutie of power-up) in deze {query.data?.info.kind === "cup" ? "cup" : "league"} passen, of de analyse moet nog draaien.</EmptyState>
       ) : (
         <Card>
           <div className="overflow-x-auto">

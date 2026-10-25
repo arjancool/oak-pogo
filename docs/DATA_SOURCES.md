@@ -28,13 +28,13 @@ De licenties zijn op 23 oktober 2026 gecontroleerd in de repositories zelf.
 - **Doel:** de primaire bron voor spelmechanica: basisstatistieken, typen, vormen, evoluties met hun eisen, aanvallen met kracht, energie en duur voor PvP en PvE, CP-multipliers, power-upkosten, Shadow- en Purified-regels, mega-evoluties, Max Battles en league-regels.
 - **Licentie:** de repository vermeldt geen licentie. Het gaat om gegevens die uit het spel zijn gehaald. OAK neemt ze daarom niet op in de broncode of de Docker-image, maar downloadt ze tijdens gebruik naar de eigen installatie.
 - **Versie:** iedere download krijgt een eigen Game Data-versie in OAK, met de SHA-256 van het bestand, de ETag en het moment van ophalen.
-- **Revisie van de omzetting:** iedere dataset noemt de revisie van de omzetting waarmee OAK hem bouwde. Voegt een nieuwe OAK-versie gegevens toe, zoals de G-Max-aanvallen (revisie 2), welke Pokémon in een gym mogen (revisie 3) of de regels voor purify (revisie 4), dan bouwt OAK de actieve versie bij de eerstvolgende update opnieuw op uit dezelfde bronnen. Met automatische updates aan gebeurt dat binnen een uur na het starten.
+- **Revisie van de omzetting:** iedere dataset noemt de revisie van de omzetting waarmee OAK hem bouwde. Voegt een nieuwe OAK-versie gegevens toe, zoals de G-Max-aanvallen (revisie 2), welke Pokémon in een gym mogen (revisie 3), de regels voor purify (revisie 4) of de cups (revisie 5), dan bouwt OAK de actieve versie bij de eerstvolgende update opnieuw op uit dezelfde bronnen. Met automatische updates aan gebeurt dat binnen een uur na het starten.
 - **Betrouwbaarheid:** de Game Master is de bron die het spel zelf gebruikt. Sommige velden zijn onvolledig of dubbelzinnig, bijvoorbeeld vormen zonder eigen statistieken. OAK valt dan zichtbaar terug op de standaardvorm en verlaagt de betrouwbaarheid van het advies.
 
 ## PvPoke
 
-- **URL:** <https://github.com/pvpoke/pvpoke>, bestanden `src/data/gamemaster.json` en `src/data/rankings/all/overall/rankings-1500.json`, `-2500.json` en `-10000.json`.
-- **Doel:** leesbare namen, de lijst met legacy-aanvallen, de soortrang per league en de aanbevolen movesets.
+- **URL:** <https://github.com/pvpoke/pvpoke>, bestanden `src/data/gamemaster.json` en `src/data/rankings/all/overall/rankings-1500.json`, `-2500.json` en `-10000.json`. Per cup die PvPoke toont ook `src/data/rankings/<cup>/overall/rankings-<CP-limiet>.json`.
+- **Doel:** leesbare namen, de lijst met legacy-aanvallen, de soortrang per league en per cup, de aanbevolen movesets en de regels van de cups (ADR-0027).
 - **Licentie:** MIT, Copyright (c) 2019 pvpoke.
 - **Betrouwbaarheid:** de rankings komen uit simulaties van PvPoke. Ze zeggen hoe sterk een soort is, niet hoe goed jouw exemplaar is. OAK houdt die twee gescheiden.
 

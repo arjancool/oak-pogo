@@ -1,13 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useSearchParams } from "react-router";
 
 import { RequireAccount } from "../../components/layout/RequireAccount";
 import { ReadinessBadge, TypeBadge } from "../../components/pokemon";
 import { Alert, Button, Card, Field, Input, PageHeader, Select, Spinner } from "../../components/ui";
 import { api, errorMessage } from "../../lib/api";
 import { num } from "../../lib/format";
-import { leagueNames, typeNames } from "../../lib/i18n";
+import { typeNames } from "../../lib/i18n";
+import { useLeagues } from "./shared";
 
 interface Member {
   role: string;
@@ -48,7 +49,10 @@ const roleLabels: Record<string, string> = { lead: "Lead", switch: "Safe switch"
 
 function TeamBuilder({ accountId }: { accountId: number }) {
   const client = useQueryClient();
-  const [league, setLeague] = useState("great");
+  const [params] = useSearchParams();
+  const [league, setLeague] = useState(params.get("league") ?? "great");
+  const leagues = useLeagues();
+  const leagueName = (id: string | null) => leagues.data?.find((l) => l.id === id)?.name ?? id ?? "";
   const [budget, setBudget] = useState(100_000);
   const [message, setMessage] = useState<string | null>(null);
   const build = useMutation({
@@ -59,7 +63,7 @@ function TeamBuilder({ accountId }: { accountId: number }) {
     mutationFn: (variant: Variant) =>
       api.post("/api/v1/battles/teams", {
         account_id: accountId,
-        name: `${leagueNames[league]} – ${variant.label}`,
+        name: `${leagueName(league)} – ${variant.label}`,
         kind: "pvp",
         league,
         members: variant.team?.map((m) => ({ pokemon_id: m.pokemon_id, role: m.role })) ?? [],
@@ -79,13 +83,18 @@ function TeamBuilder({ accountId }: { accountId: number }) {
       <PageHeader title="Team Builder" description="Drie teamvarianten uit je eigen collectie: direct inzetbaar, met beperkte upgrades en het beste toekomstige team." />
       <Card className="mb-5">
         <div className="flex flex-wrap items-end gap-3">
-          <Field label="League">
+          <Field label="League of cup">
             <Select value={league} onChange={(e) => setLeague(e.target.value)}>
-              {Object.entries(leagueNames).map(([key, name]) => (
-                <option key={key} value={key}>
-                  {name}
-                </option>
+              {(["league", "cup"] as const).map((kind) => (
+                <optgroup key={kind} label={kind === "league" ? "Leagues" : "Cups"}>
+                  {(leagues.data ?? []).filter((l) => l.kind === kind).map((l) => (
+                    <option key={l.id} value={l.id}>
+                      {l.name}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
+              {!leagues.data && <option value={league}>{league}</option>}
             </Select>
           </Field>
           <Field label="Stardust-budget per Pokémon (beperkte upgrades)">

@@ -42,7 +42,7 @@ OAK vraagt nooit om je Pokémon GO-wachtwoord. Het leest alleen de export die PG
 - **Detailpagina** per Pokémon met IV's, level, aanvallen, league-analyse, evoluties, power-upkosten, cleanup-advies en historie.
 - **Cleanup Manager** met harde en zachte bescherming, twee scores, dubbelen, vergelijkbare exemplaren, een actielijst en zoekteksten voor in het spel. Je kunt filteren op je beste gymverdedigers en op Pokémon die nu in een gym staan.
 - **Komende events** uit de kalender van LeekDuck.com. Een Pokémon blijft bewaard tot na de Community Day van zijn evolutielijn, en bij dubbele Transfer Candy krijg je een tip om te wachten.
-- **PvP** voor Great, Ultra en Master League: IV-rang, soortrang, inzetbaarheid, movesetadvies en een Team Builder.
+- **PvP** voor Great, Ultra en Master League en voor cups zoals de Fantasy Cup: IV-rang, soortrang, inzetbaarheid, movesetadvies en een Team Builder. OAK past de regels van iedere cup toe, ook op Pokémon die pas na evolutie mee mogen.
 - **PvE**: raidcounters, Team GO Rocket-counters, Max Battles en je beste gymverdedigers.
 - **Evolutieplanner** voor evoluties en power-ups, met kosten in Stardust, Candy en XL Candy.
 - **Account**: trainerstatistieken, item bag, Stardust en Candy, en de historie.

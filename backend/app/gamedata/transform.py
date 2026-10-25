@@ -13,6 +13,7 @@ import re
 from collections.abc import Iterable, Mapping
 from typing import Any
 
+from app.gamedata.cups import build_cups
 from app.gamedata.supplement import PURIFICATION
 
 SCHEMA_VERSION = 1
@@ -21,7 +22,8 @@ SCHEMA_VERSION = 1
 # 2: Max and G-Max moves (``bread.max_moves``, ``bread.gmax_moves``).
 # 3: whether a form may defend a gym (``forms[*].deployable``).
 # 4: purification rules from the OAK supplement (``mechanics.purification``, ADR-0022).
-TRANSFORM_REVISION = 4
+# 5: PvP cups from PvPoke with the species that may enter them (``cups``, ADR-0027).
+TRANSFORM_REVISION = 5
 
 # HoloPokemonType enum order. ``typeEffective.attackScalar`` lists multipliers in this order;
 # the Game Master does not name the columns itself.
@@ -466,6 +468,8 @@ def build_dataset(
             }
         )
 
+    cups, cup_notes = build_cups(pvpoke if isinstance(pvpoke, Mapping) else None)
+
     ranking_out: dict[str, dict[str, Any]] = {}
     for league_id, entries in (rankings or {}).items():
         table: dict[str, Any] = {}
@@ -557,6 +561,8 @@ def build_dataset(
         "species": species,
         "forms": forms,
         "leagues": leagues,
+        "cups": cups,
+        "cup_notes": cup_notes,
         "rankings": ranking_out,
         "bread": {
             "groups": bread_groups,

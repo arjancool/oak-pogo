@@ -242,7 +242,10 @@ export function Stat({ label, value, hint, onClick, accent }: { label: string; v
 
 export function Tabs<T extends string>({ value, onChange, tabs }: { value: T; onChange: (value: T) => void; tabs: { value: T; label: ReactNode; count?: number }[] }) {
   return (
-    <div className="flex gap-1 overflow-x-auto border-b border-line" role="tablist">
+    // The bottom line is an inset shadow under the tabs, so the active tab's underline covers it
+    // without sticking out. Sticking out made the bar scroll vertically too, and Windows then
+    // showed a small scrollbar with arrows next to the tabs.
+    <div className="flex gap-1 overflow-x-auto overflow-y-hidden shadow-[inset_0_-1px_0_var(--color-line)]" role="tablist">
       {tabs.map((tab) => (
         <button
           key={tab.value}
@@ -250,7 +253,7 @@ export function Tabs<T extends string>({ value, onChange, tabs }: { value: T; on
           aria-selected={tab.value === value}
           onClick={() => onChange(tab.value)}
           className={clsx(
-            "-mb-px whitespace-nowrap border-b-2 px-3 py-2 text-sm",
+            "whitespace-nowrap border-b-2 px-3 py-2 text-sm",
             tab.value === value ? "border-oak-500 text-ink" : "border-transparent text-muted hover:text-ink",
           )}
         >

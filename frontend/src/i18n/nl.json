@@ -5,7 +5,12 @@
   "common": {
     "unknown": "onbekend",
     "never": "nooit",
-    "justNow": "zojuist"
+    "justNow": "zojuist",
+    "loading": "Laden…",
+    "close": "Sluiten",
+    "previous": "Vorige",
+    "next": "Volgende",
+    "cancel": "Annuleren"
   },
   "language": {
     "label": "Taal"
@@ -69,5 +74,190 @@
     "mismatch": "De wachtwoorden zijn niet gelijk.",
     "createOwner": "Eigenaar aanmaken",
     "submit": "Inloggen"
+  },
+  "labels": {
+    "types": {
+      "normal": "Normaal",
+      "fighting": "Vechten",
+      "flying": "Vliegend",
+      "poison": "Gif",
+      "ground": "Grond",
+      "rock": "Gesteente",
+      "bug": "Insect",
+      "ghost": "Geest",
+      "steel": "Staal",
+      "fire": "Vuur",
+      "water": "Water",
+      "grass": "Gras",
+      "electric": "Elektrisch",
+      "psychic": "Psychisch",
+      "ice": "IJs",
+      "dragon": "Draak",
+      "dark": "Duister",
+      "fairy": "Fee"
+    },
+    "statuses": {
+      "PROTECT": "Beschermd",
+      "KEEP": "Bewaren",
+      "BUILD": "Investeren",
+      "REVIEW": "Beoordelen",
+      "TRANSFER_CANDIDATE": "Transfer-kandidaat",
+      "UNKNOWN": "Onbekend"
+    },
+    "statusDescriptions": {
+      "PROTECT": "Hard beschermd: vintage, handmatig of door een beschermingsregel",
+      "KEEP": "Beste exemplaar, nuttig in gevechten of een hoge bewaarscore",
+      "BUILD": "Goede kandidaat voor power-up of evolutie",
+      "REVIEW": "Beoordeel zelf, bijvoorbeeld een favoriet waarvan een beter exemplaar bestaat",
+      "TRANSFER_CANDIDATE": "Waarschijnlijk overbodig: er blijft een beter exemplaar. OAK zet nooit zelf iets over",
+      "UNKNOWN": "Onvoldoende betrouwbare gegevens"
+    },
+    "confirmationKinds": {
+      "favorite": "Favoriet",
+      "vintage": "Vintage, bescherming opgeheven",
+      "unknown_date": "Vangstdatum onbekend",
+      "protected": "Beschermd door een regel"
+    },
+    "readiness": {
+      "direct": "Direct inzetbaar",
+      "power_up": "Na power-up",
+      "evolution": "Na evolutie",
+      "not_suitable": "Niet geschikt",
+      "unknown": "Onvoldoende gegevens",
+      "after_evolution": "Na evolutie"
+    },
+    "leagues": {
+      "great": "Great League",
+      "ultra": "Ultra League",
+      "master": "Master League"
+    },
+    "confidence": {
+      "high": "Hoog",
+      "medium": "Gemiddeld",
+      "low": "Laag"
+    },
+    "importStatuses": {
+      "received": "Ontvangen",
+      "queued": "In wachtrij",
+      "processing": "Wordt verwerkt",
+      "succeeded": "Volledig verwerkt",
+      "partial": "Gedeeltelijk verwerkt",
+      "failed": "Mislukt",
+      "rejected": "Geweigerd",
+      "duplicate": "Al eerder ontvangen"
+    },
+    "classifications": {
+      "full": "Volledige inventaris",
+      "partial": "Gedeeltelijke import",
+      "invalid": "Ongeldig",
+      "stale": "Verouderd",
+      "duplicate": "Dubbel"
+    },
+    "changes": {
+      "evolved": "Geëvolueerd",
+      "powered_up": "CP gewijzigd",
+      "moves_changed": "Aanvallen gewijzigd",
+      "favorite_changed": "Favoriet gewijzigd",
+      "tags_changed": "Tags gewijzigd",
+      "lucky_changed": "Lucky gewijzigd",
+      "alignment_changed": "Shadow/Purified gewijzigd",
+      "renamed": "Nieuwe bijnaam",
+      "mega_changed": "Mega gewijzigd",
+      "max_changed": "Max Moves gewijzigd",
+      "other": "Overige wijziging"
+    },
+    "events": {
+      "APPEARED": "Voor het eerst gezien",
+      "CHANGED": "Gewijzigd",
+      "DISAPPEARED": "Niet meer in inventaris",
+      "REAPPEARED": "Weer in inventaris"
+    },
+    "eventKinds": {
+      "community-day": "Community Day",
+      "pokemon-spotlight-hour": "Spotlight Hour",
+      "raid-hour": "Raid Hour",
+      "raid-day": "Raid Day",
+      "raid-battles": "Raids",
+      "max-mondays": "Max Monday",
+      "max-battles": "Max Battles",
+      "go-battle-league": "GO Battle League",
+      "pokemon-go-tour": "Pokémon GO Tour",
+      "wild-area": "Wild Area",
+      "city-safari": "City Safari",
+      "go-pass": "GO Pass",
+      "research": "Onderzoek",
+      "season": "Seizoen",
+      "event": "Event",
+      "manual": "Eigen event"
+    },
+    "moveActions": {
+      "none": "Heeft deze aanval al",
+      "fast_tm": "Fast TM",
+      "charged_tm": "Charged TM",
+      "elite_fast_tm": "Elite Fast TM",
+      "elite_charged_tm": "Elite Charged TM",
+      "unlock": "Tweede aanval vrijspelen",
+      "impossible": "Niet via TM beschikbaar"
+    },
+    "availability": {
+      "normal_tm": "Normale TM",
+      "elite_tm": "Alleen Elite TM",
+      "legacy": "Legacy/event",
+      "special": "Shadow/Purified-aanval",
+      "not_learnable": "Niet meer te leren"
+    },
+    "conditions": {
+      "must_be_buddy": "Moet buddy zijn",
+      "only_day": "Alleen overdag",
+      "only_night": "Alleen 's nachts",
+      "only_full_moon": "Alleen bij volle maan",
+      "only_dusk": "Alleen in de schemering",
+      "only_upside_down": "Telefoon ondersteboven",
+      "move_requirement": "Vereist een bepaalde aanval"
+    },
+    "teams": {
+      "0": "Geen team",
+      "1": "Mystic",
+      "2": "Valor",
+      "3": "Instinct"
+    }
+  },
+  "pagination": {
+    "none": "Geen resultaten",
+    "range": "{{from}}–{{to}} van {{total}}"
+  },
+  "badges": {
+    "vintage": "Vintage {{year}}",
+    "noDate": "Vangstdatum onbekend",
+    "favorite": "Favoriet",
+    "shundo": "Shundo",
+    "shiny": "Shiny",
+    "hundo": "Hundo",
+    "lucky": "Lucky",
+    "shadow": "Shadow",
+    "purified": "Purified",
+    "gigantamax": "Gigantamax",
+    "dynamax": "Dynamax",
+    "legendary": "Legendary",
+    "mythical": "Mythical",
+    "ultraBeast": "Ultra Beast",
+    "costume": "Kostuum",
+    "background": "Achtergrond",
+    "traded": "Geruild",
+    "inGym": "In gym",
+    "protected": "Beschermd",
+    "new": "Nieuw",
+    "gone": "Niet meer in inventaris"
+  },
+  "requireAccount": {
+    "title": "Nog geen traineraccount",
+    "text": "Maak eerst een traineraccount aan onder <link>Beheer → Traineraccounts</link>. Daarna kun je PGSharp koppelen of een export uploaden."
+  },
+  "confirmTransfer": {
+    "title": "Bevestiging nodig",
+    "confirm": "{{count}} bevestigen",
+    "warning": "Deze Pokémon zet OAK niet zonder jouw bevestiging op een transferlijst. Vink alleen aan wat je echt kwijt wilt. OAK zet zelf nooit iets over.",
+    "confirmOne": "{{name}} bevestigen",
+    "newReasons": "Nieuw sinds je vorige bevestiging: {{reasons}}"
   }
 }

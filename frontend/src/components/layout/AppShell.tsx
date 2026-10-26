@@ -176,7 +176,7 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 export function AppShell() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user, logout } = useAuth();
   const { accounts, accountId, setAccountId } = useAccount();
   const [open, setOpen] = useState(false);
@@ -246,7 +246,8 @@ export function AppShell() {
             </button>
           </div>
         </header>
-        <main className="mx-auto w-full max-w-[1500px] flex-1 px-4 py-6 sm:px-6">
+        {/* A new language renders the page again, also parts that read labels outside React. */}
+        <main key={i18n.language} className="mx-auto w-full max-w-[1500px] flex-1 px-4 py-6 sm:px-6">
           <Outlet />
         </main>
       </div>

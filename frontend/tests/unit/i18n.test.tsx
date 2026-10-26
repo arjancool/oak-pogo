@@ -69,3 +69,22 @@ describe("translations", () => {
     expect(localeFor("en", ["nl-NL"])).toBe("en-GB");
   });
 });
+
+describe("labels for API codes", () => {
+  it("follow the active language and still behave like a plain map", async () => {
+    const { typeNames, leagueNames, statusLabels, label } = await import("../../src/lib/i18n");
+    expect(typeNames.fairy).toBe("Fee");
+    expect(label(statusLabels, "KEEP")).toBe("Bewaren");
+    expect(label(statusLabels, "NEW_CODE")).toBe("NEW_CODE");
+    expect(typeNames.unknown).toBeUndefined();
+    expect("fairy" in typeNames).toBe(true);
+    await changeLanguage("en");
+    expect(typeNames.fairy).toBe("Fairy");
+    expect(Object.entries(leagueNames)).toEqual([
+      ["great", "Great League"],
+      ["ultra", "Ultra League"],
+      ["master", "Master League"],
+    ]);
+    expect(Object.keys(typeNames)).toHaveLength(18);
+  });
+});

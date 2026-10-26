@@ -5,7 +5,12 @@
   "common": {
     "unknown": "unknown",
     "never": "never",
-    "justNow": "just now"
+    "justNow": "just now",
+    "loading": "Loading…",
+    "close": "Close",
+    "previous": "Previous",
+    "next": "Next",
+    "cancel": "Cancel"
   },
   "language": {
     "label": "Language"
@@ -69,5 +74,190 @@
     "mismatch": "The passwords do not match.",
     "createOwner": "Create owner",
     "submit": "Log in"
+  },
+  "labels": {
+    "types": {
+      "normal": "Normal",
+      "fighting": "Fighting",
+      "flying": "Flying",
+      "poison": "Poison",
+      "ground": "Ground",
+      "rock": "Rock",
+      "bug": "Bug",
+      "ghost": "Ghost",
+      "steel": "Steel",
+      "fire": "Fire",
+      "water": "Water",
+      "grass": "Grass",
+      "electric": "Electric",
+      "psychic": "Psychic",
+      "ice": "Ice",
+      "dragon": "Dragon",
+      "dark": "Dark",
+      "fairy": "Fairy"
+    },
+    "statuses": {
+      "PROTECT": "Protected",
+      "KEEP": "Keep",
+      "BUILD": "Invest",
+      "REVIEW": "Review",
+      "TRANSFER_CANDIDATE": "Transfer candidate",
+      "UNKNOWN": "Unknown"
+    },
+    "statusDescriptions": {
+      "PROTECT": "Hard protection: vintage, set by hand or by a protection rule",
+      "KEEP": "Best of its kind, useful in battles or a high keep score",
+      "BUILD": "Good candidate for a power-up or evolution",
+      "REVIEW": "Your call, for example a favorite when a better one exists",
+      "TRANSFER_CANDIDATE": "Probably not needed: a better one stays. OAK never transfers anything itself",
+      "UNKNOWN": "Not enough reliable data"
+    },
+    "confirmationKinds": {
+      "favorite": "Favorite",
+      "vintage": "Vintage, protection lifted",
+      "unknown_date": "Catch date unknown",
+      "protected": "Protected by a rule"
+    },
+    "readiness": {
+      "direct": "Ready now",
+      "power_up": "After power-up",
+      "evolution": "After evolution",
+      "not_suitable": "Not suitable",
+      "unknown": "Not enough data",
+      "after_evolution": "After evolution"
+    },
+    "leagues": {
+      "great": "Great League",
+      "ultra": "Ultra League",
+      "master": "Master League"
+    },
+    "confidence": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "importStatuses": {
+      "received": "Received",
+      "queued": "Queued",
+      "processing": "Processing",
+      "succeeded": "Fully processed",
+      "partial": "Partly processed",
+      "failed": "Failed",
+      "rejected": "Rejected",
+      "duplicate": "Received before"
+    },
+    "classifications": {
+      "full": "Full inventory",
+      "partial": "Partial import",
+      "invalid": "Invalid",
+      "stale": "Outdated",
+      "duplicate": "Duplicate"
+    },
+    "changes": {
+      "evolved": "Evolved",
+      "powered_up": "CP changed",
+      "moves_changed": "Moves changed",
+      "favorite_changed": "Favorite changed",
+      "tags_changed": "Tags changed",
+      "lucky_changed": "Lucky changed",
+      "alignment_changed": "Shadow/Purified changed",
+      "renamed": "New nickname",
+      "mega_changed": "Mega changed",
+      "max_changed": "Max Moves changed",
+      "other": "Other change"
+    },
+    "events": {
+      "APPEARED": "First seen",
+      "CHANGED": "Changed",
+      "DISAPPEARED": "No longer in inventory",
+      "REAPPEARED": "Back in inventory"
+    },
+    "eventKinds": {
+      "community-day": "Community Day",
+      "pokemon-spotlight-hour": "Spotlight Hour",
+      "raid-hour": "Raid Hour",
+      "raid-day": "Raid Day",
+      "raid-battles": "Raids",
+      "max-mondays": "Max Monday",
+      "max-battles": "Max Battles",
+      "go-battle-league": "GO Battle League",
+      "pokemon-go-tour": "Pokémon GO Tour",
+      "wild-area": "Wild Area",
+      "city-safari": "City Safari",
+      "go-pass": "GO Pass",
+      "research": "Research",
+      "season": "Season",
+      "event": "Event",
+      "manual": "Custom event"
+    },
+    "moveActions": {
+      "none": "Already knows this move",
+      "fast_tm": "Fast TM",
+      "charged_tm": "Charged TM",
+      "elite_fast_tm": "Elite Fast TM",
+      "elite_charged_tm": "Elite Charged TM",
+      "unlock": "Unlock a second move",
+      "impossible": "Not available by TM"
+    },
+    "availability": {
+      "normal_tm": "Normal TM",
+      "elite_tm": "Elite TM only",
+      "legacy": "Legacy/event",
+      "special": "Shadow/Purified move",
+      "not_learnable": "No longer learnable"
+    },
+    "conditions": {
+      "must_be_buddy": "Must be your buddy",
+      "only_day": "Daytime only",
+      "only_night": "Night only",
+      "only_full_moon": "Full moon only",
+      "only_dusk": "Dusk only",
+      "only_upside_down": "Phone upside down",
+      "move_requirement": "Needs a specific move"
+    },
+    "teams": {
+      "0": "No team",
+      "1": "Mystic",
+      "2": "Valor",
+      "3": "Instinct"
+    }
+  },
+  "pagination": {
+    "none": "No results",
+    "range": "{{from}}–{{to}} of {{total}}"
+  },
+  "badges": {
+    "vintage": "Vintage {{year}}",
+    "noDate": "Catch date unknown",
+    "favorite": "Favorite",
+    "shundo": "Shundo",
+    "shiny": "Shiny",
+    "hundo": "Hundo",
+    "lucky": "Lucky",
+    "shadow": "Shadow",
+    "purified": "Purified",
+    "gigantamax": "Gigantamax",
+    "dynamax": "Dynamax",
+    "legendary": "Legendary",
+    "mythical": "Mythical",
+    "ultraBeast": "Ultra Beast",
+    "costume": "Costume",
+    "background": "Background",
+    "traded": "Traded",
+    "inGym": "In a gym",
+    "protected": "Protected",
+    "new": "New",
+    "gone": "No longer in inventory"
+  },
+  "requireAccount": {
+    "title": "No trainer account yet",
+    "text": "First create a trainer account under <link>Admin → Trainer accounts</link>. Then you can connect PGSharp or upload an export."
+  },
+  "confirmTransfer": {
+    "title": "Confirmation needed",
+    "confirm": "Confirm {{count}}",
+    "warning": "OAK does not put these Pokémon on a transfer list without your confirmation. Only tick what you really want to let go. OAK never transfers anything itself.",
+    "confirmOne": "Confirm {{name}}",
+    "newReasons": "New since your last confirmation: {{reasons}}"
   }
 }

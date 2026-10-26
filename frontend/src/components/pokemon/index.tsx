@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { CalendarClock, Heart, Hourglass, Shield, Sparkles } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { label, readinessLabels, statusDescriptions, statusLabels, typeColors, typeNames } from "../../lib/i18n";
 import type { PokemonSummary } from "../../lib/schemas";
@@ -99,6 +100,7 @@ const SCORE_MID = 40;
 
 /** A 0–100 score as a small labelled bar. "onbekend" when the value could not be computed. */
 export function ScoreMeter({ label: text, value, title }: { label: string; value: number | null | undefined; title?: string }) {
+  const { t } = useTranslation();
   const known = value !== null && value !== undefined;
   const color = !known ? "#64748b" : value >= SCORE_HIGH ? "#34d399" : value >= SCORE_MID ? "#fbbf24" : "#f87171";
   return (
@@ -108,7 +110,7 @@ export function ScoreMeter({ label: text, value, title }: { label: string; value
         <span className="absolute inset-y-0 left-0 rounded" style={{ width: `${known ? value : 0}%`, background: color }} />
       </span>
       <span className="font-semibold tabular-nums" style={{ color }}>
-        {known ? value : "onbekend"}
+        {known ? value : t("common.unknown")}
       </span>
     </span>
   );
@@ -138,29 +140,30 @@ export function ReadinessBadge({ readiness }: { readiness: string | null | undef
 }
 
 export function StatusBadges({ pokemon, compact }: { pokemon: PokemonSummary; compact?: boolean }) {
+  const { t } = useTranslation();
   const badges: { key: string; text: string; color?: string; icon?: React.ReactNode }[] = [];
   if (pokemon.vintage_year !== null)
-    badges.push({ key: "vintage", text: `Vintage ${pokemon.vintage_year}`, color: "#d97706", icon: <Hourglass className="h-3 w-3" /> });
-  if (!pokemon.catch_date_known) badges.push({ key: "nodate", text: "Vangstdatum onbekend", color: "#94a3b8", icon: <CalendarClock className="h-3 w-3" /> });
-  if (pokemon.favorite) badges.push({ key: "fav", text: "Favoriet", color: "#facc15", icon: <Heart className="h-3 w-3" /> });
-  if (pokemon.shundo) badges.push({ key: "shundo", text: "Shundo", color: "#f472b6", icon: <Sparkles className="h-3 w-3" /> });
-  else if (pokemon.shiny) badges.push({ key: "shiny", text: "Shiny", color: "#f472b6", icon: <Sparkles className="h-3 w-3" /> });
-  if (pokemon.hundo && !pokemon.shundo) badges.push({ key: "hundo", text: "Hundo", color: "#ef4444" });
-  if (pokemon.lucky) badges.push({ key: "lucky", text: "Lucky", color: "#eab308" });
-  if (pokemon.shadow) badges.push({ key: "shadow", text: "Shadow", color: "#a855f7" });
-  if (pokemon.purified) badges.push({ key: "purified", text: "Purified", color: "#e2e8f0" });
-  if (pokemon.gigantamax) badges.push({ key: "gmax", text: "Gigantamax", color: "#f43f5e" });
-  else if (pokemon.dynamax) badges.push({ key: "dmax", text: "Dynamax", color: "#e11d48" });
-  if (pokemon.pokemon_class === "legendary") badges.push({ key: "leg", text: "Legendary", color: "#f59e0b" });
-  if (pokemon.pokemon_class === "mythical") badges.push({ key: "myth", text: "Mythical", color: "#ec4899" });
-  if (pokemon.pokemon_class === "ultra_beast") badges.push({ key: "ub", text: "Ultra Beast", color: "#06b6d4" });
-  if (pokemon.costume) badges.push({ key: "costume", text: "Kostuum", color: "#14b8a6" });
-  if (pokemon.location_card) badges.push({ key: "bg", text: "Achtergrond", color: "#22d3ee" });
-  if (pokemon.traded) badges.push({ key: "traded", text: "Geruild" });
-  if (pokemon.in_gym) badges.push({ key: "in_gym", text: "In gym", color: "#38bdf8" });
-  if (pokemon.metadata?.protected) badges.push({ key: "prot", text: "Beschermd", color: "#38bdf8", icon: <Shield className="h-3 w-3" /> });
-  if (pokemon.is_new) badges.push({ key: "new", text: "Nieuw", color: "#34d399" });
-  if (pokemon.inventory_status === "not_in_inventory") badges.push({ key: "gone", text: "Niet meer in inventaris", color: "#94a3b8" });
+    badges.push({ key: "vintage", text: t("badges.vintage", { year: pokemon.vintage_year }), color: "#d97706", icon: <Hourglass className="h-3 w-3" /> });
+  if (!pokemon.catch_date_known) badges.push({ key: "nodate", text: t("badges.noDate"), color: "#94a3b8", icon: <CalendarClock className="h-3 w-3" /> });
+  if (pokemon.favorite) badges.push({ key: "fav", text: t("badges.favorite"), color: "#facc15", icon: <Heart className="h-3 w-3" /> });
+  if (pokemon.shundo) badges.push({ key: "shundo", text: t("badges.shundo"), color: "#f472b6", icon: <Sparkles className="h-3 w-3" /> });
+  else if (pokemon.shiny) badges.push({ key: "shiny", text: t("badges.shiny"), color: "#f472b6", icon: <Sparkles className="h-3 w-3" /> });
+  if (pokemon.hundo && !pokemon.shundo) badges.push({ key: "hundo", text: t("badges.hundo"), color: "#ef4444" });
+  if (pokemon.lucky) badges.push({ key: "lucky", text: t("badges.lucky"), color: "#eab308" });
+  if (pokemon.shadow) badges.push({ key: "shadow", text: t("badges.shadow"), color: "#a855f7" });
+  if (pokemon.purified) badges.push({ key: "purified", text: t("badges.purified"), color: "#e2e8f0" });
+  if (pokemon.gigantamax) badges.push({ key: "gmax", text: t("badges.gigantamax"), color: "#f43f5e" });
+  else if (pokemon.dynamax) badges.push({ key: "dmax", text: t("badges.dynamax"), color: "#e11d48" });
+  if (pokemon.pokemon_class === "legendary") badges.push({ key: "leg", text: t("badges.legendary"), color: "#f59e0b" });
+  if (pokemon.pokemon_class === "mythical") badges.push({ key: "myth", text: t("badges.mythical"), color: "#ec4899" });
+  if (pokemon.pokemon_class === "ultra_beast") badges.push({ key: "ub", text: t("badges.ultraBeast"), color: "#06b6d4" });
+  if (pokemon.costume) badges.push({ key: "costume", text: t("badges.costume"), color: "#14b8a6" });
+  if (pokemon.location_card) badges.push({ key: "bg", text: t("badges.background"), color: "#22d3ee" });
+  if (pokemon.traded) badges.push({ key: "traded", text: t("badges.traded") });
+  if (pokemon.in_gym) badges.push({ key: "in_gym", text: t("badges.inGym"), color: "#38bdf8" });
+  if (pokemon.metadata?.protected) badges.push({ key: "prot", text: t("badges.protected"), color: "#38bdf8", icon: <Shield className="h-3 w-3" /> });
+  if (pokemon.is_new) badges.push({ key: "new", text: t("badges.new"), color: "#34d399" });
+  if (pokemon.inventory_status === "not_in_inventory") badges.push({ key: "gone", text: t("badges.gone"), color: "#94a3b8" });
   const visible = compact ? badges.slice(0, 4) : badges;
   return (
     <div className="flex flex-wrap gap-1">

@@ -597,5 +597,240 @@
     "moves": "moves: {{moves}}",
     "cost": "{{stardust}} Stardust · {{candy}} Candy",
     "footer": "Priority follows suitability (PvPoke species score × IV quality). The cost of TMs, evolution items and unlocking a second move is on the detail page."
+  },
+  "battles": {
+    "shared": {
+      "either": "{{rest}} or {{last}}",
+      "range": "{{from}} to {{to}}",
+      "maxCp": "Max {{cp}} CP.",
+      "noCpLimit": "No CP limit.",
+      "levelCap": "Max level {{level}}.",
+      "shadow": "Shadow",
+      "rules": {
+        "typeOnly": "Only Pokémon of type {{types}}.",
+        "typeNone": "No Pokémon of type {{types}}.",
+        "tagOnly": "Only {{tags}}.",
+        "tagNone": "No {{tags}}.",
+        "idOnly": "Only {{number}} listed species.",
+        "idAlso_one": "{{count}} listed species is also allowed.",
+        "idAlso_other": "{{count}} listed species are also allowed.",
+        "idNone_one": "{{count}} listed species is not allowed.",
+        "idNone_other": "{{count}} listed species are not allowed.",
+        "stageOnly": "Only {{stages}}.",
+        "stageNone": "No {{stages}}.",
+        "dexOnly": "Only Pokédex numbers {{ranges}}.",
+        "dexNone": "No Pokédex numbers {{ranges}}.",
+        "moveOnly_one": "Only Pokémon that can learn the listed move.",
+        "moveOnly_other": "Only Pokémon that can learn one of {{count}} listed moves.",
+        "moveNone_one": "No Pokémon that can learn the listed move.",
+        "moveNone_other": "No Pokémon that can learn one of {{count}} listed moves.",
+        "moveTypeOnly": "Only Pokémon with a move of type {{types}}.",
+        "moveTypeNone": "No Pokémon with a move of type {{types}}.",
+        "costOnly": "Only Pokémon whose second charged move costs {{costs}} Stardust.",
+        "costNone": "No Pokémon whose second charged move costs {{costs}} Stardust.",
+        "distanceOnly": "Only Pokémon with a buddy distance of {{distances}} km.",
+        "distanceNone": "No Pokémon with a buddy distance of {{distances}} km.",
+        "other": "Rule of kind \"{{kind}}\"."
+      },
+      "tags": {
+        "mega": "Mega Evolutions",
+        "shadow": "Shadow Pokémon",
+        "legendary": "Legendary Pokémon",
+        "mythical": "Mythical Pokémon",
+        "ultrabeast": "Ultra Beasts",
+        "starter": "starter Pokémon",
+        "regional": "regional Pokémon"
+      },
+      "stages": {
+        "none": "Pokémon that do not evolve",
+        "first": "Pokémon that can still evolve and have no earlier form",
+        "middle": "middle stages of an evolution line",
+        "final": "final stages of an evolution line"
+      },
+      "typeInRule": {
+        "normal": "Normal",
+        "fighting": "Fighting",
+        "flying": "Flying",
+        "poison": "Poison",
+        "ground": "Ground",
+        "rock": "Rock",
+        "bug": "Bug",
+        "ghost": "Ghost",
+        "steel": "Steel",
+        "fire": "Fire",
+        "water": "Water",
+        "grass": "Grass",
+        "electric": "Electric",
+        "psychic": "Psychic",
+        "ice": "Ice",
+        "dragon": "Dragon",
+        "dark": "Dark",
+        "fairy": "Fairy"
+      }
+    },
+    "cups": {
+      "title": "Cups",
+      "description": "Special formats with their own rules, such as the Fantasy Cup. OAK shows the cups PvPoke currently has on its site. These include GO Battle League cups as well as community tournaments. Pokémon GO itself shows which cup is running in the game.",
+      "emptyTitle": "No cups known",
+      "emptyText": "The active Game Data contains no cups. Update the Game Data under Admin and OAK fetches them from PvPoke.",
+      "ranked": "PvPoke rankings",
+      "unranked": "No rankings",
+      "unrankedHint": "Your Pokémon are sorted by IV rank only.",
+      "eligible": "{{species}} species and forms are allowed under PvPoke's rules.",
+      "rankedCount": "PvPoke ranks {{species}} of them.",
+      "yourPokemon": "Your Pokémon for this cup",
+      "suggestTeam": "Suggest a team",
+      "about": "About this tournament"
+    },
+    "league": {
+      "sortSuitable": "Most suitable first",
+      "readiness": {
+        "label": "Readiness",
+        "all": "Any readiness",
+        "direct": "Ready now",
+        "powerUp": "After power-up",
+        "evolution": "After evolution"
+      },
+      "cupRules": "Rules of this cup",
+      "cupRulesSource": "As PvPoke describes them. Check in the game whether the cup is running now and whether the rules are the same.",
+      "allCups": "All cups",
+      "emptyTitle": "No suitable Pokémon",
+      "emptyCup": "No Pokémon fit this cup (after evolution or power-up), or the analysis still has to run.",
+      "emptyLeague": "No Pokémon fit this league (after evolution or power-up), or the analysis still has to run.",
+      "columns": {
+        "pokemon": "Pokémon",
+        "target": "Target",
+        "speciesRank": "Species rank",
+        "ivRank": "IV rank",
+        "cpNow": "CP now",
+        "best": "best",
+        "readiness": "Readiness",
+        "investment": "Investment",
+        "moves": "Moves"
+      },
+      "afterEvolution": "after evolution",
+      "stardust": "{{amount}} Stardust",
+      "quality": {
+        "optimal": "Optimal",
+        "partial": "Partial",
+        "poor": "Needs other moves",
+        "afterEvolution": "Decide after evolution",
+        "unknown": "Unknown"
+      },
+      "truncated": "You see the first {{shown}} of {{total}} Pokémon in this order. Sorting covers all {{total}}.",
+      "explanation": "Click a column header to sort. Species rank says how strong the species is (PvPoke). IV rank says how good this Pokémon is within its species. A strong IV rank in a weak species does not make a good battle Pokémon."
+    },
+    "teamBuilder": {
+      "title": "Team Builder",
+      "description": "Three team variants from your own collection: ready now, with limited upgrades, and the best future team.",
+      "league": "League or cup",
+      "leagues": "Leagues",
+      "cups": "Cups",
+      "budget": "Stardust budget per Pokémon (limited upgrades)",
+      "suggest": "Suggest teams",
+      "save": "Save",
+      "saved": "Team saved.",
+      "roles": {
+        "lead": "Lead",
+        "switch": "Safe switch",
+        "closer": "Closer"
+      },
+      "memberStats": "CP {{cp}} → {{bestCp}} · IV rank {{ivRank}} · species rank {{speciesRank}}",
+      "moves": "Moves: {{moves}}",
+      "summary": "Investment: {{stardust}} Stardust · Shared weaknesses: {{weaknesses}}",
+      "noWeaknesses": "none",
+      "savedTeams": "Saved teams",
+      "noTeams": "No saved teams yet.",
+      "gone": "{{name}} (gone)",
+      "delete": "Delete"
+    },
+    "raids": {
+      "title": "Raids",
+      "description": "Without a boss you see your best general attackers. Pick a raid boss for counters against that specific opponent.",
+      "search": "Search for a raid boss, e.g. kyogre",
+      "general": "General attackers",
+      "countersAgainst": "Counters against {{name}}",
+      "bestGeneral": "Best general raid attackers",
+      "intro_one": "The {{count}} attacker with the highest DPS using its current moves. Click a column header to sort within this list. The number shows its DPS rank.",
+      "intro_other": "The {{count}} attackers with the highest DPS using their current moves. Click a column header to sort within this list. The number shows their DPS rank.",
+      "columns": {
+        "pokemon": "Pokémon",
+        "dpsNow": "DPS now",
+        "currentMoves": "Current moves",
+        "bestMoveset": "Best moveset",
+        "notes": "Notes"
+      },
+      "fastOnly": "fast move only",
+      "eliteTm": "Elite TM needed",
+      "alreadyBest": "Current moveset is already the best",
+      "weakToBoss": "Weak to the boss's type",
+      "superEffective": "Super effective"
+    },
+    "rocket": {
+      "title": "Team GO Rocket",
+      "description": "Pick the Pokémon of the grunt, leader or Giovanni. For each opponent, OAK finds the best counters in your own collection.",
+      "noLineupsTitle": "No current lineups",
+      "noLineups": "OAK has no validated, dated source for current Rocket lineups, so it makes no claims about them. You pick the opponents yourself.",
+      "add": "Add an opponent (up to 3)",
+      "remove": "Remove {{name}}",
+      "find": "Find counters",
+      "resists": "Resists",
+      "weak": "Vulnerable"
+    },
+    "max": {
+      "title": "Max Battles",
+      "description": "Dynamax and Gigantamax Pokémon from your collection, their Max Moves and what an upgrade costs.",
+      "search": "Search for a Max Battle opponent",
+      "clear": "Clear",
+      "attackers": "Attackers (Max Attack type)",
+      "defenders": "Defenders (resistance)",
+      "incoming": "incoming ×{{value}}",
+      "count": "{{number}} Dynamax/Gigantamax Pokémon",
+      "emptyTitle": "No Dynamax Pokémon",
+      "emptyText": "The export contains no Pokémon with Dynamax or Gigantamax status.",
+      "columns": {
+        "pokemon": "Pokémon",
+        "maxAttackType": "Max Attack type",
+        "maxMoves": "Max Moves",
+        "nextUpgrade": "Next upgrade"
+      },
+      "gigantamax": "Gigantamax",
+      "moveLevel": "{{move}} level {{level}}",
+      "costCandy": "{{mp}} MP, {{candy}} Candy",
+      "costXl": "{{mp}} MP, {{xl}} XL",
+      "maxed": "maxed out",
+      "moves": {
+        "attack": "Max Attack",
+        "guard": "Max Guard",
+        "spirit": "Max Spirit"
+      }
+    },
+    "gyms": {
+      "title": "Gym defenders",
+      "description": "The Pokémon that hold a gym the longest: lots of HP and Defense, so an attacker needs many attacks. Your strongest Pokémon of each species.",
+      "howCalculated": "How OAK calculates this",
+      "source": "Source: {{source}}, Game Data version {{version}}.",
+      "excluded": {
+        "text": "Not counted: {{parts}}.",
+        "notDeployable": "{{number}} may not go in a gym according to the Game Data",
+        "unknownForm_one": "{{number}} has a form the Game Data does not know",
+        "unknownForm_other": "{{number}} have a form the Game Data does not know",
+        "unknownStats_one": "{{number}} is missing level or IVs",
+        "unknownStats_other": "{{number}} are missing level or IVs"
+      },
+      "emptyTitle": "No defenders found",
+      "emptyText": "Your collection has no Pokémon that may go in a gym according to the Game Data.",
+      "strongest_one": "Your strongest defender",
+      "strongest_other": "Your {{count}} strongest defenders",
+      "inGym": "In a gym",
+      "value": "Defense value",
+      "sameSpecies": "{{number}} more of this species",
+      "confidence": "Confidence: {{level}}",
+      "confidenceLevels": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      }
+    }
   }
 }

@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { RequireAccount } from "../../components/layout/RequireAccount";
@@ -17,6 +18,7 @@ interface Result {
 }
 
 function Rocket({ accountId }: { accountId: number }) {
+  const { t } = useTranslation();
   const [opponents, setOpponents] = useState<SpeciesOption[]>([]);
   const run = useMutation({
     mutationFn: () =>
@@ -27,16 +29,15 @@ function Rocket({ accountId }: { accountId: number }) {
   });
   return (
     <>
-      <PageHeader title="Team GO Rocket" description="Kies de Pokémon van de grunt, leader of Giovanni. OAK zoekt per tegenstander de beste counters uit je eigen collectie." />
-      <Alert tone="warning" title="Geen actuele opstellingen">
-        OAK heeft geen gevalideerde, gedateerde bron voor actuele Rocket-opstellingen en doet daar dus geen uitspraken over. Je kiest de
-        tegenstanders zelf.
+      <PageHeader title={t("battles.rocket.title")} description={t("battles.rocket.description")} />
+      <Alert tone="warning" title={t("battles.rocket.noLineupsTitle")}>
+        {t("battles.rocket.noLineups")}
       </Alert>
       <Card className="mt-4">
         <div className="space-y-3">
           <div className="max-w-md">
             <SpeciesPicker
-              placeholder="Tegenstander toevoegen (maximaal 3)"
+              placeholder={t("battles.rocket.add")}
               onPick={(option) => setOpponents((current) => (current.length >= 3 || current.some((c) => c.key === option.key) ? current : [...current, option]))}
             />
           </div>
@@ -44,14 +45,14 @@ function Rocket({ accountId }: { accountId: number }) {
             {opponents.map((o) => (
               <Badge key={o.key}>
                 {o.name}
-                <button aria-label={`${o.name} verwijderen`} onClick={() => setOpponents((current) => current.filter((c) => c.key !== o.key))}>
+                <button aria-label={t("battles.rocket.remove", { name: o.name })} onClick={() => setOpponents((current) => current.filter((c) => c.key !== o.key))}>
                   <X className="h-3 w-3" />
                 </button>
               </Badge>
             ))}
           </div>
           <Button variant="primary" disabled={!opponents.length} loading={run.isPending} onClick={() => run.mutate()}>
-            Counters zoeken
+            {t("battles.rocket.find")}
           </Button>
         </div>
       </Card>
@@ -62,7 +63,7 @@ function Rocket({ accountId }: { accountId: number }) {
           <p className="mt-4 text-xs text-muted">{run.data.method}</p>
           <div className="mt-2 grid gap-4 lg:grid-cols-3">
             {run.data.results.map((result) => (
-              <Card key={result.opponent} title={result.opponent} actions={result.types.map((t) => <TypeBadge key={t} type={t} />)}>
+              <Card key={result.opponent} title={result.opponent} actions={result.types.map((type) => <TypeBadge key={type} type={type} />)}>
                 <ol className="space-y-2 text-sm">
                   {result.counters.map((c) => (
                     <li key={c.pokemon_id} className="flex items-start justify-between gap-2">
@@ -76,8 +77,8 @@ function Rocket({ accountId }: { accountId: number }) {
                         </span>
                       </span>
                       <span className="flex flex-col items-end gap-1">
-                        {c.resists && <Badge color="#34d399">Weerstaat</Badge>}
-                        {c.weak && <Badge color="#f87171">Kwetsbaar</Badge>}
+                        {c.resists && <Badge color="#34d399">{t("battles.rocket.resists")}</Badge>}
+                        {c.weak && <Badge color="#f87171">{t("battles.rocket.weak")}</Badge>}
                       </span>
                     </li>
                   ))}

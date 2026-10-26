@@ -1,5 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
+import type { ParseKeys } from "i18next";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { RequireAccount } from "../../components/layout/RequireAccount";
@@ -28,9 +30,11 @@ interface MaxPokemon {
   incoming_effectiveness: number | null;
 }
 
-const moveNames: Record<string, string> = { attack: "Max Attack", guard: "Max Guard", spirit: "Max Spirit" };
+const moveNames: Record<string, ParseKeys> = { attack: "battles.max.moves.attack", guard: "battles.max.moves.guard", spirit: "battles.max.moves.spirit" };
 
 function MaxBattles({ accountId }: { accountId: number }) {
+  const { t } = useTranslation();
+  const moveName = (move: string) => (moveNames[move] ? t(moveNames[move]) : move);
   const [boss, setBoss] = useState<SpeciesOption | null>(null);
   const run = useMutation({
     mutationFn: (bossKey: string | null) =>
@@ -44,20 +48,20 @@ function MaxBattles({ accountId }: { accountId: number }) {
   const data = run.data;
   return (
     <>
-      <PageHeader title="Max Battles" description="Dynamax- en Gigantamax-Pokémon uit je collectie, hun Max Moves en wat een upgrade kost." />
+      <PageHeader title={t("battles.max.title")} description={t("battles.max.description")} />
       <Card className="mb-5">
         <div className="flex flex-wrap items-center gap-3">
           <div className="w-full max-w-md">
-            <SpeciesPicker onPick={setBoss} placeholder="Max Battle-tegenstander zoeken" />
+            <SpeciesPicker onPick={setBoss} placeholder={t("battles.max.search")} />
           </div>
           {boss && (
             <>
               <span className="font-medium">{boss.name}</span>
-              {boss.types.map((t) => (
-                <TypeBadge key={t} type={t} />
+              {boss.types.map((type) => (
+                <TypeBadge key={type} type={type} />
               ))}
               <Button size="sm" variant="ghost" onClick={() => setBoss(null)}>
-                Wissen
+                {t("battles.max.clear")}
               </Button>
             </>
           )}
@@ -70,7 +74,7 @@ function MaxBattles({ accountId }: { accountId: number }) {
           <Alert tone="info">{data.notes.join(" ")}</Alert>
           {data.advice && (
             <div className="mt-4 grid gap-4 lg:grid-cols-2">
-              <Card title="Aanvallers (Max Attack-type)">
+              <Card title={t("battles.max.attackers")}>
                 <ul className="space-y-1 text-sm">
                   {data.advice.attackers.map((p) => (
                     <li key={p.pokemon_id}>
@@ -78,38 +82,38 @@ function MaxBattles({ accountId }: { accountId: number }) {
                         {p.name}
                       </Link>{" "}
                       <span className="text-muted">
-                        · {p.max_attack_source === "gmax_move" ? p.max_attack_name : p.fast_move} · ×{p.attack_effectiveness?.toLocaleString("nl-NL")}
+                        · {p.max_attack_source === "gmax_move" ? p.max_attack_name : p.fast_move} · ×{num(p.attack_effectiveness, "")}
                       </span>
                     </li>
                   ))}
                 </ul>
               </Card>
-              <Card title="Verdedigers (weerstand)">
+              <Card title={t("battles.max.defenders")}>
                 <ul className="space-y-1 text-sm">
                   {data.advice.defenders.map((p) => (
                     <li key={p.pokemon_id}>
                       <Link to={`/pokemon/${p.pokemon_id}`} className="hover:text-oak-300">
                         {p.name}
                       </Link>{" "}
-                      <span className="text-muted">· inkomend ×{p.incoming_effectiveness?.toLocaleString("nl-NL")}</span>
+                      <span className="text-muted">· {t("battles.max.incoming", { value: num(p.incoming_effectiveness, "") })}</span>
                     </li>
                   ))}
                 </ul>
               </Card>
             </div>
           )}
-          <Card className="mt-4" title={`${data.pokemon.length} Dynamax/Gigantamax-Pokémon`}>
+          <Card className="mt-4" title={t("battles.max.count", { number: num(data.pokemon.length) })}>
             {data.pokemon.length === 0 ? (
-              <EmptyState title="Geen Dynamax-Pokémon">De export bevat geen Pokémon met Dynamax- of Gigantamax-status.</EmptyState>
+              <EmptyState title={t("battles.max.emptyTitle")}>{t("battles.max.emptyText")}</EmptyState>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm [&_td]:pr-3 [&_th]:pr-3">
                   <thead className="text-left text-xs text-muted">
                     <tr>
-                      <th className="py-2">Pokémon</th>
-                      <th>Max Attack-type</th>
-                      <th>Max Moves</th>
-                      <th>Volgende upgrade</th>
+                      <th className="py-2">{t("battles.max.columns.pokemon")}</th>
+                      <th>{t("battles.max.columns.maxAttackType")}</th>
+                      <th>{t("battles.max.columns.maxMoves")}</th>
+                      <th>{t("battles.max.columns.nextUpgrade")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -119,7 +123,11 @@ function MaxBattles({ accountId }: { accountId: number }) {
                           <Link to={`/pokemon/${p.pokemon_id}`} className="font-medium hover:text-oak-300">
                             {p.name}
                           </Link>
-                          {p.gigantamax && <Badge className="ml-1" color="#f43f5e">Gigantamax</Badge>}
+                          {p.gigantamax && (
+                            <Badge className="ml-1" color="#f43f5e">
+                              {t("battles.max.gigantamax")}
+                            </Badge>
+                          )}
                           <span className="block text-xs text-muted">
                             CP {num(p.cp, "?")} · L{level(p.level)}
                           </span>
@@ -132,7 +140,7 @@ function MaxBattles({ accountId }: { accountId: number }) {
                             </>
                           ) : (
                             <span className="text-xs text-muted" title={p.max_attack_unknown_reason ?? undefined}>
-                              onbekend
+                              {t("common.unknown")}
                               {p.max_attack_unknown_reason && <span className="block">{p.max_attack_unknown_reason}</span>}
                             </span>
                           )}
@@ -140,14 +148,19 @@ function MaxBattles({ accountId }: { accountId: number }) {
                         <td className="pr-3 text-xs">
                           {Object.entries(p.max_moves).map(([move, lvl]) => (
                             <span key={move} className="block">
-                              {moveNames[move] ?? move} niveau {lvl}
+                              {t("battles.max.moveLevel", { move: moveName(move), level: num(lvl) })}
                             </span>
                           ))}
                         </td>
                         <td className="text-xs text-muted">
                           {Object.entries(p.next_upgrade_cost).map(([move, cost]) => (
                             <span key={move} className="block">
-                              {moveNames[move]}: {cost ? `${num(cost.mpCost ?? null)} MP, ${cost.candyCost ? `${cost.candyCost} candy` : `${cost.xlCandyCost ?? "?"} XL`}` : "maximaal"}
+                              {moveName(move)}:{" "}
+                              {cost
+                                ? cost.candyCost
+                                  ? t("battles.max.costCandy", { mp: num(cost.mpCost ?? null), candy: num(cost.candyCost) })
+                                  : t("battles.max.costXl", { mp: num(cost.mpCost ?? null), xl: num(cost.xlCandyCost, "?") })
+                                : t("battles.max.maxed")}
                             </span>
                           ))}
                         </td>

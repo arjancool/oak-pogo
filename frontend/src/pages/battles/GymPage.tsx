@@ -1,4 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
+import type { ParseKeys, TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { RequireAccount } from "../../components/layout/RequireAccount";
@@ -39,30 +41,32 @@ interface GymOverview {
   game_data_version: number;
 }
 
-const confidenceLabels: Record<Defender["confidence"], string> = { high: "Hoog", medium: "Gemiddeld", low: "Laag" };
+const confidenceLabels: Record<Defender["confidence"], ParseKeys> = {
+  high: "battles.gyms.confidenceLevels.high",
+  medium: "battles.gyms.confidenceLevels.medium",
+  low: "battles.gyms.confidenceLevels.low",
+};
 
-function excludedText(excluded: GymOverview["excluded"]): string | null {
+function excludedText(excluded: GymOverview["excluded"], t: TFunction): string | null {
   const parts = [
-    excluded.not_deployable ? `${num(excluded.not_deployable)} mogen volgens de Game Data niet in een gym` : null,
-    excluded.unknown_form ? `${num(excluded.unknown_form)} hebben een vorm die de Game Data niet kent` : null,
-    excluded.unknown_stats ? `${num(excluded.unknown_stats)} missen level of IV's` : null,
+    excluded.not_deployable ? t("battles.gyms.excluded.notDeployable", { number: num(excluded.not_deployable) }) : null,
+    excluded.unknown_form ? t("battles.gyms.excluded.unknownForm", { count: excluded.unknown_form, number: num(excluded.unknown_form) }) : null,
+    excluded.unknown_stats ? t("battles.gyms.excluded.unknownStats", { count: excluded.unknown_stats, number: num(excluded.unknown_stats) }) : null,
   ].filter(Boolean);
-  return parts.length ? `Niet meegeteld: ${parts.join(", ")}.` : null;
+  return parts.length ? t("battles.gyms.excluded.text", { parts: parts.join(", ") }) : null;
 }
 
 function Gyms({ accountId }: { accountId: number }) {
+  const { t } = useTranslation();
   const query = useQuery({
     queryKey: ["gym-defenders", accountId],
     queryFn: () => api.get<GymOverview>("/api/v1/battles/gym-defenders", { account_id: accountId }),
   });
   const data = query.data;
-  const excluded = data ? excludedText(data.excluded) : null;
+  const excluded = data ? excludedText(data.excluded, t) : null;
   return (
     <>
-      <PageHeader
-        title="Gymverdedigers"
-        description="De Pokémon die een gym het langst vasthouden: veel HP en Defense, zodat een aanvaller veel aanvallen nodig heeft. Per soort je sterkste exemplaar."
-      />
+      <PageHeader title={t("battles.gyms.title")} description={t("battles.gyms.description")} />
       {query.isLoading && <Spinner />}
       {query.error && <Alert tone="error">{errorMessage(query.error)}</Alert>}
       {data?.unknown_reason && <Alert tone="warning">{data.unknown_reason}</Alert>}
@@ -70,7 +74,7 @@ function Gyms({ accountId }: { accountId: number }) {
         <>
           <Card className="mb-5">
             <details>
-              <summary className="cursor-pointer text-sm font-medium">Hoe OAK dit berekent</summary>
+              <summary className="cursor-pointer text-sm font-medium">{t("battles.gyms.howCalculated")}</summary>
               <p className="mt-2 text-sm text-muted">{data.method}</p>
               <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-muted">
                 {data.notes.map((note) => (
@@ -79,13 +83,14 @@ function Gyms({ accountId }: { accountId: number }) {
               </ul>
             </details>
             <p className="mt-3 text-xs text-muted">
-              Bron: {data.source}, Game Data-versie {data.game_data_version}.{excluded ? ` ${excluded}` : ""}
+              {t("battles.gyms.source", { source: data.source, version: data.game_data_version })}
+              {excluded ? ` ${excluded}` : ""}
             </p>
           </Card>
           {data.defenders.length === 0 ? (
-            <EmptyState title="Geen verdedigers gevonden">Er staat geen Pokémon in je collectie die volgens de Game Data in een gym mag.</EmptyState>
+            <EmptyState title={t("battles.gyms.emptyTitle")}>{t("battles.gyms.emptyText")}</EmptyState>
           ) : (
-            <Card title={`Je ${data.defenders.length} sterkste verdedigers`}>
+            <Card title={t("battles.gyms.strongest", { count: data.defenders.length })}>
               <ol className="divide-y divide-line">
                 {data.defenders.map((d, index) => (
                   <li key={d.pokemon_id} className="flex flex-wrap items-start gap-3 py-3">
@@ -97,23 +102,23 @@ function Gyms({ accountId }: { accountId: number }) {
                           {d.name}
                           {d.form_label ? ` (${d.form_label})` : ""}
                         </Link>
-                        {d.types.map((t) => (
-                          <TypeBadge key={t} type={t} />
+                        {d.types.map((type) => (
+                          <TypeBadge key={type} type={type} />
                         ))}
-                        {d.shadow && <Badge color="#a855f7">Shadow</Badge>}
-                        {d.in_gym && <Badge color="#38bdf8">Staat in een gym</Badge>}
-                        <ScoreMeter label="Verdedigingswaarde" value={d.value} />
+                        {d.shadow && <Badge color="#a855f7">{t("battles.shared.shadow")}</Badge>}
+                        {d.in_gym && <Badge color="#38bdf8">{t("battles.gyms.inGym")}</Badge>}
+                        <ScoreMeter label={t("battles.gyms.value")} value={d.value} />
                       </div>
                       <p className="mt-1 text-xs text-muted">
                         CP {num(d.cp, "?")} · L{level(d.level)}
                         {d.fast_move ? ` · ${[d.fast_move, ...d.charged_moves].join(", ")}` : ""}
-                        {d.same_species > 0 ? ` · nog ${d.same_species} andere van deze soort` : ""}
+                        {d.same_species > 0 ? ` · ${t("battles.gyms.sameSpecies", { number: num(d.same_species) })}` : ""}
                       </p>
                       <ul className="mt-1 space-y-0.5 text-xs text-muted">
                         {d.reasons.map((reason) => (
                           <li key={reason}>{reason}</li>
                         ))}
-                        <li>Betrouwbaarheid: {confidenceLabels[d.confidence]}</li>
+                        <li>{t("battles.gyms.confidence", { level: t(confidenceLabels[d.confidence]) })}</li>
                       </ul>
                     </div>
                   </li>

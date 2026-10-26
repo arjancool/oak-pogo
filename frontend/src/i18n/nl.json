@@ -597,5 +597,240 @@
     "moves": "aanvallen: {{moves}}",
     "cost": "{{stardust}} stardust · {{candy}} candy",
     "footer": "Prioriteit volgt de geschiktheid (PvPoke-soortscore × IV-kwaliteit). Kosten van TM's, evolutie-items en het vrijspelen van een tweede aanval staan op de detailpagina."
+  },
+  "battles": {
+    "shared": {
+      "either": "{{rest}} of {{last}}",
+      "range": "{{from}} t/m {{to}}",
+      "maxCp": "Maximaal {{cp}} CP.",
+      "noCpLimit": "Geen CP-limiet.",
+      "levelCap": "Maximaal level {{level}}.",
+      "shadow": "Shadow",
+      "rules": {
+        "typeOnly": "Alleen Pokémon met het type {{types}}.",
+        "typeNone": "Geen Pokémon met het type {{types}}.",
+        "tagOnly": "Alleen {{tags}}.",
+        "tagNone": "Geen {{tags}}.",
+        "idOnly": "Alleen {{number}} aangewezen soorten.",
+        "idAlso_one": "Daarnaast mogen {{count}} aangewezen soorten mee.",
+        "idAlso_other": "Daarnaast mogen {{count}} aangewezen soorten mee.",
+        "idNone_one": "{{count}} aangewezen soorten mogen niet mee.",
+        "idNone_other": "{{count}} aangewezen soorten mogen niet mee.",
+        "stageOnly": "Alleen {{stages}}.",
+        "stageNone": "Geen {{stages}}.",
+        "dexOnly": "Alleen Pokédex-nummers {{ranges}}.",
+        "dexNone": "Geen Pokédex-nummers {{ranges}}.",
+        "moveOnly_one": "Alleen Pokémon die een van {{count}} aangewezen aanvallen kunnen leren.",
+        "moveOnly_other": "Alleen Pokémon die een van {{count}} aangewezen aanvallen kunnen leren.",
+        "moveNone_one": "Geen Pokémon die een van {{count}} aangewezen aanvallen kunnen leren.",
+        "moveNone_other": "Geen Pokémon die een van {{count}} aangewezen aanvallen kunnen leren.",
+        "moveTypeOnly": "Alleen Pokémon met een aanval van het type {{types}}.",
+        "moveTypeNone": "Geen Pokémon met een aanval van het type {{types}}.",
+        "costOnly": "Alleen Pokémon waarvan de tweede aanval {{costs}} stardust kost.",
+        "costNone": "Geen Pokémon waarvan de tweede aanval {{costs}} stardust kost.",
+        "distanceOnly": "Alleen Pokémon met een buddy-afstand van {{distances}} km.",
+        "distanceNone": "Geen Pokémon met een buddy-afstand van {{distances}} km.",
+        "other": "Regel van het soort \"{{kind}}\"."
+      },
+      "tags": {
+        "mega": "Mega-evoluties",
+        "shadow": "Shadow Pokémon",
+        "legendary": "Legendary Pokémon",
+        "mythical": "Mythical Pokémon",
+        "ultrabeast": "Ultra Beasts",
+        "starter": "starters",
+        "regional": "regionale Pokémon"
+      },
+      "stages": {
+        "none": "Pokémon zonder evolutie",
+        "first": "Pokémon die nog kunnen evolueren en zelf geen eerdere vorm hebben",
+        "middle": "middelste vormen van een evolutielijn",
+        "final": "laatste vormen van een evolutielijn"
+      },
+      "typeInRule": {
+        "normal": "normaal",
+        "fighting": "vechten",
+        "flying": "vliegend",
+        "poison": "gif",
+        "ground": "grond",
+        "rock": "gesteente",
+        "bug": "insect",
+        "ghost": "geest",
+        "steel": "staal",
+        "fire": "vuur",
+        "water": "water",
+        "grass": "gras",
+        "electric": "elektrisch",
+        "psychic": "psychisch",
+        "ice": "ijs",
+        "dragon": "draak",
+        "dark": "duister",
+        "fairy": "fee"
+      }
+    },
+    "cups": {
+      "title": "Cups",
+      "description": "Speciale formats met eigen regels, zoals de Fantasy Cup. OAK toont de cups die PvPoke nu op zijn site heeft. Daar zitten cups uit de GO Battle League tussen, maar ook toernooien uit de community. Welke cup in het spel loopt, zie je in Pokémon GO zelf.",
+      "emptyTitle": "Geen cups bekend",
+      "emptyText": "De actieve Game Data bevat geen cups. Werk de Game Data bij onder Beheer, dan haalt OAK ze op bij PvPoke.",
+      "ranked": "Ranglijst van PvPoke",
+      "unranked": "Geen ranglijst",
+      "unrankedHint": "Je Pokémon worden alleen op IV-rang gesorteerd.",
+      "eligible": "{{species}} soorten en vormen mogen mee volgens de regels van PvPoke.",
+      "rankedCount": "PvPoke rangschikt er {{species}}.",
+      "yourPokemon": "Je Pokémon voor deze cup",
+      "suggestTeam": "Team voorstellen",
+      "about": "Over dit toernooi"
+    },
+    "league": {
+      "sortSuitable": "Meest geschikt eerst",
+      "readiness": {
+        "label": "Inzetbaarheid",
+        "all": "Alle inzetbaarheid",
+        "direct": "Direct inzetbaar",
+        "powerUp": "Na power-up",
+        "evolution": "Na evolutie"
+      },
+      "cupRules": "Regels van deze cup",
+      "cupRulesSource": "Zoals PvPoke ze beschrijft. Controleer in het spel of de cup nu loopt en of de regels gelijk zijn.",
+      "allCups": "Alle cups",
+      "emptyTitle": "Geen geschikte Pokémon",
+      "emptyCup": "Er zijn geen Pokémon die (na evolutie of power-up) in deze cup passen, of de analyse moet nog draaien.",
+      "emptyLeague": "Er zijn geen Pokémon die (na evolutie of power-up) in deze league passen, of de analyse moet nog draaien.",
+      "columns": {
+        "pokemon": "Pokémon",
+        "target": "Doel",
+        "speciesRank": "Soortrang",
+        "ivRank": "IV-rang",
+        "cpNow": "CP nu",
+        "best": "beste",
+        "readiness": "Inzetbaarheid",
+        "investment": "Investering",
+        "moves": "Aanvallen"
+      },
+      "afterEvolution": "na evolutie",
+      "stardust": "{{amount}} stardust",
+      "quality": {
+        "optimal": "Optimaal",
+        "partial": "Deels",
+        "poor": "Andere aanvallen nodig",
+        "afterEvolution": "Na evolutie bepalen",
+        "unknown": "Onbekend"
+      },
+      "truncated": "Je ziet de eerste {{shown}} van {{total}} Pokémon in deze volgorde. Het sorteren gebeurt over alle {{total}}.",
+      "explanation": "Klik op een kolomkop om te sorteren. Soortrang zegt hoe sterk de soort is (PvPoke). IV-rang zegt hoe goed dit exemplaar binnen die soort is. Een sterke IV-rang bij een zwakke soort maakt nog geen goede battle-Pokémon."
+    },
+    "teamBuilder": {
+      "title": "Team Builder",
+      "description": "Drie teamvarianten uit je eigen collectie: direct inzetbaar, met beperkte upgrades en het beste toekomstige team.",
+      "league": "League of cup",
+      "leagues": "Leagues",
+      "cups": "Cups",
+      "budget": "Stardust-budget per Pokémon (beperkte upgrades)",
+      "suggest": "Teams voorstellen",
+      "save": "Opslaan",
+      "saved": "Team opgeslagen.",
+      "roles": {
+        "lead": "Lead",
+        "switch": "Safe switch",
+        "closer": "Closer"
+      },
+      "memberStats": "CP {{cp}} → {{bestCp}} · IV-rang {{ivRank}} · soortrang {{speciesRank}}",
+      "moves": "Aanvallen: {{moves}}",
+      "summary": "Investering: {{stardust}} stardust · Gedeelde zwaktes: {{weaknesses}}",
+      "noWeaknesses": "geen",
+      "savedTeams": "Opgeslagen teams",
+      "noTeams": "Nog geen teams opgeslagen.",
+      "gone": "{{name}} (weg)",
+      "delete": "Verwijderen"
+    },
+    "raids": {
+      "title": "Raids",
+      "description": "Zonder baas zie je je beste algemene aanvallers. Kies een raid-baas voor counters tegen die specifieke tegenstander.",
+      "search": "Raid-baas zoeken, bijv. kyogre",
+      "general": "Algemene aanvallers",
+      "countersAgainst": "Counters tegen {{name}}",
+      "bestGeneral": "Beste algemene raid-aanvallers",
+      "intro_one": "De {{count}} aanvallers met de hoogste DPS met hun huidige aanvallen. Klik op een kolomkop om binnen deze lijst te sorteren. Het nummer blijft hun plek op DPS.",
+      "intro_other": "De {{count}} aanvallers met de hoogste DPS met hun huidige aanvallen. Klik op een kolomkop om binnen deze lijst te sorteren. Het nummer blijft hun plek op DPS.",
+      "columns": {
+        "pokemon": "Pokémon",
+        "dpsNow": "DPS nu",
+        "currentMoves": "Huidige aanvallen",
+        "bestMoveset": "Beste moveset",
+        "notes": "Opmerkingen"
+      },
+      "fastOnly": "alleen snelle aanval",
+      "eliteTm": "Elite TM nodig",
+      "alreadyBest": "Huidige moveset is al de beste",
+      "weakToBoss": "Zwak tegen baas-type",
+      "superEffective": "Supereffectief"
+    },
+    "rocket": {
+      "title": "Team GO Rocket",
+      "description": "Kies de Pokémon van de grunt, leader of Giovanni. OAK zoekt per tegenstander de beste counters uit je eigen collectie.",
+      "noLineupsTitle": "Geen actuele opstellingen",
+      "noLineups": "OAK heeft geen gevalideerde, gedateerde bron voor actuele Rocket-opstellingen en doet daar dus geen uitspraken over. Je kiest de tegenstanders zelf.",
+      "add": "Tegenstander toevoegen (maximaal 3)",
+      "remove": "{{name}} verwijderen",
+      "find": "Counters zoeken",
+      "resists": "Weerstaat",
+      "weak": "Kwetsbaar"
+    },
+    "max": {
+      "title": "Max Battles",
+      "description": "Dynamax- en Gigantamax-Pokémon uit je collectie, hun Max Moves en wat een upgrade kost.",
+      "search": "Max Battle-tegenstander zoeken",
+      "clear": "Wissen",
+      "attackers": "Aanvallers (Max Attack-type)",
+      "defenders": "Verdedigers (weerstand)",
+      "incoming": "inkomend ×{{value}}",
+      "count": "{{number}} Dynamax/Gigantamax-Pokémon",
+      "emptyTitle": "Geen Dynamax-Pokémon",
+      "emptyText": "De export bevat geen Pokémon met Dynamax- of Gigantamax-status.",
+      "columns": {
+        "pokemon": "Pokémon",
+        "maxAttackType": "Max Attack-type",
+        "maxMoves": "Max Moves",
+        "nextUpgrade": "Volgende upgrade"
+      },
+      "gigantamax": "Gigantamax",
+      "moveLevel": "{{move}} niveau {{level}}",
+      "costCandy": "{{mp}} MP, {{candy}} candy",
+      "costXl": "{{mp}} MP, {{xl}} XL",
+      "maxed": "maximaal",
+      "moves": {
+        "attack": "Max Attack",
+        "guard": "Max Guard",
+        "spirit": "Max Spirit"
+      }
+    },
+    "gyms": {
+      "title": "Gymverdedigers",
+      "description": "De Pokémon die een gym het langst vasthouden: veel HP en Defense, zodat een aanvaller veel aanvallen nodig heeft. Per soort je sterkste exemplaar.",
+      "howCalculated": "Hoe OAK dit berekent",
+      "source": "Bron: {{source}}, Game Data-versie {{version}}.",
+      "excluded": {
+        "text": "Niet meegeteld: {{parts}}.",
+        "notDeployable": "{{number}} mogen volgens de Game Data niet in een gym",
+        "unknownForm_one": "{{number}} hebben een vorm die de Game Data niet kent",
+        "unknownForm_other": "{{number}} hebben een vorm die de Game Data niet kent",
+        "unknownStats_one": "{{number}} missen level of IV's",
+        "unknownStats_other": "{{number}} missen level of IV's"
+      },
+      "emptyTitle": "Geen verdedigers gevonden",
+      "emptyText": "Er staat geen Pokémon in je collectie die volgens de Game Data in een gym mag.",
+      "strongest_one": "Je {{count}} sterkste verdedigers",
+      "strongest_other": "Je {{count}} sterkste verdedigers",
+      "inGym": "Staat in een gym",
+      "value": "Verdedigingswaarde",
+      "sameSpecies": "nog {{number}} andere van deze soort",
+      "confidence": "Betrouwbaarheid: {{level}}",
+      "confidenceLevels": {
+        "high": "Hoog",
+        "medium": "Gemiddeld",
+        "low": "Laag"
+      }
+    }
   }
 }

@@ -365,7 +365,7 @@ def update_action_list(
             pokemon, metadata, _analysis = found[pid]
             check = check_transfer(pokemon, metadata, guard)
             if check.blocked:
-                skipped.append({"pokemon_id": pid, "reason": check.blocked})
+                skipped.append({"pokemon_id": pid, "reason": check.blocked, "reason_text": check.blocked_text})
                 continue
             if check.needs and pid not in confirmed:
                 needs_confirmation.append(confirmation_item(pokemon, check))
@@ -399,7 +399,13 @@ def update_action_list(
                 pokemon, metadata, _analysis = found[pid]
                 check = check_transfer(pokemon, metadata, guard)
                 if check.blocked or check.unconfirmed(current[pid].confirmed):
-                    skipped.append({"pokemon_id": pid, "reason": check.blocked or "; ".join(check.messages)})
+                    reason = check.blocked or "; ".join(check.messages)
+                    text = check.blocked_text or {
+                        "code": "UNCONFIRMED",
+                        "text": reason,
+                        "data": {"items": check.message_texts},
+                    }
+                    skipped.append({"pokemon_id": pid, "reason": reason, "reason_text": text})
                     continue
             current[pid].status = "done"
             current[pid].updated_at = now
@@ -440,9 +446,12 @@ def _action_list(
                 "action": action.action,
                 "status": action.status,
                 "reason": "; ".join(reasons[:3]) or None,
+                "reason_texts": (analysis.reasons if analysis else [])[:3],
                 "protection": protection,
+                "protection_texts": analysis.protection_reasons if analysis else [],
                 "still_in_inventory": still_in_inventory,
                 "blocked": check.blocked,
+                "blocked_text": check.blocked_text,
                 "needs_confirmation": confirmation_item(pokemon, check, action.confirmed)
                 if unconfirmed and not check.blocked
                 else None,
@@ -482,10 +491,14 @@ def search_hint(items: list[dict[str, Any]]) -> dict[str, Any]:
         {"species_id": dex, "query": f"{dex}&" + ",".join(f"cp{cp}" for cp in sorted(set(cps)))}
         for dex, cps in sorted(by_species.items())
     ]
-    return {
-        "note": "Pokémon GO kan niet op Pokémon-ID zoeken. Gebruik per soort het Pokédex-nummer met de exacte CP, "
+    note = (
+        "Pokémon GO kan niet op Pokémon-ID zoeken. Gebruik per soort het Pokédex-nummer met de exacte CP, "
         "en controleer de Pokémon in het spel voordat je hem overzet. '&!favorite&!shiny&!lucky' sluit "
-        "extra veilig uit.",
+        "extra veilig uit."
+    )
+    return {
+        "note": note,
+        "note_text": {"code": "SEARCH_NOTE", "text": note},
         "safety_suffix": "&!favorite&!shiny&!lucky&!4*&!legendary&!mythical&!shadow&!costume",
         "queries": queries,
     }

@@ -120,10 +120,11 @@ def protection_reasons(view: PokemonView, rules: CleanupRules) -> list[dict[str,
             _reason(
                 "MANUAL",
                 "Handmatig beschermd" + (f": {view.manual_reason}" if view.manual_reason else ""),
+                **({"context": "note", "note": view.manual_reason} if view.manual_reason else {}),
             )
         )
     for tag in view.protecting_tags:
-        reasons.append(_reason("TAG", f"Beschermende tag '{tag}'"))
+        reasons.append(_reason("TAG", f"Beschermende tag '{tag}'", tag=tag))
     if rules.protect_shiny and view.shiny:
         reasons.append(_reason("SHINY", "Shiny"))
     if rules.protect_lucky and view.lucky:
@@ -276,13 +277,14 @@ def assign_roles(views: list[PokemonView], rules: CleanupRules) -> dict[int, lis
     return roles
 
 
-def _unknown_battle(view: PokemonView, context: CollectionContext) -> str | None:
+def _unknown_battle(view: PokemonView, context: CollectionContext) -> tuple[str, str] | None:
+    """Why the battle value cannot be computed: a code and the Dutch text."""
     if not context.has_game_data:
-        return "Geen actieve Game Data"
+        return "NO_GAME_DATA", "Geen actieve Game Data"
     if not view.has_ivs or view.level is None:
-        return "IV's of level ontbreken in de export"
+        return "MISSING_DATA", "IV's of level ontbreken in de export"
     if view.form_resolution == "unknown_species":
-        return "Soort onbekend in de Game Data"
+        return "UNKNOWN_SPECIES", "Soort onbekend in de Game Data"
     return None
 
 
@@ -294,9 +296,8 @@ def evaluate(views: list[PokemonView], rules: CleanupRules, context: CollectionC
     battle: dict[int, Score] = {}
     for view in views:
         missing = _unknown_battle(view, context)
-        battle[view.id] = (
-            Score(None, [{"code": "UNKNOWN", "text": missing, "value": 0.0}]) if missing else battle_score(view, rules)
-        )
+        unknown = [{"code": missing[0], "text": missing[1], "value": 0.0}] if missing else []
+        battle[view.id] = Score(None, unknown) if missing else battle_score(view, rules)
     groups: dict[str, list[PokemonView]] = defaultdict(list)
     for view in views:
         if view.group_key:
@@ -382,19 +383,16 @@ def _decide(
             0,
             Confidence.HIGH,
             protections,
-            [_reason("PROTECTED", "Beschermd: " + " + ".join(r["text"] for r in protections))],
+            [_reason("PROTECTED", "Beschermd: " + ", ".join(r["text"] for r in protections), protections=protections)],
             roles,
             [],
             warnings,
         )
     missing = _unknown_battle(view, context)
     if missing:
-        code = {
-            "Geen actieve Game Data": "NO_GAME_DATA",
-            "Soort onbekend in de Game Data": "UNKNOWN_SPECIES",
-        }.get(missing, "MISSING_DATA")
+        code, text = missing
         return Recommendation(
-            view.id, Status.UNKNOWN, 0, Confidence.LOW, [], [_reason(code, missing + ".")], [], [], warnings
+            view.id, Status.UNKNOWN, 0, Confidence.LOW, [], [_reason(code, text + ".")], [], [], warnings
         )
 
     reasons: list[dict[str, Any]] = []
@@ -408,6 +406,7 @@ def _decide(
                 "HIGH_KEEP_SCORE",
                 f"Bewaarscore {score} (bewaren vanaf {rules.keep_threshold})",
                 keep_score=score,
+                threshold=rules.keep_threshold,
             )
         )
         return Recommendation(
@@ -430,6 +429,7 @@ def _decide(
                     "maar er is een beter exemplaar",
                     league=league,
                     rank=target.rank,
+                    target=target.target_name,
                 )
             )
         if view.review_requested:
@@ -444,6 +444,8 @@ def _decide(
                 "KEEP_SCORE_DOUBT",
                 f"Bewaarscore {score}: twijfelgeval (tussen {rules.review_threshold} en {rules.keep_threshold})",
                 keep_score=score,
+                review_threshold=rules.review_threshold,
+                keep_threshold=rules.keep_threshold,
             )
         )
         return Recommendation(
@@ -457,6 +459,7 @@ def _decide(
             "LOW_KEEP_SCORE",
             f"Bewaarscore {score} (onder {rules.review_threshold})",
             keep_score=score,
+            threshold=rules.review_threshold,
         )
     )
     for league in PVP_LEAGUES:
@@ -470,6 +473,7 @@ def _decide(
                     league=league,
                     rank=target.rank,
                     percent=target.percent,
+                    target=target.target_name,
                 )
             )
     return Recommendation(
@@ -528,11 +532,15 @@ def _role_recommendation(
             reasons.append(
                 _reason(
                     "INVESTMENT",
-                    f"{target.target_name} {LEAGUE_LABELS[role['league']]}: {target.cost.stardust:,} stardust, "
-                    f"{target.cost.candy} candy, {target.cost.xl_candy} XL candy".replace(",", "."),
+                    f"{target.target_name} {LEAGUE_LABELS[role['league']]}: {target.cost.stardust:,} stardust".replace(
+                        ",", "."
+                    )
+                    + f", {target.cost.candy} candy, {target.cost.xl_candy} XL candy",
                     stardust=target.cost.stardust,
                     candy=target.cost.candy,
                     xl_candy=target.cost.xl_candy,
+                    target=target.target_name,
+                    league=role["league"],
                 )
             )
     return Recommendation(view.id, status, PRIORITY_BASE, _confidence(view, context), [], reasons, roles, [], warnings)
@@ -597,7 +605,7 @@ def _keep_best_of_group(
             text = "Beste exemplaar van deze soort in je collectie"
             if len(members) == 1:
                 text = "Enige exemplaar van deze soort in je collectie"
-            _promote(best, _reason("BEST_COPY", text, size=len(members)))
+            _promote(best, _reason("BEST_COPY", text, size=len(members), count=len(members)))
         missing = rules.keep_min_per_species - sum(1 for m in members if results[m.id].status in KEPT)
         for member in ordered[1:]:
             if missing <= 0:
@@ -609,6 +617,7 @@ def _keep_best_of_group(
                     _reason(
                         "MINIMUM",
                         f"Minimaal {rules.keep_min_per_species} exemplaren per soort bewaren",
+                        count=rules.keep_min_per_species,
                     ),
                 )
                 missing -= 1
@@ -680,25 +689,44 @@ def _apply_events(
             result.reasons = [*result.reasons, tip_reason(tip, tz)]
 
 
-def _differences(view: PokemonView, better: PokemonView, battle: dict[int, Score]) -> str:
-    details: list[str] = []
+def _differences(view: PokemonView, better: PokemonView, battle: dict[int, Score]) -> list[dict[str, Any]]:
+    details: list[dict[str, Any]] = []
     mine, theirs = battle[view.id].score, battle[better.id].score
     if mine is not None and theirs is not None and theirs != mine:
-        details.append(f"bruikbaarheid {theirs} tegen {mine}")
+        details.append(_reason("BATTLE", f"bruikbaarheid {theirs} tegen {mine}", theirs=theirs, mine=mine))
     for league in (*PVP_LEAGUES, "master"):
         own, other = view.primary.get(league), better.primary.get(league)
         if own and other and own.target_key == other.target_key and other.rank < own.rank:
-            details.append(f"{LEAGUE_LABELS[league]} IV-rang {other.rank} tegen {own.rank}")
+            details.append(
+                _reason(
+                    "RANK",
+                    f"{LEAGUE_LABELS[league]} IV-rang {other.rank} tegen {own.rank}",
+                    league=league,
+                    theirs=other.rank,
+                    mine=own.rank,
+                )
+            )
             break
     if better.iv_percent is not None and view.iv_percent is not None and better.iv_percent > view.iv_percent:
-        details.append(f"IV {_decimal(better.iv_percent)}% tegen {_decimal(view.iv_percent)}%")
-    return ", ".join(details) if details else "minstens even goed"
+        details.append(
+            _reason(
+                "IV",
+                f"IV {_decimal(better.iv_percent)}% tegen {_decimal(view.iv_percent)}%",
+                theirs=better.iv_percent,
+                mine=view.iv_percent,
+            )
+        )
+    return details or [_reason("EQUAL", "minstens even goed")]
 
 
-def _describe(view: PokemonView) -> str:
+def _describe(view: PokemonView) -> tuple[str, dict[str, Any]]:
+    """The other copy in a comparison, as Dutch text and as data for the sentence."""
     cp = view.cp if view.cp is not None else "?"
     year = f", gevangen in {view.caught_year}" if view.catch_date_known else ""
-    return f"{view.name} (CP {cp}{year})"
+    data: dict[str, Any] = {"pokemon_id": view.id, "name": view.name, "cp": cp}
+    if view.catch_date_known:
+        data.update(context="year", year=view.caught_year)
+    return f"{view.name} (CP {cp}{year})", data
 
 
 def _similar(
@@ -748,11 +776,13 @@ def _compare(
             if result.status is Status.TRANSFER_CANDIDATE or review:
                 position = max(1, len(softened)) if review else 0
                 if better_kept is not None:
+                    described, data = _describe(better_kept)
+                    differences = _differences(member, better_kept, battle)
                     text = (
-                        f"Een andere {_describe(better_kept)} blijft bewaard en is beter: "
-                        f"{_differences(member, better_kept, battle)}"
+                        f"Een andere {described} blijft bewaard en is beter: "
+                        f"{', '.join(d['text'] for d in differences)}"
                     )
-                    result.reasons.insert(position, _reason("BETTER_DUPLICATE", text, pokemon_id=better_kept.id))
+                    result.reasons.insert(position, _reason("BETTER_DUPLICATE", text, **data, differences=differences))
                 elif member.favorite:
                     result.reasons.insert(
                         position, _reason("NO_BETTER_COPY", "Er is geen beter exemplaar dat bewaard blijft")
@@ -762,11 +792,13 @@ def _compare(
                     (m for m in ordered if rank[m.id] < rank[member.id] and m.vintage_year is None), None
                 )
                 if newer_better is not None:
+                    described, data = _describe(newer_better)
+                    differences = _differences(member, newer_better, battle)
                     text = (
-                        f"Ter vergelijking: {_describe(newer_better)} is beter voor gevechten: "
-                        f"{_differences(member, newer_better, battle)}. Deze vintage Pokémon blijft beschermd."
+                        f"Ter vergelijking: {described} is beter voor gevechten: "
+                        f"{', '.join(d['text'] for d in differences)}. Deze vintage Pokémon blijft beschermd."
                     )
-                    result.reasons.append(_reason("VINTAGE_COMPARISON", text, pokemon_id=newer_better.id))
+                    result.reasons.append(_reason("VINTAGE_COMPARISON", text, **data, differences=differences))
                 elif rank[member.id] == 0:
                     result.reasons.append(
                         _reason("VINTAGE_BEST", "Ook vergeleken met nieuwere exemplaren het beste van zijn soort")

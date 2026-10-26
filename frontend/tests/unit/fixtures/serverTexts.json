@@ -1,0 +1,455 @@
+{
+ "reasons": [
+  {
+   "code": "BETTER_DUPLICATE",
+   "data": {
+    "context": "year",
+    "cp": 1208,
+    "differences": [
+     {
+      "code": "RANK",
+      "data": {
+       "league": "great",
+       "mine": 2600,
+       "theirs": 2563
+      },
+      "text": "Great League IV-rang 2563 tegen 2600"
+     },
+     {
+      "code": "IV",
+      "data": {
+       "mine": 62.2,
+       "theirs": 66.7
+      },
+      "text": "IV 66,7% tegen 62,2%"
+     }
+    ],
+    "name": "Azumarill",
+    "pokemon_id": 48,
+    "year": 2024
+   },
+   "text": "Een andere Azumarill (CP 1208, gevangen in 2024) blijft bewaard en is beter: Great League IV-rang 2563 tegen 2600, IV 66,7% tegen 62,2%"
+  },
+  {
+   "code": "NO_PROTECTION",
+   "text": "Geen harde bescherming"
+  },
+  {
+   "code": "NO_ROLE",
+   "text": "Geen unieke rol binnen de collectie"
+  },
+  {
+   "code": "LOW_KEEP_SCORE",
+   "data": {
+    "keep_score": 22,
+    "threshold": 40
+   },
+   "text": "Bewaarscore 22 (onder 40)"
+  },
+  {
+   "code": "WEAK_PVP",
+   "data": {
+    "league": "great",
+    "percent": 93.66,
+    "rank": 2600,
+    "target": "Azumarill"
+   },
+   "text": "Great League: IV-rang 2600 voor Azumarill (93,7% van de beste)"
+  },
+  {
+   "code": "KEEP_SCORE_DOUBT",
+   "data": {
+    "keep_score": 40,
+    "keep_threshold": 70,
+    "review_threshold": 40
+   },
+   "text": "Bewaarscore 40: twijfelgeval (tussen 40 en 70)"
+  },
+  {
+   "code": "HIGH_KEEP_SCORE",
+   "data": {
+    "keep_score": 90,
+    "threshold": 70
+   },
+   "text": "Bewaarscore 90 (bewaren vanaf 70)"
+  },
+  {
+   "code": "BEST_GYM",
+   "data": {
+    "competitors": 0,
+    "league": null,
+    "rank": 4,
+    "target": "Vaporeon",
+    "target_key": "134:VAPOREONNORMAL"
+   },
+   "text": "Beste gymverdediger (Defense en HP) voor Vaporeon"
+  },
+  {
+   "code": "BEST_COPY",
+   "data": {
+    "count": 1,
+    "size": 1
+   },
+   "text": "Enige exemplaar van deze soort in je collectie"
+  },
+  {
+   "code": "BEST_GREAT",
+   "data": {
+    "competitors": 1,
+    "league": "great",
+    "rank": 473,
+    "readiness": "power_up",
+    "target": "Sableye",
+    "target_key": "302:SABLEYENORMAL"
+   },
+   "text": "Beste Great League-kandidaat voor Sableye (IV-rang 473)"
+  },
+  {
+   "code": "INVESTMENT",
+   "data": {
+    "candy": 118,
+    "league": "great",
+    "stardust": 323000,
+    "target": "Sableye",
+    "xl_candy": 276
+   },
+   "text": "Sableye Great League: 323.000 stardust, 118 candy, 276 XL candy"
+  },
+  {
+   "code": "BEST_COPY",
+   "data": {
+    "count": 2,
+    "size": 2
+   },
+   "text": "Beste exemplaar van deze soort in je collectie"
+  },
+  {
+   "code": "BEST_COPY",
+   "data": {
+    "count": 3,
+    "size": 3
+   },
+   "text": "Beste exemplaar van deze soort in je collectie"
+  },
+  {
+   "code": "BEST_ULTRA",
+   "data": {
+    "competitors": 3,
+    "league": "ultra",
+    "rank": 511,
+    "readiness": "evolution",
+    "target": "Umbreon",
+    "target_key": "197:UMBREONNORMAL"
+   },
+   "text": "Beste Ultra League-kandidaat voor Umbreon (IV-rang 511)"
+  },
+  {
+   "code": "BEST_MASTER",
+   "data": {
+    "competitors": 3,
+    "league": "master",
+    "percent": 94.06,
+    "target": "Sylveon",
+    "target_key": "700:SYLVEONNORMAL"
+   },
+   "text": "Beste Master League-exemplaar voor Sylveon"
+  },
+  {
+   "code": "BEST_RAID",
+   "data": {
+    "competitors": 3,
+    "league": null,
+    "target": "Sylveon",
+    "target_key": "700:SYLVEONNORMAL"
+   },
+   "text": "Beste raid-aanvaller (Attack-IV) voor Sylveon"
+  },
+  {
+   "code": "WEAK_BEST_COPY",
+   "text": "Beste beschikbare exemplaar, maar de IV's zijn te zwak om in te investeren"
+  },
+  {
+   "code": "PROTECTED",
+   "data": {
+    "protections": [
+     {
+      "code": "LEGENDARY",
+      "text": "Legendary"
+     }
+    ]
+   },
+   "text": "Beschermd: Legendary"
+  },
+  {
+   "code": "VINTAGE_BEST",
+   "text": "Ook vergeleken met nieuwere exemplaren het beste van zijn soort"
+  },
+  {
+   "code": "VINTAGE_COMPARISON",
+   "data": {
+    "context": "year",
+    "cp": 767,
+    "differences": [
+     {
+      "code": "RANK",
+      "data": {
+       "league": "master",
+       "mine": 1402,
+       "theirs": 349
+      },
+      "text": "Master League IV-rang 349 tegen 1402"
+     },
+     {
+      "code": "IV",
+      "data": {
+       "mine": 57.8,
+       "theirs": 73.3
+      },
+      "text": "IV 73,3% tegen 57,8%"
+     }
+    ],
+    "name": "Squirtle",
+    "pokemon_id": 6,
+    "year": 2022
+   },
+   "text": "Ter vergelijking: Squirtle (CP 767, gevangen in 2022) is beter voor gevechten: Master League IV-rang 349 tegen 1402, IV 73,3% tegen 57,8%. Deze vintage Pokémon blijft beschermd."
+  }
+ ],
+ "warnings": [
+  {
+   "code": "PURIFIED",
+   "text": "Purified: lagere power-upkosten en mogelijk Return"
+  },
+  {
+   "code": "FAVORITE",
+   "text": "Favoriet: controleer zelf of je hem echt kwijt wilt"
+  },
+  {
+   "code": "TRADED",
+   "text": "Is eerder geruild"
+  }
+ ],
+ "protections": [
+  {
+   "code": "LEGENDARY",
+   "text": "Legendary"
+  },
+  {
+   "code": "VINTAGE",
+   "data": {
+    "year": 2019
+   },
+   "text": "Vintage Pokémon (2016–2019): gevangen in 2019"
+  },
+  {
+   "code": "MYTHICAL",
+   "text": "Mythical"
+  },
+  {
+   "code": "HUNDO",
+   "text": "Hundo (15/15/15)"
+  },
+  {
+   "code": "ULTRA_BEAST",
+   "text": "Ultra Beast"
+  },
+  {
+   "code": "DYNAMAX",
+   "text": "Dynamax"
+  },
+  {
+   "code": "COSTUME",
+   "text": "Kostuum"
+  },
+  {
+   "code": "NICKNAME",
+   "text": "Heeft een bijnaam"
+  },
+  {
+   "code": "LOCATION_CARD",
+   "text": "Speciale achtergrond"
+  },
+  {
+   "code": "EVENT",
+   "text": "Event-Pokémon"
+  },
+  {
+   "code": "LUCKY",
+   "text": "Lucky"
+  },
+  {
+   "code": "SHADOW",
+   "text": "Shadow"
+  },
+  {
+   "code": "SHINY",
+   "text": "Shiny"
+  }
+ ],
+ "parts": [
+  {
+   "code": "GREAT",
+   "data": {
+    "iv_quality": 0.055,
+    "iv_rank": 2600,
+    "league": "great",
+    "moveset_factor": 1.0,
+    "notes": [],
+    "species": {
+     "code": "SPECIES_RANK",
+     "data": {
+      "rank": 29
+     },
+     "text": "soortrang 29"
+    },
+    "species_rank": 29,
+    "species_weight": 0.968,
+    "target": "Azumarill"
+   },
+   "text": "Great League: Azumarill, soortrang 29, IV-rang 2600",
+   "value": 5.3
+  },
+  {
+   "code": "ULTRA",
+   "data": {
+    "iv_quality": 0.162,
+    "iv_rank": 1068,
+    "league": "ultra",
+    "moveset_factor": 1.0,
+    "notes": [],
+    "species": {
+     "code": "SPECIES_RANK",
+     "data": {
+      "rank": 820
+     },
+     "text": "soortrang 820"
+    },
+    "species_rank": 820,
+    "species_weight": 0.0,
+    "target": "Azumarill"
+   },
+   "text": "Ultra League: Azumarill, soortrang 820, IV-rang 1068",
+   "value": 0.0
+  },
+  {
+   "code": "MASTER",
+   "data": {
+    "iv_quality": 0.162,
+    "iv_rank": 1068,
+    "league": "master",
+    "moveset_factor": 1.0,
+    "notes": [],
+    "species": {
+     "code": "NO_RANKING",
+     "text": "geen PvPoke-ranking"
+    },
+    "species_rank": null,
+    "species_weight": 0.0,
+    "target": "Azumarill"
+   },
+   "text": "Master League: Azumarill, geen PvPoke-ranking, IV-rang 1068",
+   "value": 0.0
+  },
+  {
+   "code": "RAID",
+   "data": {
+    "dps": 12.28,
+    "rank": 14,
+    "target": "Azumarill",
+    "type": "water"
+   },
+   "text": "Raids: Azumarill zou #14 van alle Water-aanvallers zijn",
+   "value": 48.0
+  },
+  {
+   "code": "GYM",
+   "data": {
+    "bulk": 26253.5,
+    "rank": 14,
+    "target": "Azumarill"
+   },
+   "text": "Gyms: Azumarill zou #14 van alle verdedigers zijn",
+   "value": 35.0
+  },
+  {
+   "code": "BATTLE",
+   "data": {
+    "battle": 48,
+    "weight": 45
+   },
+   "text": "Bruikbaarheid 48 × 45%",
+   "value": 21.6
+  },
+  {
+   "code": "BEST_COPY",
+   "data": {
+    "count": 1,
+    "size": 1
+   },
+   "text": "Enige exemplaar van deze soort en vorm",
+   "value": 20
+  },
+  {
+   "code": "FAVORITE",
+   "text": "Favoriet",
+   "value": 25
+  },
+  {
+   "code": "BEST_COPY",
+   "data": {
+    "count": 2,
+    "size": 2
+   },
+   "text": "Beste van 2 exemplaren",
+   "value": 20
+  },
+  {
+   "code": "BEST_COPY",
+   "data": {
+    "count": 3,
+    "size": 3
+   },
+   "text": "Beste van 3 exemplaren",
+   "value": 20
+  },
+  {
+   "code": "BEST_COPY",
+   "data": {
+    "count": 4,
+    "size": 4
+   },
+   "text": "Beste van 4 exemplaren",
+   "value": 20
+  },
+  {
+   "code": "BEST_COPY",
+   "data": {
+    "count": 6,
+    "size": 6
+   },
+   "text": "Beste van 6 exemplaren",
+   "value": 20
+  },
+  {
+   "code": "TRAITS",
+   "data": {
+    "traits": [
+     {
+      "code": "RARITY",
+      "data": {
+       "context": "legendary"
+      },
+      "text": "Legendary"
+     }
+    ]
+   },
+   "text": "Bijzonder: Legendary",
+   "value": 10
+  },
+  {
+   "code": "NICKNAME",
+   "text": "Heeft een bijnaam",
+   "value": 5
+  }
+ ]
+}

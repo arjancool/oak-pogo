@@ -1767,5 +1767,143 @@
   },
   "notFound": {
     "text": "Deze pagina bestaat niet."
+  },
+  "server": {
+    "reasons": {
+      "OVERRIDE": "Handmatig vastgestelde status",
+      "PROTECTED": "Beschermd: {{protections}}",
+      "NO_GAME_DATA": "Geen actieve Game Data.",
+      "UNKNOWN_SPECIES": "Soort onbekend in de Game Data.",
+      "MISSING_DATA": "IV's of level ontbreken in de export.",
+      "HIGH_KEEP_SCORE": "Bewaarscore {{keep_score}} (bewaren vanaf {{threshold}})",
+      "GOOD_PVP_IVS": "Goede {{leagueName}}-IV's voor {{target}} (rang {{rank}}), maar er is een beter exemplaar",
+      "REVIEW_REQUESTED": "Gemarkeerd voor review",
+      "FORM_FALLBACK": "Vorm onbekend in de Game Data; standaardvorm gebruikt",
+      "KEEP_SCORE_DOUBT": "Bewaarscore {{keep_score}}: twijfelgeval (tussen {{review_threshold}} en {{keep_threshold}})",
+      "NO_PROTECTION": "Geen harde bescherming",
+      "NO_ROLE": "Geen unieke rol binnen de collectie",
+      "LOW_KEEP_SCORE": "Bewaarscore {{keep_score}} (onder {{threshold}})",
+      "WEAK_PVP": "{{leagueName}}: IV-rang {{rank}} voor {{target}} ({{percent, number(minimumFractionDigits: 1; maximumFractionDigits: 1)}}% van de beste)",
+      "BEST_GREAT": "Beste Great League-kandidaat voor {{target}} (IV-rang {{rank}})",
+      "BEST_ULTRA": "Beste Ultra League-kandidaat voor {{target}} (IV-rang {{rank}})",
+      "BEST_MASTER": "Beste Master League-exemplaar voor {{target}}",
+      "BEST_RAID": "Beste raid-aanvaller (Attack-IV) voor {{target}}",
+      "BEST_GYM": "Beste gymverdediger (Defense en HP) voor {{target}}",
+      "MINIMUM": "Minimaal aantal exemplaren per soort",
+      "MINIMUM_one": "Minimaal {{count}} exemplaar per soort bewaren",
+      "MINIMUM_other": "Minimaal {{count}} exemplaren per soort bewaren",
+      "WEAK_BEST_COPY": "Beste beschikbare exemplaar, maar de IV's zijn te zwak om in te investeren",
+      "INVESTMENT": "{{target}} {{leagueName}}: {{stardust, number}} stardust, {{candy}} candy, {{xl_candy}} XL candy",
+      "BEST_COPY_one": "Enige exemplaar van deze soort in je collectie",
+      "BEST_COPY_other": "Beste exemplaar van deze soort in je collectie",
+      "PARTIAL_IMPORT": "De laatste import was niet volledig; geen transferadvies",
+      "FAVORITE_REVIEW": "Favoriet: OAK stelt een favoriet nooit direct voor als transfer. Beoordeel hem zelf.",
+      "UNKNOWN_DATE": "Vangstdatum onbekend: dit kan een vintage Pokémon zijn",
+      "IN_GYM": "Staat nu in een gym. Overzetten kan pas als hij terug is.",
+      "EVENT_HOLD": "Bewaren tot na {{name}} ({{period}}): Community Day voor deze evolutielijn. Evolueren tijdens een Community Day geeft vaak een speciale aanval. Bekijk de eventdetails.",
+      "EVENT_HOLD_manual": "Bewaren tot na {{name}} ({{period}}), een event dat je zelf toevoegde.",
+      "TRANSFER_TIMING": "Wacht met overzetten tot {{name}} ({{period}}): {{bonus}}.",
+      "BETTER_DUPLICATE": "Een andere {{name}} (CP {{cp}}) blijft bewaard en is beter: {{differences}}",
+      "BETTER_DUPLICATE_year": "Een andere {{name}} (CP {{cp}}, gevangen in {{year}}) blijft bewaard en is beter: {{differences}}",
+      "NO_BETTER_COPY": "Er is geen beter exemplaar dat bewaard blijft",
+      "VINTAGE_COMPARISON": "Ter vergelijking: {{name}} (CP {{cp}}) is beter voor gevechten: {{differences}}. Deze vintage Pokémon blijft beschermd.",
+      "VINTAGE_COMPARISON_year": "Ter vergelijking: {{name}} (CP {{cp}}, gevangen in {{year}}) is beter voor gevechten: {{differences}}. Deze vintage Pokémon blijft beschermd.",
+      "VINTAGE_BEST": "Ook vergeleken met nieuwere exemplaren het beste van zijn soort"
+    },
+    "differences": {
+      "BATTLE": "bruikbaarheid {{theirs}} tegen {{mine}}",
+      "RANK": "{{leagueName}} IV-rang {{theirs}} tegen {{mine}}",
+      "IV": "IV {{theirs, number(minimumFractionDigits: 1; maximumFractionDigits: 1)}}% tegen {{mine, number(minimumFractionDigits: 1; maximumFractionDigits: 1)}}%",
+      "EQUAL": "minstens even goed"
+    },
+    "protections": {
+      "VINTAGE": "Vintage Pokémon (2016–2019): gevangen in {{year}}",
+      "MANUAL": "Handmatig beschermd",
+      "MANUAL_note": "Handmatig beschermd: {{note}}",
+      "TAG": "Beschermende tag '{{tag}}'",
+      "SHINY": "Shiny",
+      "LUCKY": "Lucky",
+      "SHUNDO": "Shundo",
+      "HUNDO": "Hundo (15/15/15)",
+      "LOCATION_CARD": "Speciale achtergrond",
+      "COSTUME": "Kostuum",
+      "MYTHICAL": "Mythical",
+      "LEGENDARY": "Legendary",
+      "ULTRA_BEAST": "Ultra Beast",
+      "SHADOW": "Shadow",
+      "PURIFIED": "Purified",
+      "GIGANTAMAX": "Gigantamax",
+      "DYNAMAX": "Dynamax",
+      "EVENT": "Event-Pokémon",
+      "NICKNAME": "Heeft een bijnaam",
+      "MEGA": "Mega-voortgang"
+    },
+    "warnings": {
+      "PURIFIED": "Purified: lagere power-upkosten en mogelijk Return",
+      "TRADED": "Is eerder geruild",
+      "UNKNOWN_DATE": "Vangstdatum onbekend: OAK neemt niet aan dat deze Pokémon nieuw is",
+      "VINTAGE_OVERRIDE": "Vintage {{year}}: je hebt de bescherming zelf opgeheven",
+      "FAVORITE": "Favoriet: controleer zelf of je hem echt kwijt wilt"
+    },
+    "parts": {
+      "GREAT": "{{leagueName}}: {{target}}, {{species}}, IV-rang {{iv_rank}}{{notes}}",
+      "ULTRA": "{{leagueName}}: {{target}}, {{species}}, IV-rang {{iv_rank}}{{notes}}",
+      "MASTER": "{{leagueName}}: {{target}}, {{species}}, IV-rang {{iv_rank}}{{notes}}",
+      "RAID": "Raids: {{target}} zou #{{rank}} van alle {{typeName}}-aanvallers zijn",
+      "GYM": "Gyms: {{target}} zou #{{rank}} van alle verdedigers zijn",
+      "NO_BATTLE_ROLE": "Geen league-, raid- of gymwaarde gevonden",
+      "NO_GAME_DATA": "Geen actieve Game Data",
+      "MISSING_DATA": "IV's of level ontbreken in de export",
+      "UNKNOWN_SPECIES": "Soort onbekend in de Game Data",
+      "BATTLE": "Bruikbaarheid {{battle}} × {{weight}}%",
+      "BATTLE_unknown": "Bruikbaarheid onbekend",
+      "BEST_COPY_one": "Enige exemplaar van deze soort en vorm",
+      "BEST_COPY_other": "Beste van {{count}} exemplaren",
+      "TRAITS": "Bijzonder: {{traits}}",
+      "TRAITS_capped": "Bijzonder: {{traits}} (maximaal {{cap}})",
+      "FAVORITE": "Favoriet",
+      "NICKNAME": "Heeft een bijnaam",
+      "PLANNED": "Je hebt een plan voor deze Pokémon"
+    },
+    "species": {
+      "SPECIES_RANK": "soortrang {{rank}}",
+      "NO_RANKING": "geen PvPoke-ranking"
+    },
+    "notes": {
+      "KNOWS_SPECIAL_MOVE": ", kent de speciale aanval al",
+      "BEST_MOVES_UNAVAILABLE": ", de beste aanvallen zijn niet beschikbaar"
+    },
+    "traits": {
+      "SHINY": "Shiny",
+      "LUCKY": "Lucky",
+      "RARITY_legendary": "Legendary",
+      "RARITY_mythical": "Mythical",
+      "RARITY_ultra_beast": "Ultra Beast",
+      "COSTUME": "Kostuum",
+      "LOCATION_CARD": "Speciale achtergrond",
+      "EVENT": "Event-Pokémon",
+      "MAX_gigantamax": "Gigantamax",
+      "MAX_dynamax": "Dynamax",
+      "MEGA": "Mega-voortgang"
+    },
+    "guard": {
+      "BLOCKED_MANUAL": "Handmatig beschermd",
+      "BLOCKED_VINTAGE": "Vintage {{year}}: hef eerst de bescherming op bij deze Pokémon",
+      "VINTAGE_LIFTED": "Vintage {{year}}, bescherming opgeheven",
+      "VINTAGE": "Vintage {{year}}",
+      "FAVORITE": "Favoriet",
+      "UNKNOWN_DATE": "Vangstdatum onbekend",
+      "PROTECTED": "Beschermd: {{protections}}",
+      "PROTECTION": "{{protections}}",
+      "UNCONFIRMED": "{{items}}"
+    },
+    "rules": {
+      "VINTAGE": "Vintage Pokémon (2016–2019) zijn altijd beschermd. Ze worden wel volledig geanalyseerd en vergeleken.",
+      "UNKNOWN_DATE": "Een Pokémon zonder bruikbare vangstdatum wordt nooit als nieuw behandeld: hooguit 'Beoordelen'.",
+      "FAVORITE": "Favorieten krijgen extra bewaarpunten en worden nooit direct als transfer voorgesteld."
+    },
+    "actionList": {
+      "SEARCH_NOTE": "Pokémon GO kan niet op Pokémon-ID zoeken. Gebruik per soort het Pokédex-nummer met de exacte CP, en controleer de Pokémon in het spel voordat je hem overzet. '&!favorite&!shiny&!lucky' sluit extra veilig uit."
+    }
   }
 }

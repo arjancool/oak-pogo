@@ -22,7 +22,7 @@ from typing import Any
 
 from app.core.errors import ValidationFailedError
 
-ENGINE_VERSION = "cleanup-2.2"
+ENGINE_VERSION = "cleanup-2.3"
 SCORE_MAX = 100
 MAX_KEEP_MIN = 10
 MAX_EVENT_HOLD_DAYS = 60

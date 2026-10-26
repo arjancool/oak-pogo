@@ -74,3 +74,9 @@ export function bytes(value: number | null | undefined): string {
   }
   return `${size.toLocaleString(locale, { maximumFractionDigits: 1 })} ${units[unit]}`;
 }
+
+/** A time span such as an event, in the active language: "8 nov, 14:00–17:00". */
+export function period(startIso: string, endIso: string): string {
+  const format = new Intl.DateTimeFormat(locale, { timeZone, day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  return format.formatRange(new Date(startIso), new Date(endIso));
+}

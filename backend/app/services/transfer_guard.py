@@ -60,14 +60,32 @@ def _catch_years(pokemon: Pokemon, tz: ZoneInfo) -> tuple[int | None, int | None
     return pokemon.caught_year, pokemon.caught_at.astimezone(tz).year if pokemon.caught_at else None
 
 
+def _text(code: str, text: str, **data: Any) -> dict[str, Any]:
+    """A sentence as a code with data, for the interface's language, plus the Dutch text."""
+    return {"code": code, "text": text, **({"data": data} if data else {})}
+
+
 @dataclass(slots=True)
 class TransferCheck:
     blocked: str | None = None
+    blocked_text: dict[str, Any] | None = None
     # The kinds of confirmation, for display: vintage, favorite, unknown_date, protected.
     needs: list[str] = field(default_factory=list)
     messages: list[str] = field(default_factory=list)
+    message_texts: list[dict[str, Any]] = field(default_factory=list)
     # The concrete reasons a confirmation covers, with a readable text for each.
     reasons: dict[str, str] = field(default_factory=dict)
+    reason_texts: dict[str, dict[str, Any]] = field(default_factory=dict)
+
+    def block(self, text: dict[str, Any]) -> None:
+        self.blocked, self.blocked_text = text["text"], text
+
+    def need(self, kind: str, message: dict[str, Any], reasons: dict[str, dict[str, Any]]) -> None:
+        self.needs.append(kind)
+        self.messages.append(message["text"])
+        self.message_texts.append(message)
+        self.reasons.update({key: text["text"] for key, text in reasons.items()})
+        self.reason_texts.update(reasons)
 
     @property
     def confirmation(self) -> list[str]:
@@ -83,40 +101,43 @@ class TransferCheck:
 def check_transfer(pokemon: Pokemon, metadata: PokemonUserMetadata | None, context: GuardContext) -> TransferCheck:
     check = TransferCheck()
     if metadata is not None and metadata.protected:
-        check.blocked = "Handmatig beschermd"
+        check.block(_text("BLOCKED_MANUAL", "Handmatig beschermd"))
         return check
     years = _catch_years(pokemon, context.tz)
     year = next((vintage_year(y) for y in years if vintage_year(y) is not None), None)
     overridden = metadata is not None and metadata.override_status == "TRANSFER_CANDIDATE"
     if year is not None:
         if not overridden:
-            check.blocked = f"Vintage {year}: hef eerst de bescherming op bij deze Pokémon"
+            text = f"Vintage {year}: hef eerst de bescherming op bij deze Pokémon"
+            check.block(_text("BLOCKED_VINTAGE", text, year=year))
             return check
-        check.needs.append("vintage")
-        check.messages.append(f"Vintage {year}, bescherming opgeheven")
-        check.reasons["vintage"] = f"Vintage {year}"
+        check.need(
+            "vintage",
+            _text("VINTAGE_LIFTED", f"Vintage {year}, bescherming opgeheven", year=year),
+            {"vintage": _text("VINTAGE", f"Vintage {year}", year=year)},
+        )
     if pokemon.favorite:
-        check.needs.append("favorite")
-        check.messages.append("Favoriet")
-        check.reasons["favorite"] = "Favoriet"
+        favorite = _text("FAVORITE", "Favoriet")
+        check.need("favorite", favorite, {"favorite": favorite})
     if not all(catch_date_known(y) for y in years):
-        check.needs.append("unknown_date")
-        check.messages.append("Vangstdatum onbekend")
-        check.reasons["unknown_date"] = "Vangstdatum onbekend"
+        unknown = _text("UNKNOWN_DATE", "Vangstdatum onbekend")
+        check.need("unknown_date", unknown, {"unknown_date": unknown})
     if year is None and not overridden:
         view = pokemon_view(pokemon, metadata, context.protecting_tags)
         protected = {
-            f"protected:{r['code']}": r["text"]
-            for r in protection_reasons(view, context.rules)
-            if r["code"] not in OWN_CHECKS
+            f"protected:{r['code']}": r for r in protection_reasons(view, context.rules) if r["code"] not in OWN_CHECKS
         }
         for tag_id in pokemon.tag_ids:
             if tag_id in context.protecting_tags:
-                protected[f"protected:TAG:{tag_id}"] = f"Beschermende tag '{context.protecting_tags[tag_id]}'"
+                tag = context.protecting_tags[tag_id]
+                protected[f"protected:TAG:{tag_id}"] = _text("TAG", f"Beschermende tag '{tag}'", tag=tag)
         if protected:
-            check.needs.append("protected")
-            check.messages.append("Beschermd: " + ", ".join(protected.values()))
-            check.reasons.update(protected)
+            items = list(protected.values())
+            check.need(
+                "protected",
+                _text("PROTECTED", "Beschermd: " + ", ".join(r["text"] for r in items), protections=items),
+                {key: _text("PROTECTION", r["text"], protections=r) for key, r in protected.items()},
+            )
     return check
 
 
@@ -132,5 +153,7 @@ def confirmation_item(pokemon: Pokemon, check: TransferCheck, confirmed: Iterabl
         "caught_year": pokemon.caught_year,
         "kinds": check.needs,
         "message": "; ".join(check.messages),
+        "message_texts": check.message_texts,
         "new_reasons": [check.reasons[key] for key in check.unconfirmed(earlier)] if earlier else [],
+        "new_reason_texts": [check.reason_texts[key] for key in check.unconfirmed(earlier)] if earlier else [],
     }

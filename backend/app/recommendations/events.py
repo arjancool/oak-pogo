@@ -79,6 +79,9 @@ def _data(event: EventInfo) -> dict[str, Any]:
         "link": event.link,
         "source": event.source,
         "version": event.version,
+        "name": event.name,
+        "starts_at": event.starts_at.isoformat(),
+        "ends_at": event.ends_at.isoformat(),
     }
 
 
@@ -90,9 +93,10 @@ def hold_reason(event: EventInfo, tz: ZoneInfo) -> dict[str, Any]:
         )
     else:
         text = f"Bewaren tot na {event.name} ({period(event, tz)}), een event dat je zelf toevoegde."
+        return {"code": "EVENT_HOLD", "text": text, "data": {**_data(event), "context": "manual"}}
     return {"code": "EVENT_HOLD", "text": text, "data": _data(event)}
 
 
 def tip_reason(event: EventInfo, tz: ZoneInfo) -> dict[str, Any]:
     text = f"Wacht met overzetten tot {event.name} ({period(event, tz)}): {event.transfer_bonus}."
-    return {"code": "TRANSFER_TIMING", "text": text, "data": _data(event)}
+    return {"code": "TRANSFER_TIMING", "text": text, "data": {**_data(event), "bonus": event.transfer_bonus}}

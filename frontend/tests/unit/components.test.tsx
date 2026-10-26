@@ -5,6 +5,7 @@ import { useState, type ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ConfirmTransferDialog } from "../../src/components/cleanup/ConfirmTransferDialog";
+import { changeLanguage } from "../../src/i18n";
 import { CleanupBadge, PokemonSprite, ScoreMeter, StatusBadges, pokemonName } from "../../src/components/pokemon";
 import { Button, Dialog, Pagination, SortHeader } from "../../src/components/ui";
 import { spriteUrl } from "../../src/lib/settings";
@@ -122,7 +123,7 @@ describe("ConfirmTransferDialog", () => {
     render(
       <ConfirmTransferDialog
         items={[
-          { pokemon_id: 1, name: "Pikachu", cp: 500, caught_year: 2024, kinds: ["favorite"], message: "Favoriet", new_reasons: [] },
+          { pokemon_id: 1, name: "Pikachu", cp: 500, caught_year: 2024, kinds: ["favorite"], message: "Favoriet", message_texts: [], new_reasons: [], new_reason_texts: [] },
           {
             pokemon_id: 2,
             name: "Eevee",
@@ -130,7 +131,9 @@ describe("ConfirmTransferDialog", () => {
             caught_year: null,
             kinds: ["unknown_date", "protected"],
             message: "Vangstdatum onbekend; Beschermd: Beschermende tag 'Familie'",
+            message_texts: [],
             new_reasons: ["Beschermende tag 'Familie'"],
+            new_reason_texts: [],
           },
         ]}
         onCancel={() => undefined}
@@ -143,6 +146,41 @@ describe("ConfirmTransferDialog", () => {
     await userEvent.click(screen.getAllByRole("checkbox")[0] as HTMLElement);
     await userEvent.click(screen.getByRole("button", { name: "1 bevestigen" }));
     expect(onConfirm).toHaveBeenCalledWith([1]);
+  });
+});
+
+describe("ConfirmTransferDialog in English", () => {
+  afterEach(async () => {
+    await changeLanguage("nl");
+  });
+
+  it("shows the guard's reasons in the chosen language", async () => {
+    await changeLanguage("en");
+    const tag = { code: "TAG", text: "Beschermende tag 'Familie'", data: { tag: "Familie" } };
+    render(
+      <ConfirmTransferDialog
+        items={[
+          {
+            pokemon_id: 2,
+            name: "Eevee",
+            cp: 400,
+            caught_year: null,
+            kinds: ["unknown_date", "protected"],
+            message: "Vangstdatum onbekend; Beschermd: Beschermende tag 'Familie'",
+            message_texts: [
+              { code: "UNKNOWN_DATE", text: "Vangstdatum onbekend" },
+              { code: "PROTECTED", text: "Beschermd: Beschermende tag 'Familie'", data: { protections: [tag] } },
+            ],
+            new_reasons: ["Beschermende tag 'Familie'"],
+            new_reason_texts: [{ code: "PROTECTION", text: tag.text, data: { protections: tag } }],
+          },
+        ]}
+        onCancel={() => undefined}
+        onConfirm={() => undefined}
+      />,
+    );
+    expect(screen.getByText("New since your last confirmation: Protecting tag 'Familie'")).toBeInTheDocument();
+    expect(screen.getByText("Catch date unknown; Protected: Protecting tag 'Familie'")).toBeInTheDocument();
   });
 });
 

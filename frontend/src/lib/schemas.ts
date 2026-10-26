@@ -208,8 +208,10 @@ export const confirmationItem = z.object({
   caught_year: z.number().nullable(),
   kinds: z.array(z.string()),
   message: z.string(),
+  message_texts: z.array(reason).default([]),
   // What changed since an earlier confirmation of the same Pokémon.
   new_reasons: z.array(z.string()).default([]),
+  new_reason_texts: z.array(reason).default([]),
 });
 export type ConfirmationItem = z.infer<typeof confirmationItem>;
 
@@ -222,16 +224,20 @@ export const actionList = z.object({
       action: z.string(),
       status: z.string(),
       reason: z.string().nullable(),
+      reason_texts: z.array(reason).default([]),
       protection: z.array(z.string()),
+      protection_texts: z.array(reason).default([]),
       still_in_inventory: z.boolean(),
       // Checked again on every read: a protection that appeared later holds the item back.
       blocked: z.string().nullable(),
+      blocked_text: reason.nullable().default(null),
       needs_confirmation: confirmationItem.nullable(),
       executable: z.boolean(),
     }),
   ),
   search_hint: z.object({
     note: z.string(),
+    note_text: reason.optional(),
     safety_suffix: z.string(),
     queries: z.array(z.object({ species_id: z.number(), query: z.string() })),
   }),
@@ -239,7 +245,7 @@ export const actionList = z.object({
 export type ActionList = z.infer<typeof actionList>;
 
 export const actionListUpdate = actionList.extend({
-  skipped: z.array(z.object({ pokemon_id: z.number(), reason: z.string() })),
+  skipped: z.array(z.object({ pokemon_id: z.number(), reason: z.string(), reason_text: reason.optional() })),
   needs_confirmation: z.array(confirmationItem),
 });
 export type ActionListUpdate = z.infer<typeof actionListUpdate>;

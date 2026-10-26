@@ -74,6 +74,10 @@ class GroupPosition:
     size: int
 
 
+def _text(code: str, text: str, data: dict[str, Any]) -> dict[str, Any]:
+    return {"code": code, "text": text, **({"data": data} if data else {})}
+
+
 def _part(code: str, text: str, value: float, **data: Any) -> dict[str, Any]:
     return {"code": code, "text": text, "value": round(value, 1), **({"data": data} if data else {})}
 
@@ -92,14 +96,14 @@ def species_weight(species_rank: int | None, rules: CleanupRules) -> float:
     return (rules.meta_rank_threshold - species_rank) / (rules.meta_rank_threshold - rules.species_rank_full)
 
 
-def moveset_factor(view: PokemonView, target: LeagueTarget) -> tuple[float, str | None]:
+def moveset_factor(view: PokemonView, target: LeagueTarget) -> tuple[float, dict[str, Any] | None]:
     advice = target.moveset
     if advice is None or advice.source != "pvpoke_usage_filtered":
         return 1.0, None
     special = [*advice.elite_moves, *advice.unavailable]
     if not target.is_evolution and special and all(move in view.moves for move in special):
-        return 1.0, "kent de speciale aanval al"
-    return MOVESET_PENALTY, "de beste aanvallen zijn niet beschikbaar"
+        return 1.0, {"code": "KNOWS_SPECIAL_MOVE", "text": "kent de speciale aanval al"}
+    return MOVESET_PENALTY, {"code": "BEST_MOVES_UNAVAILABLE", "text": "de beste aanvallen zijn niet beschikbaar"}
 
 
 def raid_value(rank: int, rules: CleanupRules) -> float:
@@ -120,15 +124,22 @@ def battle_score(view: PokemonView, rules: CleanupRules) -> Score:
         quality = iv_quality(target.rank)
         factor, note = moveset_factor(view, target)
         value = SCORE_MAX * weight * quality * factor
-        species = f"soortrang {target.species_rank}" if target.species_rank is not None else "geen PvPoke-ranking"
-        text = f"{label}: {target.target_name}, {species}, IV-rang {target.rank}"
+        species = (
+            {"code": "SPECIES_RANK", "text": f"soortrang {target.species_rank}", "data": {"rank": target.species_rank}}
+            if target.species_rank is not None
+            else {"code": "NO_RANKING", "text": "geen PvPoke-ranking"}
+        )
+        text = f"{label}: {target.target_name}, {species['text']}, IV-rang {target.rank}"
         if note:
-            text += f", {note}"
+            text += f", {note['text']}"
         parts.append(
             _part(
                 league.upper(),
                 text,
                 value,
+                league=league,
+                species=species,
+                notes=[note] if note else [],
                 target=target.target_name,
                 species_rank=target.species_rank,
                 iv_rank=target.rank,
@@ -180,49 +191,64 @@ def comparison_key(view: PokemonView, battle: Score) -> tuple[Any, ...]:
     return (-(battle.score if battle.score is not None else -1), -(view.iv_percent or 0), -(view.cp or 0), view.id)
 
 
-def _traits(view: PokemonView, rules: CleanupRules) -> list[tuple[str, str, int]]:
-    traits: list[tuple[str, str, int]] = []
+def _traits(view: PokemonView, rules: CleanupRules) -> list[tuple[str, str, int, dict[str, Any]]]:
+    traits: list[tuple[str, str, int, dict[str, Any]]] = []
     if view.shiny:
-        traits.append(("SHINY", "Shiny", rules.keep_points_shiny))
+        traits.append(("SHINY", "Shiny", rules.keep_points_shiny, {}))
     if view.lucky:
-        traits.append(("LUCKY", "Lucky", rules.keep_points_lucky))
+        traits.append(("LUCKY", "Lucky", rules.keep_points_lucky, {}))
     if view.species_class in ("legendary", "mythical", "ultra_beast"):
         label = {"legendary": "Legendary", "mythical": "Mythical", "ultra_beast": "Ultra Beast"}[view.species_class]
-        traits.append(("RARITY", label, rules.keep_points_rarity))
+        traits.append(("RARITY", label, rules.keep_points_rarity, {"context": view.species_class}))
     if view.costume:
-        traits.append(("COSTUME", "Kostuum", rules.keep_points_costume))
+        traits.append(("COSTUME", "Kostuum", rules.keep_points_costume, {}))
     if view.location_card:
-        traits.append(("LOCATION_CARD", "Speciale achtergrond", rules.keep_points_location_card))
+        traits.append(("LOCATION_CARD", "Speciale achtergrond", rules.keep_points_location_card, {}))
     if view.event:
-        traits.append(("EVENT", "Event-Pokémon", rules.keep_points_event))
+        traits.append(("EVENT", "Event-Pokémon", rules.keep_points_event, {}))
     if view.gigantamax or view.dynamax:
-        traits.append(("MAX", "Gigantamax" if view.gigantamax else "Dynamax", rules.keep_points_max))
+        kind = "gigantamax" if view.gigantamax else "dynamax"
+        traits.append(("MAX", "Gigantamax" if view.gigantamax else "Dynamax", rules.keep_points_max, {"context": kind}))
     if view.mega_progress:
-        traits.append(("MEGA", "Mega-voortgang", rules.keep_points_mega))
+        traits.append(("MEGA", "Mega-voortgang", rules.keep_points_mega, {}))
     return traits
 
 
 def keep_score(view: PokemonView, battle: Score, position: GroupPosition | None, rules: CleanupRules) -> Score:
     parts: list[dict[str, Any]] = []
     if battle.score is None:
-        parts.append(_part("BATTLE", "Bruikbaarheid onbekend", 0.0))
+        parts.append(_part("BATTLE", "Bruikbaarheid onbekend", 0.0, context="unknown"))
     else:
         points = battle.score * rules.keep_weight_battle / SCORE_MAX
         parts.append(
-            _part("BATTLE", f"Bruikbaarheid {battle.score} × {rules.keep_weight_battle}%", points, battle=battle.score)
+            _part(
+                "BATTLE",
+                f"Bruikbaarheid {battle.score} × {rules.keep_weight_battle}%",
+                points,
+                battle=battle.score,
+                weight=rules.keep_weight_battle,
+            )
         )
     if position is not None and position.rank == 1:
         text = f"Beste van {position.size} exemplaren"
         if position.size == 1:
             text = "Enige exemplaar van deze soort en vorm"
-        parts.append(_part("BEST_COPY", text, rules.keep_points_best_copy, size=position.size))
+        parts.append(_part("BEST_COPY", text, rules.keep_points_best_copy, size=position.size, count=position.size))
     traits = _traits(view, rules)
     if traits:
-        total = sum(points for _, _, points in traits)
+        total = sum(points for _, _, points, _ in traits)
         capped = min(total, rules.keep_traits_cap)
-        names = ", ".join(name for _, name, _ in traits)
+        names = ", ".join(name for _, name, _, _ in traits)
         text = f"Bijzonder: {names}" + (f" (maximaal {rules.keep_traits_cap})" if capped < total else "")
-        parts.append(_part("TRAITS", text, capped, traits=[code for code, _, _ in traits]))
+        parts.append(
+            _part(
+                "TRAITS",
+                text,
+                capped,
+                traits=[_text(code, name, data) for code, name, _, data in traits],
+                **({"context": "capped", "cap": rules.keep_traits_cap} if capped < total else {}),
+            )
+        )
     if view.favorite:
         parts.append(_part("FAVORITE", "Favoriet", rules.keep_points_favorite))
     if view.nicknamed:

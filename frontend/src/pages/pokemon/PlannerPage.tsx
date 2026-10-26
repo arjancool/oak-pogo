@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { RequireAccount } from "../../components/layout/RequireAccount";
@@ -31,6 +32,7 @@ interface Candidate {
 }
 
 function Planner({ accountId }: { accountId: number }) {
+  const { t } = useTranslation();
   const [league, setLeague] = useState("great");
   const [budget, setBudget] = useState(100_000);
   const [maxPokemon, setMaxPokemon] = useState(3);
@@ -69,12 +71,12 @@ function Planner({ accountId }: { accountId: number }) {
   return (
     <>
       <PageHeader
-        title="Evolutie- en investeringsplanner"
-        description="Kies een doel en een budget. OAK zoekt de Pokémon waar je Stardust het meeste oplevert. Je candyvoorraad is onbekend, dus controleer die zelf in het spel."
+        title={t("planner.title")}
+        description={t("planner.description")}
       />
       <Card className="mb-5">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          <Field label="Doel">
+          <Field label={t("planner.goal")}>
             <Select className="w-full" value={league} onChange={(e) => setLeague(e.target.value)}>
               {Object.entries(leagueNames).map(([key, name]) => (
                 <option key={key} value={key}>
@@ -83,27 +85,27 @@ function Planner({ accountId }: { accountId: number }) {
               ))}
             </Select>
           </Field>
-          <Field label="Maximaal Stardust">
+          <Field label={t("planner.maxStardust")}>
             <Input type="number" min={0} step={10000} value={budget} onChange={(e) => setBudget(Number(e.target.value))} />
           </Field>
-          <Field label="Maximaal aantal Pokémon">
+          <Field label={t("planner.maxPokemon")}>
             <Input type="number" min={1} max={20} value={maxPokemon} onChange={(e) => setMaxPokemon(Number(e.target.value))} />
           </Field>
-          <Field label="Maximale IV-rang">
+          <Field label={t("planner.maxIvRank")}>
             <Input type="number" min={1} max={4096} value={maxIvRank} onChange={(e) => setMaxIvRank(Number(e.target.value))} />
           </Field>
           <div className="space-y-2 pt-5">
-            <Checkbox checked={allowXl} onChange={setAllowXl} label="XL Candy toestaan" />
-            <Checkbox checked={allowEvolution} onChange={setAllowEvolution} label="Evoluties toestaan" />
+            <Checkbox checked={allowXl} onChange={setAllowXl} label={t("planner.allowXl")} />
+            <Checkbox checked={allowEvolution} onChange={setAllowEvolution} label={t("planner.allowEvolution")} />
           </div>
         </div>
       </Card>
       {query.isLoading ? (
         <Spinner />
       ) : plan.chosen.length === 0 ? (
-        <Alert tone="info">Geen kandidaten binnen deze grenzen. Verhoog het budget of de maximale IV-rang.</Alert>
+        <Alert tone="info">{t("planner.none")}</Alert>
       ) : (
-        <Card title={`Voorstel: ${plan.chosen.length} Pokémon, ${num(plan.spent)} Stardust`}>
+        <Card title={t("planner.proposal", { count: plan.chosen.length, stardust: num(plan.spent) })}>
           <ul className="divide-y divide-line">
             {plan.chosen.map((c) => (
               <li key={c.pokemon_id} className="flex flex-wrap items-center gap-3 py-3">
@@ -114,21 +116,19 @@ function Planner({ accountId }: { accountId: number }) {
                     {c.form_label ? ` (${c.form_label})` : ""} → {c.target}
                   </Link>
                   <p className="text-xs text-muted">
-                    IV-rang {c.iv_rank} · soortrang {c.species_rank ?? "–"} · CP {num(c.cp, "?")} → {num(c.best_cp)}
-                    {c.recommended_moveset.length ? ` · aanvallen: ${c.recommended_moveset.join(", ")}` : ""}
+                    {t("planner.ranks", { ivRank: c.iv_rank, speciesRank: c.species_rank ?? "–", cp: num(c.cp, "?"), bestCp: num(c.best_cp) })}
+                    {c.recommended_moveset.length ? ` · ${t("planner.moves", { moves: c.recommended_moveset.join(", ") })}` : ""}
                   </p>
                 </div>
                 <ReadinessBadge readiness={c.readiness} />
                 <span className="text-sm tabular-nums">
-                  {num(c.cost.stardust ?? 0)} stardust · {num(c.cost.candy ?? 0)} candy{c.cost.xl_candy ? ` · ${num(c.cost.xl_candy)} XL` : ""}
+                  {t("planner.cost", { stardust: num(c.cost.stardust ?? 0), candy: num(c.cost.candy ?? 0) })}
+                  {c.cost.xl_candy ? ` · ${num(c.cost.xl_candy)} XL` : ""}
                 </span>
               </li>
             ))}
           </ul>
-          <p className="mt-3 text-xs text-muted">
-            Prioriteit volgt de geschiktheid (PvPoke-soortscore × IV-kwaliteit). Kosten van TM's, evolutie-items en het vrijspelen van een
-            tweede aanval staan op de detailpagina.
-          </p>
+          <p className="mt-3 text-xs text-muted">{t("planner.footer")}</p>
         </Card>
       )}
     </>

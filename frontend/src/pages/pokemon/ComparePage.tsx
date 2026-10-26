@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Trans, useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router";
 import { z } from "zod";
 
@@ -27,6 +28,7 @@ const compareSchema = z.array(
 );
 
 export function ComparePage() {
+  const { t } = useTranslation();
   const [params] = useSearchParams();
   const ids = (params.get("ids") ?? "").split(",").map(Number).filter((n) => Number.isFinite(n) && n > 0);
   const query = useQuery({
@@ -37,9 +39,10 @@ export function ComparePage() {
   if (ids.length < 2) {
     return (
       <>
-        <PageHeader title="Vergelijken" />
-        <EmptyState title="Kies 2 tot 6 Pokémon">
-          Selecteer Pokémon in de <Link to="/pokemon" className="text-oak-400 underline">Pokémon Box</Link> en kies Vergelijken.
+        <PageHeader title={t("compare.title")} />
+        <EmptyState title={t("compare.empty.title")}>
+          {/* Not <link>: Trans parses that as an empty HTML element and drops the link text. */}
+          <Trans i18nKey="compare.empty.text" components={{ boxLink: <Link to="/pokemon" className="text-oak-400 underline" /> }} />
         </EmptyState>
       </>
     );
@@ -49,19 +52,19 @@ export function ComparePage() {
   const items = query.data ?? [];
   const rows: [string, (p: (typeof items)[number]) => React.ReactNode][] = [
     ["CP", (p) => num(p.cp, "?")],
-    ["Level", (p) => level(p.level)],
-    ["IV's", (p) => <span className="font-mono">{ivs(p.iv_attack, p.iv_defense, p.iv_stamina)}</span>],
+    [t("compare.rows.level"), (p) => level(p.level)],
+    [t("compare.rows.ivs"), (p) => <span className="font-mono">{ivs(p.iv_attack, p.iv_defense, p.iv_stamina)}</span>],
     ["IV%", (p) => <IvPercent value={p.iv_percent} />],
-    ["Snelle aanval", (p) => p.fast_move?.name ?? "?"],
-    ["Geladen aanvallen", (p) => p.charged_moves.map((m) => m.name).join(" / ")],
-    ["Gevangen of uitgebroed", (p) => `${date(p.caught_at)}${p.hatched_from_egg ? " (uit ei)" : ""}`],
-    ["Cleanup", (p) => <CleanupBadge status={p.cleanup?.status} />],
-    ["Eigenschappen", (p) => <StatusBadges pokemon={p} />],
+    [t("compare.rows.fastMove"), (p) => p.fast_move?.name ?? "?"],
+    [t("compare.rows.chargedMoves"), (p) => p.charged_moves.map((m) => m.name).join(" / ")],
+    [t("compare.rows.caught"), (p) => (p.hatched_from_egg ? t("compare.hatched", { date: date(p.caught_at) }) : date(p.caught_at))],
+    [t("compare.rows.cleanup"), (p) => <CleanupBadge status={p.cleanup?.status} />],
+    [t("compare.rows.properties"), (p) => <StatusBadges pokemon={p} />],
   ];
   const leagues = ["great", "ultra", "master"];
   return (
     <>
-      <PageHeader title="Vergelijken" description="IV-rang per league is de rang binnen de soort; de soortrang komt uit PvPoke." />
+      <PageHeader title={t("compare.title")} description={t("compare.description")} />
       <Card>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -102,12 +105,12 @@ export function ComparePage() {
                           <>
                             <p className="font-medium">{best.target}</p>
                             <p>
-                              rang {best.rank} · {pct(best.percent)} · {label(readinessLabels, best.readiness)}
+                              {t("compare.rank", { rank: best.rank, percent: pct(best.percent), readiness: label(readinessLabels, best.readiness) })}
                             </p>
-                            {best.stardust ? <p className="text-muted">{num(best.stardust)} stardust nodig</p> : null}
+                            {best.stardust ? <p className="text-muted">{t("compare.stardustNeeded", { stardust: num(best.stardust) })}</p> : null}
                           </>
                         ) : (
-                          <span className="text-muted">niet geschikt</span>
+                          <span className="text-muted">{t("compare.notSuitable")}</span>
                         )}
                       </td>
                     );
@@ -115,7 +118,7 @@ export function ComparePage() {
                 </tr>
               ))}
               <tr className="border-t border-line">
-                <td className="py-2 pr-3 text-xs text-muted">Advies</td>
+                <td className="py-2 pr-3 text-xs text-muted">{t("compare.rows.advice")}</td>
                 {items.map((p) => (
                   <td key={p.id} className="px-3 py-2 text-xs">
                     {p.recommendation?.reasons.slice(0, 3).map((r, i) => <p key={i}>{r.text}</p>)}

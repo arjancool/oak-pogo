@@ -1135,5 +1135,249 @@
         "details": "Details"
       }
     }
+  },
+  "pokedex": {
+    "title": "Pokédex",
+    "description": "Look up any Pokémon from the Game Data. See what it can do, whether you already have it and which Pokémon in your collection can evolve into it.",
+    "empty": {
+      "title": "Search for a Pokémon",
+      "text": "Type a name or a Pokédex number. You don't need to own the Pokémon."
+    },
+    "noAccount": "Create a trainer account to see what your collection can do with this Pokémon.",
+    "source": "Source: the active Game Data, version {{version}}. The rankings come from PvPoke.",
+    "yes": "yes",
+    "no": "no",
+    "or": "or",
+    "form": "Form",
+    "baseStats": "Base stats: Attack {{atk}} · Defense {{def}} · HP {{sta}}",
+    "classes": {
+      "legendary": "Legendary",
+      "mythical": "Mythical",
+      "ultraBeast": "Ultra Beast"
+    },
+    "gender": {
+      "label": "Gender: {{gender}}",
+      "male": "male only",
+      "female": "female only"
+    },
+    "needs": {
+      "candyUnknown": "candy unknown",
+      "itemHaveUnknown": "{{item}} (number in your bag unknown)",
+      "itemHave": "{{item}} (you have {{have}})",
+      "lure": "within range of a {{lure}}",
+      "buddyKm": "walk {{km}} km as buddy",
+      "quest": "an evolution quest",
+      "freeAfterTrade": "free after trading"
+    },
+    "search": {
+      "placeholder": "Name or number, like Pyroar or 668",
+      "label": "Search Pokémon",
+      "searching": "Searching…",
+      "none": "Nothing found in the Game Data."
+    },
+    "facts": {
+      "family": "Family",
+      "buddyKm": "Buddy distance",
+      "buddyKmValue": "{{km}} km per candy",
+      "tradable": "Tradable",
+      "transferable": "Can be transferred to the professor",
+      "deployable": "Allowed in a gym",
+      "thirdMove": "Second charged attack",
+      "purify": "Purify",
+      "mega": "Mega Evolution",
+      "cost": "{{stardust}} stardust and {{candy}} candy"
+    },
+    "collection": {
+      "owned": "You have {{amount}} {{name}}",
+      "none": "You don't have any {{name}} yet",
+      "noneText": "There is no {{name}} in any form in the latest import of this trainer account.",
+      "otherForm": "Other form",
+      "topCp": "The {{shown}} with the highest CP are shown above."
+    },
+    "candidates": {
+      "title": "Can evolve into {{name}} from your collection",
+      "notEvolved": "{{name}} is not obtained through evolution.",
+      "none": "You don't have any {{names}} or an earlier form of it.",
+      "candyKnown": "You have {{candy}} candy for this family, entered by you.",
+      "candyUnknown": "PGSharp does not export candy, so OAK does not know whether you have enough. You can enter it yourself under <resourcesLink>Stardust & Candy</resourcesLink>.",
+      "strongestFirst": "Strongest result first.",
+      "steps": "{{steps}} steps, {{candy}} candy in total.",
+      "cpUnknown": "CP after evolution unknown, because the level or IVs are missing.",
+      "firstShown": "The first {{shown}} of {{total}} are shown above."
+    },
+    "evolution": {
+      "title": "Evolution line",
+      "from": "Evolves from <names></names>.",
+      "to": "Evolves into <target>{{name}}</target>"
+    },
+    "battle": {
+      "title": "In battle",
+      "cpTable": "CP at 15/15/15",
+      "speciesRank": "Species rank at PvPoke",
+      "notRanked": "not ranked",
+      "moveset": "Moves: {{moves}}",
+      "gym": "As a gym defender:",
+      "gymRank": "#{{rank}} of all Pokémon allowed in a gym.",
+      "gymRankEvolution": "#{{rank}} of all Pokémon allowed in a gym, after evolving into {{name}}.",
+      "gymNotAllowed": "not allowed in a gym.",
+      "gymUnknown": "unknown, the Game Data does not say whether it is allowed in a gym."
+    },
+    "moves": {
+      "title": "Moves",
+      "fast": "Fast",
+      "charged": "Charged",
+      "legacy": "Legacy"
+    }
+  },
+  "detail": {
+    "notFound": "Pokémon not found",
+    "back": "Pokémon Box",
+    "hatched": "hatched {{date}}",
+    "caught": "caught {{date}}",
+    "inInventory": "in inventory",
+    "gone": "no longer in inventory",
+    "idTitle": "Unique Pokémon ID from PGSharp",
+    "copied": "copied",
+    "formFallback": "This form ({{form}}) is not in the Game Data. OAK uses the default form of the species.",
+    "hpLevel": "HP · level",
+    "yes": "yes",
+    "no": "no",
+    "maxLevel": "Max level {{level}}",
+    "values": {
+      "title": "Stats",
+      "fastMove": "Fast attack",
+      "chargedMoves": "Charged attacks",
+      "secondMove": "Second move unlocked",
+      "maxMoves": "Max Moves",
+      "size": "Height / weight",
+      "powerUps": "Power-ups done",
+      "buddyKm": "Buddy km",
+      "fromEgg": "From egg",
+      "firstSeen": "First seen in OAK",
+      "lastChanged": "Last changed",
+      "event": "Event: {{events}}",
+      "gameTags": "In-game tags: {{tags}}",
+      "tagNamesUnknown_one": "{{count}} (name unknown, give it a label in Settings)",
+      "tagNamesUnknown_other": "{{count}} (names unknown, give them a label in Settings)"
+    },
+    "recommendation": {
+      "title": "Cleanup advice",
+      "none": "No analysis available yet. The analysis runs automatically after every import.",
+      "confidenceTitle": "Confidence",
+      "confidence": "Confidence: {{level}}",
+      "usefulness": "Usefulness",
+      "usefulnessTitle": "Actual value in battles, 0–100",
+      "keepScore": "Keep score",
+      "keepScoreTitle": "Reason to keep, 0–100",
+      "protection": "Protection: {{reasons}}",
+      "scoresHow": "How are the scores calculated?",
+      "scoresNote": "Usefulness is the highest partial value. The keep score adds up points to a maximum of 100.",
+      "alternatives": "Similar Pokémon in your collection",
+      "alternative": "{{name}} · CP {{cp}} · {{iv}} · usefulness {{score}} · {{status}}",
+      "better": "better",
+      "computed": "Calculated on {{date}}. OAK never transfers a Pokémon by itself."
+    },
+    "metadata": {
+      "title": "Your data (OAK)",
+      "saved": "Saved. The analysis is being recalculated.",
+      "protect": "Protect manually",
+      "protectHint": "A protected Pokémon is never suggested as a transfer candidate.",
+      "reason": "Reason",
+      "notes": "Notes",
+      "tags": "OAK tags",
+      "tagsHint": "comma-separated",
+      "plannedAction": "Planned action",
+      "none": "None",
+      "actions": {
+        "keep": "Keep",
+        "evolve": "Evolve",
+        "powerUp": "Power up",
+        "tm": "Use a TM",
+        "purify": "Purify",
+        "trade": "Trade",
+        "mega": "Mega",
+        "buddy": "Buddy",
+        "transfer": "Transfer"
+      },
+      "plannedLeague": "Planned league",
+      "review": "Review",
+      "toReview": "To review",
+      "reviewed": "Reviewed",
+      "override": "Override advice",
+      "followOak": "Follow OAK's advice",
+      "vintageTitle": "Vintage {{year}}",
+      "vintageWarning": "OAK always protects Pokémon from 2016 through 2019. With this choice you lift that protection for this one Pokémon.",
+      "vintageConfirm": "This is a vintage Pokémon from {{year}}. Are you sure you want to lift its protection?",
+      "save": "Save"
+    },
+    "scenario": {
+      "title": "Calculate as",
+      "current": "As Shadow",
+      "purified": "After purifying",
+      "explanation": "Purifying puts a Shadow Pokémon at level 25, or at your trainer level if that is lower, and gives every IV 2 extra points up to 15. This cannot be undone, and you cannot lower a level. A Pokémon can become too strong for Great League as a result."
+    },
+    "purify": {
+      "summary": "After purifying: level {{level}}, IV {{ivs}}, CP {{cp}}. Purifying costs {{stardust}} stardust and {{candy}} candy.",
+      "source": "Rules for level and IVs: {{source}}."
+    },
+    "analysis": {
+      "title": "Battle analysis",
+      "unavailable": "Not available.",
+      "ivRank": "IV rank",
+      "speciesRank": "Species rank",
+      "readiness": "Readiness",
+      "noTarget": "No suitable form for this league.",
+      "target": "Target",
+      "percentOfBest": "% of best",
+      "bestCp": "Best CP / level",
+      "cost": "Cost",
+      "primary": "primary",
+      "afterEvolution": "after evolution · {{candy}} candy",
+      "recommended": "Recommended:",
+      "withoutElite": "(without Elite TM)",
+      "randomFrom": "(random out of {{size}})",
+      "cpNow": "now {{cp}}",
+      "score": "score {{score}}",
+      "currentMoves": "Current moves",
+      "eliteAvailable": "Elite TM available",
+      "eliteUnavailable": "Elite TM not available",
+      "ivNote": "A Pokémon with excellent IVs is not automatically a good battle Pokémon: also look at the species rank and readiness."
+    },
+    "evolutions": {
+      "title": "Evolutions",
+      "titlePurified": "Evolutions after purifying",
+      "none": "No further evolutions.",
+      "cpAfter": "CP after evolution: {{cp}}",
+      "buddyKm": "{{km}} km as buddy",
+      "quest": "evolution quest",
+      "overCap": "over CP limit",
+      "rank": "rank {{rank}}",
+      "eliteWarning": "Note: some moves of this evolution can only be learned with an Elite TM.",
+      "note": "A higher CP alone is never a reason to evolve. Compare the league ranks."
+    },
+    "powerUps": {
+      "title": "Power-ups",
+      "titlePurified": "Power-ups after purifying",
+      "level": "Level",
+      "showLess": "Show less",
+      "showAll": "Show all levels",
+      "costs": "Costs are cumulative from {{start}}{{modifiers}}.",
+      "fromCurrent": "the current level",
+      "fromPurified": "the level after purifying",
+      "lucky": "with Lucky discount",
+      "shadow": "Shadow surcharge",
+      "purified": "Purified discount",
+      "candyUnknown": "Your candy stock is unknown: PGSharp does not export it."
+    },
+    "cups": {
+      "title": "Cups",
+      "none": "This Pokémon does not fit any of the cups PvPoke currently shows, not even after evolution.",
+      "ranking": "{{target}} · IV rank {{rank}} · best CP {{cp}}",
+      "speciesRank": "species rank {{rank}}"
+    },
+    "history": {
+      "title": "History",
+      "none": "No changes."
+    }
   }
 }

@@ -1135,5 +1135,249 @@
         "details": "Details"
       }
     }
+  },
+  "pokedex": {
+    "title": "Pokédex",
+    "description": "Zoek iedere Pokémon uit de Game Data. Je ziet wat hij kan, of je hem al hebt en welke Pokémon uit je collectie je ernaartoe kunt evolueren.",
+    "empty": {
+      "title": "Zoek een Pokémon",
+      "text": "Typ een naam of een Pokédex-nummer. Je hoeft de Pokémon niet zelf te hebben."
+    },
+    "noAccount": "Maak een traineraccount aan om te zien wat je collectie met deze Pokémon kan.",
+    "source": "Bron: de actieve Game Data, versie {{version}}. De ranglijsten komen van PvPoke.",
+    "yes": "ja",
+    "no": "nee",
+    "or": "of",
+    "form": "Vorm",
+    "baseStats": "Basiswaarden: Attack {{atk}} · Defense {{def}} · HP {{sta}}",
+    "classes": {
+      "legendary": "Legendary",
+      "mythical": "Mythical",
+      "ultraBeast": "Ultra Beast"
+    },
+    "gender": {
+      "label": "Geslacht: {{gender}}",
+      "male": "alleen mannetjes",
+      "female": "alleen vrouwtjes"
+    },
+    "needs": {
+      "candyUnknown": "candy onbekend",
+      "itemHaveUnknown": "{{item}} (aantal in je tas onbekend)",
+      "itemHave": "{{item}} (je hebt er {{have}})",
+      "lure": "binnen bereik van een {{lure}}",
+      "buddyKm": "{{km}} km lopen als buddy",
+      "quest": "een evolutie-opdracht",
+      "freeAfterTrade": "gratis na ruilen"
+    },
+    "search": {
+      "placeholder": "Naam of nummer, zoals Pyroar of 668",
+      "label": "Pokémon zoeken",
+      "searching": "Zoeken…",
+      "none": "Niets gevonden in de Game Data."
+    },
+    "facts": {
+      "family": "Familie",
+      "buddyKm": "Buddy-afstand",
+      "buddyKmValue": "{{km}} km per candy",
+      "tradable": "Ruilbaar",
+      "transferable": "Over te zetten naar de professor",
+      "deployable": "Mag in een gym",
+      "thirdMove": "Tweede charged-aanval",
+      "purify": "Purify",
+      "mega": "Mega-evolutie",
+      "cost": "{{stardust}} stardust en {{candy}} candy"
+    },
+    "collection": {
+      "owned": "Je hebt {{amount}} {{name}}",
+      "none": "Je hebt nog geen {{name}}",
+      "noneText": "Er staat geen {{name}} in de laatste import van dit traineraccount, in welke vorm dan ook.",
+      "otherForm": "Andere vorm",
+      "topCp": "De {{shown}} met de hoogste CP staan hierboven."
+    },
+    "candidates": {
+      "title": "Uit je collectie te evolueren tot {{name}}",
+      "notEvolved": "{{name}} ontstaat niet door evolutie.",
+      "none": "Je hebt geen {{names}} of een eerdere vorm daarvan.",
+      "candyKnown": "Je hebt {{candy}} candy voor deze familie, zelf ingevuld.",
+      "candyUnknown": "PGSharp exporteert geen candy, dus OAK weet niet of je genoeg hebt. Je kunt het zelf invullen bij <resourcesLink>Stardust & Candy</resourcesLink>.",
+      "strongestFirst": "Sterkste uitkomst eerst.",
+      "steps": "{{steps}} stappen, samen {{candy}} candy.",
+      "cpUnknown": "CP na evolutie onbekend, omdat level of IV's ontbreken.",
+      "firstShown": "De eerste {{shown}} van {{total}} staan hierboven."
+    },
+    "evolution": {
+      "title": "Evolutielijn",
+      "from": "Evolueert uit <names></names>.",
+      "to": "Evolueert tot <target>{{name}}</target>"
+    },
+    "battle": {
+      "title": "In gevechten",
+      "cpTable": "CP met 15/15/15",
+      "speciesRank": "Plaats van de soort bij PvPoke",
+      "notRanked": "niet gerangschikt",
+      "moveset": "Aanvallen: {{moves}}",
+      "gym": "Als gymverdediger:",
+      "gymRank": "#{{rank}} van alle Pokémon die in een gym mogen.",
+      "gymRankEvolution": "#{{rank}} van alle Pokémon die in een gym mogen, na evolutie tot {{name}}.",
+      "gymNotAllowed": "mag niet in een gym.",
+      "gymUnknown": "onbekend, de Game Data zegt niet of hij in een gym mag."
+    },
+    "moves": {
+      "title": "Aanvallen",
+      "fast": "Fast",
+      "charged": "Charged",
+      "legacy": "Legacy"
+    }
+  },
+  "detail": {
+    "notFound": "Pokémon niet gevonden",
+    "back": "Pokémon Box",
+    "hatched": "uitgebroed {{date}}",
+    "caught": "gevangen {{date}}",
+    "inInventory": "in inventaris",
+    "gone": "niet meer in inventaris",
+    "idTitle": "Unieke Pokémon-ID uit PGSharp",
+    "copied": "gekopieerd",
+    "formFallback": "Deze vorm ({{form}}) staat niet in de Game Data. OAK gebruikt de standaardvorm van de soort.",
+    "hpLevel": "HP · level",
+    "yes": "ja",
+    "no": "nee",
+    "maxLevel": "Max level {{level}}",
+    "values": {
+      "title": "Waarden",
+      "fastMove": "Snelle aanval",
+      "chargedMoves": "Geladen aanvallen",
+      "secondMove": "Tweede aanval vrijgespeeld",
+      "maxMoves": "Max Moves",
+      "size": "Lengte / gewicht",
+      "powerUps": "Power-ups gedaan",
+      "buddyKm": "Buddy-km",
+      "fromEgg": "Uit ei",
+      "firstSeen": "Eerst gezien in OAK",
+      "lastChanged": "Laatst gewijzigd",
+      "event": "Event: {{events}}",
+      "gameTags": "Tags in het spel: {{tags}}",
+      "tagNamesUnknown_one": "{{count}} (namen onbekend, geef ze een label in Instellingen)",
+      "tagNamesUnknown_other": "{{count}} (namen onbekend, geef ze een label in Instellingen)"
+    },
+    "recommendation": {
+      "title": "Cleanup-advies",
+      "none": "Nog geen analyse beschikbaar. De analyse draait na iedere import automatisch.",
+      "confidenceTitle": "Betrouwbaarheid",
+      "confidence": "Betrouwbaarheid: {{level}}",
+      "usefulness": "Bruikbaarheid",
+      "usefulnessTitle": "Feitelijke waarde in gevechten, 0–100",
+      "keepScore": "Bewaarscore",
+      "keepScoreTitle": "Reden om te bewaren, 0–100",
+      "protection": "Bescherming: {{reasons}}",
+      "scoresHow": "Hoe zijn de scores opgebouwd?",
+      "scoresNote": "Bruikbaarheid is de hoogste deelwaarde. De bewaarscore telt punten op tot maximaal 100.",
+      "alternatives": "Vergelijkbare Pokémon in je collectie",
+      "alternative": "{{name}} · CP {{cp}} · {{iv}} · bruikbaarheid {{score}} · {{status}}",
+      "better": "beter",
+      "computed": "Berekend op {{date}}. OAK zet nooit zelf een Pokémon over."
+    },
+    "metadata": {
+      "title": "Jouw gegevens (OAK)",
+      "saved": "Opgeslagen. De analyse wordt opnieuw berekend.",
+      "protect": "Handmatig beschermen",
+      "protectHint": "Een beschermde Pokémon wordt nooit als transfer-kandidaat voorgesteld.",
+      "reason": "Reden",
+      "notes": "Notities",
+      "tags": "OAK-tags",
+      "tagsHint": "komma-gescheiden",
+      "plannedAction": "Geplande actie",
+      "none": "Geen",
+      "actions": {
+        "keep": "Bewaren",
+        "evolve": "Evolueren",
+        "powerUp": "Power-up",
+        "tm": "TM gebruiken",
+        "purify": "Purifyen",
+        "trade": "Ruilen",
+        "mega": "Mega",
+        "buddy": "Buddy",
+        "transfer": "Overzetten"
+      },
+      "plannedLeague": "Geplande league",
+      "review": "Review",
+      "toReview": "Te beoordelen",
+      "reviewed": "Beoordeeld",
+      "override": "Advies overschrijven",
+      "followOak": "Advies van OAK volgen",
+      "vintageTitle": "Vintage {{year}}",
+      "vintageWarning": "OAK beschermt Pokémon uit 2016 tot en met 2019 altijd. Met deze keuze hef je die bescherming op voor deze ene Pokémon.",
+      "vintageConfirm": "Dit is een vintage Pokémon uit {{year}}. Weet je zeker dat je de bescherming wilt opheffen?",
+      "save": "Opslaan"
+    },
+    "scenario": {
+      "title": "Rekenen met",
+      "current": "Als Shadow",
+      "purified": "Na purify",
+      "explanation": "Purify zet een Shadow Pokémon op level 25, of op je trainerlevel als dat lager is, en geeft iedere IV 2 punten extra tot 15. Dat is niet terug te draaien, en een level kun je niet verlagen. Een Pokémon kan daardoor te sterk worden voor Great League."
+    },
+    "purify": {
+      "summary": "Na purify: level {{level}}, IV {{ivs}}, CP {{cp}}. Purify kost {{stardust}} stardust en {{candy}} candy.",
+      "source": "Regels voor level en IV's: {{source}}."
+    },
+    "analysis": {
+      "title": "Battle-analyse",
+      "unavailable": "Niet beschikbaar.",
+      "ivRank": "IV-rang",
+      "speciesRank": "Soortrang",
+      "readiness": "Inzetbaarheid",
+      "noTarget": "Geen geschikte vorm voor deze league.",
+      "target": "Doel",
+      "percentOfBest": "% van beste",
+      "bestCp": "Beste CP / level",
+      "cost": "Kosten",
+      "primary": "primair",
+      "afterEvolution": "na evolutie · {{candy}} candy",
+      "recommended": "Aanbevolen:",
+      "withoutElite": "(zonder Elite TM)",
+      "randomFrom": "(willekeurig uit {{size}})",
+      "cpNow": "nu {{cp}}",
+      "score": "score {{score}}",
+      "currentMoves": "Huidige aanvallen",
+      "eliteAvailable": "Elite TM beschikbaar",
+      "eliteUnavailable": "Elite TM niet beschikbaar",
+      "ivNote": "Een Pokémon met uitstekende IV's is niet automatisch een goede battle-Pokémon: kijk ook naar de soortrang en inzetbaarheid."
+    },
+    "evolutions": {
+      "title": "Evoluties",
+      "titlePurified": "Evoluties na purify",
+      "none": "Geen verdere evoluties.",
+      "cpAfter": "CP na evolutie: {{cp}}",
+      "buddyKm": "{{km}} km als buddy",
+      "quest": "evolutie-opdracht",
+      "overCap": "boven CP-limiet",
+      "rank": "rang {{rank}}",
+      "eliteWarning": "Let op: sommige aanvallen van deze evolutie zijn alleen met Elite TM te leren.",
+      "note": "Een hogere CP alleen is nooit een reden om te evolueren. Vergelijk de league-rangen."
+    },
+    "powerUps": {
+      "title": "Power-ups",
+      "titlePurified": "Power-ups na purify",
+      "level": "Level",
+      "showLess": "Minder tonen",
+      "showAll": "Alle levels tonen",
+      "costs": "Kosten zijn cumulatief vanaf {{start}}{{modifiers}}.",
+      "fromCurrent": "het huidige level",
+      "fromPurified": "het level na purify",
+      "lucky": "met Lucky-korting",
+      "shadow": "Shadow-toeslag",
+      "purified": "Purified-korting",
+      "candyUnknown": "Je candyvoorraad is onbekend: PGSharp exporteert die niet."
+    },
+    "cups": {
+      "title": "Cups",
+      "none": "Deze Pokémon past in geen van de cups die PvPoke nu toont, ook niet na evolutie.",
+      "ranking": "{{target}} · IV-rang {{rank}} · beste CP {{cp}}",
+      "speciesRank": "soortrang {{rank}}"
+    },
+    "history": {
+      "title": "Historie",
+      "none": "Geen wijzigingen."
+    }
   }
 }

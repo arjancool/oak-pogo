@@ -259,5 +259,372 @@
     "warning": "OAK does not put these Pokémon on a transfer list without your confirmation. Only tick what you really want to let go. OAK never transfers anything itself.",
     "confirmOne": "Confirm {{name}}",
     "newReasons": "New since your last confirmation: {{reasons}}"
+  },
+  "cleanup": {
+    "title": "Cleanup Manager",
+    "description": "Explainable advice on which Pokémon to keep, build up or transfer. OAK never transfers anything itself.",
+    "tabs": {
+      "recommendations": "Recommendations",
+      "duplicates": "Duplicates",
+      "list": "Action list",
+      "rules": "Rules"
+    },
+    "breakdown": {
+      "summary": "How are the scores built up?",
+      "battle": "Usefulness {{score}}",
+      "battleNote": "The highest value counts, not the sum, so the same IVs don't count twice.",
+      "keep": "Keep score {{score}}",
+      "keepNote": "Points added up, at most 100. Keep from {{keep}}, review from {{review}}."
+    },
+    "similar": {
+      "none": "No other Pokémon of this species and form.",
+      "label": "Similar:",
+      "scores": "{{iv}} · usefulness {{battle}} · keep {{keep}}",
+      "better": "better"
+    },
+    "row": {
+      "confidence": "Confidence {{level}}",
+      "inActionList": "On action list",
+      "battle": "Usefulness",
+      "battleTitle": "Actual value in battles, 0–100",
+      "keep": "Keep score",
+      "keepTitle": "Reason to keep, 0–100",
+      "protection": "Protection: {{reasons}}"
+    },
+    "analysis": {
+      "summary": "Analysis {{when}} · engine {{engine}} · Game Data v{{version}}",
+      "notRun": "not run yet",
+      "stale": "Outdated: data or rules have changed",
+      "pending": "Recalculating…",
+      "rerun": "Analyze again"
+    },
+    "statusFilter": {
+      "all": "All",
+      "allTitle": "All Pokémon"
+    },
+    "sort": {
+      "label": "Sort",
+      "priority": "Priority",
+      "keepAsc": "Keep score low–high",
+      "keepDesc": "Keep score high–low",
+      "battleDesc": "Usefulness high–low",
+      "battleAsc": "Usefulness low–high",
+      "cpAsc": "CP low–high",
+      "cpDesc": "CP high–low",
+      "name": "Name",
+      "ivAsc": "IV low–high"
+    },
+    "filters": {
+      "all": "all",
+      "only": "only",
+      "without": "excluded",
+      "favoritesLabel": "Favorites",
+      "favorites": "Favorites: {{choice}}",
+      "vintageLabel": "Vintage",
+      "vintage": "Vintage (2016–2019): {{choice}}",
+      "gymLabel": "Gyms",
+      "gym": {
+        "all": "Gyms: all",
+        "best": "Gyms: best defender per species",
+        "inGym": "Gyms: in a gym now"
+      }
+    },
+    "recommendations": {
+      "addSelected": "Add {{n}} to action list",
+      "selectPage": "Select whole page",
+      "empty": "No Pokémon match these filters",
+      "added": "The action list now holds {{n}} Pokémon.",
+      "skipped": "{{n}} skipped: {{reasons}}.",
+      "waiting_one": "{{count}} is waiting for your confirmation.",
+      "waiting_other": "{{count}} are waiting for your confirmation."
+    },
+    "duplicates": {
+      "search": "Search species…",
+      "intro": "Pokémon of the same species, form and Shadow status side by side, highest usefulness first. Favorites and vintage Pokémon are compared like any other.",
+      "columns": {
+        "ivs": "IVs",
+        "level": "Level",
+        "moves": "Moves",
+        "battle": "Usefulness",
+        "battleTitle": "Usefulness in battles, 0–100",
+        "keep": "Keep",
+        "keepTitle": "Keep score, 0–100",
+        "advice": "Advice",
+        "why": "Why"
+      },
+      "vintage": "Vintage {{year}}",
+      "favorite": "Favorite"
+    },
+    "list": {
+      "emptyTitle": "The action list is empty",
+      "emptyText": "Add transfer candidates from the Recommendations tab or the Pokémon Box. You then work through the list yourself in the game.",
+      "noTransferTitle": "OAK transfers nothing",
+      "noTransferText": "This list is a tool. Look up each Pokémon in the game, check it and transfer it yourself. Then mark it as done here, or the next full sync will see that it is gone.",
+      "printable": "Printable checklist",
+      "clear": "Clear list",
+      "heldBackTitle": "{{n}} Pokémon held back",
+      "heldBackText": "Their protection changed after they were added to the list, or they are no longer in your inventory. They are left out of the searches and the checklist.",
+      "searches": "Searches for Pokémon GO",
+      "copied": "Copied",
+      "copy": "Copy",
+      "columns": {
+        "reason": "Reason",
+        "protection": "Protection",
+        "sourceId": "Source ID"
+      },
+      "gone": "No longer in inventory",
+      "blocked": "Held back: {{reason}}",
+      "reconfirm": "Confirm again: {{reason}}",
+      "newReasons": "new {{reasons}}",
+      "confirm": "Confirm",
+      "done": "Done",
+      "remove": "Remove"
+    },
+    "rules": {
+      "saved": "Rules saved. The analysis is being recalculated.",
+      "fixed": {
+        "title": "Fixed rules",
+        "text": "These rules are fixed. Want to let go of one vintage Pokémon anyway? Lift the protection on that Pokémon. OAK asks you to confirm that."
+      },
+      "protection": {
+        "title": "Hard protection",
+        "text": "Whatever is turned on here always gets 'Protected', however low the scores are. If you turn a rule off, the trait only counts as points in the keep score."
+      },
+      "keep": {
+        "title": "Keep score (0–100)",
+        "text": "Every trait counts once. IVs only count through usefulness. Favorites get extra points but no hard protection."
+      },
+      "roles": {
+        "title": "Roles and game settings"
+      },
+      "analysis": {
+        "title": "Analysis and thresholds"
+      },
+      "save": "Save",
+      "defaults": "Defaults",
+      "engine": "Engine {{version}}",
+      "points": "Points",
+      "scoreRange": "0–100",
+      "of4096": "Out of 4096",
+      "items": {
+        "protectShiny": {
+          "label": "Shinies"
+        },
+        "protectLucky": {
+          "label": "Lucky Pokémon"
+        },
+        "protectHundo": {
+          "label": "Hundos and shundos"
+        },
+        "protectLocationCard": {
+          "label": "Special backgrounds"
+        },
+        "protectCostume": {
+          "label": "Costumes"
+        },
+        "protectMythical": {
+          "label": "Mythical"
+        },
+        "protectLegendary": {
+          "label": "Legendary"
+        },
+        "protectUltraBeast": {
+          "label": "Ultra Beasts"
+        },
+        "protectShadow": {
+          "label": "Shadow Pokémon"
+        },
+        "protectPurified": {
+          "label": "Purified Pokémon"
+        },
+        "protectDynamax": {
+          "label": "Dynamax"
+        },
+        "protectGigantamax": {
+          "label": "Gigantamax"
+        },
+        "protectEvent": {
+          "label": "Event Pokémon",
+          "hint": "From an event or a limited release"
+        },
+        "protectNicknamed": {
+          "label": "Pokémon with a nickname"
+        },
+        "protectMegaProgress": {
+          "label": "Pokémon with Mega progress"
+        },
+        "keepBestGreat": {
+          "label": "Always keep the best Great League candidate"
+        },
+        "keepBestUltra": {
+          "label": "Always keep the best Ultra League candidate"
+        },
+        "keepBestMaster": {
+          "label": "Keep the best Master League Pokémon"
+        },
+        "keepBestRaid": {
+          "label": "Keep the best raid attacker",
+          "hint": "Highest Attack IV among relevant species"
+        },
+        "keepBestGym": {
+          "label": "Keep the best gym defender",
+          "hint": "Most Defense and HP among the best defender species"
+        },
+        "eliteTmAvailable": {
+          "label": "I have Elite TMs",
+          "hint": "Moveset advice and raid value may use Elite TM moves"
+        },
+        "includeBestBuddy": {
+          "label": "Include Best Buddy (+1 level)"
+        },
+        "considerCosts": {
+          "label": "Take resource costs into account"
+        },
+        "allowTransferOnPartialImport": {
+          "label": "Transfer advice after a partial import too",
+          "hint": "Off by default: then everything gets 'Review' at most"
+        },
+        "useEvents": {
+          "label": "Take upcoming events into account",
+          "hint": "Keep a transfer candidate until after the Community Day of its evolution line"
+        },
+        "keepWeightBattle": {
+          "label": "Usefulness share",
+          "hint": "Percentage of the usefulness score that counts"
+        },
+        "keepPointsBestCopy": {
+          "label": "Best or only one"
+        },
+        "keepPointsFavorite": {
+          "label": "Favorite",
+          "hint": "Points. Never counts toward usefulness"
+        },
+        "keepPointsShiny": {
+          "label": "Shiny"
+        },
+        "keepPointsLucky": {
+          "label": "Lucky"
+        },
+        "keepPointsRarity": {
+          "label": "Legendary, Mythical, Ultra Beast"
+        },
+        "keepPointsCostume": {
+          "label": "Costume"
+        },
+        "keepPointsLocationCard": {
+          "label": "Special background"
+        },
+        "keepPointsEvent": {
+          "label": "Event Pokémon"
+        },
+        "keepPointsMax": {
+          "label": "Dynamax or Gigantamax"
+        },
+        "keepPointsMega": {
+          "label": "Mega progress"
+        },
+        "keepTraitsCap": {
+          "label": "Maximum for special traits combined"
+        },
+        "keepPointsNickname": {
+          "label": "Nickname"
+        },
+        "keepPointsPlanned": {
+          "label": "Your own plan in OAK",
+          "hint": "Points, not for a 'transfer' plan"
+        },
+        "keepThreshold": {
+          "label": "Keep from a keep score of"
+        },
+        "reviewThreshold": {
+          "label": "Review from a keep score of",
+          "hint": "0–100, below that transfer candidate"
+        },
+        "keepMinPerSpecies": {
+          "label": "Minimum number per species",
+          "hint": "0–10. The best one always stays"
+        },
+        "metaRankThreshold": {
+          "label": "Species counts up to PvPoke rank",
+          "hint": "The lower, the stricter"
+        },
+        "speciesRankFull": {
+          "label": "Species counts fully up to PvPoke rank",
+          "hint": "Beyond that, the weight goes down"
+        },
+        "raidTopN": {
+          "label": "Raid value up to place",
+          "hint": "Place among all attackers of a type"
+        },
+        "gymTopN": {
+          "label": "Gym value up to place",
+          "hint": "Place among all species allowed in a gym"
+        },
+        "goodIvRankThreshold": {
+          "label": "IV rank that always leads to review"
+        },
+        "buildIvRankThreshold": {
+          "label": "Highest IV rank for invest advice"
+        },
+        "readyCpFraction": {
+          "label": "Ready now from this fraction of the best CP",
+          "hint": "0.5–1"
+        },
+        "maxLevel": {
+          "label": "Maximum level",
+          "hint": "Usually 50 according to the Game Data"
+        },
+        "eventHoldDays": {
+          "label": "Events count from this many days before",
+          "hint": "0–60"
+        }
+      }
+    }
+  },
+  "events": {
+    "title": "Upcoming events",
+    "description": "Events in the next 60 days. A Community Day holds on to transfer candidates from that evolution line until after the event, and with double Transfer Candy you get a tip to wait.",
+    "calendar": "Calendar",
+    "emptyTitle": "No events found",
+    "emptyText": "There are no events in the next 60 days.",
+    "feed": {
+      "source": "Event data: <leekduck>LeekDuck.com</leekduck> via <scrapedduck>ScrapedDuck</scrapedduck>. This data is not official. If in doubt, check the event itself.",
+      "fetched_one": "Last fetched {{when}}, {{n}} event, version {{version}}.",
+      "fetched_other": "Last fetched {{when}}, {{n}} events, version {{version}}.",
+      "notFetched": "Not fetched yet.",
+      "autoOn": "OAK updates the calendar automatically.",
+      "autoOff": "Automatic updates are off.",
+      "failed": "The last update attempt failed: {{error}} The previous events still apply.",
+      "notUsed": "Events don't count in your cleanup advice. Turn that on in the <rulesLink>cleanup rules</rulesLink>.",
+      "updateNow": "Update now",
+      "updateStarted": "Update started. The event calendar is being fetched in the background."
+    },
+    "row": {
+      "counts": "Counts",
+      "ignored": "Ignored",
+      "details": "Details",
+      "period": "{{start}} to {{end}}",
+      "periodLocal": "{{start}} to {{end}} (local time)",
+      "species": "Pokémon: {{names}}",
+      "unknownNames": "Not found in the Game Data: {{names}}. OAK keeps nothing for these.",
+      "bonuses": "Bonuses: {{bonuses}}",
+      "held": "OAK keeps {{n}} of your Pokémon for this until after the event. <cleanupLink>View in the Cleanup Manager</cleanupLink>",
+      "transferTip": "Tip: wait until this event to transfer your transfer candidates ({{bonus}}).",
+      "countsFrom_one": "Counts from {{count}} day before the start.",
+      "countsFrom_other": "Counts from {{count}} days before the start.",
+      "remove": "Remove",
+      "include": "Count again",
+      "ignore": "Ignore"
+    },
+    "manual": {
+      "title": "Add your own event",
+      "intro": "For something that isn't in the calendar, such as a planned trade. OAK keeps the chosen Pokémon and their evolution line until the event is over.",
+      "name": "Name",
+      "start": "Start",
+      "end": "End",
+      "species": "Search Pokémon, e.g. eevee",
+      "add": "Add",
+      "added": "Event added. OAK is recalculating your cleanup advice."
+    }
   }
 }

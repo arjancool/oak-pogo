@@ -259,5 +259,372 @@
     "warning": "Deze Pokémon zet OAK niet zonder jouw bevestiging op een transferlijst. Vink alleen aan wat je echt kwijt wilt. OAK zet zelf nooit iets over.",
     "confirmOne": "{{name}} bevestigen",
     "newReasons": "Nieuw sinds je vorige bevestiging: {{reasons}}"
+  },
+  "cleanup": {
+    "title": "Cleanup Manager",
+    "description": "Uitlegbaar advies over welke Pokémon je bewaart, opbouwt of kunt overzetten. OAK voert zelf nooit een transfer uit.",
+    "tabs": {
+      "recommendations": "Aanbevelingen",
+      "duplicates": "Dubbelen",
+      "list": "Actielijst",
+      "rules": "Regels"
+    },
+    "breakdown": {
+      "summary": "Hoe zijn de scores opgebouwd?",
+      "battle": "Bruikbaarheid {{score}}",
+      "battleNote": "De hoogste waarde telt, niet de som, zodat dezelfde IV's niet dubbel meetellen.",
+      "keep": "Bewaarscore {{score}}",
+      "keepNote": "Punten opgeteld, maximaal 100. Bewaren vanaf {{keep}}, beoordelen vanaf {{review}}."
+    },
+    "similar": {
+      "none": "Geen andere exemplaren van deze soort en vorm.",
+      "label": "Vergelijkbaar:",
+      "scores": "{{iv}} · bruikbaarheid {{battle}} · bewaar {{keep}}",
+      "better": "beter"
+    },
+    "row": {
+      "confidence": "Betrouwbaarheid {{level}}",
+      "inActionList": "Op actielijst",
+      "battle": "Bruikbaarheid",
+      "battleTitle": "Feitelijke waarde in gevechten, 0–100",
+      "keep": "Bewaarscore",
+      "keepTitle": "Reden om te bewaren, 0–100",
+      "protection": "Bescherming: {{reasons}}"
+    },
+    "analysis": {
+      "summary": "Analyse {{when}} · engine {{engine}} · Game Data v{{version}}",
+      "notRun": "nog niet uitgevoerd",
+      "stale": "Verouderd: gegevens of regels zijn gewijzigd",
+      "pending": "Wordt opnieuw berekend…",
+      "rerun": "Opnieuw analyseren"
+    },
+    "statusFilter": {
+      "all": "Alle",
+      "allTitle": "Alle Pokémon"
+    },
+    "sort": {
+      "label": "Sorteren",
+      "priority": "Prioriteit",
+      "keepAsc": "Bewaarscore laag–hoog",
+      "keepDesc": "Bewaarscore hoog–laag",
+      "battleDesc": "Bruikbaarheid hoog–laag",
+      "battleAsc": "Bruikbaarheid laag–hoog",
+      "cpAsc": "CP laag–hoog",
+      "cpDesc": "CP hoog–laag",
+      "name": "Naam",
+      "ivAsc": "IV laag–hoog"
+    },
+    "filters": {
+      "all": "alle",
+      "only": "alleen",
+      "without": "zonder",
+      "favoritesLabel": "Favorieten",
+      "favorites": "Favorieten: {{choice}}",
+      "vintageLabel": "Vintage",
+      "vintage": "Vintage (2016–2019): {{choice}}",
+      "gymLabel": "Gyms",
+      "gym": {
+        "all": "Gyms: alle",
+        "best": "Gyms: beste verdediger per soort",
+        "inGym": "Gyms: staat nu in een gym"
+      }
+    },
+    "recommendations": {
+      "addSelected": "{{n}} op actielijst zetten",
+      "selectPage": "Hele pagina selecteren",
+      "empty": "Geen Pokémon met deze filters",
+      "added": "Actielijst bevat nu {{n}} Pokémon.",
+      "skipped": "{{n}} overgeslagen: {{reasons}}.",
+      "waiting_one": "{{count}} wachten op je bevestiging.",
+      "waiting_other": "{{count}} wachten op je bevestiging."
+    },
+    "duplicates": {
+      "search": "Soort zoeken…",
+      "intro": "Pokémon van dezelfde soort, vorm en Shadow-status naast elkaar, hoogste bruikbaarheid eerst. Favorieten en vintage Pokémon doen gewoon mee in de vergelijking.",
+      "columns": {
+        "ivs": "IV's",
+        "level": "Level",
+        "moves": "Aanvallen",
+        "battle": "Bruikb.",
+        "battleTitle": "Bruikbaarheid in gevechten, 0–100",
+        "keep": "Bewaar",
+        "keepTitle": "Bewaarscore, 0–100",
+        "advice": "Advies",
+        "why": "Waarom"
+      },
+      "vintage": "Vintage {{year}}",
+      "favorite": "Favoriet"
+    },
+    "list": {
+      "emptyTitle": "De actielijst is leeg",
+      "emptyText": "Zet transfer-kandidaten op de lijst vanuit het tabblad Aanbevelingen of de Pokémon Box. Je werkt de lijst daarna zelf in het spel af.",
+      "noTransferTitle": "OAK zet niets over",
+      "noTransferText": "Deze lijst is een hulpmiddel. Zoek iedere Pokémon in het spel op, controleer hem en zet hem zelf over. Daarna markeer je hem hier als afgerond, of de volgende volledige synchronisatie ziet dat hij weg is.",
+      "printable": "Printbare checklist",
+      "clear": "Lijst leegmaken",
+      "heldBackTitle": "{{n}} Pokémon tegengehouden",
+      "heldBackText": "Hun bescherming is veranderd sinds ze op de lijst kwamen, of ze staan niet meer in je inventaris. Ze staan niet in de zoekopdrachten en niet op de checklist.",
+      "searches": "Zoekopdrachten voor Pokémon GO",
+      "copied": "Gekopieerd",
+      "copy": "Kopiëren",
+      "columns": {
+        "reason": "Reden",
+        "protection": "Bescherming",
+        "sourceId": "Bron-ID"
+      },
+      "gone": "Niet meer in inventaris",
+      "blocked": "Tegengehouden: {{reason}}",
+      "reconfirm": "Opnieuw bevestigen: {{reason}}",
+      "newReasons": "nieuw {{reasons}}",
+      "confirm": "Bevestigen",
+      "done": "Afgerond",
+      "remove": "Verwijderen"
+    },
+    "rules": {
+      "saved": "Regels opgeslagen. De analyse wordt opnieuw berekend.",
+      "fixed": {
+        "title": "Vaste regels",
+        "text": "Deze regels staan vast. Wil je één vintage Pokémon toch kwijt, hef de bescherming dan op bij die Pokémon. OAK vraagt daar een bevestiging voor."
+      },
+      "protection": {
+        "title": "Harde bescherming",
+        "text": "Wat hier aan staat, krijgt altijd 'Beschermd', hoe laag de scores ook zijn. Zet je een regel uit, dan telt het kenmerk alleen nog als punten in de bewaarscore."
+      },
+      "keep": {
+        "title": "Bewaarscore (0–100)",
+        "text": "Iedere eigenschap telt één keer. IV's tellen alleen via de bruikbaarheid. Favorieten krijgen extra punten maar geen harde bescherming."
+      },
+      "roles": {
+        "title": "Rollen en spelinstellingen"
+      },
+      "analysis": {
+        "title": "Analyse en drempels"
+      },
+      "save": "Opslaan",
+      "defaults": "Standaardwaarden",
+      "engine": "Engine {{version}}",
+      "points": "Punten",
+      "scoreRange": "0–100",
+      "of4096": "Van 4096",
+      "items": {
+        "protectShiny": {
+          "label": "Shiny's"
+        },
+        "protectLucky": {
+          "label": "Lucky Pokémon"
+        },
+        "protectHundo": {
+          "label": "Hundo's en shundo's"
+        },
+        "protectLocationCard": {
+          "label": "Speciale achtergronden"
+        },
+        "protectCostume": {
+          "label": "Kostuums"
+        },
+        "protectMythical": {
+          "label": "Mythical"
+        },
+        "protectLegendary": {
+          "label": "Legendary"
+        },
+        "protectUltraBeast": {
+          "label": "Ultra Beasts"
+        },
+        "protectShadow": {
+          "label": "Shadow Pokémon"
+        },
+        "protectPurified": {
+          "label": "Purified Pokémon"
+        },
+        "protectDynamax": {
+          "label": "Dynamax"
+        },
+        "protectGigantamax": {
+          "label": "Gigantamax"
+        },
+        "protectEvent": {
+          "label": "Event-Pokémon",
+          "hint": "Met event-herkomst of beperkte uitgave"
+        },
+        "protectNicknamed": {
+          "label": "Pokémon met bijnaam"
+        },
+        "protectMegaProgress": {
+          "label": "Pokémon met mega-voortgang"
+        },
+        "keepBestGreat": {
+          "label": "Bewaar altijd de beste Great League-kandidaat"
+        },
+        "keepBestUltra": {
+          "label": "Bewaar altijd de beste Ultra League-kandidaat"
+        },
+        "keepBestMaster": {
+          "label": "Bewaar het beste Master League-exemplaar"
+        },
+        "keepBestRaid": {
+          "label": "Bewaar de beste raid-aanvaller",
+          "hint": "Hoogste Attack-IV binnen relevante soorten"
+        },
+        "keepBestGym": {
+          "label": "Bewaar de beste gymverdediger",
+          "hint": "Meeste Defense en HP binnen de beste verdedigerssoorten"
+        },
+        "eliteTmAvailable": {
+          "label": "Ik heb Elite TM's",
+          "hint": "Movesetadvies en raidwaarde mogen Elite TM-aanvallen gebruiken"
+        },
+        "includeBestBuddy": {
+          "label": "Rekenen met Best Buddy (+1 level)"
+        },
+        "considerCosts": {
+          "label": "Houd rekening met resourcekosten"
+        },
+        "allowTransferOnPartialImport": {
+          "label": "Transferadvies ook na een gedeeltelijke import",
+          "hint": "Standaard uit: dan krijgt alles hooguit 'Beoordelen'"
+        },
+        "useEvents": {
+          "label": "Houd rekening met komende events",
+          "hint": "Bewaar een transfer-kandidaat tot na de Community Day van zijn evolutielijn"
+        },
+        "keepWeightBattle": {
+          "label": "Aandeel bruikbaarheid",
+          "hint": "Procent van de bruikbaarheidsscore dat meetelt"
+        },
+        "keepPointsBestCopy": {
+          "label": "Beste of enige exemplaar"
+        },
+        "keepPointsFavorite": {
+          "label": "Favoriet",
+          "hint": "Punten. Telt nooit mee in de bruikbaarheid"
+        },
+        "keepPointsShiny": {
+          "label": "Shiny"
+        },
+        "keepPointsLucky": {
+          "label": "Lucky"
+        },
+        "keepPointsRarity": {
+          "label": "Legendary, Mythical, Ultra Beast"
+        },
+        "keepPointsCostume": {
+          "label": "Kostuum"
+        },
+        "keepPointsLocationCard": {
+          "label": "Speciale achtergrond"
+        },
+        "keepPointsEvent": {
+          "label": "Event-Pokémon"
+        },
+        "keepPointsMax": {
+          "label": "Dynamax of Gigantamax"
+        },
+        "keepPointsMega": {
+          "label": "Mega-voortgang"
+        },
+        "keepTraitsCap": {
+          "label": "Maximum voor bijzondere kenmerken samen"
+        },
+        "keepPointsNickname": {
+          "label": "Bijnaam"
+        },
+        "keepPointsPlanned": {
+          "label": "Eigen plan in OAK",
+          "hint": "Punten, niet bij plan 'overzetten'"
+        },
+        "keepThreshold": {
+          "label": "Bewaren vanaf bewaarscore"
+        },
+        "reviewThreshold": {
+          "label": "Beoordelen vanaf bewaarscore",
+          "hint": "0–100, daaronder transfer-kandidaat"
+        },
+        "keepMinPerSpecies": {
+          "label": "Minimaal aantal exemplaren per soort",
+          "hint": "0–10. Het beste exemplaar blijft altijd"
+        },
+        "metaRankThreshold": {
+          "label": "Soort telt mee tot PvPoke-rang",
+          "hint": "Hoe lager, hoe strenger"
+        },
+        "speciesRankFull": {
+          "label": "Soort telt volledig tot PvPoke-rang",
+          "hint": "Daaronder loopt het gewicht af"
+        },
+        "raidTopN": {
+          "label": "Raidwaarde tot plaats",
+          "hint": "Plaats tussen alle aanvallers van een type"
+        },
+        "gymTopN": {
+          "label": "Gymwaarde tot plaats",
+          "hint": "Plaats tussen alle soorten die in een gym mogen"
+        },
+        "goodIvRankThreshold": {
+          "label": "IV-rang die altijd tot review leidt"
+        },
+        "buildIvRankThreshold": {
+          "label": "Maximale IV-rang voor investeringsadvies"
+        },
+        "readyCpFraction": {
+          "label": "Direct inzetbaar vanaf fractie van de beste CP",
+          "hint": "0,5–1"
+        },
+        "maxLevel": {
+          "label": "Maximaal level",
+          "hint": "Volgens Game Data meestal 50"
+        },
+        "eventHoldDays": {
+          "label": "Events tellen mee vanaf dagen ervoor",
+          "hint": "0–60"
+        }
+      }
+    }
+  },
+  "events": {
+    "title": "Komende events",
+    "description": "Events in de komende 60 dagen. Een Community Day houdt transfer-kandidaten uit die evolutielijn tot na het event vast, en bij dubbele Transfer Candy krijg je een tip om te wachten.",
+    "calendar": "Kalender",
+    "emptyTitle": "Geen events gevonden",
+    "emptyText": "Er staan geen events in de komende 60 dagen.",
+    "feed": {
+      "source": "Eventgegevens: <leekduck>LeekDuck.com</leekduck> via <scrapedduck>ScrapedDuck</scrapedduck>. Deze gegevens zijn niet officieel. Controleer bij twijfel het event zelf.",
+      "fetched_one": "Laatst opgehaald {{when}}, {{n}} events, versie {{version}}.",
+      "fetched_other": "Laatst opgehaald {{when}}, {{n}} events, versie {{version}}.",
+      "notFetched": "Nog niet opgehaald.",
+      "autoOn": "OAK werkt de kalender automatisch bij.",
+      "autoOff": "Automatisch bijwerken staat uit.",
+      "failed": "Laatste poging om bij te werken mislukte: {{error}} De vorige events blijven gelden.",
+      "notUsed": "Events tellen niet mee in je cleanupadvies. Zet dat aan bij de <rulesLink>Cleanup-regels</rulesLink>.",
+      "updateNow": "Nu bijwerken",
+      "updateStarted": "Bijwerken gestart. De eventkalender wordt op de achtergrond opgehaald."
+    },
+    "row": {
+      "counts": "Telt mee",
+      "ignored": "Genegeerd",
+      "details": "Details",
+      "period": "{{start}} tot {{end}}",
+      "periodLocal": "{{start}} tot {{end}} (lokale tijd)",
+      "species": "Pokémon: {{names}}",
+      "unknownNames": "Niet in de Game Data gevonden: {{names}}. Daarvoor bewaart OAK niets.",
+      "bonuses": "Bonussen: {{bonuses}}",
+      "held": "OAK bewaart hiervoor {{n}} van je Pokémon tot na het event. <cleanupLink>Bekijk in de Cleanup Manager</cleanupLink>",
+      "transferTip": "Tip: zet transfer-kandidaten pas tijdens dit event over ({{bonus}}).",
+      "countsFrom_one": "Telt mee vanaf {{count}} dagen voor het begin.",
+      "countsFrom_other": "Telt mee vanaf {{count}} dagen voor het begin.",
+      "remove": "Verwijderen",
+      "include": "Weer meetellen",
+      "ignore": "Negeren"
+    },
+    "manual": {
+      "title": "Eigen event toevoegen",
+      "intro": "Voor iets dat niet in de kalender staat, zoals een ruilafspraak. OAK bewaart de gekozen Pokémon en hun evolutielijn tot het event voorbij is.",
+      "name": "Naam",
+      "start": "Begin",
+      "end": "Einde",
+      "species": "Pokémon zoeken, bijv. eevee",
+      "add": "Toevoegen",
+      "added": "Event toegevoegd. OAK berekent je cleanupadvies opnieuw."
+    }
   }
 }

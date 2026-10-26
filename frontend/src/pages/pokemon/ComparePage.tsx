@@ -9,6 +9,7 @@ import { api, errorMessage } from "../../lib/api";
 import { date, ivs, level, num, pct } from "../../lib/format";
 import { label, leagueNames, readinessLabels } from "../../lib/i18n";
 import { pokemonDetail } from "../../lib/schemas";
+import { serverText } from "../../lib/serverText";
 
 const compareSchema = z.array(
   pokemonDetail.extend({
@@ -121,7 +122,7 @@ export function ComparePage() {
                 <td className="py-2 pr-3 text-xs text-muted">{t("compare.rows.advice")}</td>
                 {items.map((p) => (
                   <td key={p.id} className="px-3 py-2 text-xs">
-                    {p.recommendation?.reasons.slice(0, 3).map((r, i) => <p key={i}>{r.text}</p>)}
+                    {p.recommendation?.reasons.slice(0, 3).map((r, i) => <p key={i}>{serverText("reasons", r)}</p>)}
                   </td>
                 ))}
               </tr>

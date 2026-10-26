@@ -15,6 +15,7 @@ import { api, buildUrl, errorMessage } from "../../lib/api";
 import { dateTime, ivs, num, pct } from "../../lib/format";
 import { confidenceLabels, label, statusDescriptions, statusLabels } from "../../lib/i18n";
 import { actionList, actionListUpdate, cleanupPage, pokemonSummary, type CleanupItem, type ConfirmationItem } from "../../lib/schemas";
+import { serverText } from "../../lib/serverText";
 import type { Rules } from "../../lib/types";
 import { useUrlState } from "../../lib/useUrlState";
 
@@ -38,7 +39,7 @@ function ScoreBreakdown({ item }: { item: CleanupItem }) {
           <ul className="mt-1 space-y-0.5">
             {battle?.parts.map((part, index) => (
               <li key={index} className={clsx("flex justify-between gap-3", part.code === battle.basis && "font-semibold")}>
-                <span>{part.text}</span>
+                <span>{serverText("parts", part)}</span>
                 <span className="tabular-nums">{Math.round(part.value)}</span>
               </li>
             ))}
@@ -52,7 +53,7 @@ function ScoreBreakdown({ item }: { item: CleanupItem }) {
           <ul className="mt-1 space-y-0.5">
             {keep?.parts.map((part, index) => (
               <li key={index} className="flex justify-between gap-3">
-                <span>{part.text}</span>
+                <span>{serverText("parts", part)}</span>
                 <span className="tabular-nums">+{Math.round(part.value)}</span>
               </li>
             ))}
@@ -111,12 +112,12 @@ function RecommendationRow({ item, selected, onSelect }: { item: CleanupItem; se
           <StatusBadges pokemon={item.pokemon} compact />
         </div>
         {item.protection_reasons.length > 0 && (
-          <p className="mt-1 text-xs text-sky-300">{t("cleanup.row.protection", { reasons: item.protection_reasons.map((r) => r.text).join(" · ") })}</p>
+          <p className="mt-1 text-xs text-sky-300">{t("cleanup.row.protection", { reasons: item.protection_reasons.map((r) => serverText("protections", r)).join(" · ") })}</p>
         )}
-        {item.warnings.length > 0 && <p className="mt-1 text-xs text-amber-300">{item.warnings.map((w) => w.text).join(" · ")}</p>}
+        {item.warnings.length > 0 && <p className="mt-1 text-xs text-amber-300">{item.warnings.map((w) => serverText("warnings", w)).join(" · ")}</p>}
         <ul className="mt-1 list-disc space-y-0.5 pl-5 text-sm text-muted">
           {item.reasons.map((r, i) => (
-            <li key={i}>{r.text}</li>
+            <li key={i}>{serverText("reasons", r)}</li>
           ))}
         </ul>
         <SimilarList item={item} />
@@ -403,7 +404,7 @@ function Duplicates({ accountId }: { accountId: number }) {
                         {m.favorite && <Badge color="#facc15">{t("cleanup.duplicates.favorite")}</Badge>}
                       </div>
                     </td>
-                    <td className="max-w-md text-xs text-muted">{m.recommendation?.reasons[0]?.text}</td>
+                    <td className="max-w-md text-xs text-muted">{serverText("reasons", m.recommendation?.reasons[0])}</td>
                   </tr>
                 ))}
               </tbody>

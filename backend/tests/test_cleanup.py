@@ -205,7 +205,7 @@ def test_scores_are_transparent_and_count_each_property_once(gamedata: Any) -> N
     keep = result.scores["keep"]
     assert result.keep_score == min(100, round(sum(p["value"] for p in keep["parts"])))
     traits = next(p for p in keep["parts"] if p["code"] == "TRAITS")
-    assert traits["data"]["traits"] == ["SHINY", "LUCKY"]  # a hundo counts only through the battle score
+    assert [t["code"] for t in traits["data"]["traits"]] == ["SHINY", "LUCKY"]  # a hundo counts only through the battle score
     assert traits["value"] <= rules.keep_traits_cap
 
 

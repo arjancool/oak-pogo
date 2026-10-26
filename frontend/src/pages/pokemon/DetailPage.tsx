@@ -21,6 +21,7 @@ import {
   statusLabels,
 } from "../../lib/i18n";
 import { pokemonDetail, type PokemonDetail } from "../../lib/schemas";
+import { serverText } from "../../lib/serverText";
 import type { EvolutionPath, HistoryEvent, PokemonAnalysis, PowerUps, PurifyScenario, Scenario } from "../../lib/types";
 import { useLeagues } from "../battles/shared";
 
@@ -65,11 +66,11 @@ function RecommendationCard({ pokemon }: { pokemon: PokemonDetail }) {
         <ScoreMeter label={t("detail.recommendation.keepScore")} value={rec.keep_score} title={t("detail.recommendation.keepScoreTitle")} />
       </div>
       {rec.protection_reasons.length > 0 && (
-        <p className="mb-2 text-sm text-sky-300">{t("detail.recommendation.protection", { reasons: rec.protection_reasons.map((r) => r.text).join(" · ") })}</p>
+        <p className="mb-2 text-sm text-sky-300">{t("detail.recommendation.protection", { reasons: rec.protection_reasons.map((r) => serverText("protections", r)).join(" · ") })}</p>
       )}
       <ul className="list-disc space-y-1 pl-5 text-sm">
         {rec.reasons.map((reason, index) => (
-          <li key={index}>{reason.text}</li>
+          <li key={index}>{serverText("reasons", reason)}</li>
         ))}
       </ul>
       <details className="mt-3 text-xs">
@@ -78,7 +79,7 @@ function RecommendationCard({ pokemon }: { pokemon: PokemonDetail }) {
           <ul className="space-y-0.5">
             {rec.scores.battle?.parts.map((part, index) => (
               <li key={index} className={clsx("flex justify-between gap-3", part.code === rec.scores.battle?.basis && "font-semibold")}>
-                <span>{part.text}</span>
+                <span>{serverText("parts", part)}</span>
                 <span className="tabular-nums">{Math.round(part.value)}</span>
               </li>
             ))}
@@ -86,7 +87,7 @@ function RecommendationCard({ pokemon }: { pokemon: PokemonDetail }) {
           <ul className="space-y-0.5">
             {rec.scores.keep?.parts.map((part, index) => (
               <li key={index} className="flex justify-between gap-3">
-                <span>{part.text}</span>
+                <span>{serverText("parts", part)}</span>
                 <span className="tabular-nums">+{Math.round(part.value)}</span>
               </li>
             ))}
@@ -96,7 +97,7 @@ function RecommendationCard({ pokemon }: { pokemon: PokemonDetail }) {
       </details>
       {rec.warnings.length > 0 && (
         <div className="mt-3">
-          <Alert tone="warning">{rec.warnings.map((w) => w.text).join(" · ")}</Alert>
+          <Alert tone="warning">{rec.warnings.map((w) => serverText("warnings", w)).join(" · ")}</Alert>
         </div>
       )}
       {rec.alternatives.length > 0 && (

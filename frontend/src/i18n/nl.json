@@ -318,7 +318,7 @@
       "investmentEmpty": "Nog geen BUILD-adviezen.",
       "cleanup": "Aanbevolen cleanup",
       "cleanupEmpty": "Geen transfer-kandidaten.",
-      "favoritesChanged_one": "{{count}} favorieten gewijzigd",
+      "favoritesChanged_one": "{{count}} favoriet gewijzigd",
       "favoritesChanged_other": "{{count}} favorieten gewijzigd"
     },
     "years": "Vangstjaar"
@@ -333,7 +333,7 @@
       "stardust": "Stardust",
       "pokecoins": "PokéCoins",
       "storage": "Pokémon-opslag",
-      "eggs_one": "{{count}} eieren",
+      "eggs_one": "{{count}} ei",
       "eggs_other": "{{count}} eieren",
       "activity": "Activiteit",
       "gbl": "GO Battle League",

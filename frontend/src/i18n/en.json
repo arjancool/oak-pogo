@@ -751,7 +751,7 @@
       "general": "General attackers",
       "countersAgainst": "Counters against {{name}}",
       "bestGeneral": "Best general raid attackers",
-      "intro_one": "The {{count}} attacker with the highest DPS using its current moves. Click a column header to sort within this list. The number shows its DPS rank.",
+      "intro_one": "The attacker with the highest DPS using its current moves. Click a column header to sort within this list. The number shows its DPS rank.",
       "intro_other": "The {{count}} attackers with the highest DPS using their current moves. Click a column header to sort within this list. The number shows their DPS rank.",
       "columns": {
         "pokemon": "Pokémon",

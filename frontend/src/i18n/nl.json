@@ -1885,6 +1885,25 @@
       "MAX_gigantamax": "Gigantamax",
       "MAX_dynamax": "Dynamax",
       "MEGA": "Mega-voortgang"
+    },
+    "guard": {
+      "BLOCKED_MANUAL": "Handmatig beschermd",
+      "BLOCKED_VINTAGE": "Vintage {{year}}: hef eerst de bescherming op bij deze Pokémon",
+      "VINTAGE_LIFTED": "Vintage {{year}}, bescherming opgeheven",
+      "VINTAGE": "Vintage {{year}}",
+      "FAVORITE": "Favoriet",
+      "UNKNOWN_DATE": "Vangstdatum onbekend",
+      "PROTECTED": "Beschermd: {{protections}}",
+      "PROTECTION": "{{protections}}",
+      "UNCONFIRMED": "{{items}}"
+    },
+    "rules": {
+      "VINTAGE": "Vintage Pokémon (2016–2019) zijn altijd beschermd. Ze worden wel volledig geanalyseerd en vergeleken.",
+      "UNKNOWN_DATE": "Een Pokémon zonder bruikbare vangstdatum wordt nooit als nieuw behandeld: hooguit 'Beoordelen'.",
+      "FAVORITE": "Favorieten krijgen extra bewaarpunten en worden nooit direct als transfer voorgesteld."
+    },
+    "actionList": {
+      "SEARCH_NOTE": "Pokémon GO kan niet op Pokémon-ID zoeken. Gebruik per soort het Pokédex-nummer met de exacte CP, en controleer de Pokémon in het spel voordat je hem overzet. '&!favorite&!shiny&!lucky' sluit extra veilig uit."
     }
   }
 }

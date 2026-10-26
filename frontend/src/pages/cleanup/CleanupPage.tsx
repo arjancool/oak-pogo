@@ -8,7 +8,7 @@ import { Link } from "react-router";
 import { z } from "zod";
 
 import { RequireAccount } from "../../components/layout/RequireAccount";
-import { ConfirmTransferDialog } from "../../components/cleanup/ConfirmTransferDialog";
+import { ConfirmTransferDialog, newReasons } from "../../components/cleanup/ConfirmTransferDialog";
 import { CleanupBadge, IvPercent, PokemonSprite, ScoreMeter, StatusBadges, pokemonName } from "../../components/pokemon";
 import { Alert, Badge, Button, Card, Checkbox, EmptyState, Input, PageHeader, Pagination, Select, Spinner, Switch, Tabs } from "../../components/ui";
 import { api, buildUrl, errorMessage } from "../../lib/api";
@@ -180,7 +180,7 @@ function Recommendations({ accountId }: { accountId: number }) {
       const parts = [t("cleanup.recommendations.added", { n: num(result.count) })];
       if (result.skipped.length)
         parts.push(
-          t("cleanup.recommendations.skipped", { n: num(result.skipped.length), reasons: [...new Set(result.skipped.map((s) => s.reason))].join("; ") }),
+          t("cleanup.recommendations.skipped", { n: num(result.skipped.length), reasons: [...new Set(result.skipped.map((s) => serverText("guard", s.reason_text ?? s.reason)))].join("; ") }),
         );
       if (result.needs_confirmation.length) parts.push(t("cleanup.recommendations.waiting", { count: result.needs_confirmation.length }));
       setMessage(parts.join(" "));
@@ -477,7 +477,7 @@ function ActionListTab({ accountId }: { accountId: number }) {
         </Alert>
       )}
       <Card title={t("cleanup.list.searches")}>
-        <p className="mb-2 text-xs text-muted">{data.search_hint.note}</p>
+        <p className="mb-2 text-xs text-muted">{serverText("actionList", data.search_hint.note_text ?? data.search_hint.note)}</p>
         <div className="space-y-1">
           {data.search_hint.queries.map((q) => (
             <div key={q.query} className="flex items-center gap-2">
@@ -512,23 +512,33 @@ function ActionListTab({ accountId }: { accountId: number }) {
                   {!item.still_in_inventory && <Badge className="ml-2">{t("cleanup.list.gone")}</Badge>}
                   {item.blocked && (
                     <Badge className="ml-2" color="#f87171">
-                      {t("cleanup.list.blocked", { reason: item.blocked })}
+                      {t("cleanup.list.blocked", { reason: serverText("guard", item.blocked_text ?? item.blocked) })}
                     </Badge>
                   )}
                   {item.needs_confirmation && (
                     <Badge className="ml-2" color="#fbbf24">
                       {t("cleanup.list.reconfirm", {
                         reason: item.needs_confirmation.new_reasons.length
-                          ? t("cleanup.list.newReasons", { reasons: item.needs_confirmation.new_reasons.join(", ") })
-                          : item.needs_confirmation.message,
+                          ? t("cleanup.list.newReasons", { reasons: newReasons(item.needs_confirmation) })
+                          : item.needs_confirmation.message_texts.length
+                            ? item.needs_confirmation.message_texts.map((m) => serverText("guard", m)).join("; ")
+                            : item.needs_confirmation.message,
                       })}
                     </Badge>
                   )}
                 </td>
                 <td className="tabular-nums">{num(item.pokemon.cp, "?")}</td>
                 <td className="font-mono text-xs">{ivs(item.pokemon.iv_attack, item.pokemon.iv_defense, item.pokemon.iv_stamina)}</td>
-                <td className="max-w-xs text-xs text-muted">{item.reason}</td>
-                <td className="text-xs">{item.protection.length ? <span className="text-amber-300">{item.protection.join(", ")}</span> : "–"}</td>
+                <td className="max-w-xs text-xs text-muted">{item.reason_texts.length ? item.reason_texts.map((r) => serverText("reasons", r)).join("; ") : item.reason}</td>
+                <td className="text-xs">
+                  {item.protection.length ? (
+                    <span className="text-amber-300">
+                      {item.protection_texts.length ? item.protection_texts.map((r) => serverText("protections", r)).join(", ") : item.protection.join(", ")}
+                    </span>
+                  ) : (
+                    "–"
+                  )}
+                </td>
                 <td className="font-mono text-[10px] text-muted">{item.pokemon.source_pokemon_id}</td>
                 <td className="no-print whitespace-nowrap pr-3 text-right">
                   {item.needs_confirmation && (
@@ -675,7 +685,7 @@ function RulesTab({ accountId }: { accountId: number }) {
       <Card title={t("cleanup.rules.fixed.title")}>
         <ul className="list-disc space-y-1 pl-5 text-sm">
           {query.data.fixed.map((rule) => (
-            <li key={rule.code}>{rule.text}</li>
+            <li key={rule.code}>{serverText("rules", rule)}</li>
           ))}
         </ul>
         <p className="mt-2 text-xs text-muted">{t("cleanup.rules.fixed.text")}</p>

@@ -3,10 +3,21 @@ import { useTranslation } from "react-i18next";
 
 import { confirmationKindLabels, label } from "../../lib/i18n";
 import type { ConfirmationItem } from "../../lib/schemas";
+import { serverText } from "../../lib/serverText";
 import { Alert, Button, Checkbox, Dialog } from "../ui";
 
 function kindsText(item: ConfirmationItem): string {
   return item.kinds.map((k) => label(confirmationKindLabels, k)).join("; ");
+}
+
+/** What changed since the last confirmation, in the chosen language. */
+export function newReasons(item: ConfirmationItem): string {
+  return item.new_reason_texts.length ? item.new_reason_texts.map((r) => serverText("guard", r)).join(", ") : item.new_reasons.join(", ");
+}
+
+/** The guard's message in the chosen language, or its Dutch text from an older server. */
+function messageText(item: ConfirmationItem): string {
+  return item.message_texts.length ? item.message_texts.map((m) => serverText("guard", m)).join("; ") : item.message;
 }
 
 /**
@@ -65,9 +76,9 @@ export function ConfirmTransferDialog({
                 {item.name} <span className="text-muted">CP {item.cp ?? "?"}</span>
               </p>
               <p className="text-xs text-amber-300">{kindsText(item)}</p>
-              {item.message !== kindsText(item) && <p className="text-xs text-muted">{item.message}</p>}
+              {messageText(item) !== kindsText(item) && <p className="text-xs text-muted">{messageText(item)}</p>}
               {item.new_reasons.length > 0 && (
-                <p className="text-xs font-medium text-amber-200">{t("confirmTransfer.newReasons", { reasons: item.new_reasons.join(", ") })}</p>
+                <p className="text-xs font-medium text-amber-200">{t("confirmTransfer.newReasons", { reasons: newReasons(item) })}</p>
               )}
             </div>
           </li>

@@ -16,6 +16,7 @@ import { api, buildUrl, errorMessage } from "../../lib/api";
 import { date, ivs, level, num } from "../../lib/format";
 import { statusLabels, typeNames } from "../../lib/i18n";
 import { confirmationItem, pokemonPage, type ConfirmationItem, type PokemonSummary } from "../../lib/schemas";
+import { serverText } from "../../lib/serverText";
 import type { Facets } from "../../lib/types";
 import { useUrlState } from "../../lib/useUrlState";
 
@@ -72,7 +73,7 @@ interface BulkBody {
 }
 const bulkResult = z.object({
   updated: z.number(),
-  skipped: z.array(z.object({ pokemon_id: z.number(), reason: z.string() })),
+  skipped: z.array(z.object({ pokemon_id: z.number(), reason: z.string(), reason_text: z.object({ code: z.string(), text: z.string(), data: z.record(z.string(), z.unknown()).optional() }).optional() })),
   needs_confirmation: z.array(confirmationItem),
 });
 
@@ -396,7 +397,7 @@ function Box({ accountId }: { accountId: number }) {
     onSuccess: (result, body) => {
       const parts = [t("box.bulk.updated", { count: result.updated })];
       if (result.skipped.length)
-        parts.push(t("box.bulk.skipped", { count: result.skipped.length, reasons: [...new Set(result.skipped.map((s) => s.reason))].join("; ") }));
+        parts.push(t("box.bulk.skipped", { count: result.skipped.length, reasons: [...new Set(result.skipped.map((s) => serverText("guard", s.reason_text ?? s.reason)))].join("; ") }));
       if (result.needs_confirmation.length) parts.push(t("box.bulk.waiting", { count: result.needs_confirmation.length }));
       parts.push(t("box.bulk.oakOnly"));
       setMessage({ tone: "success", text: parts.join(" ") });

@@ -1885,6 +1885,25 @@
       "MAX_gigantamax": "Gigantamax",
       "MAX_dynamax": "Dynamax",
       "MEGA": "Mega progress"
+    },
+    "guard": {
+      "BLOCKED_MANUAL": "Protected by hand",
+      "BLOCKED_VINTAGE": "Vintage {{year}}: first lift the protection on this Pokémon",
+      "VINTAGE_LIFTED": "Vintage {{year}}, protection lifted",
+      "VINTAGE": "Vintage {{year}}",
+      "FAVORITE": "Favorite",
+      "UNKNOWN_DATE": "Catch date unknown",
+      "PROTECTED": "Protected: {{protections}}",
+      "PROTECTION": "{{protections}}",
+      "UNCONFIRMED": "{{items}}"
+    },
+    "rules": {
+      "VINTAGE": "Vintage Pokémon (2016–2019) are always protected. They are still fully analyzed and compared.",
+      "UNKNOWN_DATE": "A Pokémon without a usable catch date is never treated as new: at most 'Review'.",
+      "FAVORITE": "Favorites get extra keep points and are never suggested as a transfer directly."
+    },
+    "actionList": {
+      "SEARCH_NOTE": "Pokémon GO cannot search by Pokémon ID. Use the Pokédex number with the exact CP per species, and check the Pokémon in the game before you transfer it. '&!favorite&!shiny&!lucky' excludes even more to be safe."
     }
   }
 }

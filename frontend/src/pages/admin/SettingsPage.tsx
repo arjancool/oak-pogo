@@ -8,6 +8,7 @@ import { useAccount } from "../../lib/account";
 import { useAuth } from "../../lib/auth";
 import { api, errorMessage } from "../../lib/api";
 import { bytes, dateTime, num } from "../../lib/format";
+import { serverText } from "../../lib/serverText";
 import { useAppSettings } from "../../lib/settings";
 import type { AppSettings, Facets, User } from "../../lib/types";
 
@@ -41,7 +42,7 @@ function SpriteSettings({ owner }: { owner: boolean }) {
   });
   return (
     <Card title={t("admin.settings.sprites.title")}>
-      <Alert tone="info">{current?.sprite_notice}</Alert>
+      <Alert tone="info">{serverText("gamedata", current?.sprite_notice)}</Alert>
       <div className="mt-3 grid gap-3">
         <Field label={t("admin.settings.sprites.source")}>
           <Select value={chosen} disabled={!owner} onChange={(e) => setSource(e.target.value as AppSettings["sprite_source"])}>

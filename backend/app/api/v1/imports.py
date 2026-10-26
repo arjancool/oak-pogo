@@ -69,6 +69,8 @@ class ImportOut(ApiModel):
     finished_at: UtcDatetime | None
     error_code: str | None
     error_message: str | None
+    # The values in error_message (ADR-0025); None for errors stored before OAK kept them.
+    error_data: dict[str, Any] | None = None
     duplicate_of_id: int | None
     retry_of_id: int | None
     confirm_full: bool
@@ -84,6 +86,8 @@ class IssueOut(ApiModel):
     severity: str
     code: str
     message: str
+    # The values in message (ADR-0025); None for messages stored before OAK kept them.
+    data: dict[str, Any] | None = None
     path: str | None
     source_pokemon_id: str | None
 

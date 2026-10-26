@@ -9,6 +9,8 @@ import { useAccount } from "../../lib/account";
 import { api, errorMessage, uploadWithProgress } from "../../lib/api";
 import { bytes, dateTime, num, relative } from "../../lib/format";
 import { classificationLabels, importStatusLabels, label } from "../../lib/i18n";
+import { serverText, type ServerText } from "../../lib/serverText";
+import { storedText } from "../../lib/storedText";
 import type { ImportIssue, ImportJob, Paged, SyncStatus } from "../../lib/types";
 
 const POLL_MS = 2000;
@@ -48,14 +50,14 @@ function WebhookCard({ accountId }: { accountId: number }) {
   const { t } = useTranslation();
   const client = useQueryClient();
   const { account } = useAccount();
-  const [created, setCreated] = useState<{ url: string; message: string } | null>(null);
+  const [created, setCreated] = useState<{ url: string; message: ServerText } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const refresh = () => {
     void client.invalidateQueries({ queryKey: ["accounts"] });
     void client.invalidateQueries({ queryKey: ["sync-status"] });
   };
   const generate = useMutation({
-    mutationFn: () => api.post<{ url: string; message: string }>(`/api/v1/accounts/${accountId}/webhook`),
+    mutationFn: () => api.post<{ url: string; message: ServerText }>(`/api/v1/accounts/${accountId}/webhook`),
     onSuccess: (data) => {
       setCreated(data);
       refresh();
@@ -130,7 +132,7 @@ function WebhookCard({ accountId }: { accountId: number }) {
         footer={<Button onClick={() => setCreated(null)}>{t("admin.sync.webhook.stored")}</Button>}
         wide
       >
-        <Alert tone="warning">{created?.message}</Alert>
+        <Alert tone="warning">{serverText("sync", created?.message)}</Alert>
         <div className="mt-3 flex items-center gap-2 rounded-lg bg-surface-3 p-3">
           <code className="flex-1 break-all text-xs">{created?.url}</code>
           {created && <CopyButton text={created.url} />}
@@ -322,7 +324,7 @@ function ImportDetail({ id, onClose }: { id: number; onClose: () => void }) {
               [t("admin.sync.detail.exportTime"), dateTime(j.export_time)],
               [t("admin.sync.detail.size"), bytes(j.payload_size)],
               [t("admin.sync.detail.payloadStored"), j.payload_available ? t("admin.sync.detail.yes") : t("admin.sync.detail.no")],
-              ...(j.error_message ? ([[t("admin.sync.detail.message"), j.error_message]] as [string, string][]) : []),
+              ...(j.error_message ? ([[t("admin.sync.detail.message"), storedText("imports", j.error_code, j.error_message, j.error_data)]] as [string, string][]) : []),
             ]}
           />
           {j.sync_run && (
@@ -341,7 +343,7 @@ function ImportDetail({ id, onClose }: { id: number; onClose: () => void }) {
               />
               {j.sync_run.warnings.map((w) => (
                 <div key={w.code} className="mt-2">
-                  <Alert tone="warning">{w.message}</Alert>
+                  <Alert tone="warning">{storedText("imports", w.code, w.message, w.data)}</Alert>
                 </div>
               ))}
             </Card>
@@ -375,7 +377,7 @@ function ImportDetail({ id, onClose }: { id: number; onClose: () => void }) {
                   <li key={i.id} className="flex gap-2">
                     <Badge color={i.severity === "error" ? "#ef4444" : "#f59e0b"}>{i.severity === "error" ? t("admin.sync.issues.error") : t("admin.sync.issues.warning")}</Badge>
                     <span>
-                      {i.message}
+                      {storedText("imports", i.code, i.message, i.data)}
                       {i.path && <span className="text-muted"> · {i.path}</span>}
                       {i.source_pokemon_id && <span className="text-muted"> · Pokémon {i.source_pokemon_id}</span>}
                     </span>
@@ -474,7 +476,7 @@ function SyncView({ accountId }: { accountId: number }) {
       <PageHeader title={t("admin.sync.title")} description={t("admin.sync.description")} />
       {status.data && (
         <div className="mb-5">
-          <Alert tone={tone} title={status.data.message}>
+          <Alert tone={tone} title={serverText("sync", status.data.message)}>
             {t("admin.sync.lastSync", { date: dateTime(status.data.last_successful_sync_at) })}
             {status.data.pending_imports > 0 &&
               ` · ${t("admin.sync.pending", { count: status.data.pending_imports, imports: num(status.data.pending_imports) })}`}

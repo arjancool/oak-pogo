@@ -65,7 +65,7 @@ def apply_export(
         applied_at=now,
         total_pokemon=len(export.pokemon),
         eggs=export.eggs,
-        warnings=[{"code": r.code, "message": r.message} for r in classification.reasons],
+        warnings=[{"code": r.code, "message": r.message, "data": r.data} for r in classification.reasons],
         previous_sync_run_id=previous_run_id,
     )
     session.add(run)

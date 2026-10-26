@@ -42,6 +42,9 @@ class ImportJob(Base):
     attempts: Mapped[int] = mapped_column(Integer, default=0)
     error_code: Mapped[str | None] = mapped_column(String(48))
     error_message: Mapped[str | None] = mapped_column(Text)
+    # The values in the error message, so the interface can show it in another language. Empty
+    # rather than missing for every error stored since migration 0007 (ADR-0025).
+    error_data: Mapped[dict[str, Any] | None] = mapped_column(JSONText)
     received_at: Mapped[datetime] = mapped_column(UTCDateTime)
     started_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
     finished_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
@@ -59,6 +62,8 @@ class ImportIssue(Base):
     message: Mapped[str] = mapped_column(Text)
     path: Mapped[str | None] = mapped_column(String(200))
     source_pokemon_id: Mapped[str | None] = mapped_column(String(24))
+    # The values in the message (ADR-0025). Missing for messages stored before migration 0007.
+    data: Mapped[dict[str, Any] | None] = mapped_column(JSONText)
 
 
 class SyncRun(Base):

@@ -1,0 +1,662 @@
+{
+ "account": [
+  {
+   "code": "FIRST_SYNC",
+   "text": "Bij de eerste synchronisatie is alles nieuw; vergelijking begint vanaf de tweede."
+  },
+  {
+   "code": "ITEMS_FROM_EXPORT",
+   "text": "Item-aantallen komen uit de PGSharp-export. Eventpunten tellen niet mee voor de opslag."
+  },
+  {
+   "code": "ITEM_GROUP",
+   "data": {
+    "context": "balls"
+   },
+   "text": "Poké Balls"
+  },
+  {
+   "code": "ITEM_GROUP",
+   "data": {
+    "context": "healing"
+   },
+   "text": "Potions en Revives"
+  },
+  {
+   "code": "ITEM_GROUP",
+   "data": {
+    "context": "berries"
+   },
+   "text": "Berries"
+  },
+  {
+   "code": "ITEM_GROUP",
+   "data": {
+    "context": "candy"
+   },
+   "text": "Rare Candy"
+  },
+  {
+   "code": "ITEM_GROUP",
+   "data": {
+    "context": "tm"
+   },
+   "text": "TM's"
+  },
+  {
+   "code": "ITEM_GROUP",
+   "data": {
+    "context": "raid"
+   },
+   "text": "Raid Passes"
+  },
+  {
+   "code": "ITEM_GROUP",
+   "data": {
+    "context": "max"
+   },
+   "text": "Max Battles"
+  },
+  {
+   "code": "ITEM_GROUP",
+   "data": {
+    "context": "evolution"
+   },
+   "text": "Evolutie-items"
+  },
+  {
+   "code": "ITEM_GROUP",
+   "data": {
+    "context": "incense"
+   },
+   "text": "Incense en Lures"
+  },
+  {
+   "code": "ITEM_GROUP",
+   "data": {
+    "context": "boosts"
+   },
+   "text": "Boosts"
+  },
+  {
+   "code": "ITEM_GROUP",
+   "data": {
+    "context": "incubators"
+   },
+   "text": "Broedmachines"
+  },
+  {
+   "code": "ITEM_GROUP",
+   "data": {
+    "context": "rocket"
+   },
+   "text": "Team GO Rocket"
+  },
+  {
+   "code": "ITEM_GROUP",
+   "data": {
+    "context": "event"
+   },
+   "text": "Eventpunten"
+  },
+  {
+   "code": "ITEM_GROUP",
+   "data": {
+    "context": "other"
+   },
+   "text": "Overig"
+  }
+ ],
+ "events": [
+  {
+   "code": "FEED_NOT_A_LIST",
+   "text": "De eventkalender is geen lijst."
+  },
+  {
+   "code": "FEED_NOTHING_USABLE",
+   "text": "Geen enkel event in de kalender is bruikbaar."
+  },
+  {
+   "code": "FEED_TOO_LARGE",
+   "data": {
+    "max": 2000
+   },
+   "text": "De eventkalender bevat meer dan 2000 events."
+  },
+  {
+   "code": "FEED_UNAVAILABLE",
+   "data": {
+    "error": "JSONDecodeError"
+   },
+   "text": "Eventkalender niet bruikbaar of niet bereikbaar: JSONDecodeError"
+  },
+  {
+   "code": "MANUAL_SOURCE",
+   "text": "Eigen event"
+  }
+ ],
+ "gamedata": [
+  {
+   "code": "DEPENDS_NAMES",
+   "text": "Soortnamen, vormen en typen in de Pokémon Box"
+  },
+  {
+   "code": "DEPENDS_LEVEL",
+   "text": "Pokémon-level uit de CP-multiplier"
+  },
+  {
+   "code": "DEPENDS_PVP",
+   "text": "PvP-IV-rangen en league-geschiktheid"
+  },
+  {
+   "code": "DEPENDS_COSTS",
+   "text": "Power-up- en evolutiekosten"
+  },
+  {
+   "code": "DEPENDS_MOVESETS",
+   "text": "Movesetadvies en Elite TM-beperkingen"
+  },
+  {
+   "code": "DEPENDS_CLEANUP",
+   "text": "Cleanup-aanbevelingen"
+  },
+  {
+   "code": "DEPENDS_BATTLES",
+   "text": "Raid-, Rocket- en Max Battle-analyse"
+  },
+  {
+   "text": "PokeMiners Game Master"
+  },
+  {
+   "code": "LICENSE_NONE",
+   "text": "Geen licentie vermeld; gegevens uit de game. OAK downloadt ze tijdens gebruik en verspreidt ze niet."
+  },
+  {
+   "code": "ROLE_PRIMARY",
+   "text": "primair"
+  },
+  {
+   "code": "SOURCE_PVPOKE",
+   "text": "PvPoke gamemaster en rankings"
+  },
+  {
+   "text": "MIT"
+  },
+  {
+   "code": "ROLE_SUPPLEMENT",
+   "text": "aanvullend: namen, legacy-aanvallen, league-rankings"
+  },
+  {
+   "code": "SPRITE_NOTICE",
+   "text": "Pokémon-afbeeldingen zijn auteursrechtelijk beschermd (The Pokémon Company). OAK levert ze niet mee. Als je een externe bron inschakelt, laadt je browser de afbeeldingen daar direct. Dat is je eigen keuze en verantwoordelijkheid (ADR-0020)."
+  },
+  {
+   "code": "SOURCES_UNCHANGED",
+   "data": {},
+   "text": "De bronnen zijn niet gewijzigd sinds de actieve versie."
+  },
+  {
+   "code": "VERSION_ACTIVATED",
+   "data": {},
+   "text": "Nieuwe Game Data-versie geactiveerd."
+  },
+  {
+   "code": "SOURCE_UNREACHABLE",
+   "data": {
+    "error": "OSError"
+   },
+   "text": "Bron niet bereikbaar: OSError"
+  },
+  {
+   "code": "CPM_TOO_SHORT",
+   "data": {
+    "count": 3,
+    "min": 80
+   },
+   "text": "CP-multipliertabel heeft 3 regels, minimaal 80 verwacht"
+  },
+  {
+   "code": "MAX_LEVEL_MISSING",
+   "data": {},
+   "text": "maximale Pokémon-level ontbreekt"
+  },
+  {
+   "code": "UPGRADE_COSTS_MISSING",
+   "data": {},
+   "text": "power-upkosten ontbreken"
+  },
+  {
+   "code": "TYPE_CHART_INCOMPLETE",
+   "data": {},
+   "text": "typeschema is onvolledig"
+  },
+  {
+   "code": "TOO_FEW_SPECIES",
+   "data": {
+    "count": 51,
+    "min": 800
+   },
+   "text": "slechts 51 soorten, minimaal 800 verwacht"
+  },
+  {
+   "code": "TOO_FEW_FORMS",
+   "data": {
+    "count": 193,
+    "min": 1000
+   },
+   "text": "slechts 193 vormen, minimaal 1000 verwacht"
+  },
+  {
+   "code": "TOO_FEW_MOVES",
+   "data": {
+    "count": 167,
+    "min": 200
+   },
+   "text": "slechts 167 aanvallen, minimaal 200 verwacht"
+  },
+  {
+   "code": "LEAGUE_MISSING",
+   "data": {
+    "league": "ultra"
+   },
+   "text": "league 'ultra' ontbreekt"
+  },
+  {
+   "code": "CPM_NOT_ASCENDING",
+   "data": {},
+   "text": "CP-multipliers zijn niet oplopend"
+  },
+  {
+   "code": "CPM_NOT_POSITIVE",
+   "data": {},
+   "text": "CP-multipliertabel bevat niet-positieve waarden"
+  },
+  {
+   "code": "COST_FACTOR_MISSING",
+   "data": {
+    "key": "lucky_stardust_multiplier"
+   },
+   "text": "kostenfactor lucky_stardust_multiplier ontbreekt; kosten voor die variant worden onbekend"
+  },
+  {
+   "code": "PURIFY_RULES_MISSING",
+   "data": {},
+   "text": "regels voor purify ontbreken; het purify-scenario wordt onbekend"
+  },
+  {
+   "code": "FORMS_WITHOUT_STATS",
+   "data": {
+    "count": 2,
+    "examples": "1:, 1:BULBASAURFALL2019"
+   },
+   "text": "2 vormen zonder geldige basisstatistieken: 1:, 1:BULBASAURFALL2019"
+  },
+  {
+   "code": "MOVES_WITHOUT_DEFINITION",
+   "data": {
+    "count": 1,
+    "examples": "NO_SUCH_MOVE"
+   },
+   "text": "1 aanvallen zonder definitie: NO_SUCH_MOVE"
+  },
+  {
+   "code": "RANKINGS_MISSING",
+   "data": {},
+   "text": "PvPoke-rankings ontbreken; soortwaardering per league is niet beschikbaar"
+  },
+  {
+   "code": "TOO_MANY_FORMS_WITHOUT_STATS",
+   "data": {},
+   "text": "te veel vormen zonder basisstatistieken"
+  },
+  {
+   "code": "SCHEMA_UNSUPPORTED",
+   "data": {
+    "version": "99"
+   },
+   "text": "schema_version 99 wordt niet ondersteund"
+  },
+  {
+   "code": "GAME_MASTER_NOT_A_LIST",
+   "data": {},
+   "text": "PokeMiners-bestand is geen lijst met templates"
+  },
+  {
+   "code": "CPM_TOO_SHORT",
+   "data": {
+    "count": 1,
+    "min": 80
+   },
+   "text": "CP-multipliertabel heeft 1 regels, minimaal 80 verwacht"
+  },
+  {
+   "code": "TOO_FEW_SPECIES",
+   "data": {
+    "count": 1,
+    "min": 800
+   },
+   "text": "slechts 1 soorten, minimaal 800 verwacht"
+  },
+  {
+   "code": "TOO_FEW_FORMS",
+   "data": {
+    "count": 1,
+    "min": 1000
+   },
+   "text": "slechts 1 vormen, minimaal 1000 verwacht"
+  },
+  {
+   "code": "TOO_FEW_MOVES",
+   "data": {
+    "count": 1,
+    "min": 200
+   },
+   "text": "slechts 1 aanvallen, minimaal 200 verwacht"
+  }
+ ],
+ "imports": [
+  {
+   "code": "EXPORT_TIME_MISSING",
+   "text": "De export bevat geen tijdstip."
+  },
+  {
+   "code": "EXPORT_TIME_INVALID",
+   "text": "Het exporttijdstip heeft een onbekend formaat."
+  },
+  {
+   "code": "EXPORT_TIME_INVALID",
+   "data": {
+    "context": "date"
+   },
+   "text": "Het exporttijdstip is geen bestaande datum of tijd."
+  },
+  {
+   "code": "EXPORT_TIME_TIMEZONE_UNKNOWN",
+   "text": "Het exporttijdstip heeft geen tijdzone en wordt daarom niet gebruikt."
+  },
+  {
+   "code": "EXPORT_TIME_TIMEZONE_UNKNOWN",
+   "data": {
+    "context": "offset",
+    "zone": "+99:99"
+   },
+   "text": "Tijdzone '+99:99' van het exporttijdstip is geen geldige afwijking en wordt niet gebruikt."
+  },
+  {
+   "code": "EXPORT_TIME_TIMEZONE_UNKNOWN",
+   "data": {
+    "context": "ambiguous",
+    "zone": "XYZ"
+   },
+   "text": "Tijdzone 'XYZ' van het exporttijdstip is niet eenduidig en wordt niet gebruikt."
+  },
+  {
+   "code": "ACCOUNT_SECTION_MISSING",
+   "data": {
+    "context": "section"
+   },
+   "text": "Sectie 'account' ontbreekt."
+  },
+  {
+   "code": "PLAYER_SECTION_MISSING",
+   "text": "Sectie 'player' ontbreekt."
+  },
+  {
+   "code": "ITEM_INVALID",
+   "text": "Itemrecord is geen object."
+  },
+  {
+   "code": "ITEM_INVALID",
+   "data": {
+    "context": "values"
+   },
+   "text": "Item zonder geldig nummer of aantal."
+  },
+  {
+   "code": "RECORD_NOT_OBJECT",
+   "text": "Record is geen object."
+  },
+  {
+   "code": "ID_LOSSY",
+   "text": "Pokémon-ID ontbreekt of is niet verliesvrij leesbaar."
+  },
+  {
+   "code": "ID_INVALID",
+   "text": "Pokémon-ID ontbreekt of is niet verliesvrij leesbaar."
+  },
+  {
+   "code": "ID_DUPLICATE",
+   "text": "Dezelfde Pokémon-ID komt meerdere keren voor. Alleen het eerste record telt."
+  },
+  {
+   "code": "SPECIES_INVALID",
+   "text": "Soortnummer ontbreekt of is onleesbaar. De Pokémon telt als aanwezig, maar de gegevens zijn niet bijgewerkt."
+  },
+  {
+   "code": "DISPLAY_MISSING",
+   "text": "pokemonDisplay ontbreekt. Vorm, shiny en shadow zijn onbekend."
+  },
+  {
+   "code": "CP_MISSING",
+   "text": "CP ontbreekt."
+  },
+  {
+   "code": "IV_MISSING",
+   "text": "Eén of meer IV's ontbreken."
+  },
+  {
+   "code": "IV_OUT_OF_RANGE",
+   "data": {
+    "field": "individualDefense"
+   },
+   "text": "individualDefense valt buiten 0–15."
+  },
+  {
+   "code": "ROOT_NOT_OBJECT",
+   "text": "De export is geen JSON-object."
+  },
+  {
+   "code": "POKEMON_LIST_MISSING",
+   "data": {
+    "context": "section"
+   },
+   "text": "De export bevat geen lijst 'pokemons'. Er is niets te importeren."
+  },
+  {
+   "code": "POKEMON_LIST_MISSING",
+   "text": "De export bevat geen Pokémon-lijst."
+  },
+  {
+   "code": "ACCOUNT_MISMATCH",
+   "text": "Deze export hoort bij een ander Pokémon GO-account dan dit traineraccount. Er is niets gewijzigd."
+  },
+  {
+   "code": "UNIDENTIFIABLE_RECORDS",
+   "data": {
+    "count": 3
+   },
+   "text": "3 record(s) zonder leesbare Pokémon-ID. Welke Pokémon dat zijn is onbekend, dus ontbrekende Pokémon worden niet als verdwenen gemarkeerd."
+  },
+  {
+   "code": "ACCOUNT_SECTION_MISSING",
+   "text": "De accountsectie ontbreekt, dus niet vast te stellen is dat de export bij dit account hoort."
+  },
+  {
+   "code": "SUSPICIOUS_DROP",
+   "data": {
+    "drop": 30,
+    "present": 70,
+    "previous": 100
+   },
+   "text": "De export bevat 70 Pokémon, 30 minder dan de huidige inventaris (100). Bevestig dat dit een volledige export is voordat OAK ze als verdwenen markeert."
+  },
+  {
+   "code": "EXPORT_OLDER_THAN_CURRENT",
+   "text": "Deze export is ouder dan de laatst verwerkte export. De huidige gegevens blijven staan."
+  },
+  {
+   "code": "EMPTY_POKEMON_LIST",
+   "data": {
+    "count": 1
+   },
+   "text": "De export bevat geen Pokémon terwijl er 1 in de inventaris staan."
+  },
+  {
+   "code": "SUSPICIOUS_DROP",
+   "data": {
+    "drop": 1433,
+    "present": 67,
+    "previous": 1500
+   },
+   "text": "De export bevat 67 Pokémon, 1433 minder dan de huidige inventaris (1500). Bevestig dat dit een volledige export is voordat OAK ze als verdwenen markeert."
+  },
+  {
+   "code": "ACCOUNT_UNVERIFIED",
+   "text": "Niet vast te stellen dat deze export bij het gekoppelde Pokémon GO-account hoort."
+  },
+  {
+   "code": "NO_READABLE_POKEMON",
+   "text": "Geen enkel Pokémon-record is leesbaar."
+  },
+  {
+   "code": "NICKNAME_CHANGED",
+   "data": {
+    "new": "TestTrainer",
+    "old": "Misty"
+   },
+   "text": "De trainernaam is gewijzigd van 'Misty' naar 'TestTrainer' en het account is niet anders te verifiëren."
+  },
+  {
+   "code": "SUSPICIOUS_DROP",
+   "data": {
+    "drop": 33,
+    "present": 67,
+    "previous": 100
+   },
+   "text": "De export bevat 67 Pokémon, 33 minder dan de huidige inventaris (100). Bevestig dat dit een volledige export is voordat OAK ze als verdwenen markeert."
+  },
+  {
+   "code": "ITEMS_SECTION_MISSING",
+   "text": "Sectie 'items' ontbreekt."
+  },
+  {
+   "code": "EXPORT_TIME_UNKNOWN",
+   "text": "Het exportmoment ontbreekt of is onleesbaar, dus niet vast te stellen is dat deze export nieuwer is dan de huidige gegevens."
+  },
+  {
+   "code": "EMPTY_BODY",
+   "text": "Het verzoek bevat geen inhoud."
+  },
+  {
+   "code": "INVALID_JSON",
+   "data": {
+    "column": 2,
+    "line": 1
+   },
+   "text": "Ongeldige JSON op regel 1, kolom 2."
+  },
+  {
+   "code": "ENCODING_INVALID",
+   "data": {
+    "charset": "utf-8"
+   },
+   "text": "De inhoud is geen geldige utf-8-tekst."
+  },
+  {
+   "code": "MULTIPART_WITHOUT_FILE",
+   "text": "Het multipart-verzoek bevat geen bestand."
+  },
+  {
+   "code": "ISSUES_TRUNCATED",
+   "data": {
+    "count": 1003
+   },
+   "text": "1003 meldingen niet opgeslagen."
+  },
+  {
+   "code": "ISSUES_TRUNCATED",
+   "data": {
+    "count": 1
+   },
+   "text": "1 meldingen niet opgeslagen."
+  },
+  {
+   "code": "PAYLOAD_MISSING",
+   "text": "De opgeslagen export ontbreekt."
+  },
+  {
+   "code": "PAYLOAD_UNREADABLE",
+   "text": "De opgeslagen export kan niet gelezen worden. Upload hem opnieuw."
+  },
+  {
+   "code": "NORMALIZATION_FAILED",
+   "text": "De export kon niet gelezen worden door een interne fout. Er is niets gewijzigd."
+  },
+  {
+   "code": "PROCESSING_FAILED",
+   "text": "Verwerking mislukt door een interne fout. Er is niets gewijzigd."
+  },
+  {
+   "code": "SUSPICIOUS_DROP",
+   "data": {
+    "drop": 49,
+    "present": 18,
+    "previous": 67
+   },
+   "text": "De export bevat 18 Pokémon, 49 minder dan de huidige inventaris (67). Bevestig dat dit een volledige export is voordat OAK ze als verdwenen markeert."
+  },
+  {
+   "code": "INVALID_JSON",
+   "data": {
+    "column": 15,
+    "line": 1
+   },
+   "text": "Ongeldige JSON op regel 1, kolom 15."
+  }
+ ],
+ "sync": [
+  {
+   "code": "NO_EXPORT_YET",
+   "data": {},
+   "text": "Nog geen export ontvangen."
+  },
+  {
+   "code": "WEBHOOK_COPY_NOW",
+   "text": "Kopieer deze URL nu. OAK bewaart alleen een hash en kan hem later niet opnieuw tonen."
+  },
+  {
+   "code": "PROCESSING",
+   "data": {},
+   "text": "Er wordt een import verwerkt."
+  },
+  {
+   "code": "SYNCHRONISED",
+   "data": {},
+   "text": "Gesynchroniseerd."
+  },
+  {
+   "code": "LAST_IMPORT_PARTIAL",
+   "data": {},
+   "text": "De laatste import was gedeeltelijk. Ontbrekende Pokémon zijn niet als verdwenen gemarkeerd."
+  },
+  {
+   "code": "LAST_IMPORT_ERROR",
+   "data": {
+    "imports": {
+     "code": "INVALID_JSON",
+     "data": {
+      "column": 15,
+      "line": 1
+     },
+     "text": "Ongeldige JSON op regel 1, kolom 15."
+    }
+   },
+   "text": "Ongeldige JSON op regel 1, kolom 15."
+  },
+  {
+   "code": "LAST_IMPORT_FAILED",
+   "data": {},
+   "text": "De laatste import is mislukt."
+  }
+ ]
+}

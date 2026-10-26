@@ -130,7 +130,8 @@ def test_cup_page_lists_only_pokemon_that_may_enter(
         assert item["best_cp"] <= 1500
 
     unranked = owner.get(f"/api/v1/battles/league/{LITTLE}", account_id=account).json()
-    assert unranked["items"] and "geen ranglijst" in unranked["method"]
+    assert unranked["items"] and "geen ranglijst" in unranked["method"]["text"]
+    assert unranked["method"]["data"] == {"context": "unranked_cup"}
     assert all(item["species_rank"] is None for item in unranked["items"])
 
     assert owner.get("/api/v1/battles/league/bogus-1500", account_id=account).status_code == 404

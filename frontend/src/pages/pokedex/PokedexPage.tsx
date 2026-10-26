@@ -12,6 +12,7 @@ import { useAccount } from "../../lib/account";
 import { level, num, pct } from "../../lib/format";
 import { conditionLabels, label } from "../../lib/i18n";
 import { type PokedexSpecies, type PokedexStep, pokedexSearch, pokedexSpecies } from "../../lib/schemas";
+import { serverText } from "../../lib/serverText";
 import { useUrlState } from "../../lib/useUrlState";
 
 const SEARCH_DELAY_MS = 250;
@@ -305,7 +306,7 @@ function Battle({ data }: { data: PokedexSpecies }) {
           <ul className="space-y-0.5 text-sm">
             {data.cp_table.map((row) => (
               <li key={row.level} className="flex justify-between gap-4">
-                <span className="text-muted">{row.label}</span>
+                <span className="text-muted">{serverText("pokedex", row.label)}</span>
                 <span className="tabular-nums">{num(row.cp)}</span>
               </li>
             ))}

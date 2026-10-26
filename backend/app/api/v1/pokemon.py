@@ -327,6 +327,28 @@ def _subject(pokemon: Pokemon, trainer_level: int | None) -> Subject:
 Scenario = Literal["current", "purified"]
 
 
+def _text(code: str, text: str, **data: Any) -> dict[str, Any]:
+    """A sentence for the interface: a code with its data, and the Dutch text as fallback (ADR-0025)."""
+    return {"code": code, "text": text, **({"data": data} if data else {})}
+
+
+# What the columns of the battle analysis mean.
+ANALYSIS_METHOD = {
+    "iv_rank": _text(
+        "METHOD_IV_RANK",
+        "Rang van de IV-combinatie binnen deze soort en league (1–4096), op het hoogste level onder "
+        "de CP-limiet, gesorteerd op stat product.",
+    ),
+    "species_rank": _text("METHOD_SPECIES_RANK", "Positie van de soort in de PvPoke-ranking voor deze league."),
+    "readiness": _text("METHOD_READINESS", "Of dit exemplaar nu, na power-up of na evolutie inzetbaar is."),
+}
+CP_AFTER_UNKNOWN = _text("CP_AFTER_EVOLUTION_UNKNOWN", "CP na evolutie onbekend: level of IV's ontbreken.")
+CANDY_ROUNDING = _text(
+    "CANDY_ROUNDING",
+    "Candy-kosten voor Shadow en Purified worden naar boven afgerond; de game documenteert de afronding niet.",
+)
+
+
 def _scenario(
     gd: GameData, pokemon: Pokemon, trainer_level: int | None, scenario: Scenario
 ) -> tuple[Subject, dict[str, Any] | None]:
@@ -416,7 +438,7 @@ def pokemon_analysis(
     account = owned_account(session, auth.user, pokemon.trainer_account_id)
     gd = container.gamedata.active()
     if gd is None:
-        return {"available": False, "reason": "Geen actieve Game Data."}
+        return {"available": False, "reason": _text("NO_GAME_DATA", "Geen actieve Game Data.")}
     rules = rules_for(account)
     subject, scenario_info = _scenario(gd, pokemon, account.trainer_level, scenario)
     leagues = analyze_leagues(
@@ -481,12 +503,7 @@ def pokemon_analysis(
             "elite_tm_available": rules.elite_tm_available,
             "ready_cp_fraction": rules.ready_cp_fraction,
         },
-        "method": {
-            "iv_rank": "Rang van de IV-combinatie binnen deze soort en league (1–4096), op het hoogste level onder "
-            "de CP-limiet, gesorteerd op stat product.",
-            "species_rank": "Positie van de soort in de PvPoke-ranking voor deze league.",
-            "readiness": "Of dit exemplaar nu, na power-up of na evolutie inzetbaar is.",
-        },
+        "method": ANALYSIS_METHOD,
         "scenario": scenario_info,
         "leagues": output,
         "current_moves": current_moves,
@@ -507,7 +524,8 @@ def pokemon_evolutions(
     account = owned_account(session, auth.user, pokemon.trainer_account_id)
     gd = container.gamedata.active()
     if gd is None or pokemon.form_key is None:
-        return {"available": False, "paths": [], "reason": "Geen Game Data of onbekende vorm."}
+        reason = _text("NO_GAME_DATA_OR_FORM", "Geen Game Data of onbekende vorm.")
+        return {"available": False, "paths": [], "reason": reason}
     subject, scenario_info = _scenario(gd, pokemon, account.trainer_level, scenario)
     cpm = gd.cpm(subject.level) if subject.level is not None else None
     ivs = subject.ivs
@@ -574,7 +592,7 @@ def pokemon_evolutions(
                 "hp_after": hp_after,
                 "leagues": leagues,
                 "elite_moves": moves_note,
-                "note": None if cp_after is not None else "CP na evolutie onbekend: level of IV's ontbreken.",
+                "note": None if cp_after is not None else CP_AFTER_UNKNOWN,
             }
         )
     return {"available": True, "game_data_version": gd.version_id, "scenario": scenario_info, "paths": paths}
@@ -593,7 +611,7 @@ def pokemon_powerups(
     account = owned_account(session, auth.user, pokemon.trainer_account_id)
     gd = container.gamedata.active()
     if gd is None or pokemon.level is None or pokemon.form_key is None:
-        return {"available": False, "reason": "Geen Game Data of level onbekend."}
+        return {"available": False, "reason": _text("NO_GAME_DATA_OR_LEVEL", "Geen Game Data of level onbekend.")}
     rules = rules_for(account)
     form = gd.forms[pokemon.form_key]
     base = base_stats_of(dict(form))
@@ -636,9 +654,7 @@ def pokemon_powerups(
         "scenario": scenario_info,
         "max_level": ceiling,
         "modifiers": {"shadow": shadow, "purified": purified, "lucky": bool(pokemon.lucky)},
-        "note": (
-            "Candy-kosten voor Shadow en Purified worden naar boven afgerond; de game documenteert de afronding niet."
-        ),
+        "note": CANDY_ROUNDING,
         "steps": steps,
         "target": chosen,
         "candy_available": None,

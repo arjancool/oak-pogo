@@ -35,7 +35,8 @@ def test_dynamax_uses_the_max_move_of_its_fast_move_type(gamedata: GameData) -> 
 def test_gigantamax_without_a_known_g_max_move_is_unknown(gamedata: GameData) -> None:
     attack = max_attack(gamedata, _pokemon(BreadMode.GIGANTAMAX, dex=150, form="150:", fast="PSYCHO_CUT_FAST"))
     assert attack["type"] is None and attack["source"] is None
-    assert "geen G-Max-aanval" in attack["unknown_reason"]
+    assert attack["unknown_reason"]["code"] == "NO_GMAX_MOVE"
+    assert "geen G-Max-aanval" in attack["unknown_reason"]["text"]
 
 
 def test_dataset_without_g_max_table_says_so(gamedata: GameData) -> None:
@@ -45,7 +46,8 @@ def test_dataset_without_g_max_table_says_so(gamedata: GameData) -> None:
     old = GameData(dataset, gamedata.version_id)
     assert old.outdated
     attack = max_attack(old, _pokemon(BreadMode.GIGANTAMAX))
-    assert attack["type"] is None and "Werk de Game Data bij" in attack["unknown_reason"]
+    assert attack["type"] is None and attack["unknown_reason"]["code"] == "NO_GMAX_MOVES"
+    assert "Werk de Game Data bij" in attack["unknown_reason"]["text"]
 
 
 def test_dataset_from_an_older_transform_is_rebuilt_from_unchanged_sources(

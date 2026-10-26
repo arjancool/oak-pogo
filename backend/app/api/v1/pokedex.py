@@ -38,9 +38,24 @@ from app.models import ItemInventory, ManualResource, Pokemon, PokemonAnalysis, 
 from app.services.pokemon_view import summarize
 
 router = APIRouter(prefix="/pokedex", tags=["pokedex"])
+
+
+def _text(code: str, text: str, **data: Any) -> dict[str, Any]:
+    """A label for the interface: a code with its data, and the Dutch text as fallback (ADR-0025)."""
+    return {"code": code, "text": text, **({"data": data} if data else {})}
+
+
+def _level_label(level: float) -> dict[str, Any]:
+    return _text("LEVEL", f"Level {level:g}", level=level)
+
+
 # Levels for the CP table with perfect IVs: research and raids, the same with weather boost,
 # the old level cap, and the dataset's maximum.
-CP_LEVELS = ((20.0, "Raid en onderzoek"), (25.0, "Met weerbonus"), (40.0, "Level 40"))
+CP_LEVELS = (
+    (20.0, _text("RAID_RESEARCH", "Raid en onderzoek")),
+    (25.0, _text("WEATHER_BOOST", "Met weerbonus")),
+    (40.0, _level_label(40.0)),
+)
 OWNED_LIMIT = 50
 CANDIDATE_LIMIT = 100
 ITEM_LABELS = {norm_key(name): label for name, (label, _group) in ITEM_NAMES.items()}
@@ -116,7 +131,7 @@ def _cp_table(gd: GameData, form: Mapping[str, Any]) -> list[dict[str, Any]]:
         return []
     perfect = IVs(IV_MAX, IV_MAX, IV_MAX)
     rows = []
-    for level, label in (*CP_LEVELS, (gd.max_level, f"Level {gd.max_level:g}")):
+    for level, label in (*CP_LEVELS, (gd.max_level, _level_label(gd.max_level))):
         cpm = gd.cpm(level)
         if cpm is None or any(r["level"] == level for r in rows):
             continue

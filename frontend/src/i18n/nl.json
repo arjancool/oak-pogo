@@ -1885,6 +1885,65 @@
       "MAX_gigantamax": "Gigantamax",
       "MAX_dynamax": "Dynamax",
       "MEGA": "Mega-voortgang"
+    },
+    "battles": {
+      "LEAGUE_METHOD": "Per Pokémon de meest competitieve soort die hij kan worden (PvPoke-rang), met zijn IV-rang voor die soort.",
+      "LEAGUE_METHOD_cup": "Per Pokémon de meest competitieve soort die hij kan worden (PvPoke-rang), met zijn IV-rang voor die soort. Alleen Pokémon die volgens de regels van de cup mee mogen, zoals PvPoke ze beschrijft.",
+      "LEAGUE_METHOD_unranked_cup": "Per Pokémon de meest competitieve soort die hij kan worden (PvPoke-rang), met zijn IV-rang voor die soort. Alleen Pokémon die volgens de regels van de cup mee mogen, zoals PvPoke ze beschrijft. PvPoke heeft voor deze cup geen ranglijst. De volgorde volgt daarom alleen de IV-rang, niet hoe sterk een soort is.",
+      "TEAM_METHOD": "Heuristiek: PvPoke-soortscore × IV-kwaliteit, met een straf voor gedeelde zwaktes en een bonus voor typedekking. Geen gevechtssimulatie.",
+      "TEAM_DIRECT": "Beste direct inzetbare team",
+      "TEAM_LIMITED": "Beste team met beperkte upgrades",
+      "TEAM_FUTURE": "Beste toekomstige team",
+      "TEAM_TOO_FEW": "Te weinig geschikte Pokémon voor deze variant.",
+      "TEAM_NONE": "Geen team gevonden.",
+      "RAID_METHOD": "Vereenvoudigd PvE-model: cyclus-DPS met STAB, typevoordeel en Shadow-bonus. Geen weer, geen energie uit schade, geen aanvallen van de baas. Bedoeld om aanvallers te vergelijken.",
+      "ROCKET_METHOD": "Heuristiek op typevoordeel, PvP-aanvalswaarden, eigen statistieken en weerstand. Geen simulatie.",
+      "ROCKET_NO_LINEUPS": "OAK heeft geen gevalideerde, gedateerde bron voor actuele Team GO Rocket-opstellingen. Kies de tegenstanders zelf.",
+      "MAX_METHOD": "Aanvallers op typevoordeel van Max Attack, verdedigers op weerstand en Defense. Heuristiek.",
+      "MAX_ATTACK_TYPE": "Bij Dynamax heeft Max Attack het type van de snelle aanval. Gigantamax gebruikt in plaats daarvan een vaste G-Max-aanval. Type en naam daarvan komen uit de actieve Game Data.",
+      "MAX_MOVE_TYPES": "Aanvalstype 1 in de export is Max Attack (bevestigd in een echte export). Type 2 (Max Guard) en 3 (Max Spirit) volgen de community-protocoldefinities en zijn niet geverifieerd.",
+      "MAX_RESOURCES": "Max Particles en candy komen niet in de export voor; beschikbaarheid is daarom onbekend.",
+      "NO_GMAX_MOVES": "De actieve Game Data bevat nog geen G-Max-aanvallen. Werk de Game Data bij.",
+      "NO_GMAX_MOVE": "Voor deze Pokémon en vorm staat geen G-Max-aanval in de Game Data.",
+      "FAST_MOVE_UNKNOWN": "De snelle aanval is onbekend.",
+      "GYM_METHOD": "Verdedigingswaarde = effectieve Defense × HP, vergeleken met de sterkst mogelijke verdediger uit de Game Data. Hoe hoger, hoe meer aanvallen een aanvaller nodig heeft. De eigen aanvallen van de verdediger en het verlies van motivatie tellen niet mee.",
+      "GYM_DEPLOYABLE": "Of een Pokémon in een gym mag, komt uit de Game Data (isDeployable). Legendary, Mythical en Ultra Beasts mogen meestal niet, maar de Game Data maakt uitzonderingen, zoals Meltan en Melmetal.",
+      "GYM_ONE_PER_SPECIES": "Iedere soort mag maar één keer in dezelfde gym. Daarom staat per soort alleen je sterkste exemplaar in de lijst.",
+      "GYM_MOTIVATION": "Hoe snel een verdediger motivatie verliest, staat niet in de Game Data. Volgens metingen uit de community gaat dat sneller bij een hogere CP. OAK rekent daar niet mee.",
+      "GYM_IN_GYM": "Staat een Pokémon al in een gym, dan zie je dat bij de laatste import. Zo'n Pokémon kun je niet nog een keer plaatsen. OAK leest dat uit de export. Of PGSharp het altijd meestuurt, is nog niet vastgesteld.",
+      "GYM_TYPES": "Kies bij voorkeur een type dat de andere verdedigers in de gym nog niet hebben.",
+      "GYM_OUTDATED": "De actieve Game Data zegt nog niet welke Pokémon in een gym mogen. Werk de Game Data bij.",
+      "GYM_SOURCE": "PGSharp-export en Game Data",
+      "GYM_ALLOWED": "Mag in een gym volgens de Game Data.",
+      "GYM_STATS": "{{hp, number}} HP en een effectieve Defense van {{defense, number}}.",
+      "GYM_VALUE": "Verdedigingswaarde {{value}} van 100. Op 100 staat {{reference}} op level {{level}} met perfecte IV's.",
+      "GYM_SHADOW": "Shadow: Defense × {{multiplier}} volgens de Game Data, dus minder stevig dan zonder Shadow."
+    },
+    "readiness": {
+      "LEVEL_UNKNOWN": "Level onbekend",
+      "OVER_CAP_AFTER_EVOLUTION": "Na evolutie boven de CP-limiet",
+      "OVER_CAP": "Boven de CP-limiet",
+      "ABOVE_BEST_LEVEL": "Al boven het optimale level",
+      "READY_AFTER_EVOLUTION": "Inzetbaar na evolutie",
+      "READY_AFTER_EVOLUTION_AND_POWER_UP": "Inzetbaar na evolutie en power-up",
+      "READY_NOW": "Direct inzetbaar",
+      "READY_AFTER_POWER_UP": "Inzetbaar na power-up"
+    },
+    "analysis": {
+      "NO_GAME_DATA": "Geen actieve Game Data.",
+      "NO_GAME_DATA_OR_FORM": "Geen Game Data of onbekende vorm.",
+      "NO_GAME_DATA_OR_LEVEL": "Geen Game Data of level onbekend.",
+      "METHOD_IV_RANK": "Rang van de IV-combinatie binnen deze soort en league (1–4096), op het hoogste level onder de CP-limiet, gesorteerd op stat product.",
+      "METHOD_SPECIES_RANK": "Positie van de soort in de PvPoke-ranking voor deze league.",
+      "METHOD_READINESS": "Of dit exemplaar nu, na power-up of na evolutie inzetbaar is.",
+      "TRAINER_LEVEL_ASSUMED": "Trainerlevel onbekend. OAK gaat uit van trainerlevel {{level}} of hoger.",
+      "CP_AFTER_EVOLUTION_UNKNOWN": "CP na evolutie onbekend: level of IV's ontbreken.",
+      "CANDY_ROUNDING": "Candy-kosten voor Shadow en Purified worden naar boven afgerond; de game documenteert de afronding niet."
+    },
+    "pokedex": {
+      "RAID_RESEARCH": "Raid en onderzoek",
+      "WEATHER_BOOST": "Met weerbonus",
+      "LEVEL": "Level {{level}}"
     }
   }
 }

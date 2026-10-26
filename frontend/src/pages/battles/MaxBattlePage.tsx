@@ -9,6 +9,7 @@ import { TypeBadge } from "../../components/pokemon";
 import { Alert, Badge, Button, Card, EmptyState, PageHeader, Spinner } from "../../components/ui";
 import { api, errorMessage } from "../../lib/api";
 import { level, num } from "../../lib/format";
+import { type ServerText, serverText } from "../../lib/serverText";
 import { SpeciesPicker, type SpeciesOption } from "./shared";
 
 interface MaxPokemon {
@@ -21,7 +22,7 @@ interface MaxPokemon {
   max_attack_type: string | null;
   max_attack_name: string | null;
   max_attack_source: "gmax_move" | "fast_move" | null;
-  max_attack_unknown_reason: string | null;
+  max_attack_unknown_reason: ServerText | null;
   fast_move: string | null;
   max_moves: Record<string, number>;
   next_upgrade_cost: Record<string, { mpCost?: number; candyCost?: number; xlCandyCost?: number } | null>;
@@ -38,7 +39,7 @@ function MaxBattles({ accountId }: { accountId: number }) {
   const [boss, setBoss] = useState<SpeciesOption | null>(null);
   const run = useMutation({
     mutationFn: (bossKey: string | null) =>
-      api.post<{ pokemon: MaxPokemon[]; advice: { attackers: MaxPokemon[]; defenders: MaxPokemon[] } | null; notes: string[]; method: string }>(
+      api.post<{ pokemon: MaxPokemon[]; advice: { attackers: MaxPokemon[]; defenders: MaxPokemon[] } | null; notes: ServerText[]; method: ServerText }>(
         "/api/v1/battles/max-counters",
         { account_id: accountId, boss_key: bossKey },
       ),
@@ -71,7 +72,7 @@ function MaxBattles({ accountId }: { accountId: number }) {
       {run.error && <Alert tone="error">{errorMessage(run.error)}</Alert>}
       {data && (
         <>
-          <Alert tone="info">{data.notes.join(" ")}</Alert>
+          <Alert tone="info">{data.notes.map((note) => serverText("battles", note)).join(" ")}</Alert>
           {data.advice && (
             <div className="mt-4 grid gap-4 lg:grid-cols-2">
               <Card title={t("battles.max.attackers")}>
@@ -139,9 +140,9 @@ function MaxBattles({ accountId }: { accountId: number }) {
                               {p.max_attack_name && <span className="mt-1 block text-xs text-muted">{p.max_attack_name}</span>}
                             </>
                           ) : (
-                            <span className="text-xs text-muted" title={p.max_attack_unknown_reason ?? undefined}>
+                            <span className="text-xs text-muted" title={p.max_attack_unknown_reason ? serverText("battles", p.max_attack_unknown_reason) : undefined}>
                               {t("common.unknown")}
-                              {p.max_attack_unknown_reason && <span className="block">{p.max_attack_unknown_reason}</span>}
+                              {p.max_attack_unknown_reason && <span className="block">{serverText("battles", p.max_attack_unknown_reason)}</span>}
                             </span>
                           )}
                         </td>
@@ -171,7 +172,7 @@ function MaxBattles({ accountId }: { accountId: number }) {
               </div>
             )}
           </Card>
-          <p className="mt-3 text-xs text-muted">{data.method}</p>
+          <p className="mt-3 text-xs text-muted">{serverText("battles", data.method)}</p>
         </>
       )}
     </>

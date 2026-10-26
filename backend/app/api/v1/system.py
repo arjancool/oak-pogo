@@ -106,9 +106,13 @@ def get_app_settings(
     return {
         "sprite_source": source,
         "sprite_url_template": template or None,
-        "sprite_notice": "Pokémon-afbeeldingen zijn auteursrechtelijk beschermd (The Pokémon Company). OAK levert ze "
-        "niet mee. Als je een externe bron inschakelt, laadt je browser de afbeeldingen daar direct. Dat is je eigen "
-        "keuze en verantwoordelijkheid (ADR-0020).",
+        # A server text: {code, text}, with the Dutch text as the fallback (ADR-0025).
+        "sprite_notice": {
+            "code": "SPRITE_NOTICE",
+            "text": "Pokémon-afbeeldingen zijn auteursrechtelijk beschermd (The Pokémon Company). OAK levert ze "
+            "niet mee. Als je een externe bron inschakelt, laadt je browser de afbeeldingen daar direct. Dat is je "
+            "eigen keuze en verantwoordelijkheid (ADR-0020).",
+        },
         "timezone": container.settings.timezone,
         "base_url": container.settings.base_url,
     }

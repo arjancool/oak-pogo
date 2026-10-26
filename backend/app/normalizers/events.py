@@ -19,7 +19,15 @@ MAX_TEXT = 200
 
 
 class EventFeedError(ValueError):
-    """The download is not a usable event calendar. The stored events stay as they are."""
+    """The download is not a usable event calendar. The stored events stay as they are.
+
+    ``code`` and ``data`` let the interface show the message in another language (ADR-0025).
+    """
+
+    def __init__(self, code: str, message: str, **data: Any) -> None:
+        super().__init__(message)
+        self.code = code
+        self.data = data
 
 
 @dataclass(frozen=True, slots=True)
@@ -83,9 +91,9 @@ def parse_events(raw: Any, tz: ZoneInfo) -> tuple[list[ParsedEvent], int]:
     broken download never replaces good data.
     """
     if not isinstance(raw, list):
-        raise EventFeedError("De eventkalender is geen lijst.")
+        raise EventFeedError("FEED_NOT_A_LIST", "De eventkalender is geen lijst.")
     if len(raw) > MAX_EVENTS:
-        raise EventFeedError(f"De eventkalender bevat meer dan {MAX_EVENTS} events.")
+        raise EventFeedError("FEED_TOO_LARGE", f"De eventkalender bevat meer dan {MAX_EVENTS} events.", max=MAX_EVENTS)
     events: list[ParsedEvent] = []
     skipped = 0
     seen: set[str] = set()
@@ -121,5 +129,5 @@ def parse_events(raw: Any, tz: ZoneInfo) -> tuple[list[ParsedEvent], int]:
             )
         )
     if raw and not events:
-        raise EventFeedError("Geen enkel event in de kalender is bruikbaar.")
+        raise EventFeedError("FEED_NOTHING_USABLE", "Geen enkel event in de kalender is bruikbaar.")
     return events, skipped

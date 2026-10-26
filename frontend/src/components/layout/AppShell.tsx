@@ -36,6 +36,7 @@ import { useAccount } from "../../lib/account";
 import { api } from "../../lib/api";
 import { useAuth } from "../../lib/auth";
 import { relative } from "../../lib/format";
+import { serverText } from "../../lib/serverText";
 import type { SyncStatus } from "../../lib/types";
 import { LanguageSelect } from "../LanguageSelect";
 import { Select } from "../ui";
@@ -130,7 +131,7 @@ function SyncPill() {
     <NavLink
       to="/admin/sync"
       className="hidden items-center gap-2 rounded-full border border-line px-3 py-1 text-xs text-muted hover:text-ink sm:flex"
-      title={data.message}
+      title={serverText("sync", data.message)}
     >
       <span className={clsx("h-2 w-2 rounded-full", stateStyles[data.state])} />
       {t(stateLabels[data.state])}

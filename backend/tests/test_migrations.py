@@ -41,6 +41,8 @@ def test_upgrade_from_first_revision_keeps_data(tmp_path: Path) -> None:
     assert {"external_id", "starts_at", "ends_at", "featured", "trainer_account_id"} <= {
         c["name"] for c in inspect(engine).get_columns("game_events")
     }
+    for table, column in (("import_errors", "data"), ("import_jobs", "error_data"), ("game_data_versions", "errors")):
+        assert column in {c["name"] for c in inspect(engine).get_columns(table)}, f"{table}.{column} keeps message data"
     with engine.connect() as connection:
         assert connection.execute(text("SELECT value FROM app_settings WHERE key = 'probe'")).scalar() == '"kept"'
     assert list(settings.backups_dir.glob("oak-pre-migration-0001*.db")), "a backup is made before migrating"

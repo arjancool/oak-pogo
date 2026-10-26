@@ -8,7 +8,7 @@ import json
 import logging
 import threading
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -24,6 +24,7 @@ from app.gamedata.transform import SCHEMA_VERSION, build_dataset
 from app.gamedata.validate import (
     DatasetInvalidError,
     ValidationLimits,
+    dataset_not_a_list,
     summarize_dataset,
     validate_dataset,
 )
@@ -40,7 +41,17 @@ class UpdateResult:
     version_id: int | None
     status: str  # activated | unchanged | failed
     message: str
-    warnings: list[str]
+    warnings: list[dict[str, Any]]
+    # The message for the interface: {code, text, data} with the Dutch text (ADR-0025). A
+    # failure without a code, such as a file that is no JSON, has only the text.
+    text: dict[str, Any] = field(default_factory=dict)
+    # Why validation failed, one message per problem; empty for any other result.
+    errors: list[dict[str, Any]] = field(default_factory=list)
+
+
+def _unreachable(exc: Exception) -> dict[str, Any]:
+    name = type(exc).__name__
+    return {"code": "SOURCE_UNREACHABLE", "text": f"Bron niet bereikbaar: {name}", "data": {"error": name}}
 
 
 class GameDataStore:
@@ -103,11 +114,13 @@ class GameDataStore:
                 and set(active_sources) == set(downloads)
             ):
                 self._record_check(None)
+                unchanged = "De bronnen zijn niet gewijzigd sinds de actieve versie."
                 return UpdateResult(
                     self._active.version_id if self._active else None,
                     "unchanged",
-                    "De bronnen zijn niet gewijzigd sinds de actieve versie.",
+                    unchanged,
                     [],
+                    {"code": "SOURCES_UNCHANGED", "text": unchanged, "data": {}},
                 )
             now = datetime.now(UTC)
             try:
@@ -119,7 +132,7 @@ class GameDataStore:
                     if sid.startswith("pvpoke-rankings-")
                 }
                 if not isinstance(game_master, list):
-                    raise DatasetInvalidError(["PokeMiners-bestand is geen lijst met templates"])
+                    raise dataset_not_a_list()
                 sources = [
                     d.source_record(pvpoke.get("timestamp") if sid == "pvpoke" and isinstance(pvpoke, dict) else None)
                     for sid, d in downloads.items()
@@ -133,7 +146,8 @@ class GameDataStore:
                 )
                 warnings = validate_dataset(dataset, self.limits)
             except (DatasetInvalidError, ValueError, KeyError, TypeError) as exc:
-                message = "; ".join(exc.errors) if isinstance(exc, DatasetInvalidError) else str(exc)
+                errors = exc.errors if isinstance(exc, DatasetInvalidError) else []
+                message = "; ".join(e["text"] for e in errors) if errors else str(exc)
                 with self.db.transaction() as session:
                     session.add(
                         GameDataVersion(
@@ -142,12 +156,13 @@ class GameDataStore:
                             schema_version=SCHEMA_VERSION,
                             sources=[d.source_record() for d in downloads.values()],
                             error=message[:2000],
+                            errors=errors or None,
                             created_at=now,
                         )
                     )
                 self._record_check(message)
                 log.warning("game data validation failed", extra={"error": message[:300]})
-                return UpdateResult(None, "failed", message, [])
+                return UpdateResult(None, "failed", message, [], {"text": message}, errors)
 
             content = json.dumps(dataset, separators=(",", ":")).encode("utf-8")
             digest = hashlib.sha256(content).hexdigest()
@@ -172,16 +187,23 @@ class GameDataStore:
             tmp.replace(self._path(file_name))
             self.activate(version_id)
             self._record_check(None)
-            return UpdateResult(version_id, "activated", "Nieuwe Game Data-versie geactiveerd.", warnings)
+            activated = "Nieuwe Game Data-versie geactiveerd."
+            return UpdateResult(
+                version_id,
+                "activated",
+                activated,
+                warnings,
+                {"code": "VERSION_ACTIVATED", "text": activated, "data": {}},
+            )
 
     def update_from_network(self) -> UpdateResult:
         try:
             downloads = download_all(self.settings)
         except Exception as exc:  # network errors of every kind keep the current version
-            message = f"Bron niet bereikbaar: {type(exc).__name__}"
-            self._record_check(message)
+            text = _unreachable(exc)
+            self._record_check(text["text"])
             log.warning("game data download failed", extra={"error": str(exc)[:300]})
-            return UpdateResult(self._active.version_id if self._active else None, "failed", message, [])
+            return UpdateResult(self._active.version_id if self._active else None, "failed", text["text"], [], text)
         return self.update_from_downloads(downloads, origin="download")
 
     def update_from_upload(self, files: Mapping[str, bytes]) -> UpdateResult:
@@ -246,7 +268,8 @@ class GameDataStore:
         try:
             etags = remote_etags(self.settings)
         except Exception as exc:  # report, do not raise: the page must still render
-            return {"available": None, "error": f"Bron niet bereikbaar: {type(exc).__name__}"}
+            # The error is a server text: {code, text, data} (ADR-0025).
+            return {"available": None, "error": _unreachable(exc)}
         with self.db.transaction() as session:
             version = session.scalars(select(GameDataVersion).where(GameDataVersion.status == "active")).first()
             known = {s["id"]: s.get("etag") for s in version.sources} if version else {}

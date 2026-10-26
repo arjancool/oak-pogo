@@ -7,6 +7,7 @@ import { Alert, Badge, Button, Card, KeyValue, PageHeader, Spinner } from "../..
 import { useAuth } from "../../lib/auth";
 import { api, errorMessage } from "../../lib/api";
 import { bytes, dateTime, num } from "../../lib/format";
+import { serverText, type ServerText } from "../../lib/serverText";
 import type { GameDataStatus, GameDataVersion } from "../../lib/types";
 
 const POLL_MS = 3000;
@@ -26,6 +27,19 @@ const statusText: Record<string, ParseKeys> = {
   failed: "admin.gamedata.versionStatus.failed",
 };
 const ACTIVATABLE = ["archived", "ready"];
+
+interface Source {
+  id: string;
+  name: ServerText;
+  url: string;
+  license: ServerText;
+  role: ServerText;
+}
+
+/** Validation errors one by one in the chosen language, joined like the server joins them. */
+function errorsText(errors: ServerText[] | null | undefined, fallback: string): string {
+  return errors?.length ? errors.map((e) => serverText("gamedata", e)).join("; ") : fallback;
+}
 
 function Summary({ version }: { version: GameDataVersion }) {
   const { t } = useTranslation();
@@ -60,16 +74,16 @@ export function GameDataPage() {
   });
   const sources = useQuery({
     queryKey: ["gamedata-sources"],
-    queryFn: () => api.get<{ id: string; name: string; url: string; license: string; role: string }[]>("/api/v1/gamedata/sources"),
+    queryFn: () => api.get<Source[]>("/api/v1/gamedata/sources"),
   });
   const refresh = () => void client.invalidateQueries({ queryKey: ["gamedata"] });
   const check = useMutation({
     mutationFn: () =>
-      api.get<{ available: boolean | null; changed_sources?: string[]; repair_needed?: boolean; error: string | null }>("/api/v1/gamedata/check"),
+      api.get<{ available: boolean | null; changed_sources?: string[]; repair_needed?: boolean; error: ServerText | null }>("/api/v1/gamedata/check"),
     onSuccess: (r) =>
       setMessage(
         r.error
-          ? { tone: "error", text: r.error }
+          ? { tone: "error", text: serverText("gamedata", r.error) }
           : r.repair_needed
             ? { tone: "warning", text: t("admin.gamedata.repairNeeded") }
             : r.available
@@ -95,9 +109,11 @@ export function GameDataPage() {
     onError: (err) => setMessage({ tone: "error", text: errorMessage(err) }),
   });
   const upload = useMutation({
-    mutationFn: (form: FormData) => api.upload<{ status: string; message: string; warnings: string[] }>("/api/v1/gamedata/upload", form),
+    mutationFn: (form: FormData) =>
+      api.upload<{ status: string; message: ServerText; warnings: ServerText[]; errors?: ServerText[] }>("/api/v1/gamedata/upload", form),
     onSuccess: (r) => {
-      setMessage({ tone: r.status === "activated" ? "success" : r.status === "failed" ? "error" : "info", text: [r.message, ...r.warnings].join(" ") });
+      const text = [errorsText(r.errors, serverText("gamedata", r.message)), ...r.warnings.map((w) => serverText("gamedata", w))].join(" ");
+      setMessage({ tone: r.status === "activated" ? "success" : r.status === "failed" ? "error" : "info", text });
       refresh();
     },
     onError: (err) => setMessage({ tone: "error", text: errorMessage(err) }),
@@ -143,7 +159,7 @@ export function GameDataPage() {
       {s.last_error && (
         <div className="mb-4">
           <Alert tone="error" title={t("admin.gamedata.lastErrorTitle")}>
-            {t("admin.gamedata.lastErrorText", { error: s.last_error })}
+            {t("admin.gamedata.lastErrorText", { error: errorsText(s.last_errors, s.last_error) })}
           </Alert>
         </div>
       )}
@@ -162,7 +178,7 @@ export function GameDataPage() {
         <Card title={t("admin.gamedata.dependentTitle")}>
           <ul className="list-disc space-y-1 pl-5 text-sm">
             {s.dependent_analyses.map((a) => (
-              <li key={a}>{a}</li>
+              <li key={a.code ?? a.text}>{serverText("gamedata", a)}</li>
             ))}
           </ul>
         </Card>
@@ -172,7 +188,7 @@ export function GameDataPage() {
               <li key={v.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
                 <span>
                   #{v.id} · {dateTime(v.created_at)} · <Badge color={v.status === "active" ? "#22c55e" : v.status === "failed" ? "#ef4444" : undefined}>{versionStatus(v.status)}</Badge>
-                  {v.error && <span className="block text-xs text-red-300">{v.error}</span>}
+                  {v.error && <span className="block text-xs text-red-300">{errorsText(v.errors, v.error)}</span>}
                 </span>
                 {owner && ACTIVATABLE.includes(v.status) && (
                   <Button size="sm" loading={activate.isPending} onClick={() => activate.mutate(v.id)}>
@@ -188,10 +204,10 @@ export function GameDataPage() {
             {sources.data?.map((src) => (
               <li key={src.id}>
                 <p className="font-medium">
-                  {src.name} <span className="text-xs text-muted">({src.role})</span>
+                  {serverText("gamedata", src.name)} <span className="text-xs text-muted">({serverText("gamedata", src.role)})</span>
                 </p>
                 <p className="break-all text-xs text-muted">{src.url}</p>
-                <p className="text-xs">{t("admin.gamedata.license", { license: src.license })}</p>
+                <p className="text-xs">{t("admin.gamedata.license", { license: serverText("gamedata", src.license) })}</p>
               </li>
             ))}
           </ul>

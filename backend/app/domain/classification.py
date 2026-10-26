@@ -12,6 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import StrEnum
+from typing import Any
 
 from app.domain.pokemon import NormalizedExport
 
@@ -42,6 +43,8 @@ class Reason:
     message: str
     # Whether an explicit user confirmation may override this reason.
     confirmable: bool = False
+    # The values in the message, so the interface can show it in another language (ADR-0025).
+    data: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True, slots=True)
@@ -124,6 +127,7 @@ def classify(
                 f"{export.unidentifiable_records} record(s) zonder leesbare Pokémon-ID. Welke "
                 "Pokémon dat zijn is onbekend, dus ontbrekende Pokémon worden niet als verdwenen "
                 "gemarkeerd.",
+                data={"count": export.unidentifiable_records},
             )
         )
     if not export.has_account:
@@ -147,6 +151,7 @@ def classify(
                 f"De trainernaam is gewijzigd van '{context.known_nickname}' naar "
                 f"'{export.trainer.nickname}' en het account is niet anders te verifiëren.",
                 confirmable=True,
+                data={"old": context.known_nickname, "new": export.trainer.nickname},
             )
         )
     # Replacing an existing inventory needs positive proof that the export comes from the
@@ -181,6 +186,7 @@ def classify(
                     "EMPTY_POKEMON_LIST",
                     f"De export bevat geen Pokémon terwijl er {previous} in de inventaris staan.",
                     confirmable=True,
+                    data={"count": previous},
                 )
             )
         elif drop > policy.max_drop_absolute and drop > previous * policy.max_drop_fraction:
@@ -191,6 +197,7 @@ def classify(
                     f"({previous}). Bevestig dat dit een volledige export is voordat OAK ze als "
                     "verdwenen markeert.",
                     confirmable=True,
+                    data={"present": present, "drop": drop, "previous": previous},
                 )
             )
 

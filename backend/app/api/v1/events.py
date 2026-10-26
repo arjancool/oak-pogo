@@ -83,7 +83,10 @@ def list_events(
             {
                 "id": event.id,
                 "external_id": event.external_id,
-                "source": info.source,
+                # A server text: OAK names its own events, the feed's name stays as it is.
+                "source": {"code": "MANUAL_SOURCE", "text": info.source}
+                if event.source == MANUAL
+                else {"text": info.source},
                 "name": event.name,
                 "kind": info.kind,
                 "starts_at": event.starts_at.isoformat(),

@@ -1,5 +1,7 @@
 /** API response shapes without big identifiers. Pokémon payloads live in ./schemas.ts. */
 
+import type { ServerText } from "./serverText";
+
 export interface User {
   id: number;
   username: string;
@@ -65,7 +67,8 @@ export interface SyncRun {
   missing_unconfirmed_count: number;
   reappeared_count: number;
   items_changed: boolean;
-  warnings: { code: string; message: string }[];
+  /** "data" holds the values in the message; warnings stored before OAK kept them have none. */
+  warnings: { code: string; message: string; data?: Record<string, unknown> | null }[];
 }
 
 export interface ImportJob {
@@ -85,6 +88,7 @@ export interface ImportJob {
   finished_at: string | null;
   error_code: string | null;
   error_message: string | null;
+  error_data: Record<string, unknown> | null;
   duplicate_of_id: number | null;
   retry_of_id: number | null;
   confirm_full: boolean;
@@ -100,6 +104,7 @@ export interface ImportIssue {
   severity: string;
   code: string;
   message: string;
+  data: Record<string, unknown> | null;
   path: string | null;
   source_pokemon_id: string | null;
 }
@@ -107,7 +112,7 @@ export interface ImportIssue {
 export interface SyncStatus {
   account_id: number;
   state: "waiting" | "connected" | "processing" | "error" | "warning";
-  message: string;
+  message: ServerText;
   last_successful_sync_at: string | null;
   last_import_attempt_at: string | null;
   webhook_active: boolean;
@@ -258,6 +263,8 @@ export interface GameDataVersion {
   summary: Record<string, unknown> | null;
   sources: { id: string; url: string; sha256?: string; retrieved_at?: string; upstream_timestamp?: string | null; bytes?: number }[];
   error: string | null;
+  /** The errors in "error" one by one; null for versions from before OAK kept them. */
+  errors?: ServerText[] | null;
 }
 
 export interface GameDataStatus {
@@ -265,16 +272,17 @@ export interface GameDataStatus {
   versions: GameDataVersion[];
   last_check: { at: string; error: string | null } | null;
   last_error: string | null;
+  last_errors?: ServerText[] | null;
   update_pending: boolean;
   auto_update: boolean;
   interval_hours: number;
-  dependent_analyses: string[];
+  dependent_analyses: ServerText[];
 }
 
 export interface AppSettings {
   sprite_source: "none" | "pokeapi" | "custom";
   sprite_url_template: string | null;
-  sprite_notice: string;
+  sprite_notice: ServerText;
   timezone: string;
   base_url: string;
 }

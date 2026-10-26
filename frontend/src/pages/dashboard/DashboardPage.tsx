@@ -11,6 +11,8 @@ import { api } from "../../lib/api";
 import { dateTime, level, num, relative } from "../../lib/format";
 import { classificationLabels, label } from "../../lib/i18n";
 import { pokemonSummary, type PokemonSummary } from "../../lib/schemas";
+import { serverText } from "../../lib/serverText";
+import { storedText } from "../../lib/storedText";
 import type { SyncStatus } from "../../lib/types";
 
 const dashboardSchema = z.object({
@@ -33,7 +35,7 @@ const dashboardSchema = z.object({
       missing: z.number(),
       missing_unconfirmed: z.number(),
       total: z.number(),
-      warnings: z.array(z.object({ code: z.string(), message: z.string() })),
+      warnings: z.array(z.object({ code: z.string(), message: z.string(), data: z.record(z.string(), z.unknown()).nullish() })),
     })
     .nullable(),
   game_data: z.boolean(),
@@ -112,7 +114,7 @@ function Dashboard({ accountId }: { accountId: number }) {
           actions={<span className="text-xs text-muted">{t("dashboard.sync.lastSuccess", { time: dateTime(sync.data.last_successful_sync_at) })}</span>}
         >
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            <Stat label={t("dashboard.sync.status")} value={sync.data.message} />
+            <Stat label={t("dashboard.sync.status")} value={serverText("sync", sync.data.message)} />
             <Stat label={t("dashboard.sync.inExport")} value={num(d.last_sync?.total ?? null, "–")} />
             <Stat label={t("dashboard.sync.new")} value={num(d.last_sync?.new ?? null, "–")} onClick={box("new=true")} />
             <Stat label={t("dashboard.sync.changed")} value={num(d.last_sync?.changed ?? null, "–")} onClick={() => navigate("/history?kind=changed")} />
@@ -128,7 +130,7 @@ function Dashboard({ accountId }: { accountId: number }) {
               {label(classificationLabels, d.last_sync.classification)} · {relative(d.last_sync.applied_at)}
               {d.last_sync.warnings.map((w) => (
                 <span key={w.code} className="ml-2 text-amber-300">
-                  {w.message}
+                  {storedText("imports", w.code, w.message, w.data)}
                 </span>
               ))}
             </p>

@@ -63,6 +63,8 @@ class DecodedPayload:
     error_code: str | None
     error_message: str | None
     meta: dict[str, Any]
+    # The values in ``error_message``, for the interface in another language (ADR-0025).
+    error_data: dict[str, Any] = field(default_factory=dict)
 
 
 def decode_payload(payload: IncomingPayload, max_bytes: int) -> DecodedPayload:
@@ -116,7 +118,14 @@ def decode_payload(payload: IncomingPayload, max_bytes: int) -> DecodedPayload:
     try:
         text = body.decode(charset)
     except (UnicodeDecodeError, LookupError):
-        return DecodedPayload(body, None, "ENCODING_INVALID", f"De inhoud is geen geldige {charset}-tekst.", meta)
+        return DecodedPayload(
+            body,
+            None,
+            "ENCODING_INVALID",
+            f"De inhoud is geen geldige {charset}-tekst.",
+            meta,
+            {"charset": charset},
+        )
     if not text.strip():
         return DecodedPayload(body, None, "EMPTY_BODY", "Het verzoek bevat geen inhoud.", meta)
     try:
@@ -128,6 +137,7 @@ def decode_payload(payload: IncomingPayload, max_bytes: int) -> DecodedPayload:
             "INVALID_JSON",
             f"Ongeldige JSON op regel {exc.lineno}, kolom {exc.colno}.",
             meta,
+            {"line": exc.lineno, "column": exc.colno},
         )
     return DecodedPayload(body, data, None, None, meta)
 
@@ -240,6 +250,7 @@ def create_import_job(
         job.status = "rejected"
         job.error_code = decoded.error_code
         job.error_message = decoded.error_message
+        job.error_data = decoded.error_data
         job.finished_at = now
         session.add(job)
         session.flush()

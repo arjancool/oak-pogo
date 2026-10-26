@@ -49,7 +49,8 @@ class WebhookOut(ApiModel):
 class WebhookCreated(ApiModel):
     url: str
     token_identifier: str
-    message: str
+    # A server text: {code, text}, with the Dutch text as the fallback (ADR-0025).
+    message: dict[str, Any]
 
 
 class AccountOut(ApiModel):
@@ -236,7 +237,10 @@ def create_webhook(
     return WebhookCreated(
         url=f"{container.settings.base_url}{WEBHOOK_PATH}{token}",
         token_identifier=identifier,
-        message="Kopieer deze URL nu. OAK bewaart alleen een hash en kan hem later niet opnieuw tonen.",
+        message={
+            "code": "WEBHOOK_COPY_NOW",
+            "text": "Kopieer deze URL nu. OAK bewaart alleen een hash en kan hem later niet opnieuw tonen.",
+        },
     )
 
 

@@ -10,6 +10,7 @@ import { api } from "../../lib/api";
 import { dateTime, num } from "../../lib/format";
 import { changeLabels, classificationLabels, label } from "../../lib/i18n";
 import { pokemonSummary } from "../../lib/schemas";
+import { serverText } from "../../lib/serverText";
 import { useUrlState } from "../../lib/useUrlState";
 
 const historySchema = z.object({
@@ -17,7 +18,7 @@ const historySchema = z.object({
   sync_run: z.object({ id: z.number(), applied_at: z.string(), classification: z.string() }).nullable(),
   items: z.array(z.object({ pokemon: pokemonSummary, labels: z.array(z.string()), changes: z.record(z.string(), z.unknown()) })),
   runs: z.array(z.object({ id: z.number(), applied_at: z.string(), classification: z.string(), new: z.number(), changed: z.number(), missing: z.number() })),
-  note: z.string().optional(),
+  note: z.object({ code: z.string().optional(), text: z.string(), data: z.record(z.string(), z.unknown()).optional() }).optional(),
 });
 type Kind = "new" | "changed" | "missing" | "reappeared";
 
@@ -63,7 +64,7 @@ function History({ accountId }: { accountId: number }) {
       {query.isLoading ? (
         <Spinner />
       ) : !data || data.items.length === 0 ? (
-        <EmptyState title={t("account.history.empty")}>{data?.note}</EmptyState>
+        <EmptyState title={t("account.history.empty")}>{serverText("account", data?.note)}</EmptyState>
       ) : (
         <Card title={data.sync_run ? t("account.history.syncOf", { time: dateTime(data.sync_run.applied_at) }) : undefined}>
           <ul className="divide-y divide-line">

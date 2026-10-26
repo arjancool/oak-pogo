@@ -251,7 +251,7 @@
   },
   "requireAccount": {
     "title": "Nog geen traineraccount",
-    "text": "Maak eerst een traineraccount aan onder <link>Beheer → Traineraccounts</link>. Daarna kun je PGSharp koppelen of een export uploaden."
+    "text": "Maak eerst een traineraccount aan onder <accountsLink>Beheer → Traineraccounts</accountsLink>. Daarna kun je PGSharp koppelen of een export uploaden."
   },
   "confirmTransfer": {
     "title": "Bevestiging nodig",

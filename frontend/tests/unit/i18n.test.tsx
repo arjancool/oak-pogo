@@ -88,3 +88,14 @@ describe("labels for API codes", () => {
     expect(Object.keys(typeNames)).toHaveLength(18);
   });
 });
+
+describe("tags inside a translated sentence", () => {
+  it("never use the name of a void HTML element, because that renders an empty element", () => {
+    const voids = ["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"];
+    for (const catalog of Object.values(catalogs)) {
+      for (const text of values(catalog)) {
+        for (const name of voids) expect(text, text).not.toContain(`<${name}>`);
+      }
+    }
+  });
+});

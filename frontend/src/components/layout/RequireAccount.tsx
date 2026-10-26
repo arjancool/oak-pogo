@@ -13,7 +13,7 @@ export function RequireAccount({ children }: { children: (accountId: number) => 
   if (accountId === null) {
     return (
       <EmptyState title={t("requireAccount.title")}>
-        <Trans i18nKey="requireAccount.text" components={{ link: <Link className="text-oak-400 underline" to="/admin/accounts" /> }} />
+        <Trans i18nKey="requireAccount.text" components={{ accountsLink: <Link className="text-oak-400 underline" to="/admin/accounts" /> }} />
       </EmptyState>
     );
   }

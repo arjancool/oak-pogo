@@ -251,7 +251,7 @@
   },
   "requireAccount": {
     "title": "No trainer account yet",
-    "text": "First create a trainer account under <link>Admin → Trainer accounts</link>. Then you can connect PGSharp or upload an export."
+    "text": "First create a trainer account under <accountsLink>Admin → Trainer accounts</accountsLink>. Then you can connect PGSharp or upload an export."
   },
   "confirmTransfer": {
     "title": "Confirmation needed",

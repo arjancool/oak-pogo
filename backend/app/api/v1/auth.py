@@ -103,7 +103,9 @@ def _set_cookies(response: Response, container: Container, token: str) -> str:
 
 def validate_username(username: str) -> str:
     if not USERNAME_PATTERN.fullmatch(username):
-        raise ValidationFailedError("Gebruikersnaam: 3–32 tekens, letters, cijfers, punt, streepje of underscore.")
+        raise ValidationFailedError(
+            "Gebruikersnaam: 3–32 tekens, letters, cijfers, punt, streepje of underscore.", context="username"
+        )
     return username.lower()
 
 
@@ -202,10 +204,10 @@ def register(
         raise ConflictError("Registreren kan pas als de eigenaar is aangemaakt.", code="SETUP_REQUIRED")
     blocked = container.login_by_ip.hit(f"register:{_client_ip(request)}")
     if blocked:
-        raise RateLimitedError("Te veel pogingen. Probeer het later opnieuw.", retry_after=blocked)
+        raise RateLimitedError("Te veel pogingen. Probeer het later opnieuw.", retry_after=blocked, context="register")
     username = validate_username(body.username)
     if session.scalar(select(User.id).where(User.username == username)):
-        raise ConflictError("Deze gebruikersnaam bestaat al.")
+        raise ConflictError("Deze gebruikersnaam bestaat al.", context="username_taken")
     now = container.clock.now()
     user = User(
         username=username,
@@ -249,7 +251,9 @@ def login(
     ):
         retry = limiter.blocked(key)
         if retry:
-            raise RateLimitedError("Te veel mislukte inlogpogingen. Probeer het later opnieuw.", retry_after=retry)
+            raise RateLimitedError(
+                "Te veel mislukte inlogpogingen. Probeer het later opnieuw.", retry_after=retry, context="login"
+            )
     user = session.scalars(select(User).where(User.username == username)).first()
     if (
         not verify_password(user.password_hash if user else None, body.password)
@@ -261,7 +265,7 @@ def login(
         audit(session, user.id if user else None, "login_failed", username, container)
         # Commit before the error response: the request's rollback would drop the entry (audit A08).
         session.commit()
-        raise UnauthorizedError("Onjuiste gebruikersnaam of wachtwoord.", code="INVALID_CREDENTIALS")
+        raise UnauthorizedError("Onjuiste gebruikersnaam of wachtwoord.", code="INVALID_CREDENTIALS", context="login")
     container.login_by_user.reset(f"user:{username}")
     if needs_rehash(user.password_hash):
         user.password_hash = hash_password(body.password)
@@ -311,7 +315,7 @@ def update_preferences(
     language = body.preferences.get("language")
     # Which languages exist is up to the frontend (ADR-0025); here only the form is checked.
     if language is not None and not (isinstance(language, str) and LANGUAGE.fullmatch(language)):
-        raise ValidationFailedError("Taal: een code van twee letters, zoals nl of en.")
+        raise ValidationFailedError("Taal: een code van twee letters, zoals nl of en.", context="language")
     user = session.get(User, auth.user.id)
     assert user is not None
     user.preferences = {
@@ -331,7 +335,9 @@ def change_password(
     user = session.get(User, auth.user.id)
     assert user is not None
     if not verify_password(user.password_hash, body.current_password):
-        raise UnauthorizedError("Het huidige wachtwoord klopt niet.", code="INVALID_CREDENTIALS")
+        raise UnauthorizedError(
+            "Het huidige wachtwoord klopt niet.", code="INVALID_CREDENTIALS", context="current_password"
+        )
     now = container.clock.now()
     user.password_hash = hash_password(body.new_password)
     user.password_changed_at = now

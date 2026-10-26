@@ -125,7 +125,7 @@ def ignore_event(
         select(GameEvent.id).where(GameEvent.source == FEED, GameEvent.external_id == external_id).limit(1)
     )
     if exists is None:
-        raise NotFoundError("Event niet gevonden.")
+        raise NotFoundError("Event niet gevonden.", context="event")
     ignored = ignored_events(account)
     ignored = ignored | {external_id} if body.ignored else ignored - {external_id}
     account.settings = {**(account.settings or {}), IGNORED_KEY: sorted(ignored)}
@@ -154,11 +154,11 @@ def add_manual_event(
     starts = body.starts_at if body.starts_at.tzinfo else body.starts_at.replace(tzinfo=UTC)
     ends = body.ends_at if body.ends_at.tzinfo else body.ends_at.replace(tzinfo=UTC)
     if ends <= starts:
-        raise ValidationFailedError("Het einde moet na het begin liggen.")
+        raise ValidationFailedError("Het einde moet na het begin liggen.", context="event_period")
     gd = container.gamedata.active()
     species = list(dict.fromkeys(body.species))
     if gd is not None and any(gd.species_record(d) is None for d in species):
-        raise ValidationFailedError("Een van de gekozen Pokémon staat niet in de Game Data.")
+        raise ValidationFailedError("Een van de gekozen Pokémon staat niet in de Game Data.", context="event_species")
     event = GameEvent(
         source=MANUAL,
         external_id=f"manual-{uuid.uuid4().hex[:12]}",
@@ -192,7 +192,7 @@ def delete_manual_event(
     account = owned_account(session, auth.user, account_id)
     event = session.get(GameEvent, event_id)
     if event is None or event.source != MANUAL or event.trainer_account_id != account.id:
-        raise NotFoundError("Event niet gevonden.")
+        raise NotFoundError("Event niet gevonden.", context="event")
     session.delete(event)
     session.commit()
     enqueue(container, "analysis", account.id)

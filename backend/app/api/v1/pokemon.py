@@ -125,7 +125,7 @@ def _bool_param(value: str | None) -> bool | None:
         return True
     if value.lower() in ("0", "false", "no", "nee"):
         return False
-    raise ValidationFailedError(f"'{value}' is geen ja/nee-waarde.")
+    raise ValidationFailedError(f"'{value}' is geen ja/nee-waarde.", context="boolean", data={"value": value})
 
 
 def build_filters(params: dict[str, Any]) -> BoxFilters:
@@ -140,7 +140,9 @@ def build_filters(params: dict[str, Any]) -> BoxFilters:
         try:
             return [int(v) for v in str(raw).split(",") if v.strip()]
         except ValueError as exc:
-            raise ValidationFailedError(f"{name} moet een lijst getallen zijn.") from exc
+            raise ValidationFailedError(
+                f"{name} moet een lijst getallen zijn.", context="number_list", data={"field": name}
+            ) from exc
 
     return BoxFilters(
         status=params.get("status") or "in_inventory",
@@ -217,7 +219,7 @@ def _conditions(query: BoxQuery, account_id: int, latest_sync_id: int | None) ->
         try:
             terms = parse_query(query.q)
         except QuerySyntaxError as exc:
-            raise ValidationFailedError(str(exc), code="QUERY_SYNTAX") from exc
+            raise ValidationFailedError(exc.message, code="QUERY_SYNTAX", context=exc.context, data=exc.data) from exc
     filters = build_filters(query.model_dump())
     # 'verdwenen' in the search box means: look beyond the current inventory.
     if any(t.kind == "flag" and t.field == "missing" and not t.negate for t in terms) and query.status is None:
@@ -325,6 +327,34 @@ def _subject(pokemon: Pokemon, trainer_level: int | None) -> Subject:
 
 
 Scenario = Literal["current", "purified"]
+# Why purify() cannot calculate, with the context of each reason for the error message (ADR-0025).
+PURIFY_ERRORS = {
+    "Alleen een Shadow Pokémon kan worden gepurifyd.": "purify_not_shadow",
+    "De regels voor purify ontbreken in deze Game Data-versie.": "purify_rules_missing",
+    "IV's of level onbekend.": "purify_stats_unknown",
+}
+
+
+def _text(code: str, text: str, **data: Any) -> dict[str, Any]:
+    """A sentence for the interface: a code with its data, and the Dutch text as fallback (ADR-0025)."""
+    return {"code": code, "text": text, **({"data": data} if data else {})}
+
+
+# What the columns of the battle analysis mean.
+ANALYSIS_METHOD = {
+    "iv_rank": _text(
+        "METHOD_IV_RANK",
+        "Rang van de IV-combinatie binnen deze soort en league (1–4096), op het hoogste level onder "
+        "de CP-limiet, gesorteerd op stat product.",
+    ),
+    "species_rank": _text("METHOD_SPECIES_RANK", "Positie van de soort in de PvPoke-ranking voor deze league."),
+    "readiness": _text("METHOD_READINESS", "Of dit exemplaar nu, na power-up of na evolutie inzetbaar is."),
+}
+CP_AFTER_UNKNOWN = _text("CP_AFTER_EVOLUTION_UNKNOWN", "CP na evolutie onbekend: level of IV's ontbreken.")
+CANDY_ROUNDING = _text(
+    "CANDY_ROUNDING",
+    "Candy-kosten voor Shadow en Purified worden naar boven afgerond; de game documenteert de afronding niet.",
+)
 
 
 def _scenario(
@@ -337,7 +367,8 @@ def _scenario(
     form = gd.forms.get(pokemon.form_key) if pokemon.form_key else None
     result = purify(subject, form, gd.mechanics.get("purification"))
     if isinstance(result, str):
-        raise ValidationFailedError(result)
+        # An unknown reason gets a context without a catalog text, so the Dutch reason is shown.
+        raise ValidationFailedError(result, context=PURIFY_ERRORS.get(result, "purify"))
     base = base_stats_of(dict(form)) if form else None
     cpm = gd.cpm(result.level)
     return result.subject, {
@@ -416,7 +447,7 @@ def pokemon_analysis(
     account = owned_account(session, auth.user, pokemon.trainer_account_id)
     gd = container.gamedata.active()
     if gd is None:
-        return {"available": False, "reason": "Geen actieve Game Data."}
+        return {"available": False, "reason": _text("NO_GAME_DATA", "Geen actieve Game Data.")}
     rules = rules_for(account)
     subject, scenario_info = _scenario(gd, pokemon, account.trainer_level, scenario)
     leagues = analyze_leagues(
@@ -481,12 +512,7 @@ def pokemon_analysis(
             "elite_tm_available": rules.elite_tm_available,
             "ready_cp_fraction": rules.ready_cp_fraction,
         },
-        "method": {
-            "iv_rank": "Rang van de IV-combinatie binnen deze soort en league (1–4096), op het hoogste level onder "
-            "de CP-limiet, gesorteerd op stat product.",
-            "species_rank": "Positie van de soort in de PvPoke-ranking voor deze league.",
-            "readiness": "Of dit exemplaar nu, na power-up of na evolutie inzetbaar is.",
-        },
+        "method": ANALYSIS_METHOD,
         "scenario": scenario_info,
         "leagues": output,
         "current_moves": current_moves,
@@ -507,7 +533,8 @@ def pokemon_evolutions(
     account = owned_account(session, auth.user, pokemon.trainer_account_id)
     gd = container.gamedata.active()
     if gd is None or pokemon.form_key is None:
-        return {"available": False, "paths": [], "reason": "Geen Game Data of onbekende vorm."}
+        reason = _text("NO_GAME_DATA_OR_FORM", "Geen Game Data of onbekende vorm.")
+        return {"available": False, "paths": [], "reason": reason}
     subject, scenario_info = _scenario(gd, pokemon, account.trainer_level, scenario)
     cpm = gd.cpm(subject.level) if subject.level is not None else None
     ivs = subject.ivs
@@ -574,7 +601,7 @@ def pokemon_evolutions(
                 "hp_after": hp_after,
                 "leagues": leagues,
                 "elite_moves": moves_note,
-                "note": None if cp_after is not None else "CP na evolutie onbekend: level of IV's ontbreken.",
+                "note": None if cp_after is not None else CP_AFTER_UNKNOWN,
             }
         )
     return {"available": True, "game_data_version": gd.version_id, "scenario": scenario_info, "paths": paths}
@@ -593,7 +620,7 @@ def pokemon_powerups(
     account = owned_account(session, auth.user, pokemon.trainer_account_id)
     gd = container.gamedata.active()
     if gd is None or pokemon.level is None or pokemon.form_key is None:
-        return {"available": False, "reason": "Geen Game Data of level onbekend."}
+        return {"available": False, "reason": _text("NO_GAME_DATA_OR_LEVEL", "Geen Game Data of level onbekend.")}
     rules = rules_for(account)
     form = gd.forms[pokemon.form_key]
     base = base_stats_of(dict(form))
@@ -636,9 +663,7 @@ def pokemon_powerups(
         "scenario": scenario_info,
         "max_level": ceiling,
         "modifiers": {"shadow": shadow, "purified": purified, "lucky": bool(pokemon.lucky)},
-        "note": (
-            "Candy-kosten voor Shadow en Purified worden naar boven afgerond; de game documenteert de afronding niet."
-        ),
+        "note": CANDY_ROUNDING,
         "steps": steps,
         "target": chosen,
         "candy_available": None,
@@ -703,15 +728,15 @@ def _metadata(session: Session, pokemon: Pokemon, now: Any) -> PokemonUserMetada
 
 def _validate_patch(body: MetadataPatch) -> None:
     if body.planned_action is not None and body.planned_action not in PLANNED_ACTIONS:
-        raise ValidationFailedError("Onbekende geplande actie.")
+        raise ValidationFailedError("Onbekende geplande actie.", context="planned_action")
     if body.planned_league is not None and body.planned_league not in LEAGUE_IDS:
-        raise ValidationFailedError("Onbekende league.")
+        raise ValidationFailedError("Onbekende league.", context="planned_league")
     if body.review_status is not None and body.review_status not in REVIEW_STATUSES:
-        raise ValidationFailedError("Onbekende reviewstatus.")
+        raise ValidationFailedError("Onbekende reviewstatus.", context="review_status")
     if body.override_status is not None and body.override_status not in OVERRIDE_STATUSES:
-        raise ValidationFailedError("Onbekende status.")
+        raise ValidationFailedError("Onbekende status.", context="override_status")
     if body.tags is not None and any(len(t) > 40 or not t.strip() for t in body.tags):
-        raise ValidationFailedError("Een tag heeft 1–40 tekens.")
+        raise ValidationFailedError("Een tag heeft 1–40 tekens.", context="tag_length")
 
 
 def apply_metadata(metadata: PokemonUserMetadata, body: MetadataPatch, now: Any) -> None:
@@ -767,6 +792,7 @@ def update_metadata(
             f"Dit is een vintage Pokémon uit {year}. OAK beschermt vintage Pokémon altijd. "
             "Bevestig dat je de bescherming van deze ene Pokémon wilt opheffen.",
             code="VINTAGE_CONFIRMATION_REQUIRED",
+            data={"year": year},
             details={"year": year},
         )
     now = container.clock.now()
@@ -799,7 +825,7 @@ def bulk_action(
         select(Pokemon).where(Pokemon.trainer_account_id == account.id, Pokemon.id.in_(body.ids))
     ).all()
     if len(rows) != len(set(body.ids)):
-        raise ValidationFailedError("Een of meer Pokémon horen niet bij dit account.")
+        raise ValidationFailedError("Een of meer Pokémon horen niet bij dit account.", context="bulk_pokemon")
     now = container.clock.now()
     skipped: list[dict[str, Any]] = []
     needs_confirmation: list[dict[str, Any]] = []
@@ -833,7 +859,7 @@ def bulk_action(
             metadata.protected = False
         elif body.action == "add_tag":
             if not body.value or len(body.value) > 40:
-                raise ValidationFailedError("Geef een tag van 1–40 tekens.")
+                raise ValidationFailedError("Geef een tag van 1–40 tekens.", context="bulk_tag")
             metadata.tags = sorted({*metadata.tags, body.value.strip()})
         elif body.action == "remove_tag":
             metadata.tags = [t for t in metadata.tags if t != body.value]
@@ -873,7 +899,7 @@ def bulk_action(
                 session.delete(existing)
             continue
         else:
-            raise ValidationFailedError("Onbekende bulkactie.")
+            raise ValidationFailedError("Onbekende bulkactie.", context="bulk_action")
         metadata.updated_at = now
     session.commit()
     enqueue(container, "analysis", account.id)

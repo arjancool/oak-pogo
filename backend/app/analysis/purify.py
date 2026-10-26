@@ -22,8 +22,9 @@ class Purified:
     ivs: IVs
     stardust: int | None
     candy: int | None
-    # Set when the trainer level is unknown and OAK assumes it does not limit the level.
-    assumption: str | None
+    # Set when the trainer level is unknown and OAK assumes it does not limit the level: a code with
+    # its data for the interface, and the Dutch text as fallback (ADR-0025).
+    assumption: dict[str, Any] | None
     source: str | None
 
 
@@ -39,7 +40,11 @@ def purify(subject: Subject, form: Mapping[str, Any] | None, rules: Mapping[str,
     assumption = None
     if rules.get("capped_by_trainer_level"):
         if subject.trainer_level is None:
-            assumption = f"Trainerlevel onbekend. OAK gaat uit van trainerlevel {int(floor)} of hoger."
+            assumption = {
+                "code": "TRAINER_LEVEL_ASSUMED",
+                "text": f"Trainerlevel onbekend. OAK gaat uit van trainerlevel {int(floor)} of hoger.",
+                "data": {"level": int(floor)},
+            }
         else:
             floor = min(floor, float(subject.trainer_level))
     bonus = int(rules["iv_bonus"])

@@ -53,6 +53,11 @@ def _form_label(form: Any) -> str:
     return f"{form['name']} ({form['label']})" if form.get("label") else str(form["name"])
 
 
+def _text(code: str, text: str, **data: Any) -> dict[str, Any]:
+    """A sentence for the interface: a code with its data, and the Dutch text as fallback (ADR-0025)."""
+    return {"code": code, "text": text, **({"data": data} if data else {})}
+
+
 # A league (great) or a cup (fantasy-1500, ADR-0027).
 LEAGUE_ID = r"^[a-z0-9]{1,40}(-[0-9]{1,6})?$"
 LEAGUE_METHOD = (
@@ -63,6 +68,33 @@ UNRANKED_CUP_METHOD = (
     " PvPoke heeft voor deze cup geen ranglijst."
     " De volgorde volgt daarom alleen de IV-rang, niet hoe sterk een soort is."
 )
+RAID_METHOD = _text(
+    "RAID_METHOD",
+    "Vereenvoudigd PvE-model: cyclus-DPS met STAB, typevoordeel en Shadow-bonus. Geen weer, geen "
+    "energie uit schade, geen aanvallen van de baas. Bedoeld om aanvallers te vergelijken.",
+)
+ROCKET_METHOD = _text(
+    "ROCKET_METHOD",
+    "Heuristiek op typevoordeel, PvP-aanvalswaarden, eigen statistieken en weerstand. Geen simulatie.",
+)
+ROCKET_LINEUP_NOTE = _text(
+    "ROCKET_NO_LINEUPS",
+    "OAK heeft geen gevalideerde, gedateerde bron voor actuele Team GO Rocket-opstellingen. Kies "
+    "de tegenstanders zelf.",
+)
+MAX_METHOD = _text(
+    "MAX_METHOD",
+    "Aanvallers op typevoordeel van Max Attack, verdedigers op weerstand en Defense. Heuristiek.",
+)
+
+
+def league_method(info: dict[str, Any]) -> dict[str, Any]:
+    """How the league table is ordered; a cup adds its rules, and a cup without rankings says so."""
+    if info["kind"] != "cup":
+        return _text("LEAGUE_METHOD", LEAGUE_METHOD)
+    if info["ranked_species"]:
+        return _text("LEAGUE_METHOD", LEAGUE_METHOD + CUP_METHOD, context="cup")
+    return _text("LEAGUE_METHOD", LEAGUE_METHOD + CUP_METHOD + UNRANKED_CUP_METHOD, context="unranked_cup")
 
 
 def league_info(gd: GameData, league_id: str) -> dict[str, Any] | None:
@@ -107,7 +139,7 @@ def league_info(gd: GameData, league_id: str) -> dict[str, Any] | None:
 def _known_league(gd: GameData, league_id: str) -> dict[str, Any]:
     info = league_info(gd, league_id)
     if info is None:
-        raise NotFoundError("Onbekende league of cup. Misschien staat hij niet meer in de Game Data.")
+        raise NotFoundError("Onbekende league of cup. Misschien staat hij niet meer in de Game Data.", context="league")
     return info
 
 
@@ -133,15 +165,13 @@ def league_overview(
     container: Container = Depends(get_container),
 ) -> dict[str, Any]:
     if sort.removeprefix("-") not in LEAGUE_SORTS:
-        raise ValidationFailedError(f"Onbekende sortering '{sort}'.", code="UNKNOWN_SORT")
+        raise ValidationFailedError(f"Onbekende sortering '{sort}'.", code="UNKNOWN_SORT", data={"sort": sort})
     gd = _gd(container)
     info = _known_league(gd, league)
     account = owned_account(session, auth.user, account_id)
     wanted = tuple(r for r in (readiness or "").split(",") if r) or None
     candidates = sort_candidates(league_candidates(session, gd, account.id, league, readiness=wanted), sort)
-    method = LEAGUE_METHOD
-    if info["kind"] == "cup":
-        method += CUP_METHOD + ("" if info["ranked_species"] else UNRANKED_CUP_METHOD)
+    method = league_method(info)
     return {
         "league": league,
         "info": info,
@@ -309,11 +339,11 @@ def save_team(
         session.scalars(select(Pokemon.id).where(Pokemon.trainer_account_id == account.id, Pokemon.id.in_(ids)))
     )
     if set(ids) - owned:
-        raise ValidationFailedError("Een teamlid hoort niet bij dit account.")
+        raise ValidationFailedError("Een teamlid hoort niet bij dit account.", context="team_member")
     if team_id is not None:
         team = session.get(BattleTeam, team_id)
         if team is None or team.trainer_account_id != account.id:
-            raise NotFoundError("Team niet gevonden.")
+            raise NotFoundError("Team niet gevonden.", context="team")
         team.name, team.kind, team.league, team.notes, team.updated_at = (
             body.name,
             body.kind,
@@ -357,7 +387,7 @@ def delete_team(
     account = owned_account(session, auth.user, account_id)
     team = session.get(BattleTeam, team_id)
     if team is None or team.trainer_account_id != account.id:
-        raise NotFoundError("Team niet gevonden.")
+        raise NotFoundError("Team niet gevonden.", context="team")
     session.delete(team)
 
 
@@ -406,11 +436,11 @@ def _boss(gd: GameData, key: str) -> dict[str, Any]:
     form_key, _, mega_id = key.partition("|")
     form = gd.forms.get(form_key)
     if form is None:
-        raise NotFoundError("Onbekende tegenstander.")
+        raise NotFoundError("Onbekende tegenstander.", context="opponent")
     if mega_id:
         mega = next((m for m in form.get("mega", []) if m["id"] == mega_id and m.get("stats")), None)
         if mega is None:
-            raise NotFoundError("Onbekende mega-vorm.")
+            raise NotFoundError("Onbekende mega-vorm.", context="mega_form")
         return {
             "name": f"{form['name']} ({mega_id.removeprefix('TEMP_EVOLUTION_').title()})",
             "types": mega.get("types") or form.get("types", []),
@@ -438,8 +468,7 @@ def raid(
     return {
         "boss": boss,
         "mode": "counters" if boss else "general",
-        "method": "Vereenvoudigd PvE-model: cyclus-DPS met STAB, typevoordeel en Shadow-bonus. Geen weer, geen "
-        "energie uit schade, geen aanvallen van de baas. Bedoeld om aanvallers te vergelijken.",
+        "method": RAID_METHOD,
         "counters": counters,
         "game_data_version": gd.version_id,
     }
@@ -462,9 +491,8 @@ def rocket(
     opponents = [_boss(gd, key) for key in body.opponent_keys]
     return {
         "lineup_source": None,
-        "lineup_note": "OAK heeft geen gevalideerde, gedateerde bron voor actuele Team GO Rocket-opstellingen. Kies "
-        "de tegenstanders zelf.",
-        "method": "Heuristiek op typevoordeel, PvP-aanvalswaarden, eigen statistieken en weerstand. Geen simulatie.",
+        "lineup_note": ROCKET_LINEUP_NOTE,
+        "method": ROCKET_METHOD,
         "results": rocket_counters(session, gd, account.id, opponents),
     }
 
@@ -500,5 +528,5 @@ def max_battles(
     return {
         "boss": boss,
         **overview,
-        "method": "Aanvallers op typevoordeel van Max Attack, verdedigers op weerstand en Defense. Heuristiek.",
+        "method": MAX_METHOD,
     }

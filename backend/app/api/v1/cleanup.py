@@ -472,7 +472,7 @@ def _action_list(
 def _guard_for(session: Session, account_id: int, tz: ZoneInfo) -> GuardContext:
     account = session.get(TrainerAccount, account_id)
     if account is None:  # callers resolve the account through owned_account first
-        raise NotFoundError("Onbekend traineraccount.")
+        raise NotFoundError("Onbekend traineraccount.", context="unknown_account")
     return guard_context(session, account, tz)
 
 

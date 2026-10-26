@@ -10,6 +10,7 @@ import { Alert, Button, Card, Field, Input, PageHeader, Select, Spinner } from "
 import { api, errorMessage } from "../../lib/api";
 import { num } from "../../lib/format";
 import { typeNames } from "../../lib/i18n";
+import { type ServerText, serverText } from "../../lib/serverText";
 import { useLeagues } from "./shared";
 
 interface Member {
@@ -32,9 +33,9 @@ interface Member {
 }
 interface Variant {
   mode: string;
-  label: string;
+  label: ServerText;
   team: Member[] | null;
-  message?: string;
+  message?: ServerText;
   score?: number;
   investment?: { stardust: number };
   shared_weaknesses?: string[];
@@ -67,14 +68,14 @@ function TeamBuilder({ accountId }: { accountId: number }) {
   const [budget, setBudget] = useState(100_000);
   const [message, setMessage] = useState<string | null>(null);
   const build = useMutation({
-    mutationFn: () => api.post<{ method: string; variants: Variant[] }>("/api/v1/battles/team-builder", { account_id: accountId, league, stardust_budget: budget }),
+    mutationFn: () => api.post<{ method: ServerText; variants: Variant[] }>("/api/v1/battles/team-builder", { account_id: accountId, league, stardust_budget: budget }),
   });
   const teams = useQuery({ queryKey: ["teams", accountId], queryFn: () => api.get<SavedTeam[]>("/api/v1/battles/teams", { account_id: accountId }) });
   const save = useMutation({
     mutationFn: (variant: Variant) =>
       api.post("/api/v1/battles/teams", {
         account_id: accountId,
-        name: `${leagueName(league)} – ${variant.label}`,
+        name: `${leagueName(league)} – ${serverText("battles", variant.label)}`,
         kind: "pvp",
         league,
         members: variant.team?.map((m) => ({ pokemon_id: m.pokemon_id, role: m.role })) ?? [],
@@ -120,12 +121,12 @@ function TeamBuilder({ accountId }: { accountId: number }) {
       {message && <Alert tone="success">{message}</Alert>}
       {build.data && (
         <>
-          <Alert tone="info">{build.data.method}</Alert>
+          <Alert tone="info">{serverText("battles", build.data.method)}</Alert>
           <div className="mt-4 grid gap-4 xl:grid-cols-3">
             {build.data.variants.map((variant) => (
               <Card
                 key={variant.mode}
-                title={variant.label}
+                title={serverText("battles", variant.label)}
                 actions={
                   variant.team && (
                     <Button size="sm" onClick={() => save.mutate(variant)}>
@@ -135,7 +136,7 @@ function TeamBuilder({ accountId }: { accountId: number }) {
                 }
               >
                 {!variant.team ? (
-                  <p className="text-sm text-muted">{variant.message}</p>
+                  <p className="text-sm text-muted">{serverText("battles", variant.message)}</p>
                 ) : (
                   <>
                     <ol className="space-y-3">

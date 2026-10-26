@@ -1,4 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
+import type { ParseKeys } from "i18next";
+import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router";
 
 import { RequireAccount } from "../../components/layout/RequireAccount";
@@ -36,18 +38,19 @@ interface LeagueItem {
   suitability: number;
 }
 
-const qualityLabels: Record<string, [string, string]> = {
-  optimal: ["Optimaal", "#34d399"],
-  partial: ["Deels", "#fbbf24"],
-  poor: ["Andere aanvallen nodig", "#f87171"],
-  after_evolution: ["Na evolutie bepalen", "#a78bfa"],
-  unknown: ["Onbekend", "#94a3b8"],
+const qualityLabels: Record<string, [ParseKeys, string]> = {
+  optimal: ["battles.league.quality.optimal", "#34d399"],
+  partial: ["battles.league.quality.partial", "#fbbf24"],
+  poor: ["battles.league.quality.poor", "#f87171"],
+  after_evolution: ["battles.league.quality.afterEvolution", "#a78bfa"],
+  unknown: ["battles.league.quality.unknown", "#94a3b8"],
 };
 
 const LIMIT = 200;
 const DEFAULT_SORT = "-suitability";
 
 function League({ accountId, league }: { accountId: number; league: string }) {
+  const { t } = useTranslation();
   const [state, update] = useUrlState();
   const readiness = state.readiness ?? "";
   const sort = state.sort ?? DEFAULT_SORT;
@@ -68,30 +71,34 @@ function League({ accountId, league }: { accountId: number; league: string }) {
     <>
       <PageHeader
         title={query.data?.info.name ?? leagueNames[league] ?? league}
-        description={query.data ? `${query.data.max_cp ? `Maximaal ${num(query.data.max_cp)} CP. ` : "Geen CP-limiet. "}${query.data.method}` : undefined}
+        description={
+          query.data
+            ? `${query.data.max_cp ? t("battles.shared.maxCp", { cp: num(query.data.max_cp) }) : t("battles.shared.noCpLimit")} ${query.data.method}`
+            : undefined
+        }
         actions={
           <div className="flex flex-wrap gap-2">
             {sort !== DEFAULT_SORT && (
               <Button variant="ghost" onClick={() => update({ sort: null })}>
-                Meest geschikt eerst
+                {t("battles.league.sortSuitable")}
               </Button>
             )}
-            <Select value={readiness} onChange={(e) => update({ readiness: e.target.value })} aria-label="Inzetbaarheid">
-              <option value="">Alle inzetbaarheid</option>
-              <option value="direct">Direct inzetbaar</option>
-              <option value="power_up">Na power-up</option>
-              <option value="evolution">Na evolutie</option>
+            <Select value={readiness} onChange={(e) => update({ readiness: e.target.value })} aria-label={t("battles.league.readiness.label")}>
+              <option value="">{t("battles.league.readiness.all")}</option>
+              <option value="direct">{t("battles.league.readiness.direct")}</option>
+              <option value="power_up">{t("battles.league.readiness.powerUp")}</option>
+              <option value="evolution">{t("battles.league.readiness.evolution")}</option>
             </Select>
           </div>
         }
       />
       {query.data?.info.kind === "cup" && (
-        <Card className="mb-5" title="Regels van deze cup">
+        <Card className="mb-5" title={t("battles.league.cupRules")}>
           <CupRules info={query.data.info} />
           <p className="mt-2 text-xs text-muted">
-            Zoals PvPoke ze beschrijft. Controleer in het spel of de cup nu loopt en of de regels gelijk zijn.{" "}
+            {t("battles.league.cupRulesSource")}{" "}
             <Link to="/battles/cups" className="underline">
-              Alle cups
+              {t("battles.league.allCups")}
             </Link>
           </p>
         </Card>
@@ -101,29 +108,33 @@ function League({ accountId, league }: { accountId: number; league: string }) {
       ) : query.error ? (
         <Alert tone="error">{errorMessage(query.error)}</Alert>
       ) : !query.data?.items.length ? (
-        <EmptyState title="Geen geschikte Pokémon">Er zijn geen Pokémon die (na evolutie of power-up) in deze {query.data?.info.kind === "cup" ? "cup" : "league"} passen, of de analyse moet nog draaien.</EmptyState>
+        <EmptyState title={t("battles.league.emptyTitle")}>
+          {query.data?.info.kind === "cup" ? t("battles.league.emptyCup") : t("battles.league.emptyLeague")}
+        </EmptyState>
       ) : (
         <Card>
           <div className="overflow-x-auto">
             <table className="w-full text-sm [&_td]:pr-3 [&_th]:pr-3">
               <thead className="text-left text-xs text-muted">
                 <tr>
-                  <th className="py-2">{header("Pokémon", "name", true)}</th>
-                  <th>{header("Doel", "target", true)}</th>
-                  <th>{header("Soortrang", "species_rank", true)}</th>
-                  <th>{header("IV-rang", "iv_rank", true)}</th>
+                  <th className="py-2">{header(t("battles.league.columns.pokemon"), "name", true)}</th>
+                  <th>{header(t("battles.league.columns.target"), "target", true)}</th>
+                  <th>{header(t("battles.league.columns.speciesRank"), "species_rank", true)}</th>
+                  <th>{header(t("battles.league.columns.ivRank"), "iv_rank", true)}</th>
                   <th>{header("%", "percent")}</th>
                   <th>
-                    {header("CP nu", "cp")} → {header("beste", "best_cp")}
+                    {header(t("battles.league.columns.cpNow"), "cp")} → {header(t("battles.league.columns.best"), "best_cp")}
                   </th>
-                  <th>{header("Inzetbaarheid", "readiness", true)}</th>
-                  <th>{header("Investering", "stardust", true)}</th>
-                  <th>{header("Aanvallen", "moveset", true)}</th>
+                  <th>{header(t("battles.league.columns.readiness"), "readiness", true)}</th>
+                  <th>{header(t("battles.league.columns.investment"), "stardust", true)}</th>
+                  <th>{header(t("battles.league.columns.moves"), "moveset", true)}</th>
                 </tr>
               </thead>
               <tbody>
                 {query.data.items.map((item) => {
-                  const [qualityText, qualityColor] = qualityLabels[item.moveset_quality] ?? ["?", undefined];
+                  const quality = qualityLabels[item.moveset_quality];
+                  const qualityText = quality ? t(quality[0]) : "?";
+                  const qualityColor = quality?.[1];
                   return (
                     <tr key={item.pokemon_id} className="border-t border-line align-top">
                       <td className="py-2 pr-3">
@@ -134,14 +145,18 @@ function League({ accountId, league }: { accountId: number; league: string }) {
                               {item.name}
                               {item.form_label ? ` (${item.form_label})` : ""}
                             </span>
-                            {item.shadow && <Badge className="ml-1" color="#a855f7">Shadow</Badge>}
+                            {item.shadow && (
+                              <Badge className="ml-1" color="#a855f7">
+                                {t("battles.shared.shadow")}
+                              </Badge>
+                            )}
                             <span className="block font-mono text-xs text-muted">{ivs(...item.ivs)}</span>
                           </span>
                         </Link>
                       </td>
                       <td className="pr-3">
                         {item.target}
-                        {item.is_evolution && <span className="block text-xs text-muted">na evolutie</span>}
+                        {item.is_evolution && <span className="block text-xs text-muted">{t("battles.league.afterEvolution")}</span>}
                       </td>
                       <td className="pr-3 tabular-nums">{item.species_rank ?? "–"}</td>
                       <td className="pr-3 tabular-nums">{item.iv_rank}</td>
@@ -153,7 +168,7 @@ function League({ accountId, league }: { accountId: number; league: string }) {
                         <ReadinessBadge readiness={item.readiness} />
                       </td>
                       <td className="pr-3 text-xs tabular-nums">
-                        {item.cost.stardust ? `${num(item.cost.stardust)} stardust` : "–"}
+                        {item.cost.stardust ? t("battles.league.stardust", { amount: num(item.cost.stardust) }) : "–"}
                         {item.cost.xl_candy ? <span className="block">{num(item.cost.xl_candy)} XL</span> : null}
                       </td>
                       <td className="text-xs">
@@ -168,13 +183,10 @@ function League({ accountId, league }: { accountId: number; league: string }) {
           </div>
           {query.data.total > query.data.items.length && (
             <p className="mt-3 text-xs text-muted">
-              Je ziet de eerste {num(query.data.items.length)} van {num(query.data.total)} Pokémon in deze volgorde. Het sorteren gebeurt over alle {num(query.data.total)}.
+              {t("battles.league.truncated", { shown: num(query.data.items.length), total: num(query.data.total) })}
             </p>
           )}
-          <p className="mt-3 text-xs text-muted">
-            Klik op een kolomkop om te sorteren. Soortrang zegt hoe sterk de soort is (PvPoke). IV-rang zegt hoe goed dit exemplaar binnen die soort is. Een sterke IV-rang bij een
-            zwakke soort maakt nog geen goede battle-Pokémon.
-          </p>
+          <p className="mt-3 text-xs text-muted">{t("battles.league.explanation")}</p>
         </Card>
       )}
     </>

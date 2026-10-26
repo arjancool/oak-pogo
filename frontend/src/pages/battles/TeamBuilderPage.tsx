@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { ParseKeys } from "i18next";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router";
 
 import { RequireAccount } from "../../components/layout/RequireAccount";
@@ -45,9 +47,18 @@ interface SavedTeam {
   members: { position: number; role: string | null; pokemon_id: number; name: string | null; cp: number | null; in_inventory: boolean }[];
 }
 
-const roleLabels: Record<string, string> = { lead: "Lead", switch: "Safe switch", closer: "Closer" };
+const roleLabels: Record<string, ParseKeys> = {
+  lead: "battles.teamBuilder.roles.lead",
+  switch: "battles.teamBuilder.roles.switch",
+  closer: "battles.teamBuilder.roles.closer",
+};
 
 function TeamBuilder({ accountId }: { accountId: number }) {
+  const { t } = useTranslation();
+  const roleLabel = (role: string) => {
+    const key = roleLabels[role];
+    return key ? t(key) : role;
+  };
   const client = useQueryClient();
   const [params] = useSearchParams();
   const [league, setLeague] = useState(params.get("league") ?? "great");
@@ -69,7 +80,7 @@ function TeamBuilder({ accountId }: { accountId: number }) {
         members: variant.team?.map((m) => ({ pokemon_id: m.pokemon_id, role: m.role })) ?? [],
       }),
     onSuccess: () => {
-      setMessage("Team opgeslagen.");
+      setMessage(t("battles.teamBuilder.saved"));
       void client.invalidateQueries({ queryKey: ["teams"] });
     },
     onError: (error) => setMessage(errorMessage(error)),
@@ -80,13 +91,13 @@ function TeamBuilder({ accountId }: { accountId: number }) {
   });
   return (
     <>
-      <PageHeader title="Team Builder" description="Drie teamvarianten uit je eigen collectie: direct inzetbaar, met beperkte upgrades en het beste toekomstige team." />
+      <PageHeader title={t("battles.teamBuilder.title")} description={t("battles.teamBuilder.description")} />
       <Card className="mb-5">
         <div className="flex flex-wrap items-end gap-3">
-          <Field label="League of cup">
+          <Field label={t("battles.teamBuilder.league")}>
             <Select value={league} onChange={(e) => setLeague(e.target.value)}>
               {(["league", "cup"] as const).map((kind) => (
-                <optgroup key={kind} label={kind === "league" ? "Leagues" : "Cups"}>
+                <optgroup key={kind} label={kind === "league" ? t("battles.teamBuilder.leagues") : t("battles.teamBuilder.cups")}>
                   {(leagues.data ?? []).filter((l) => l.kind === kind).map((l) => (
                     <option key={l.id} value={l.id}>
                       {l.name}
@@ -97,11 +108,11 @@ function TeamBuilder({ accountId }: { accountId: number }) {
               {!leagues.data && <option value={league}>{league}</option>}
             </Select>
           </Field>
-          <Field label="Stardust-budget per Pokémon (beperkte upgrades)">
+          <Field label={t("battles.teamBuilder.budget")}>
             <Input type="number" min={0} step={10000} value={budget} onChange={(e) => setBudget(Number(e.target.value))} className="w-48" />
           </Field>
           <Button variant="primary" loading={build.isPending} onClick={() => build.mutate()}>
-            Teams voorstellen
+            {t("battles.teamBuilder.suggest")}
           </Button>
         </div>
       </Card>
@@ -112,7 +123,17 @@ function TeamBuilder({ accountId }: { accountId: number }) {
           <Alert tone="info">{build.data.method}</Alert>
           <div className="mt-4 grid gap-4 xl:grid-cols-3">
             {build.data.variants.map((variant) => (
-              <Card key={variant.mode} title={variant.label} actions={variant.team && <Button size="sm" onClick={() => save.mutate(variant)}>Opslaan</Button>}>
+              <Card
+                key={variant.mode}
+                title={variant.label}
+                actions={
+                  variant.team && (
+                    <Button size="sm" onClick={() => save.mutate(variant)}>
+                      {t("battles.teamBuilder.save")}
+                    </Button>
+                  )
+                }
+              >
                 {!variant.team ? (
                   <p className="text-sm text-muted">{variant.message}</p>
                 ) : (
@@ -120,26 +141,37 @@ function TeamBuilder({ accountId }: { accountId: number }) {
                     <ol className="space-y-3">
                       {variant.team.map((m) => (
                         <li key={m.pokemon_id} className="rounded-lg border border-line p-3">
-                          <p className="text-xs uppercase tracking-wide text-muted">{roleLabels[m.role] ?? m.role}</p>
+                          <p className="text-xs uppercase tracking-wide text-muted">{roleLabel(m.role)}</p>
                           <Link to={`/pokemon/${m.pokemon_id}`} className="font-medium hover:text-oak-300">
                             {m.name} {m.is_evolution && `→ ${m.target}`}
                           </Link>
                           <div className="mt-1 flex flex-wrap gap-1">
-                            {m.types.map((t) => (
-                              <TypeBadge key={t} type={t} />
+                            {m.types.map((type) => (
+                              <TypeBadge key={type} type={type} />
                             ))}
                             <ReadinessBadge readiness={m.readiness} />
                           </div>
                           <p className="mt-1 text-xs text-muted">
-                            CP {num(m.cp, "?")} → {num(m.best_cp)} · IV-rang {m.iv_rank} · soortrang {m.species_rank ?? "–"}
+                            {t("battles.teamBuilder.memberStats", {
+                              cp: num(m.cp, "?"),
+                              bestCp: num(m.best_cp),
+                              ivRank: m.iv_rank,
+                              speciesRank: m.species_rank ?? "–",
+                            })}
                           </p>
-                          <p className="text-xs text-muted">Aanvallen: {m.recommended_moveset.join(" · ") || "onbekend"}</p>
+                          <p className="text-xs text-muted">
+                            {t("battles.teamBuilder.moves", { moves: m.recommended_moveset.join(" · ") || t("common.unknown") })}
+                          </p>
                         </li>
                       ))}
                     </ol>
                     <p className="mt-3 text-xs text-muted">
-                      Investering: {num(variant.investment?.stardust ?? 0)} stardust · Gedeelde zwaktes:{" "}
-                      {variant.shared_weaknesses?.length ? variant.shared_weaknesses.map((t) => typeNames[t] ?? t).join(", ") : "geen"}
+                      {t("battles.teamBuilder.summary", {
+                        stardust: num(variant.investment?.stardust ?? 0),
+                        weaknesses: variant.shared_weaknesses?.length
+                          ? variant.shared_weaknesses.map((type) => typeNames[type] ?? type).join(", ")
+                          : t("battles.teamBuilder.noWeaknesses"),
+                      })}
                     </p>
                   </>
                 )}
@@ -148,11 +180,11 @@ function TeamBuilder({ accountId }: { accountId: number }) {
           </div>
         </>
       )}
-      <Card className="mt-5" title="Opgeslagen teams">
+      <Card className="mt-5" title={t("battles.teamBuilder.savedTeams")}>
         {teams.isLoading ? (
           <Spinner />
         ) : !teams.data?.length ? (
-          <p className="text-sm text-muted">Nog geen teams opgeslagen.</p>
+          <p className="text-sm text-muted">{t("battles.teamBuilder.noTeams")}</p>
         ) : (
           <ul className="divide-y divide-line">
             {teams.data.map((team) => (
@@ -160,11 +192,11 @@ function TeamBuilder({ accountId }: { accountId: number }) {
                 <span>
                   <span className="font-medium">{team.name}</span>
                   <span className="ml-2 text-muted">
-                    {team.members.map((m) => `${m.name}${m.in_inventory ? "" : " (weg)"}`).join(" · ")}
+                    {team.members.map((m) => (m.in_inventory ? `${m.name}` : t("battles.teamBuilder.gone", { name: m.name }))).join(" · ")}
                   </span>
                 </span>
                 <Button size="sm" variant="ghost" onClick={() => remove.mutate(team.id)}>
-                  Verwijderen
+                  {t("battles.teamBuilder.delete")}
                 </Button>
               </li>
             ))}

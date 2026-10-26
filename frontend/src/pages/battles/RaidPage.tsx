@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { RequireAccount } from "../../components/layout/RequireAccount";
@@ -35,6 +36,7 @@ const COLUMNS = {
 type RankedCounter = Counter & { rank: number };
 
 function Raids({ accountId }: { accountId: number }) {
+  const { t } = useTranslation();
   const [boss, setBoss] = useState<SpeciesOption | null>(null);
   const [state, update] = useUrlState();
   const sort = state.sort ?? DEFAULT_SORT;
@@ -54,23 +56,20 @@ function Raids({ accountId }: { accountId: number }) {
   const counters = data ? sortRows<RankedCounter>(data.counters.map((c, index) => ({ ...c, rank: index + 1 })), sort, COLUMNS) : [];
   return (
     <>
-      <PageHeader
-        title="Raids"
-        description="Zonder baas zie je je beste algemene aanvallers. Kies een raid-baas voor counters tegen die specifieke tegenstander."
-      />
+      <PageHeader title={t("battles.raids.title")} description={t("battles.raids.description")} />
       <Card className="mb-5">
         <div className="flex flex-wrap items-center gap-3">
           <div className="w-full max-w-md">
-            <SpeciesPicker onPick={setBoss} placeholder="Raid-baas zoeken, bijv. kyogre" />
+            <SpeciesPicker onPick={setBoss} placeholder={t("battles.raids.search")} />
           </div>
           {boss && (
             <>
               <span className="font-medium">{boss.name}</span>
-              {boss.types.map((t) => (
-                <TypeBadge key={t} type={t} />
+              {boss.types.map((type) => (
+                <TypeBadge key={type} type={type} />
               ))}
               <Button size="sm" variant="ghost" onClick={() => setBoss(null)}>
-                Algemene aanvallers
+                {t("battles.raids.general")}
               </Button>
             </>
           )}
@@ -79,24 +78,21 @@ function Raids({ accountId }: { accountId: number }) {
       {run.isPending && <Spinner />}
       {run.error && <Alert tone="error">{errorMessage(run.error)}</Alert>}
       {data && (
-        <Card title={data.boss ? `Counters tegen ${data.boss.name}` : "Beste algemene raid-aanvallers"}>
+        <Card title={data.boss ? t("battles.raids.countersAgainst", { name: data.boss.name }) : t("battles.raids.bestGeneral")}>
           <Alert tone="info">{data.method}</Alert>
-          <p className="mt-2 text-xs text-muted">
-            De {num(data.counters.length)} aanvallers met de hoogste DPS met hun huidige aanvallen. Klik op een kolomkop om binnen deze lijst te
-            sorteren. Het nummer blijft hun plek op DPS.
-          </p>
+          <p className="mt-2 text-xs text-muted">{t("battles.raids.intro", { count: data.counters.length })}</p>
           <div className="mt-3 overflow-x-auto">
             <table className="w-full text-sm [&_td]:pr-3 [&_th]:pr-3">
               <thead className="text-left text-xs text-muted">
                 <tr>
                   <th className="py-2">#</th>
                   <th>
-                    {header("Pokémon", "name", true)} · {header("CP", "cp")}
+                    {header(t("battles.raids.columns.pokemon"), "name", true)} · {header("CP", "cp")}
                   </th>
-                  <th>{header("DPS nu", "dps")}</th>
-                  <th>Huidige aanvallen</th>
-                  <th>{header("Beste moveset", "best_dps")}</th>
-                  <th>Opmerkingen</th>
+                  <th>{header(t("battles.raids.columns.dpsNow"), "dps")}</th>
+                  <th>{t("battles.raids.columns.currentMoves")}</th>
+                  <th>{header(t("battles.raids.columns.bestMoveset"), "best_dps")}</th>
+                  <th>{t("battles.raids.columns.notes")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -108,28 +104,32 @@ function Raids({ accountId }: { accountId: number }) {
                         {c.name}
                         {c.form_label ? ` (${c.form_label})` : ""}
                       </Link>
-                      {c.shadow && <Badge className="ml-1" color="#a855f7">Shadow</Badge>}
+                      {c.shadow && (
+                        <Badge className="ml-1" color="#a855f7">
+                          {t("battles.shared.shadow")}
+                        </Badge>
+                      )}
                       <span className="block text-xs text-muted">
                         CP {num(c.cp, "?")} · L{level(c.level)}
                       </span>
                     </td>
-                    <td className="pr-3 font-semibold tabular-nums">{c.current.dps.toLocaleString("nl-NL")}</td>
+                    <td className="pr-3 font-semibold tabular-nums">{num(c.current.dps)}</td>
                     <td className="pr-3 text-xs">
-                      {c.current.fast} · {c.current.charged ?? "alleen snelle aanval"}
+                      {c.current.fast} · {c.current.charged ?? t("battles.raids.fastOnly")}
                     </td>
                     <td className="pr-3 text-xs">
                       {c.best_moveset.needs_tm ? (
                         <>
-                          {c.best_moveset.fast} · {c.best_moveset.charged} ({c.best_moveset.dps.toLocaleString("nl-NL")} DPS)
-                          {c.best_moveset.needs_elite_tm && <span className="block text-amber-300">Elite TM nodig</span>}
+                          {c.best_moveset.fast} · {c.best_moveset.charged} ({num(c.best_moveset.dps)} DPS)
+                          {c.best_moveset.needs_elite_tm && <span className="block text-amber-300">{t("battles.raids.eliteTm")}</span>}
                         </>
                       ) : (
-                        <span className="text-muted">Huidige moveset is al de beste</span>
+                        <span className="text-muted">{t("battles.raids.alreadyBest")}</span>
                       )}
                     </td>
                     <td className="text-xs">
-                      {c.weak_to_boss && <Badge color="#f87171">Zwak tegen baas-type</Badge>}
-                      {c.current.effectiveness > 1 && <Badge color="#34d399">Supereffectief</Badge>}
+                      {c.weak_to_boss && <Badge color="#f87171">{t("battles.raids.weakToBoss")}</Badge>}
+                      {c.current.effectiveness > 1 && <Badge color="#34d399">{t("battles.raids.superEffective")}</Badge>}
                     </td>
                   </tr>
                 ))}

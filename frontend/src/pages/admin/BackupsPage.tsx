@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Download, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 
 import { Alert, Button, Card, EmptyState, PageHeader, Spinner } from "../../components/ui";
 import { useAuth } from "../../lib/auth";
@@ -14,6 +15,7 @@ interface Backup {
 }
 
 export function BackupsPage() {
+  const { t } = useTranslation();
   const client = useQueryClient();
   const { user } = useAuth();
   const [error, setError] = useState<string | null>(null);
@@ -23,15 +25,15 @@ export function BackupsPage() {
   const create = useMutation({ mutationFn: () => api.post("/api/v1/backups"), onSuccess: refresh, onError: (err) => setError(errorMessage(err)) });
   const remove = useMutation({ mutationFn: (name: string) => api.delete(`/api/v1/backups/${encodeURIComponent(name)}`), onSuccess: refresh });
 
-  if (!owner) return <EmptyState title="Alleen voor de eigenaar">Back-ups beheren kan alleen de eigenaar van deze OAK-installatie.</EmptyState>;
+  if (!owner) return <EmptyState title={t("admin.backups.ownerOnlyTitle")}>{t("admin.backups.ownerOnlyText")}</EmptyState>;
   return (
     <>
       <PageHeader
-        title="Back-ups"
-        description="OAK maakt automatisch een back-up voor iedere databasemigratie. Hier maak je er zelf een en download je hem."
+        title={t("admin.backups.title")}
+        description={t("admin.backups.description")}
         actions={
           <Button variant="primary" loading={create.isPending} onClick={() => create.mutate()}>
-            Back-up maken
+            {t("admin.backups.create")}
           </Button>
         }
       />
@@ -41,16 +43,15 @@ export function BackupsPage() {
         </div>
       )}
       <div className="mb-5">
-        <Alert tone="info" title="Terugzetten">
-          Stop de container, vervang <code>/data/oak.db</code> door de back-up en start de container opnieuw. Een volledige back-up van de map
-          <code> /data</code> bevat ook de geheime sleutel en opgeslagen exports. Zie docs/BACKUP_RESTORE.md.
+        <Alert tone="info" title={t("admin.backups.restoreTitle")}>
+          <Trans i18nKey="admin.backups.restoreText" components={{ code: <code /> }} />
         </Alert>
       </div>
-      <Card title="Beschikbare back-ups">
+      <Card title={t("admin.backups.available")}>
         {list.isLoading ? (
           <Spinner />
         ) : !list.data?.length ? (
-          <p className="text-sm text-muted">Nog geen back-ups.</p>
+          <p className="text-sm text-muted">{t("admin.backups.none")}</p>
         ) : (
           <ul className="divide-y divide-line text-sm">
             {list.data.map((b) => (
@@ -64,7 +65,7 @@ export function BackupsPage() {
                 <span className="flex gap-2">
                   <a href={`/api/v1/backups/${encodeURIComponent(b.name)}`} download>
                     <Button size="sm" icon={<Download size={14} />}>
-                      Downloaden
+                      {t("admin.backups.download")}
                     </Button>
                   </a>
                   <Button
@@ -72,10 +73,10 @@ export function BackupsPage() {
                     variant="ghost"
                     icon={<Trash2 size={14} />}
                     onClick={() => {
-                      if (window.confirm(`Back-up ${b.name} verwijderen?`)) remove.mutate(b.name);
+                      if (window.confirm(t("admin.backups.deleteConfirm", { name: b.name }))) remove.mutate(b.name);
                     }}
                   >
-                    Verwijderen
+                    {t("admin.backups.delete")}
                   </Button>
                 </span>
               </li>

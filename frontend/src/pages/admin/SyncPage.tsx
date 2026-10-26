@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Copy, UploadCloud } from "lucide-react";
 import { useRef, useState, type DragEvent } from "react";
+import { useTranslation } from "react-i18next";
 
 import { RequireAccount } from "../../components/layout/RequireAccount";
 import { Alert, Badge, Button, Card, Dialog, EmptyState, KeyValue, PageHeader, Pagination, Spinner, Switch } from "../../components/ui";
@@ -26,6 +27,7 @@ const statusColors: Record<string, string> = {
 };
 
 function CopyButton({ text }: { text: string }) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   return (
     <Button
@@ -37,12 +39,13 @@ function CopyButton({ text }: { text: string }) {
         });
       }}
     >
-      {copied ? <Check size={14} /> : <Copy size={14} />} {copied ? "Gekopieerd" : "Kopiëren"}
+      {copied ? <Check size={14} /> : <Copy size={14} />} {copied ? t("admin.sync.copied") : t("admin.sync.copy")}
     </Button>
   );
 }
 
 function WebhookCard({ accountId }: { accountId: number }) {
+  const { t } = useTranslation();
   const client = useQueryClient();
   const { account } = useAccount();
   const [created, setCreated] = useState<{ url: string; message: string } | null>(null);
@@ -67,39 +70,39 @@ function WebhookCard({ accountId }: { accountId: number }) {
   const webhook = account?.webhook;
   const diagActive = account?.diagnostics_until ? new Date(account.diagnostics_until) > new Date() : false;
   return (
-    <Card title="PGSharp-webhook">
+    <Card title={t("admin.sync.webhook.title")}>
       {webhook?.active ? (
         <>
-          <p className="mb-1 text-xs text-muted">Webhook-URL (het geheime deel wordt nooit opnieuw getoond)</p>
+          <p className="mb-1 text-xs text-muted">{t("admin.sync.webhook.urlLabel")}</p>
           <code className="mb-3 block break-all rounded bg-surface-3 px-2 py-1.5 text-xs">{webhook.url_masked}</code>
           <KeyValue
             items={[
-            ["Aangemaakt", dateTime(webhook.created_at)],
-            ["Laatst gebruikt", webhook.last_used_at ? `${dateTime(webhook.last_used_at)} (${relative(webhook.last_used_at)})` : "nog nooit"],
+            [t("admin.sync.webhook.created"), dateTime(webhook.created_at)],
+            [t("admin.sync.webhook.lastUsed"), webhook.last_used_at ? `${dateTime(webhook.last_used_at)} (${relative(webhook.last_used_at)})` : t("admin.sync.webhook.neverUsed")],
             ]}
           />
         </>
       ) : (
-        <p className="text-sm text-muted">Er is nog geen actieve webhook voor dit account.</p>
+        <p className="text-sm text-muted">{t("admin.sync.webhook.none")}</p>
       )}
       <div className="mt-4 flex flex-wrap gap-2">
         <Button
           variant="primary"
           loading={generate.isPending}
           onClick={() => {
-            if (!webhook?.active || window.confirm("Een nieuwe URL maakt de huidige ongeldig. PGSharp moet daarna de nieuwe URL krijgen. Doorgaan?")) generate.mutate();
+            if (!webhook?.active || window.confirm(t("admin.sync.webhook.regenerateConfirm"))) generate.mutate();
           }}
         >
-          {webhook?.active ? "Nieuwe URL maken" : "Webhook-URL maken"}
+          {webhook?.active ? t("admin.sync.webhook.regenerate") : t("admin.sync.webhook.create")}
         </Button>
         {webhook?.active && (
           <Button
             variant="danger"
             onClick={() => {
-              if (window.confirm("Webhook intrekken? PGSharp kan daarna niets meer naar dit account sturen.")) revoke.mutate();
+              if (window.confirm(t("admin.sync.webhook.revokeConfirm"))) revoke.mutate();
             }}
           >
-            Intrekken
+            {t("admin.sync.webhook.revoke")}
           </Button>
         )}
       </div>
@@ -112,19 +115,19 @@ function WebhookCard({ accountId }: { accountId: number }) {
         <Switch
           checked={diagActive}
           onChange={(value) => diagnostics.mutate(value)}
-          label="Diagnosemodus (24 uur)"
+          label={t("admin.sync.diagnostics.label")}
           description={
             diagActive
-              ? `Actief tot ${dateTime(account?.diagnostics_until)}. OAK bewaart van elke binnenkomende export de volledige structuur, zonder waarden.`
-              : "Handig als een import mislukt. OAK legt dan de veldnamen en typen van iedere export vast, nooit de inhoud."
+              ? t("admin.sync.diagnostics.active", { date: dateTime(account?.diagnostics_until) })
+              : t("admin.sync.diagnostics.inactive")
           }
         />
       </div>
       <Dialog
         open={created !== null}
         onClose={() => setCreated(null)}
-        title="Je nieuwe webhook-URL"
-        footer={<Button onClick={() => setCreated(null)}>Ik heb hem opgeslagen</Button>}
+        title={t("admin.sync.webhook.dialogTitle")}
+        footer={<Button onClick={() => setCreated(null)}>{t("admin.sync.webhook.stored")}</Button>}
         wide
       >
         <Alert tone="warning">{created?.message}</Alert>
@@ -132,30 +135,30 @@ function WebhookCard({ accountId }: { accountId: number }) {
           <code className="flex-1 break-all text-xs">{created?.url}</code>
           {created && <CopyButton text={created.url} />}
         </div>
-        <p className="mt-3 text-sm text-muted">De URL werkt als een wachtwoord. Deel hem niet en zet hem niet in screenshots.</p>
+        <p className="mt-3 text-sm text-muted">{t("admin.sync.webhook.secret")}</p>
       </Dialog>
     </Card>
   );
 }
 
 function SetupSteps() {
+  const { t } = useTranslation();
   return (
-    <Card title="PGSharp instellen">
+    <Card title={t("admin.sync.setup.title")}>
       <ol className="list-decimal space-y-2 pl-5 text-sm">
-        <li>Maak hiernaast een webhook-URL en kopieer hem.</li>
-        <li>Open in PGSharp de instellingen en zoek de optie om accountgegevens te exporteren.</li>
-        <li>Plak de URL bij de webhook voor Export Account Data.</li>
-        <li>Start een export. Na een paar seconden verschijnt de import hieronder.</li>
-        <li>Lukt de webhook niet, exporteer dan het bestand PGSStats.json en upload het hier.</li>
+        <li>{t("admin.sync.setup.step1")}</li>
+        <li>{t("admin.sync.setup.step2")}</li>
+        <li>{t("admin.sync.setup.step3")}</li>
+        <li>{t("admin.sync.setup.step4")}</li>
+        <li>{t("admin.sync.setup.step5")}</li>
       </ol>
-      <p className="mt-3 text-xs text-muted">
-        De exacte namen van de menu-opties in PGSharp kunnen per versie verschillen. OAK vraagt nooit om je Pokémon GO-inloggegevens.
-      </p>
+      <p className="mt-3 text-xs text-muted">{t("admin.sync.setup.note")}</p>
     </Card>
   );
 }
 
 function UploadCard({ accountId }: { accountId: number }) {
+  const { t } = useTranslation();
   const client = useQueryClient();
   const input = useRef<HTMLInputElement>(null);
   const [progress, setProgress] = useState<number | null>(null);
@@ -176,7 +179,7 @@ function UploadCard({ accountId }: { accountId: number }) {
       const job = await uploadWithProgress<ImportJob>("/api/v1/imports/upload", form, setProgress, { signal: controller.signal });
       setResult({
         tone: "success",
-        text: job.status === "duplicate" ? "Deze export was al eerder ontvangen. Er is niets veranderd." : "Upload ontvangen. De verwerking loopt op de achtergrond.",
+        text: job.status === "duplicate" ? t("admin.sync.upload.duplicate") : t("admin.sync.upload.received"),
       });
       void client.invalidateQueries({ queryKey: ["imports"] });
       void client.invalidateQueries({ queryKey: ["sync-status"] });
@@ -194,7 +197,7 @@ function UploadCard({ accountId }: { accountId: number }) {
     if (file) void send(file);
   };
   return (
-    <Card title="Handmatige upload">
+    <Card title={t("admin.sync.upload.title")}>
       <div
         role="button"
         tabIndex={0}
@@ -211,8 +214,8 @@ function UploadCard({ accountId }: { accountId: number }) {
         className={`flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed p-8 text-center text-sm ${dragging ? "border-oak-400 bg-oak-500/10" : "border-line"}`}
       >
         <UploadCloud className="text-muted" />
-        <span>Sleep PGSStats.json hierheen of klik om een bestand te kiezen</span>
-        <span className="text-xs text-muted">Het bestand doorloopt dezelfde verwerking als de webhook.</span>
+        <span>{t("admin.sync.upload.drop")}</span>
+        <span className="text-xs text-muted">{t("admin.sync.upload.samePipeline")}</span>
         <input
           ref={input}
           type="file"
@@ -231,7 +234,7 @@ function UploadCard({ accountId }: { accountId: number }) {
           <div
             className="h-2 flex-1 overflow-hidden rounded bg-surface-3"
             role="progressbar"
-            aria-label="Uploadvoortgang"
+            aria-label={t("admin.sync.upload.progress")}
             aria-valuemin={0}
             aria-valuemax={PERCENT}
             aria-valuenow={Math.round(progress * PERCENT)}
@@ -239,7 +242,7 @@ function UploadCard({ accountId }: { accountId: number }) {
             <div className="h-full bg-oak-500 transition-all" style={{ width: `${Math.round(progress * PERCENT)}%` }} />
           </div>
           <Button size="sm" variant="ghost" onClick={() => abort.current?.abort()}>
-            Annuleren
+            {t("common.cancel")}
           </Button>
         </div>
       )}
@@ -253,6 +256,7 @@ function UploadCard({ accountId }: { accountId: number }) {
 }
 
 function SchemaSummary({ summary }: { summary: Record<string, unknown> }) {
+  const { t } = useTranslation();
   const list = (key: string) => (Array.isArray(summary[key]) ? (summary[key] as string[]) : []);
   const counts = (summary.counts ?? {}) as Record<string, number | null>;
   const paths = (summary.paths ?? {}) as Record<string, string[]>;
@@ -260,17 +264,17 @@ function SchemaSummary({ summary }: { summary: Record<string, unknown> }) {
     <div className="space-y-3 text-sm">
       <KeyValue
         items={[
-          ["Type van de hoofdstructuur", String(summary.root_type ?? "onbekend")],
-          ["Pokémon-records", num(counts.pokemons ?? null)],
-          ["Item-records", num(counts.items ?? null)],
-          ["Nieuwe velden in de hoofdstructuur", list("root_keys_new").join(", ") || "geen"],
-          ["Nieuwe Pokémon-velden", list("pokemon_keys_new").join(", ") || "geen"],
-          ["Ontbrekende Pokémon-velden", list("pokemon_keys_missing").join(", ") || "geen"],
+          [t("admin.sync.schema.rootType"), String(summary.root_type ?? t("common.unknown"))],
+          [t("admin.sync.schema.pokemonRecords"), num(counts.pokemons ?? null)],
+          [t("admin.sync.schema.itemRecords"), num(counts.items ?? null)],
+          [t("admin.sync.schema.newRootKeys"), list("root_keys_new").join(", ") || t("admin.sync.schema.none")],
+          [t("admin.sync.schema.newPokemonKeys"), list("pokemon_keys_new").join(", ") || t("admin.sync.schema.none")],
+          [t("admin.sync.schema.missingPokemonKeys"), list("pokemon_keys_missing").join(", ") || t("admin.sync.schema.none")],
         ]}
       />
       {Object.keys(paths).length > 0 && (
         <details>
-          <summary className="cursor-pointer text-muted">Alle veldpaden ({Object.keys(paths).length})</summary>
+          <summary className="cursor-pointer text-muted">{t("admin.sync.schema.allPaths", { total: num(Object.keys(paths).length) })}</summary>
           <pre className="mt-2 max-h-72 overflow-auto rounded bg-surface-3 p-2 text-xs">
             {Object.entries(paths)
               .map(([path, types]) => `${path}: ${types.join(" | ")}`)
@@ -283,6 +287,7 @@ function SchemaSummary({ summary }: { summary: Record<string, unknown> }) {
 }
 
 function ImportDetail({ id, onClose }: { id: number; onClose: () => void }) {
+  const { t } = useTranslation();
   const client = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const job = useQuery({ queryKey: ["import", id], queryFn: () => api.get<ImportJob>(`/api/v1/imports/${id}`) });
@@ -303,28 +308,35 @@ function ImportDetail({ id, onClose }: { id: number; onClose: () => void }) {
         <div className="space-y-4">
           <KeyValue
             items={[
-              ["Status", label(importStatusLabels, j.status)],
-              ["Classificatie", j.classification ? label(classificationLabels, j.classification) : "nog niet bepaald"],
-              ["Bron", j.source === "webhook" ? "PGSharp-webhook" : j.source === "upload" ? `Upload${j.filename ? ` (${j.filename})` : ""}` : "Opnieuw verwerkt"],
-              ["Ontvangen", dateTime(j.received_at)],
-              ["Exportmoment volgens PGSharp", dateTime(j.export_time)],
-              ["Grootte", bytes(j.payload_size)],
-              ["Export nog opgeslagen", j.payload_available ? "ja" : "nee"],
-              ...(j.error_message ? ([["Melding", j.error_message]] as [string, string][]) : []),
+              [t("admin.sync.detail.status"), label(importStatusLabels, j.status)],
+              [t("admin.sync.detail.classification"), j.classification ? label(classificationLabels, j.classification) : t("admin.sync.detail.notClassified")],
+              [
+                t("admin.sync.detail.source"),
+                j.source === "webhook"
+                  ? t("admin.sync.detail.sourceWebhook")
+                  : j.source === "upload"
+                    ? `${t("admin.sync.detail.sourceUpload")}${j.filename ? ` (${j.filename})` : ""}`
+                    : t("admin.sync.detail.sourceReprocessed"),
+              ],
+              [t("admin.sync.detail.received"), dateTime(j.received_at)],
+              [t("admin.sync.detail.exportTime"), dateTime(j.export_time)],
+              [t("admin.sync.detail.size"), bytes(j.payload_size)],
+              [t("admin.sync.detail.payloadStored"), j.payload_available ? t("admin.sync.detail.yes") : t("admin.sync.detail.no")],
+              ...(j.error_message ? ([[t("admin.sync.detail.message"), j.error_message]] as [string, string][]) : []),
             ]}
           />
           {j.sync_run && (
-            <Card title="Resultaat">
+            <Card title={t("admin.sync.result.title")}>
               <KeyValue
                 items={[
-                  ["Pokémon in export", num(j.sync_run.total_pokemon)],
-                  ["Eieren", num(j.sync_run.eggs)],
-                  ["Nieuw", num(j.sync_run.new_count)],
-                  ["Gewijzigd", num(j.sync_run.changed_count)],
-                  ["Ongewijzigd", num(j.sync_run.unchanged_count)],
-                  ["Niet meer in inventaris", num(j.sync_run.missing_count)],
-                  ["Ontbreekt, niet bevestigd", num(j.sync_run.missing_unconfirmed_count)],
-                  ["Teruggekeerd", num(j.sync_run.reappeared_count)],
+                  [t("admin.sync.result.total"), num(j.sync_run.total_pokemon)],
+                  [t("admin.sync.result.eggs"), num(j.sync_run.eggs)],
+                  [t("admin.sync.result.new"), num(j.sync_run.new_count)],
+                  [t("admin.sync.result.changed"), num(j.sync_run.changed_count)],
+                  [t("admin.sync.result.unchanged"), num(j.sync_run.unchanged_count)],
+                  [t("admin.sync.result.missing"), num(j.sync_run.missing_count)],
+                  [t("admin.sync.result.missingUnconfirmed"), num(j.sync_run.missing_unconfirmed_count)],
+                  [t("admin.sync.result.reappeared"), num(j.sync_run.reappeared_count)],
                 ]}
               />
               {j.sync_run.warnings.map((w) => (
@@ -335,34 +347,33 @@ function ImportDetail({ id, onClose }: { id: number; onClose: () => void }) {
             </Card>
           )}
           {j.confirmable && (
-            <Alert tone="info" title="Was dit toch een volledige export?">
-              OAK heeft deze import als gedeeltelijk behandeld, dus ontbrekende Pokémon zijn niet als verdwenen gemarkeerd. Weet je zeker dat je
-              in-game echt Pokémon hebt overgezet, bevestig dan dat de export volledig was.
+            <Alert tone="info" title={t("admin.sync.confirmFull.title")}>
+              {t("admin.sync.confirmFull.text")}
               <div className="mt-2">
                 <Button
                   size="sm"
                   loading={confirmFull.isPending}
                   onClick={() => {
-                    if (window.confirm("Bevestigen dat deze export je volledige inventaris bevat? Ontbrekende Pokémon krijgen dan de status 'niet meer in inventaris'.")) confirmFull.mutate();
+                    if (window.confirm(t("admin.sync.confirmFull.confirm"))) confirmFull.mutate();
                   }}
                 >
-                  Bevestig als volledig
+                  {t("admin.sync.confirmFull.button")}
                 </Button>
               </div>
             </Alert>
           )}
           {["failed", "rejected", "partial"].includes(j.status) && j.payload_available && (
             <Button loading={retry.isPending} onClick={() => retry.mutate()}>
-              Opnieuw verwerken
+              {t("admin.sync.detail.retry")}
             </Button>
           )}
           {error && <Alert tone="error">{error}</Alert>}
           {issues.data && issues.data.length > 0 && (
-            <Card title={`Meldingen (${issues.data.length})`}>
+            <Card title={t("admin.sync.issues.title", { total: num(issues.data.length) })}>
               <ul className="max-h-64 space-y-1 overflow-auto text-xs">
                 {issues.data.map((i) => (
                   <li key={i.id} className="flex gap-2">
-                    <Badge color={i.severity === "error" ? "#ef4444" : "#f59e0b"}>{i.severity === "error" ? "fout" : "waarschuwing"}</Badge>
+                    <Badge color={i.severity === "error" ? "#ef4444" : "#f59e0b"}>{i.severity === "error" ? t("admin.sync.issues.error") : t("admin.sync.issues.warning")}</Badge>
                     <span>
                       {i.message}
                       {i.path && <span className="text-muted"> · {i.path}</span>}
@@ -374,7 +385,7 @@ function ImportDetail({ id, onClose }: { id: number; onClose: () => void }) {
             </Card>
           )}
           {j.schema_summary && (
-            <Card title="Structuur van de export">
+            <Card title={t("admin.sync.schema.title")}>
               <SchemaSummary summary={j.schema_summary} />
             </Card>
           )}
@@ -385,6 +396,7 @@ function ImportDetail({ id, onClose }: { id: number; onClose: () => void }) {
 }
 
 function ImportList({ accountId }: { accountId: number }) {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [open, setOpen] = useState<number | null>(null);
   const query = useQuery({
@@ -395,21 +407,21 @@ function ImportList({ accountId }: { accountId: number }) {
   if (query.isLoading) return <Spinner />;
   const items = query.data?.items ?? [];
   return (
-    <Card title="Imports">
+    <Card title={t("admin.sync.list.title")}>
       {items.length === 0 ? (
-        <EmptyState title="Nog geen imports">Stuur een export vanuit PGSharp of upload een bestand.</EmptyState>
+        <EmptyState title={t("admin.sync.list.emptyTitle")}>{t("admin.sync.list.emptyText")}</EmptyState>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="text-left text-xs text-muted">
               <tr>
-                <th className="py-1">Ontvangen</th>
-                <th>Bron</th>
-                <th>Status</th>
-                <th>Pokémon</th>
-                <th>Nieuw</th>
-                <th>Gewijzigd</th>
-                <th>Weg</th>
+                <th className="py-1">{t("admin.sync.list.received")}</th>
+                <th>{t("admin.sync.list.source")}</th>
+                <th>{t("admin.sync.list.status")}</th>
+                <th>{t("admin.sync.list.pokemon")}</th>
+                <th>{t("admin.sync.list.new")}</th>
+                <th>{t("admin.sync.list.changed")}</th>
+                <th>{t("admin.sync.list.gone")}</th>
                 <th />
               </tr>
             </thead>
@@ -417,7 +429,13 @@ function ImportList({ accountId }: { accountId: number }) {
               {items.map((j) => (
                 <tr key={j.id} className="border-t border-line">
                   <td className="py-1.5">{dateTime(j.received_at)}</td>
-                  <td>{j.source === "webhook" ? "Webhook" : j.source === "upload" ? "Upload" : "Opnieuw"}</td>
+                  <td>
+                    {j.source === "webhook"
+                      ? t("admin.sync.list.sourceWebhook")
+                      : j.source === "upload"
+                        ? t("admin.sync.list.sourceUpload")
+                        : t("admin.sync.list.sourceReprocessed")}
+                  </td>
                   <td>
                     <Badge color={statusColors[j.status]}>{label(importStatusLabels, j.status)}</Badge>
                     {["queued", "processing"].includes(j.status) && <span className="ml-2 text-xs text-muted">{Math.round(j.progress * PERCENT)}%</span>}
@@ -428,7 +446,7 @@ function ImportList({ accountId }: { accountId: number }) {
                   <td className="tabular-nums">{num(j.sync_run?.missing_count ?? null, "–")}</td>
                   <td className="text-right">
                     <Button size="sm" onClick={() => setOpen(j.id)}>
-                      Details
+                      {t("admin.sync.list.details")}
                     </Button>
                   </td>
                 </tr>
@@ -444,6 +462,7 @@ function ImportList({ accountId }: { accountId: number }) {
 }
 
 function SyncView({ accountId }: { accountId: number }) {
+  const { t } = useTranslation();
   const status = useQuery({
     queryKey: ["sync-status", accountId],
     queryFn: () => api.get<SyncStatus>("/api/v1/sync/status", { account_id: accountId }),
@@ -452,12 +471,13 @@ function SyncView({ accountId }: { accountId: number }) {
   const tone = status.data?.state === "error" ? "error" : status.data?.state === "warning" ? "warning" : status.data?.state === "connected" ? "success" : "info";
   return (
     <>
-      <PageHeader title="PGSharp Sync" description="Koppel PGSharp via een webhook of upload een export. Beide routes gebruiken dezelfde verwerking." />
+      <PageHeader title={t("admin.sync.title")} description={t("admin.sync.description")} />
       {status.data && (
         <div className="mb-5">
           <Alert tone={tone} title={status.data.message}>
-            Laatste succesvolle sync: {dateTime(status.data.last_successful_sync_at)}
-            {status.data.pending_imports > 0 && ` · ${status.data.pending_imports} import(s) in verwerking`}
+            {t("admin.sync.lastSync", { date: dateTime(status.data.last_successful_sync_at) })}
+            {status.data.pending_imports > 0 &&
+              ` · ${t("admin.sync.pending", { count: status.data.pending_imports, imports: num(status.data.pending_imports) })}`}
           </Alert>
         </div>
       )}

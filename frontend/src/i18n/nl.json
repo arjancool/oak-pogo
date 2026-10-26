@@ -511,7 +511,7 @@
     "bulk": {
       "updated": "{{count}} Pokémon bijgewerkt.",
       "skipped": "{{count}} overgeslagen: {{reasons}}.",
-      "waiting_one": "{{count}} wachten op je bevestiging.",
+      "waiting_one": "{{count}} wacht op je bevestiging.",
       "waiting_other": "{{count}} wachten op je bevestiging.",
       "oakOnly": "Alleen OAK-gegevens zijn gewijzigd."
     },

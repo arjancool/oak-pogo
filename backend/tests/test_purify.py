@@ -65,7 +65,8 @@ def test_purify_follows_the_trainer_level(gamedata: GameData) -> None:
     assert isinstance(low, Purified) and low.level == 20
     unknown = purify(_subject(trainer_level=None), gamedata.forms[MACHOP], rules)
     assert isinstance(unknown, Purified) and unknown.level == 25
-    assert unknown.assumption is not None and "onbekend" in unknown.assumption
+    assert unknown.assumption is not None and "onbekend" in unknown.assumption["text"]
+    assert unknown.assumption["code"] == "TRAINER_LEVEL_ASSUMED" and unknown.assumption["data"] == {"level": 25}
 
 
 def test_purify_says_why_it_cannot(gamedata: GameData) -> None:

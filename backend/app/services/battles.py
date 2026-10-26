@@ -32,10 +32,39 @@ READINESS_BY_MODE = {
 SUPER_EFFECTIVE = 1.0
 MAX_COUNTERS = 25
 MAX_MOVE_TYPES = {1: "attack", 2: "guard", 3: "spirit"}
-TEAM_METHOD = (
+
+
+def _text(code: str, text: str, **data: Any) -> dict[str, Any]:
+    """A sentence for the interface: a code with its data, and the Dutch text as fallback (ADR-0025)."""
+    return {"code": code, "text": text, **({"data": data} if data else {})}
+
+
+TEAM_METHOD = _text(
+    "TEAM_METHOD",
     "Heuristiek: PvPoke-soortscore × IV-kwaliteit, met een straf voor gedeelde zwaktes en een bonus voor "
-    "typedekking. Geen gevechtssimulatie."
+    "typedekking. Geen gevechtssimulatie.",
 )
+TEAM_VARIANTS = (
+    ("direct", _text("TEAM_DIRECT", "Beste direct inzetbare team")),
+    ("limited", _text("TEAM_LIMITED", "Beste team met beperkte upgrades")),
+    ("future", _text("TEAM_FUTURE", "Beste toekomstige team")),
+)
+MAX_NOTES = [
+    _text(
+        "MAX_ATTACK_TYPE",
+        "Bij Dynamax heeft Max Attack het type van de snelle aanval. Gigantamax gebruikt in plaats daarvan "
+        "een vaste G-Max-aanval. Type en naam daarvan komen uit de actieve Game Data.",
+    ),
+    _text(
+        "MAX_MOVE_TYPES",
+        "Aanvalstype 1 in de export is Max Attack (bevestigd in een echte export). Type 2 (Max Guard) en "
+        "3 (Max Spirit) volgen de community-protocoldefinities en zijn niet geverifieerd.",
+    ),
+    _text(
+        "MAX_RESOURCES",
+        "Max Particles en candy komen niet in de export voor; beschikbaarheid is daarom onbekend.",
+    ),
+]
 
 
 @dataclass(slots=True)
@@ -195,11 +224,7 @@ def build_teams(
     include: list[int] | None = None,
 ) -> list[dict[str, Any]]:
     variants = []
-    for mode, label in (
-        ("direct", "Beste direct inzetbare team"),
-        ("limited", "Beste team met beperkte upgrades"),
-        ("future", "Beste toekomstige team"),
-    ):
+    for mode, label in TEAM_VARIANTS:
         pool = league_candidates(
             session,
             gd,
@@ -224,7 +249,7 @@ def build_teams(
                     "mode": mode,
                     "label": label,
                     "team": None,
-                    "message": "Te weinig geschikte Pokémon voor deze variant.",
+                    "message": _text("TEAM_TOO_FEW", "Te weinig geschikte Pokémon voor deze variant."),
                 }
             )
             continue
@@ -236,7 +261,9 @@ def build_teams(
             if value > best_value:
                 best_value, best_team, best_info = value, team, info
         if best_team is None:
-            variants.append({"mode": mode, "label": label, "team": None, "message": "Geen team gevonden."})
+            variants.append(
+                {"mode": mode, "label": label, "team": None, "message": _text("TEAM_NONE", "Geen team gevonden.")}
+            )
             continue
         members = []
         total_dust = 0
@@ -493,15 +520,16 @@ def max_attack(gd: GameData, pokemon: Pokemon) -> dict[str, Any]:
         if move is not None:
             return {"type": move["type"], "name": move["name"], "source": "gmax_move", "unknown_reason": None}
         reason = (
-            "De actieve Game Data bevat nog geen G-Max-aanvallen. Werk de Game Data bij."
+            _text("NO_GMAX_MOVES", "De actieve Game Data bevat nog geen G-Max-aanvallen. Werk de Game Data bij.")
             if gd.gmax_moves is None
-            else "Voor deze Pokémon en vorm staat geen G-Max-aanval in de Game Data."
+            else _text("NO_GMAX_MOVE", "Voor deze Pokémon en vorm staat geen G-Max-aanval in de Game Data.")
         )
         return {"type": None, "name": None, "source": None, "unknown_reason": reason}
     fast = gd.move(pokemon.move_fast_key)
     attack_type = fast.get("type") if fast else None
     if attack_type is None:
-        return {"type": None, "name": None, "source": None, "unknown_reason": "De snelle aanval is onbekend."}
+        reason = _text("FAST_MOVE_UNKNOWN", "De snelle aanval is onbekend.")
+        return {"type": None, "name": None, "source": None, "unknown_reason": reason}
     bread = gd.dataset.get("bread", {})
     move = (bread.get("max_moves") or {}).get(bread.get("max_moves_by_type", {}).get(attack_type) or "")
     return {"type": attack_type, "name": move["name"] if move else None, "source": "fast_move", "unknown_reason": None}
@@ -574,11 +602,5 @@ def max_battle_overview(session: Session, gd: GameData, account_id: int, boss_ty
     return {
         "pokemon": items,
         "advice": {"attackers": attackers, "defenders": defenders} if boss_types else None,
-        "notes": [
-            "Bij Dynamax heeft Max Attack het type van de snelle aanval. Gigantamax gebruikt in plaats daarvan "
-            "een vaste G-Max-aanval. Type en naam daarvan komen uit de actieve Game Data.",
-            "Aanvalstype 1 in de export is Max Attack (bevestigd in een echte export). Type 2 (Max Guard) en "
-            "3 (Max Spirit) volgen de community-protocoldefinities en zijn niet geverifieerd.",
-            "Max Particles en candy komen niet in de export voor; beschikbaarheid is daarom onbekend.",
-        ],
+        "notes": MAX_NOTES,
     }

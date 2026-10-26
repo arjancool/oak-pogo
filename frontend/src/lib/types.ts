@@ -1,5 +1,7 @@
 /** API response shapes without big identifiers. Pokémon payloads live in ./schemas.ts. */
 
+import type { ServerText } from "./serverText";
+
 export interface User {
   id: number;
   username: string;
@@ -162,7 +164,7 @@ export interface LeagueTarget {
   best_level: number;
   cp_now: number | null;
   readiness: string;
-  readiness_reason: string;
+  readiness_reason: ServerText;
   cost: Cost | null;
   species_rank: number | null;
   species_score: number | null;
@@ -186,17 +188,17 @@ export interface PurifyScenario {
   cp: number | null;
   hp: number | null;
   cost: { stardust: number | null; candy: number | null };
-  assumption: string | null;
+  assumption: ServerText | null;
   source: string | null;
 }
 
 export interface PokemonAnalysis {
   available: boolean;
-  reason?: string;
+  reason?: ServerText;
   game_data_version?: number;
   scenario?: PurifyScenario | null;
   rules?: { max_level: number; include_best_buddy: boolean; elite_tm_available: boolean; ready_cp_fraction: number };
-  method?: Record<string, string>;
+  method?: Record<string, ServerText>;
   leagues?: Record<string, { cap: number | null; primary_target: string | null; targets: LeagueTarget[] }>;
   current_moves?: { key: string; name: string; availability: string }[];
   second_move_cost?: { stardust: number | null; candy: number | null } | null;
@@ -225,17 +227,17 @@ export interface EvolutionPath {
   hp_after: number | null;
   leagues: Record<string, { rank: number | null; percent: number | null; readiness: string | null; over_cap: boolean; species_rank: number | null }>;
   elite_moves: string[];
-  note: string | null;
+  note: ServerText | null;
 }
 
 export interface PowerUps {
   available: boolean;
-  reason?: string;
+  reason?: ServerText;
   current?: { level: number; cp: number | null };
   scenario?: PurifyScenario | null;
   max_level?: number;
   modifiers?: { shadow: boolean; purified: boolean; lucky: boolean };
-  note?: string;
+  note?: ServerText;
   steps?: { level: number; cp: number | null; cost: Cost | null }[];
   candy_available?: number | null;
 }

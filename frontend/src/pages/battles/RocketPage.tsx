@@ -9,6 +9,7 @@ import { TypeBadge } from "../../components/pokemon";
 import { Alert, Badge, Button, Card, PageHeader, Spinner } from "../../components/ui";
 import { api, errorMessage } from "../../lib/api";
 import { num } from "../../lib/format";
+import { type ServerText, serverText } from "../../lib/serverText";
 import { SpeciesPicker, type SpeciesOption } from "./shared";
 
 interface Result {
@@ -22,7 +23,7 @@ function Rocket({ accountId }: { accountId: number }) {
   const [opponents, setOpponents] = useState<SpeciesOption[]>([]);
   const run = useMutation({
     mutationFn: () =>
-      api.post<{ lineup_note: string; method: string; results: Result[] }>("/api/v1/battles/rocket-counters", {
+      api.post<{ lineup_note: ServerText; method: ServerText; results: Result[] }>("/api/v1/battles/rocket-counters", {
         account_id: accountId,
         opponent_keys: opponents.map((o) => o.key),
       }),
@@ -60,7 +61,7 @@ function Rocket({ accountId }: { accountId: number }) {
       {run.error && <Alert tone="error">{errorMessage(run.error)}</Alert>}
       {run.data && (
         <>
-          <p className="mt-4 text-xs text-muted">{run.data.method}</p>
+          <p className="mt-4 text-xs text-muted">{serverText("battles", run.data.method)}</p>
           <div className="mt-2 grid gap-4 lg:grid-cols-3">
             {run.data.results.map((result) => (
               <Card key={result.opponent} title={result.opponent} actions={result.types.map((type) => <TypeBadge key={type} type={type} />)}>

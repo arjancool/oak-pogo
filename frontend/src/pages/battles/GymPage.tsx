@@ -8,6 +8,7 @@ import { PokemonSprite, ScoreMeter, TypeBadge } from "../../components/pokemon";
 import { Alert, Badge, Card, EmptyState, PageHeader, Spinner } from "../../components/ui";
 import { api, errorMessage } from "../../lib/api";
 import { level, num } from "../../lib/format";
+import { type ServerText, serverText } from "../../lib/serverText";
 
 interface Defender {
   pokemon_id: number;
@@ -24,7 +25,7 @@ interface Defender {
   value: number | null;
   fast_move: string | null;
   charged_moves: string[];
-  reasons: string[];
+  reasons: ServerText[];
   confidence: "high" | "medium" | "low";
   same_species: number;
   in_gym: boolean | null;
@@ -34,10 +35,10 @@ interface GymOverview {
   defenders: Defender[];
   excluded: Partial<Record<"not_deployable" | "unknown_form" | "unknown_stats", number>>;
   reference: { name: string | null; level: number } | null;
-  unknown_reason: string | null;
-  method: string;
-  notes: string[];
-  source: string;
+  unknown_reason: ServerText | null;
+  method: ServerText;
+  notes: ServerText[];
+  source: ServerText;
   game_data_version: number;
 }
 
@@ -69,21 +70,21 @@ function Gyms({ accountId }: { accountId: number }) {
       <PageHeader title={t("battles.gyms.title")} description={t("battles.gyms.description")} />
       {query.isLoading && <Spinner />}
       {query.error && <Alert tone="error">{errorMessage(query.error)}</Alert>}
-      {data?.unknown_reason && <Alert tone="warning">{data.unknown_reason}</Alert>}
+      {data?.unknown_reason && <Alert tone="warning">{serverText("battles", data.unknown_reason)}</Alert>}
       {data && !data.unknown_reason && (
         <>
           <Card className="mb-5">
             <details>
               <summary className="cursor-pointer text-sm font-medium">{t("battles.gyms.howCalculated")}</summary>
-              <p className="mt-2 text-sm text-muted">{data.method}</p>
+              <p className="mt-2 text-sm text-muted">{serverText("battles", data.method)}</p>
               <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-muted">
                 {data.notes.map((note) => (
-                  <li key={note}>{note}</li>
+                  <li key={note.code ?? note.text}>{serverText("battles", note)}</li>
                 ))}
               </ul>
             </details>
             <p className="mt-3 text-xs text-muted">
-              {t("battles.gyms.source", { source: data.source, version: data.game_data_version })}
+              {t("battles.gyms.source", { source: serverText("battles", data.source), version: data.game_data_version })}
               {excluded ? ` ${excluded}` : ""}
             </p>
           </Card>
@@ -116,7 +117,7 @@ function Gyms({ accountId }: { accountId: number }) {
                       </p>
                       <ul className="mt-1 space-y-0.5 text-xs text-muted">
                         {d.reasons.map((reason) => (
-                          <li key={reason}>{reason}</li>
+                          <li key={reason.code ?? reason.text}>{serverText("battles", reason)}</li>
                         ))}
                         <li>{t("battles.gyms.confidence", { level: t(confidenceLabels[d.confidence]) })}</li>
                       </ul>

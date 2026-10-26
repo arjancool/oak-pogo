@@ -79,7 +79,7 @@ def test_shadow_lowers_bulk_by_the_game_data_multiplier(container: Any, account:
     assert shadow is not None and shadow["shadow"] is True
     assert shadow["bulk"] == pytest.approx(target["bulk"] * multiplier, rel=1e-3)
     assert shadow["value"] <= target["value"]
-    assert any("Shadow" in reason for reason in shadow["reasons"])
+    assert any(reason["code"] == "GYM_SHADOW" and "Shadow" in reason["text"] for reason in shadow["reasons"])
 
 
 def test_dataset_without_eligibility_says_so(container: Any, account: int, gamedata: GameData) -> None:

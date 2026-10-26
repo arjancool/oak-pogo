@@ -65,7 +65,7 @@ describe("Pokédex", () => {
       mega: [],
     },
     moves: { fast: [], charged: [] },
-    cp_table: [{ level: 20, label: "Raid en onderzoek", cp: 1000 }],
+    cp_table: [{ level: 20, label: { code: "RAID_RESEARCH", text: "Raid en onderzoek" }, cp: 1000 }],
     leagues: [],
     gym: null,
     evolves_from: [{ key: "147:DRATININORMAL", dex: 147, name: "Dratini" }],

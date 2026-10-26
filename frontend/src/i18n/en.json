@@ -1904,6 +1904,65 @@
     },
     "actionList": {
       "SEARCH_NOTE": "Pokémon GO cannot search by Pokémon ID. Use the Pokédex number with the exact CP per species, and check the Pokémon in the game before you transfer it. '&!favorite&!shiny&!lucky' excludes even more to be safe."
+    },
+    "battles": {
+      "LEAGUE_METHOD": "For each Pokémon, the most competitive species it can become (PvPoke rank), with its IV rank for that species.",
+      "LEAGUE_METHOD_cup": "For each Pokémon, the most competitive species it can become (PvPoke rank), with its IV rank for that species. Only Pokémon that may enter under the cup's rules, as PvPoke describes them.",
+      "LEAGUE_METHOD_unranked_cup": "For each Pokémon, the most competitive species it can become (PvPoke rank), with its IV rank for that species. Only Pokémon that may enter under the cup's rules, as PvPoke describes them. PvPoke has no rankings for this cup, so the order follows the IV rank only, not how strong a species is.",
+      "TEAM_METHOD": "Heuristic: PvPoke species score × IV quality, with a penalty for shared weaknesses and a bonus for type coverage. Not a battle simulation.",
+      "TEAM_DIRECT": "Best team that is ready now",
+      "TEAM_LIMITED": "Best team with limited upgrades",
+      "TEAM_FUTURE": "Best future team",
+      "TEAM_TOO_FEW": "Too few suitable Pokémon for this variant.",
+      "TEAM_NONE": "No team found.",
+      "RAID_METHOD": "Simplified PvE model: cycle DPS with STAB, type advantage and the Shadow bonus. No weather, no energy from damage taken, no attacks from the boss. Meant for comparing attackers.",
+      "ROCKET_METHOD": "Heuristic based on type advantage, PvP move values, your Pokémon's own stats and resistance. Not a simulation.",
+      "ROCKET_NO_LINEUPS": "OAK has no validated, dated source for the current Team GO Rocket lineups. Choose the opponents yourself.",
+      "MAX_METHOD": "Attackers by the type advantage of Max Attack, defenders by resistance and Defense. Heuristic.",
+      "MAX_ATTACK_TYPE": "With Dynamax, Max Attack has the type of the fast move. Gigantamax uses a fixed G-Max move instead. Its type and name come from the active Game Data.",
+      "MAX_MOVE_TYPES": "Move type 1 in the export is Max Attack (confirmed in a real export). Types 2 (Max Guard) and 3 (Max Spirit) follow the community protocol definitions and are not verified.",
+      "MAX_RESOURCES": "Max Particles and Candy are not in the export, so their availability is unknown.",
+      "NO_GMAX_MOVES": "The active Game Data has no G-Max moves yet. Update the Game Data.",
+      "NO_GMAX_MOVE": "The Game Data has no G-Max move for this Pokémon and form.",
+      "FAST_MOVE_UNKNOWN": "The fast move is unknown.",
+      "GYM_METHOD": "Defense value = effective Defense × HP, compared with the strongest possible defender in the Game Data. The higher it is, the more attacks an attacker needs. The defender's own moves and the loss of motivation are not counted.",
+      "GYM_DEPLOYABLE": "Whether a Pokémon may defend a gym comes from the Game Data (isDeployable). Legendary, Mythical and Ultra Beasts usually may not, but the Game Data makes exceptions, such as Meltan and Melmetal.",
+      "GYM_ONE_PER_SPECIES": "Each species may be in the same gym only once, so the list shows only your strongest Pokémon of each species.",
+      "GYM_MOTIVATION": "How fast a defender loses motivation is not in the Game Data. According to community measurements, it goes faster at a higher CP. OAK does not take this into account.",
+      "GYM_IN_GYM": "If a Pokémon is already in a gym, the last import shows it. You cannot place such a Pokémon again. OAK reads this from the export. Whether PGSharp always includes it has not been confirmed yet.",
+      "GYM_TYPES": "Preferably choose a type that the other defenders in the gym do not have yet.",
+      "GYM_OUTDATED": "The active Game Data does not say yet which Pokémon may defend a gym. Update the Game Data.",
+      "GYM_SOURCE": "PGSharp export and Game Data",
+      "GYM_ALLOWED": "May defend a gym according to the Game Data.",
+      "GYM_STATS": "{{hp, number}} HP and an effective Defense of {{defense, number}}.",
+      "GYM_VALUE": "Defense value {{value}} out of 100. 100 stands for {{reference}} at level {{level}} with perfect IVs.",
+      "GYM_SHADOW": "Shadow: Defense × {{multiplier, number(minimumFractionDigits: 2; maximumFractionDigits: 2)}} according to the Game Data, so less sturdy than without Shadow."
+    },
+    "readiness": {
+      "LEVEL_UNKNOWN": "Level unknown",
+      "OVER_CAP_AFTER_EVOLUTION": "Over the CP limit after evolving",
+      "OVER_CAP": "Over the CP limit",
+      "ABOVE_BEST_LEVEL": "Already above the best level",
+      "READY_AFTER_EVOLUTION": "Ready after evolving",
+      "READY_AFTER_EVOLUTION_AND_POWER_UP": "Ready after evolving and powering up",
+      "READY_NOW": "Ready now",
+      "READY_AFTER_POWER_UP": "Ready after powering up"
+    },
+    "analysis": {
+      "NO_GAME_DATA": "No active Game Data.",
+      "NO_GAME_DATA_OR_FORM": "No Game Data, or the form is unknown.",
+      "NO_GAME_DATA_OR_LEVEL": "No Game Data, or the level is unknown.",
+      "METHOD_IV_RANK": "Rank of the IV combination within this species and league (1–4096), at the highest level under the CP limit, sorted by stat product.",
+      "METHOD_SPECIES_RANK": "Position of the species in the PvPoke rankings for this league.",
+      "METHOD_READINESS": "Whether this Pokémon is ready now, after powering up or after evolving.",
+      "TRAINER_LEVEL_ASSUMED": "Trainer level unknown. OAK assumes trainer level {{level}} or higher.",
+      "CP_AFTER_EVOLUTION_UNKNOWN": "CP after evolving unknown: the level or IVs are missing.",
+      "CANDY_ROUNDING": "Candy costs for Shadow and Purified are rounded up; the game does not document the rounding."
+    },
+    "pokedex": {
+      "RAID_RESEARCH": "Raids and research",
+      "WEATHER_BOOST": "Weather boosted",
+      "LEVEL": "Level {{level}}"
     }
   }
 }

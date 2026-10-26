@@ -8,6 +8,7 @@ import { TypeBadge } from "../../components/pokemon";
 import { Alert, Badge, Button, Card, PageHeader, SortHeader, Spinner } from "../../components/ui";
 import { api, errorMessage } from "../../lib/api";
 import { level, num } from "../../lib/format";
+import { type ServerText, serverText } from "../../lib/serverText";
 import { sortRows } from "../../lib/sort";
 import { useUrlState } from "../../lib/useUrlState";
 import { SpeciesPicker, type SpeciesOption } from "./shared";
@@ -45,7 +46,7 @@ function Raids({ accountId }: { accountId: number }) {
   );
   const run = useMutation({
     mutationFn: (bossKey: string | null) =>
-      api.post<{ method: string; counters: Counter[]; boss: { name: string; types: string[] } | null; mode: string }>("/api/v1/battles/raid-counters", {
+      api.post<{ method: ServerText; counters: Counter[]; boss: { name: string; types: string[] } | null; mode: string }>("/api/v1/battles/raid-counters", {
         account_id: accountId,
         boss_key: bossKey,
       }),
@@ -79,7 +80,7 @@ function Raids({ accountId }: { accountId: number }) {
       {run.error && <Alert tone="error">{errorMessage(run.error)}</Alert>}
       {data && (
         <Card title={data.boss ? t("battles.raids.countersAgainst", { name: data.boss.name }) : t("battles.raids.bestGeneral")}>
-          <Alert tone="info">{data.method}</Alert>
+          <Alert tone="info">{serverText("battles", data.method)}</Alert>
           <p className="mt-2 text-xs text-muted">{t("battles.raids.intro", { count: data.counters.length })}</p>
           <div className="mt-3 overflow-x-auto">
             <table className="w-full text-sm [&_td]:pr-3 [&_th]:pr-3">

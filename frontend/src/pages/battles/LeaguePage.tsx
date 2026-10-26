@@ -9,6 +9,7 @@ import { Alert, Badge, Button, Card, EmptyState, PageHeader, Select, SortHeader,
 import { api, errorMessage } from "../../lib/api";
 import { ivs, level, num, pct } from "../../lib/format";
 import { leagueNames } from "../../lib/i18n";
+import { type ServerText, serverText } from "../../lib/serverText";
 import { useUrlState } from "../../lib/useUrlState";
 import { CupRules, type LeagueInfo } from "./shared";
 
@@ -57,7 +58,7 @@ function League({ accountId, league }: { accountId: number; league: string }) {
   const query = useQuery({
     queryKey: ["league", league, accountId, readiness, sort],
     queryFn: () =>
-      api.get<{ max_cp: number | null; method: string; info: LeagueInfo; items: LeagueItem[]; total: number }>(`/api/v1/battles/league/${league}`, {
+      api.get<{ max_cp: number | null; method: ServerText; info: LeagueInfo; items: LeagueItem[]; total: number }>(`/api/v1/battles/league/${league}`, {
         account_id: accountId,
         readiness: readiness || undefined,
         sort,
@@ -73,7 +74,7 @@ function League({ accountId, league }: { accountId: number; league: string }) {
         title={query.data?.info.name ?? leagueNames[league] ?? league}
         description={
           query.data
-            ? `${query.data.max_cp ? t("battles.shared.maxCp", { cp: num(query.data.max_cp) }) : t("battles.shared.noCpLimit")} ${query.data.method}`
+            ? `${query.data.max_cp ? t("battles.shared.maxCp", { cp: num(query.data.max_cp) }) : t("battles.shared.noCpLimit")} ${serverText("battles", query.data.method)}`
             : undefined
         }
         actions={

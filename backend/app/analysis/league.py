@@ -62,7 +62,7 @@ class LeagueTarget:
     best_level: float
     cp_now: int | None
     readiness: str  # direct | power_up | evolution | not_suitable | unknown
-    readiness_reason: str
+    readiness_reason: dict[str, Any]  # {"code", "text"}: a sentence for the interface (ADR-0025)
     cost: Cost | None
     species_rank: int | None
     species_score: float | None
@@ -210,6 +210,11 @@ def _display_name(form: Mapping[str, Any]) -> str:
     return f"{form['name']} ({label})" if label else str(form["name"])
 
 
+def _reason(code: str, text: str) -> dict[str, Any]:
+    """Why a target has its readiness: a code for the interface, and the Dutch text as fallback."""
+    return {"code": code, "text": text}
+
+
 def _readiness(
     cap: int | None,
     best_cp: int,
@@ -218,24 +223,23 @@ def _readiness(
     level: float | None,
     is_evolution: bool,
     ready_fraction: float,
-) -> tuple[str, str]:
+) -> tuple[str, dict[str, Any]]:
     if cp_now is None or level is None:
-        return "unknown", "Level onbekend"
+        return "unknown", _reason("LEVEL_UNKNOWN", "Level onbekend")
     if cap is not None and cp_now > cap:
         if is_evolution:
-            return "not_suitable", "Na evolutie boven de CP-limiet"
-        return "not_suitable", "Boven de CP-limiet"
+            return "not_suitable", _reason("OVER_CAP_AFTER_EVOLUTION", "Na evolutie boven de CP-limiet")
+        return "not_suitable", _reason("OVER_CAP", "Boven de CP-limiet")
     if level > best_level:
-        return "not_suitable", "Al boven het optimale level"
+        return "not_suitable", _reason("ABOVE_BEST_LEVEL", "Al boven het optimale level")
     usable = cp_now >= best_cp * ready_fraction
     if is_evolution:
-        return (
-            "evolution",
-            "Inzetbaar na evolutie" if usable else "Inzetbaar na evolutie en power-up",
-        )
+        if usable:
+            return "evolution", _reason("READY_AFTER_EVOLUTION", "Inzetbaar na evolutie")
+        return "evolution", _reason("READY_AFTER_EVOLUTION_AND_POWER_UP", "Inzetbaar na evolutie en power-up")
     if usable:
-        return "direct", "Direct inzetbaar"
-    return "power_up", "Inzetbaar na power-up"
+        return "direct", _reason("READY_NOW", "Direct inzetbaar")
+    return "power_up", _reason("READY_AFTER_POWER_UP", "Inzetbaar na power-up")
 
 
 def best_target(targets: list[LeagueTarget]) -> LeagueTarget | None:

@@ -297,7 +297,7 @@ export const pokedexSpecies = z.object({
     mega: z.array(z.string()),
   }),
   moves: z.object({ fast: z.array(pokedexMove), charged: z.array(pokedexMove) }),
-  cp_table: z.array(z.object({ level: z.number(), label: z.string(), cp: z.number() })),
+  cp_table: z.array(z.object({ level: z.number(), label: reason, cp: z.number() })),
   leagues: z.array(
     z.object({
       league: z.string(),

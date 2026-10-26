@@ -139,7 +139,7 @@ def league_info(gd: GameData, league_id: str) -> dict[str, Any] | None:
 def _known_league(gd: GameData, league_id: str) -> dict[str, Any]:
     info = league_info(gd, league_id)
     if info is None:
-        raise NotFoundError("Onbekende league of cup. Misschien staat hij niet meer in de Game Data.")
+        raise NotFoundError("Onbekende league of cup. Misschien staat hij niet meer in de Game Data.", context="league")
     return info
 
 
@@ -165,7 +165,7 @@ def league_overview(
     container: Container = Depends(get_container),
 ) -> dict[str, Any]:
     if sort.removeprefix("-") not in LEAGUE_SORTS:
-        raise ValidationFailedError(f"Onbekende sortering '{sort}'.", code="UNKNOWN_SORT")
+        raise ValidationFailedError(f"Onbekende sortering '{sort}'.", code="UNKNOWN_SORT", data={"sort": sort})
     gd = _gd(container)
     info = _known_league(gd, league)
     account = owned_account(session, auth.user, account_id)
@@ -339,11 +339,11 @@ def save_team(
         session.scalars(select(Pokemon.id).where(Pokemon.trainer_account_id == account.id, Pokemon.id.in_(ids)))
     )
     if set(ids) - owned:
-        raise ValidationFailedError("Een teamlid hoort niet bij dit account.")
+        raise ValidationFailedError("Een teamlid hoort niet bij dit account.", context="team_member")
     if team_id is not None:
         team = session.get(BattleTeam, team_id)
         if team is None or team.trainer_account_id != account.id:
-            raise NotFoundError("Team niet gevonden.")
+            raise NotFoundError("Team niet gevonden.", context="team")
         team.name, team.kind, team.league, team.notes, team.updated_at = (
             body.name,
             body.kind,
@@ -387,7 +387,7 @@ def delete_team(
     account = owned_account(session, auth.user, account_id)
     team = session.get(BattleTeam, team_id)
     if team is None or team.trainer_account_id != account.id:
-        raise NotFoundError("Team niet gevonden.")
+        raise NotFoundError("Team niet gevonden.", context="team")
     session.delete(team)
 
 
@@ -436,11 +436,11 @@ def _boss(gd: GameData, key: str) -> dict[str, Any]:
     form_key, _, mega_id = key.partition("|")
     form = gd.forms.get(form_key)
     if form is None:
-        raise NotFoundError("Onbekende tegenstander.")
+        raise NotFoundError("Onbekende tegenstander.", context="opponent")
     if mega_id:
         mega = next((m for m in form.get("mega", []) if m["id"] == mega_id and m.get("stats")), None)
         if mega is None:
-            raise NotFoundError("Onbekende mega-vorm.")
+            raise NotFoundError("Onbekende mega-vorm.", context="mega_form")
         return {
             "name": f"{form['name']} ({mega_id.removeprefix('TEMP_EVOLUTION_').title()})",
             "types": mega.get("types") or form.get("types", []),

@@ -244,7 +244,7 @@ def set_resource(
     """PGSharp does not export species candy; the user may enter it by hand (spec §16.3)."""
     account = owned_account(session, auth.user, body.account_id)
     if not re.fullmatch(r"FAMILY_[A-Z0-9_]+", body.key):
-        raise ValidationFailedError("Gebruik een familie-ID, bijvoorbeeld FAMILY_MAGIKARP.")
+        raise ValidationFailedError("Gebruik een familie-ID, bijvoorbeeld FAMILY_MAGIKARP.", context="family_id")
     row = session.get(ManualResource, (account.id, body.kind, body.key))
     now = container.clock.now()
     if row is None:

@@ -291,11 +291,11 @@ def species(
     gd = _gd(container)
     record = gd.species_record(dex)
     if record is None:
-        raise NotFoundError("Deze Pokémon staat niet in de actieve Game Data.")
+        raise NotFoundError("Deze Pokémon staat niet in de actieve Game Data.", context="species")
     keys = species_forms(gd, dex)
     key = shown_key(gd, form) if form else (keys[0] if keys else None)
     if key is None or key not in keys:
-        raise NotFoundError("Deze vorm staat niet in de actieve Game Data.")
+        raise NotFoundError("Deze vorm staat niet in de actieve Game Data.", context="form")
     data = gd.forms[key]
     direct = [p for p in evolution_paths(gd.forms, key) if len(p.steps) == 1]
     result: dict[str, Any] = {

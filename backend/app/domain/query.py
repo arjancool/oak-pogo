@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Literal
+from typing import Any, Literal
 
 Op = Literal["=", ">", ">=", "<", "<=", "range", "contains"]
 
@@ -89,10 +89,11 @@ FLAG_ALIASES = {
 }
 TEXT_FIELDS = {"move", "family", "type", "tag", "status", "league", "form", "name"}
 # Terms users may expect but OAK cannot answer from the database alone. They fail loudly
-# instead of silently matching nothing.
+# instead of silently matching nothing. Each has the context of its error and the message.
+_EVOLVABLE = "Zoeken op evolueerbaar kan nog niet. De Evolutieplanner toont welke evoluties mogelijk zijn."
 UNSUPPORTED_TERMS = {
-    "evolvable": "Zoeken op evolueerbaar kan nog niet. De Evolutieplanner toont welke evoluties mogelijk zijn.",
-    "evolueerbaar": "Zoeken op evolueerbaar kan nog niet. De Evolutieplanner toont welke evoluties mogelijk zijn.",
+    "evolvable": ("evolvable", _EVOLVABLE),
+    "evolueerbaar": ("evolvable", _EVOLVABLE),
 }
 _COMPARISON = re.compile(r"^(?P<field>[a-z_]+)(?P<op>>=|<=|>|<|:|=)(?P<value>.+)$")
 _RANGE = re.compile(r"^(?P<low>\d+(?:\.\d+)?)-(?P<high>\d+(?:\.\d+)?)$")
@@ -102,7 +103,14 @@ MAX_TERMS = 20
 
 
 class QuerySyntaxError(ValueError):
-    pass
+    """A search OAK cannot read. The API sends it as error QUERY_SYNTAX: ``context`` names the
+    problem and ``data`` holds the values in the Dutch message (ADR-0025)."""
+
+    def __init__(self, message: str, context: str, data: dict[str, Any] | None = None) -> None:
+        super().__init__(message)
+        self.message = message
+        self.context = context
+        self.data = data or {}
 
 
 @dataclass(frozen=True, slots=True)
@@ -117,7 +125,7 @@ class Term:
 def parse_query(query: str) -> list[Term]:
     tokens = [t for t in re.split(r"[\s&]+", query.strip().lower()) if t]
     if len(tokens) > MAX_TERMS:
-        raise QuerySyntaxError(f"Maximaal {MAX_TERMS} zoektermen.")
+        raise QuerySyntaxError(f"Maximaal {MAX_TERMS} zoektermen.", "too_many_terms", {"max": MAX_TERMS})
     return [_parse_token(token) for token in tokens]
 
 
@@ -125,7 +133,7 @@ def _parse_token(token: str) -> Term:
     negate = token.startswith("!")
     body = token[1:] if negate else token
     if not body:
-        raise QuerySyntaxError("Losse '!' zonder zoekterm.")
+        raise QuerySyntaxError("Losse '!' zonder zoekterm.", "lone_negation")
 
     dex = _DEX.match(body)
     if dex:
@@ -134,11 +142,12 @@ def _parse_token(token: str) -> Term:
     if ivs:
         values = tuple(int(v) for v in ivs.groups())
         if any(v > 15 for v in values):
-            raise QuerySyntaxError("IV's lopen van 0 tot 15.")
+            raise QuerySyntaxError("IV's lopen van 0 tot 15.", "iv_value")
         return Term("ivs", "ivs", "=", values, negate)  # type: ignore[arg-type]
 
     if body in UNSUPPORTED_TERMS:
-        raise QuerySyntaxError(UNSUPPORTED_TERMS[body])
+        context, message = UNSUPPORTED_TERMS[body]
+        raise QuerySyntaxError(message, context)
     flag = FLAG_ALIASES.get(body, body)
     if flag in FLAG_TERMS:
         return Term("flag", flag, negate=negate)
@@ -149,10 +158,10 @@ def _parse_token(token: str) -> Term:
         if field == "ivs":
             ivs_value = _IVS.match(value)
             if not ivs_value:
-                raise QuerySyntaxError("Gebruik ivs:15/15/15.")
+                raise QuerySyntaxError("Gebruik ivs:15/15/15.", "ivs_format")
             numbers = tuple(int(v) for v in ivs_value.groups())
             if any(v > 15 for v in numbers):
-                raise QuerySyntaxError("IV's lopen van 0 tot 15.")
+                raise QuerySyntaxError("IV's lopen van 0 tot 15.", "iv_value")
             return Term("ivs", "ivs", "=", numbers, negate)  # type: ignore[arg-type]
         if field in NUMERIC_FIELDS:
             column = NUMERIC_FIELDS[field]
@@ -165,11 +174,13 @@ def _parse_token(token: str) -> Term:
             try:
                 number = float(value)
             except ValueError as exc:
-                raise QuerySyntaxError(f"'{value}' is geen getal voor {field}.") from exc
+                raise QuerySyntaxError(
+                    f"'{value}' is geen getal voor {field}.", "not_a_number", {"value": value, "field": field}
+                ) from exc
             return Term("numeric", column, op, number, negate)  # type: ignore[arg-type]
         if field in TEXT_FIELDS and op in (":", "="):
             return Term("text", field, "contains", value.replace("_", " ").strip(), negate)
-        raise QuerySyntaxError(f"Onbekend zoekveld '{field}'.")
+        raise QuerySyntaxError(f"Onbekend zoekveld '{field}'.", "unknown_field", {"field": field})
 
     if re.fullmatch(r"20\d{2}", body):
         return Term("numeric", "caught_year", "=", float(body), negate)

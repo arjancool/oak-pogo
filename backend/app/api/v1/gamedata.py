@@ -141,12 +141,14 @@ async def upload(
                 continue
             content = await upload_file.read(MAX_GAMEDATA_UPLOAD + 1)
             if len(content) > MAX_GAMEDATA_UPLOAD:
-                raise PayloadTooLargeError("Bestand te groot.")
+                raise PayloadTooLargeError("Bestand te groot.", context="game_data_file")
             files[source_id] = content
     finally:
         await form.close()
     if "pokeminers" not in files:
-        raise ValidationFailedError("Het Game Master-bestand van PokeMiners is verplicht.", code="FILE_REQUIRED")
+        raise ValidationFailedError(
+            "Het Game Master-bestand van PokeMiners is verplicht.", code="FILE_REQUIRED", context="game_master"
+        )
     result = await run_in_threadpool(container.gamedata.update_from_upload, files)
     if result.status == "activated":
         enqueue_rederive(container)

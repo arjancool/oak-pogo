@@ -73,8 +73,10 @@ De API is REST met JSON onder `/api/v1`. De OpenAPI-beschrijving op `/api/openap
 Fouten hebben één vorm:
 
 ```json
-{"error": {"code": "NOT_FOUND", "message": "Pokémon niet gevonden.", "details": null}}
+{"error": {"code": "NOT_FOUND", "message": "Pokémon niet gevonden.", "details": null, "data": {"context": "pokemon"}}}
 ```
+
+De melding is Nederlands. `data` bevat iedere waarde uit de melding, zoals een jaar of een limiet. Een code met meer dan één melding krijgt per melding een `context` in `data`. De interface toont de melding in de gekozen taal met de tekst `server.errors.<CODE>` of `server.errors.<CODE>_<context>`, en anders de Nederlandse melding (ADR-0025). `tests/test_error_texts.py` controleert dat iedere melding zo'n tekst heeft. `details` bevat gegevens voor programma's, zoals het aantal seconden tot een nieuwe poging.
 
 ## Frontend
 

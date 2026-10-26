@@ -112,9 +112,17 @@ class CleanupRules:
 
     def validate(self) -> CleanupRules:
         if not 0 <= self.keep_min_per_species <= MAX_KEEP_MIN:
-            raise ValidationFailedError("keep_min_per_species moet tussen 0 en 10 liggen.")
+            raise ValidationFailedError(
+                f"keep_min_per_species moet tussen 0 en {MAX_KEEP_MIN} liggen.",
+                context="out_of_range",
+                data={"field": "keep_min_per_species", "min": 0, "max": MAX_KEEP_MIN},
+            )
         if not 0.5 <= self.ready_cp_fraction <= 1.0:
-            raise ValidationFailedError("ready_cp_fraction moet tussen 0,5 en 1 liggen.")
+            raise ValidationFailedError(
+                "ready_cp_fraction moet tussen 0,5 en 1 liggen.",
+                context="out_of_range",
+                data={"field": "ready_cp_fraction", "min": 0.5, "max": 1},
+            )
         thresholds = (
             self.meta_rank_threshold,
             self.good_iv_rank_threshold,
@@ -123,15 +131,21 @@ class CleanupRules:
             self.species_rank_full,
         )
         if min(thresholds) < 1:
-            raise ValidationFailedError("Drempels moeten positief zijn.")
+            raise ValidationFailedError("Drempels moeten positief zijn.", context="thresholds")
         if self.species_rank_full > self.meta_rank_threshold:
-            raise ValidationFailedError("species_rank_full mag niet boven meta_rank_threshold liggen.")
+            raise ValidationFailedError(
+                "species_rank_full mag niet boven meta_rank_threshold liggen.", context="species_rank_full"
+            )
         if not 1 <= self.good_iv_rank_threshold <= IV_RANK_MAX or not 1 <= self.build_iv_rank_threshold <= IV_RANK_MAX:
-            raise ValidationFailedError("Een IV-rang ligt tussen 1 en 4096.")
+            raise ValidationFailedError("Een IV-rang ligt tussen 1 en 4096.", context="iv_rank")
         if not 1 <= self.max_level <= 60:
-            raise ValidationFailedError("max_level is ongeldig.")
+            raise ValidationFailedError("max_level is ongeldig.", context="max_level")
         if not 0 <= self.event_hold_days <= MAX_EVENT_HOLD_DAYS:
-            raise ValidationFailedError(f"event_hold_days moet tussen 0 en {MAX_EVENT_HOLD_DAYS} liggen.")
+            raise ValidationFailedError(
+                f"event_hold_days moet tussen 0 en {MAX_EVENT_HOLD_DAYS} liggen.",
+                context="out_of_range",
+                data={"field": "event_hold_days", "min": 0, "max": MAX_EVENT_HOLD_DAYS},
+            )
         for item in fields(self):
             if item.name.startswith("keep_points_") or item.name in (
                 "keep_weight_battle",
@@ -141,9 +155,15 @@ class CleanupRules:
             ):
                 value = getattr(self, item.name)
                 if not 0 <= value <= SCORE_MAX:
-                    raise ValidationFailedError(f"{item.name} moet tussen 0 en 100 liggen.")
+                    raise ValidationFailedError(
+                        f"{item.name} moet tussen 0 en {SCORE_MAX} liggen.",
+                        context="out_of_range",
+                        data={"field": item.name, "min": 0, "max": SCORE_MAX},
+                    )
         if self.review_threshold > self.keep_threshold:
-            raise ValidationFailedError("De reviewdrempel mag niet boven de bewaardrempel liggen.")
+            raise ValidationFailedError(
+                "De reviewdrempel mag niet boven de bewaardrempel liggen.", context="review_threshold"
+            )
         return self
 
     def to_dict(self) -> dict[str, Any]:
@@ -162,4 +182,4 @@ class CleanupRules:
         try:
             return cls(**values).validate()
         except TypeError as exc:
-            raise ValidationFailedError("Ongeldige regelinstellingen.") from exc
+            raise ValidationFailedError("Ongeldige regelinstellingen.", context="rules") from exc

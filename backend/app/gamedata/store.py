@@ -186,7 +186,9 @@ class GameDataStore:
 
     def update_from_upload(self, files: Mapping[str, bytes]) -> UpdateResult:
         if "pokeminers" not in files:
-            raise ValidationFailedError("Een PokeMiners Game Master-bestand (latest.json) is verplicht.")
+            raise ValidationFailedError(
+                "Een PokeMiners Game Master-bestand (latest.json) is verplicht.", context="game_master_required"
+            )
         now = datetime.now(UTC).isoformat()
         downloads = {
             sid: Downloaded(id=sid, url="upload", content=content, etag=None, retrieved_at=now)
@@ -198,11 +200,13 @@ class GameDataStore:
         with self.db.immediate_transaction() as session:
             target = session.get(GameDataVersion, version_id)
             if target is None:
-                raise NotFoundError("Game Data-versie niet gevonden.")
+                raise NotFoundError("Game Data-versie niet gevonden.", context="game_data_version")
             if target.status not in ("ready", "archived", "active") or not target.file_name:
-                raise ConflictError("Deze versie kan niet geactiveerd worden.")
+                raise ConflictError("Deze versie kan niet geactiveerd worden.", context="version_not_activatable")
             if not self._path(target.file_name).exists():
-                raise ConflictError("Het bestand van deze versie is niet meer aanwezig.")
+                raise ConflictError(
+                    "Het bestand van deze versie is niet meer aanwezig.", context="version_file_missing"
+                )
             for version in session.scalars(select(GameDataVersion).where(GameDataVersion.status == "active")):
                 if version.id != version_id:
                     version.status = "archived"

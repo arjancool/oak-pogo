@@ -33,13 +33,13 @@ log = logging.getLogger("oak.ingest")
 async def read_limited_body(request: Request, max_bytes: int) -> bytes:
     declared = request.headers.get("content-length")
     if declared and declared.isdigit() and int(declared) > max_bytes:
-        raise PayloadTooLargeError("De export is groter dan de ingestelde limiet.")
+        raise PayloadTooLargeError("De export is groter dan de ingestelde limiet.", context="export")
     chunks: list[bytes] = []
     size = 0
     async for chunk in request.stream():
         size += len(chunk)
         if size > max_bytes:
-            raise PayloadTooLargeError("De export is groter dan de ingestelde limiet.")
+            raise PayloadTooLargeError("De export is groter dan de ingestelde limiet.", context="export")
         chunks.append(chunk)
     return b"".join(chunks)
 
@@ -53,7 +53,7 @@ async def pgsharp_webhook(token: str, request: Request, container: Container = D
     ip = _client_ip(request)
     blocked = container.webhook_invalid_by_ip.blocked(f"ip:{ip}")
     if blocked:
-        raise RateLimitedError("Te veel ongeldige verzoeken.", retry_after=blocked)
+        raise RateLimitedError("Te veel ongeldige verzoeken.", retry_after=blocked, context="webhook_invalid")
     identifier = parse_webhook_token(token)
     credential = await run_in_threadpool(_find_credential, container, identifier, token)
     if credential is None:
@@ -63,7 +63,7 @@ async def pgsharp_webhook(token: str, request: Request, container: Container = D
     credential_id, account_id = credential
     retry = container.webhook_by_token.hit(f"wh:{credential_id}")
     if retry:
-        raise RateLimitedError("Te veel exports in korte tijd voor deze webhook.", retry_after=retry)
+        raise RateLimitedError("Te veel exports in korte tijd voor deze webhook.", retry_after=retry, context="webhook")
 
     body = await read_limited_body(request, container.settings.max_import_bytes)
     incoming = IncomingPayload(

@@ -80,7 +80,9 @@ def decode_payload(payload: IncomingPayload, max_bytes: int) -> DecodedPayload:
     encoding = (payload.content_encoding or "").lower().strip()
     compressed = encoding in ("gzip", "x-gzip") or body[:2] == GZIP_MAGIC
     if encoding and encoding not in ("gzip", "x-gzip", "deflate", "identity"):
-        raise UnsupportedMediaError(f"Content-Encoding '{encoding}' wordt niet ondersteund.")
+        raise UnsupportedMediaError(
+            f"Content-Encoding '{encoding}' wordt niet ondersteund.", context="encoding", data={"encoding": encoding}
+        )
     if compressed:
         body = _bounded_decompress(body, max_bytes, wbits=31)
         meta["compression"] = "gzip"
@@ -88,7 +90,7 @@ def decode_payload(payload: IncomingPayload, max_bytes: int) -> DecodedPayload:
         body = _bounded_decompress(body, max_bytes, wbits=15)
         meta["compression"] = "deflate"
     if len(body) > max_bytes:
-        raise PayloadTooLargeError("De export is groter dan de ingestelde limiet.")
+        raise PayloadTooLargeError("De export is groter dan de ingestelde limiet.", context="export")
     meta["decoded_bytes"] = len(body)
 
     content_type = (payload.content_type or "").lower()
@@ -137,15 +139,21 @@ def _bounded_decompress(body: bytes, max_bytes: int, *, wbits: int) -> bytes:
     try:
         result = decompressor.decompress(body, max_bytes + 1)
     except zlib.error as exc:
-        raise UnsupportedMediaError("De gecomprimeerde inhoud is beschadigd.") from exc
+        raise UnsupportedMediaError("De gecomprimeerde inhoud is beschadigd.", context="corrupt") from exc
     if len(result) > max_bytes or decompressor.unconsumed_tail:
-        raise PayloadTooLargeError("De uitgepakte export is groter dan de ingestelde limiet.")
+        raise PayloadTooLargeError(
+            "De uitgepakte export is groter dan de ingestelde limiet.", context="unpacked_export"
+        )
     # A stream that stops before its end marker (and, for gzip, its checksum) is incomplete,
     # even when the part that arrived happens to be valid JSON (audit A07).
     if not decompressor.eof:
-        raise UnsupportedMediaError("De gecomprimeerde inhoud is onvolledig: het einde of de controlesom ontbreekt.")
+        raise UnsupportedMediaError(
+            "De gecomprimeerde inhoud is onvolledig: het einde of de controlesom ontbreekt.", context="truncated"
+        )
     if decompressor.unused_data.strip(b"\0"):
-        raise UnsupportedMediaError("Na de gecomprimeerde inhoud volgen nog onverwachte gegevens.")
+        raise UnsupportedMediaError(
+            "Na de gecomprimeerde inhoud volgen nog onverwachte gegevens.", context="trailing_data"
+        )
     return result
 
 

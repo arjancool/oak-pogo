@@ -59,7 +59,7 @@ def get_auth(
 ) -> AuthContext:
     token = request.cookies.get(SESSION_COOKIE)
     if not token:
-        raise UnauthorizedError("Je bent niet ingelogd.")
+        raise UnauthorizedError("Je bent niet ingelogd.", context="not_logged_in")
     now = container.clock.now()
     check = check_session(session, token, session_policy(container), now)
     if check.expired or check.touch:
@@ -78,7 +78,7 @@ def get_auth(
                 log.debug("session update skipped: database busy")
     if check.user is None or check.record is None:
         session.commit()
-        raise UnauthorizedError("Je sessie is verlopen. Log opnieuw in.")
+        raise UnauthorizedError("Je sessie is verlopen. Log opnieuw in.", context="session_expired")
     user, record = check.user, check.record
     if request.method in UNSAFE_METHODS:
         expected = csrf_token_for(container.secret, token)
@@ -102,7 +102,7 @@ def owned_account(session: Session, user: User, account_id: int) -> TrainerAccou
         select(TrainerAccount).where(TrainerAccount.id == account_id, TrainerAccount.user_id == user.id)
     ).first()
     if account is None:
-        raise NotFoundError("Traineraccount niet gevonden.")
+        raise NotFoundError("Traineraccount niet gevonden.", context="account")
     return account
 
 
@@ -113,5 +113,5 @@ def owned_pokemon(session: Session, user: User, pokemon_id: int) -> Pokemon:
         .where(Pokemon.id == pokemon_id, TrainerAccount.user_id == user.id)
     ).first()
     if row is None:
-        raise NotFoundError("Pokémon niet gevonden.")
+        raise NotFoundError("Pokémon niet gevonden.", context="pokemon")
     return row

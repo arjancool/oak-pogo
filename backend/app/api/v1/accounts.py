@@ -165,9 +165,15 @@ def update_account(
         fraction = body.completeness.get("max_drop_fraction")
         absolute = body.completeness.get("max_drop_absolute")
         if fraction is not None and not 0 < fraction <= 1:
-            raise ValidationFailedError("max_drop_fraction moet tussen 0 en 1 liggen.")
+            raise ValidationFailedError(
+                "max_drop_fraction moet tussen 0 en 1 liggen.",
+                context="out_of_range",
+                data={"field": "max_drop_fraction", "min": 0, "max": 1},
+            )
         if absolute is not None and absolute < 0:
-            raise ValidationFailedError("max_drop_absolute moet positief zijn.")
+            raise ValidationFailedError(
+                "max_drop_absolute moet positief zijn.", context="not_positive", data={"field": "max_drop_absolute"}
+            )
         account.settings = {**(account.settings or {}), "completeness": body.completeness}
     return _account_out(session, account, container)
 

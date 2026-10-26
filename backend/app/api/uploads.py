@@ -28,11 +28,11 @@ class _TooLarge(MultiPartException):
 async def bounded_form(request: Request, limit: int, *, max_files: int, max_fields: int = 10) -> FormData:
     """Parse a multipart body of at most ``limit`` bytes plus a small overhead."""
     if not request.headers.get("content-type", "").lower().startswith("multipart/form-data"):
-        raise UnsupportedMediaError("Verwacht een upload als multipart/form-data.")
+        raise UnsupportedMediaError("Verwacht een upload als multipart/form-data.", context="multipart_required")
     cap = limit + MULTIPART_OVERHEAD
     declared = request.headers.get("content-length")
     if declared and declared.isdigit() and int(declared) > cap:
-        raise PayloadTooLargeError(TOO_LARGE)
+        raise PayloadTooLargeError(TOO_LARGE, context="file")
 
     async def stream() -> AsyncGenerator[bytes]:
         received = 0
@@ -46,9 +46,11 @@ async def bounded_form(request: Request, limit: int, *, max_files: int, max_fiel
     try:
         return await parser.parse()
     except _TooLarge as exc:
-        raise PayloadTooLargeError(TOO_LARGE) from exc
+        raise PayloadTooLargeError(TOO_LARGE, context="file") from exc
     except MultiPartException as exc:
-        raise ValidationFailedError(f"De upload is ongeldig: {exc.message}") from exc
+        raise ValidationFailedError(
+            f"De upload is ongeldig: {exc.message}", context="upload", data={"reason": exc.message}
+        ) from exc
 
 
 def form_file(form: FormData, name: str) -> UploadFile | None:

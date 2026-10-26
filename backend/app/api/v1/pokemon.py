@@ -125,7 +125,7 @@ def _bool_param(value: str | None) -> bool | None:
         return True
     if value.lower() in ("0", "false", "no", "nee"):
         return False
-    raise ValidationFailedError(f"'{value}' is geen ja/nee-waarde.")
+    raise ValidationFailedError(f"'{value}' is geen ja/nee-waarde.", context="boolean", data={"value": value})
 
 
 def build_filters(params: dict[str, Any]) -> BoxFilters:
@@ -140,7 +140,9 @@ def build_filters(params: dict[str, Any]) -> BoxFilters:
         try:
             return [int(v) for v in str(raw).split(",") if v.strip()]
         except ValueError as exc:
-            raise ValidationFailedError(f"{name} moet een lijst getallen zijn.") from exc
+            raise ValidationFailedError(
+                f"{name} moet een lijst getallen zijn.", context="number_list", data={"field": name}
+            ) from exc
 
     return BoxFilters(
         status=params.get("status") or "in_inventory",
@@ -217,7 +219,7 @@ def _conditions(query: BoxQuery, account_id: int, latest_sync_id: int | None) ->
         try:
             terms = parse_query(query.q)
         except QuerySyntaxError as exc:
-            raise ValidationFailedError(str(exc), code="QUERY_SYNTAX") from exc
+            raise ValidationFailedError(exc.message, code="QUERY_SYNTAX", context=exc.context, data=exc.data) from exc
     filters = build_filters(query.model_dump())
     # 'verdwenen' in the search box means: look beyond the current inventory.
     if any(t.kind == "flag" and t.field == "missing" and not t.negate for t in terms) and query.status is None:
@@ -325,6 +327,12 @@ def _subject(pokemon: Pokemon, trainer_level: int | None) -> Subject:
 
 
 Scenario = Literal["current", "purified"]
+# Why purify() cannot calculate, with the context of each reason for the error message (ADR-0025).
+PURIFY_ERRORS = {
+    "Alleen een Shadow Pokémon kan worden gepurifyd.": "purify_not_shadow",
+    "De regels voor purify ontbreken in deze Game Data-versie.": "purify_rules_missing",
+    "IV's of level onbekend.": "purify_stats_unknown",
+}
 
 
 def _scenario(
@@ -337,7 +345,8 @@ def _scenario(
     form = gd.forms.get(pokemon.form_key) if pokemon.form_key else None
     result = purify(subject, form, gd.mechanics.get("purification"))
     if isinstance(result, str):
-        raise ValidationFailedError(result)
+        # An unknown reason gets a context without a catalog text, so the Dutch reason is shown.
+        raise ValidationFailedError(result, context=PURIFY_ERRORS.get(result, "purify"))
     base = base_stats_of(dict(form)) if form else None
     cpm = gd.cpm(result.level)
     return result.subject, {
@@ -703,15 +712,15 @@ def _metadata(session: Session, pokemon: Pokemon, now: Any) -> PokemonUserMetada
 
 def _validate_patch(body: MetadataPatch) -> None:
     if body.planned_action is not None and body.planned_action not in PLANNED_ACTIONS:
-        raise ValidationFailedError("Onbekende geplande actie.")
+        raise ValidationFailedError("Onbekende geplande actie.", context="planned_action")
     if body.planned_league is not None and body.planned_league not in LEAGUE_IDS:
-        raise ValidationFailedError("Onbekende league.")
+        raise ValidationFailedError("Onbekende league.", context="planned_league")
     if body.review_status is not None and body.review_status not in REVIEW_STATUSES:
-        raise ValidationFailedError("Onbekende reviewstatus.")
+        raise ValidationFailedError("Onbekende reviewstatus.", context="review_status")
     if body.override_status is not None and body.override_status not in OVERRIDE_STATUSES:
-        raise ValidationFailedError("Onbekende status.")
+        raise ValidationFailedError("Onbekende status.", context="override_status")
     if body.tags is not None and any(len(t) > 40 or not t.strip() for t in body.tags):
-        raise ValidationFailedError("Een tag heeft 1–40 tekens.")
+        raise ValidationFailedError("Een tag heeft 1–40 tekens.", context="tag_length")
 
 
 def apply_metadata(metadata: PokemonUserMetadata, body: MetadataPatch, now: Any) -> None:
@@ -767,6 +776,7 @@ def update_metadata(
             f"Dit is een vintage Pokémon uit {year}. OAK beschermt vintage Pokémon altijd. "
             "Bevestig dat je de bescherming van deze ene Pokémon wilt opheffen.",
             code="VINTAGE_CONFIRMATION_REQUIRED",
+            data={"year": year},
             details={"year": year},
         )
     now = container.clock.now()
@@ -799,7 +809,7 @@ def bulk_action(
         select(Pokemon).where(Pokemon.trainer_account_id == account.id, Pokemon.id.in_(body.ids))
     ).all()
     if len(rows) != len(set(body.ids)):
-        raise ValidationFailedError("Een of meer Pokémon horen niet bij dit account.")
+        raise ValidationFailedError("Een of meer Pokémon horen niet bij dit account.", context="bulk_pokemon")
     now = container.clock.now()
     skipped: list[dict[str, Any]] = []
     needs_confirmation: list[dict[str, Any]] = []
@@ -833,7 +843,7 @@ def bulk_action(
             metadata.protected = False
         elif body.action == "add_tag":
             if not body.value or len(body.value) > 40:
-                raise ValidationFailedError("Geef een tag van 1–40 tekens.")
+                raise ValidationFailedError("Geef een tag van 1–40 tekens.", context="bulk_tag")
             metadata.tags = sorted({*metadata.tags, body.value.strip()})
         elif body.action == "remove_tag":
             metadata.tags = [t for t in metadata.tags if t != body.value]
@@ -873,7 +883,7 @@ def bulk_action(
                 session.delete(existing)
             continue
         else:
-            raise ValidationFailedError("Onbekende bulkactie.")
+            raise ValidationFailedError("Onbekende bulkactie.", context="bulk_action")
         metadata.updated_at = now
     session.commit()
     enqueue(container, "analysis", account.id)

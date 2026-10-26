@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { z } from "zod";
 
@@ -21,6 +22,7 @@ const historySchema = z.object({
 type Kind = "new" | "changed" | "missing" | "reappeared";
 
 function History({ accountId }: { accountId: number }) {
+  const { t } = useTranslation();
   const [state, update] = useUrlState();
   const kind = (state.kind as Kind) ?? "new";
   const run = state.run;
@@ -35,21 +37,21 @@ function History({ accountId }: { accountId: number }) {
   const data = query.data;
   return (
     <>
-      <PageHeader title="Historie" description="Verschillen tussen opeenvolgende synchronisaties. Verdwenen Pokémon heten 'niet meer in inventaris': OAK weet niet of ze zijn overgezet." />
+      <PageHeader title={t("account.history.title")} description={t("account.history.description")} />
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <Tabs
           value={kind}
           onChange={(value) => update({ kind: value })}
           tabs={[
-            { value: "new", label: "Nieuw" },
-            { value: "changed", label: "Gewijzigd" },
-            { value: "missing", label: "Niet meer in inventaris" },
-            { value: "reappeared", label: "Teruggekeerd" },
+            { value: "new", label: t("account.history.tabs.new") },
+            { value: "changed", label: t("account.history.tabs.changed") },
+            { value: "missing", label: t("account.history.tabs.missing") },
+            { value: "reappeared", label: t("account.history.tabs.reappeared") },
           ]}
         />
         {data && data.runs.length > 0 && (
-          <Select value={run ?? ""} onChange={(e) => update({ run: e.target.value || null })} aria-label="Synchronisatie">
-            <option value="">Laatste relevante sync</option>
+          <Select value={run ?? ""} onChange={(e) => update({ run: e.target.value || null })} aria-label={t("account.history.syncSelect")}>
+            <option value="">{t("account.history.latestSync")}</option>
             {data.runs.map((r) => (
               <option key={r.id} value={r.id}>
                 {dateTime(r.applied_at)} · {label(classificationLabels, r.classification)} · +{r.new} / ~{r.changed} / -{r.missing}
@@ -61,9 +63,9 @@ function History({ accountId }: { accountId: number }) {
       {query.isLoading ? (
         <Spinner />
       ) : !data || data.items.length === 0 ? (
-        <EmptyState title="Geen wijzigingen">{data?.note}</EmptyState>
+        <EmptyState title={t("account.history.empty")}>{data?.note}</EmptyState>
       ) : (
-        <Card title={data.sync_run ? `Synchronisatie van ${dateTime(data.sync_run.applied_at)}` : undefined}>
+        <Card title={data.sync_run ? t("account.history.syncOf", { time: dateTime(data.sync_run.applied_at) }) : undefined}>
           <ul className="divide-y divide-line">
             {data.items.map(({ pokemon, labels }) => (
               <li key={pokemon.id} className="flex flex-wrap items-center gap-3 py-2">
@@ -85,14 +87,14 @@ function History({ accountId }: { accountId: number }) {
         </Card>
       )}
       {inventory.data && inventory.data.length > 1 && (
-        <Card className="mt-5" title="Stardust en items door de tijd">
+        <Card className="mt-5" title={t("account.history.inventory")}>
           <table className="w-full text-sm">
             <thead className="text-left text-xs text-muted">
               <tr>
-                <th className="py-1">Moment</th>
-                <th>Level</th>
-                <th>Stardust</th>
-                <th>Items</th>
+                <th className="py-1">{t("account.history.columns.moment")}</th>
+                <th>{t("account.history.columns.level")}</th>
+                <th>{t("account.history.columns.stardust")}</th>
+                <th>{t("account.history.columns.items")}</th>
               </tr>
             </thead>
             <tbody>

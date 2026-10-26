@@ -259,5 +259,162 @@
     "warning": "OAK does not put these Pokémon on a transfer list without your confirmation. Only tick what you really want to let go. OAK never transfers anything itself.",
     "confirmOne": "Confirm {{name}}",
     "newReasons": "New since your last confirmation: {{reasons}}"
+  },
+  "dashboard": {
+    "loadError": "The dashboard could not be loaded.",
+    "welcome": "Welcome to OAK",
+    "welcomeName": "Welcome to OAK, {{name}}",
+    "empty": {
+      "title": "No Pokémon imported yet",
+      "text": "Connect PGSharp under <b>Admin → PGSharp Sync</b> or upload a <code>PGSStats.json</code> there. Your collection appears here after the first import."
+    },
+    "title": "Overview",
+    "description": "{{name}} · level {{level}}",
+    "noGameData": {
+      "title": "No Game Data",
+      "text": "Without Game Data, species names, levels, PvP analyses and cleanup advice are not available. Update the Game Data under Admin."
+    },
+    "sync": {
+      "title": "Sync",
+      "lastSuccess": "Last successful sync: {{time}}",
+      "status": "Status",
+      "inExport": "Pokémon in export",
+      "new": "New",
+      "changed": "Changed",
+      "missing": "No longer in inventory",
+      "unconfirmed": "{{missing}} not confirmed (partial import)"
+    },
+    "cards": {
+      "total": "Total Pokémon",
+      "shiny": "Shiny",
+      "lucky": "Lucky",
+      "shadow": "Shadow",
+      "hundo": "Hundo",
+      "shundo": "Shundo",
+      "favorites": "Favorites",
+      "vintage": "Vintage 2016–2019",
+      "legendary": "Legendary",
+      "mythical": "Mythical",
+      "dynamax": "Dynamax",
+      "gigantamax": "Gigantamax",
+      "cleanupCandidates": "Cleanup candidates",
+      "review": "To review",
+      "stardust": "Stardust",
+      "storageFree": "Free storage",
+      "storageMax": "of {{max}}",
+      "backgrounds": "Backgrounds",
+      "actionList": "On action list"
+    },
+    "lists": {
+      "recent": "Recently caught",
+      "recentEmpty": "No catch date known.",
+      "new": "New since last sync",
+      "newEmpty": "No new Pokémon, or this was the first sync.",
+      "missing": "No longer in inventory",
+      "missingEmpty": "Nothing disappeared in the last full sync.",
+      "valuable": "New valuable Pokémon",
+      "valuableEmpty": "No new shiny, hundo, lucky or legendary.",
+      "investment": "Best investment candidates",
+      "investmentEmpty": "No BUILD advice yet.",
+      "cleanup": "Recommended cleanup",
+      "cleanupEmpty": "No transfer candidates.",
+      "favoritesChanged_one": "{{count}} favorite changed",
+      "favoritesChanged_other": "{{count}} favorites changed"
+    },
+    "years": "Catch year"
+  },
+  "account": {
+    "trainer": {
+      "title": "Trainer statistics",
+      "description": "Source: PGSharp export · last sync {{time}}",
+      "trainer": "Trainer",
+      "level": "Level",
+      "xp": "XP",
+      "stardust": "Stardust",
+      "pokecoins": "PokéCoins",
+      "storage": "Pokémon storage",
+      "eggs_one": "{{count}} egg",
+      "eggs_other": "{{count}} eggs",
+      "activity": "Activity",
+      "gbl": "GO Battle League",
+      "leagueWins": "{{wins}} of {{battles}} won",
+      "currentSeason": "Current season",
+      "lifetime": "Total",
+      "results": "{{wins}} / {{battles}} · rank {{rank}}",
+      "byType": "Caught by type",
+      "stats": {
+        "numPokemonCaptured": "Pokémon caught",
+        "numPokemonEncountered": "Pokémon encountered",
+        "numEvolutions": "Evolutions",
+        "numEggsHatched": "Eggs hatched",
+        "pokeStopVisits": "PokéStop visits",
+        "uniquePokestopsVisited": "Unique PokéStops",
+        "kmWalked": "Kilometers walked",
+        "numberOfPokeballThrown": "Poké Balls thrown",
+        "numRaidBattleWon": "Raids won",
+        "numRaidBattleTotal": "Total raids",
+        "numLegendaryBattleWon": "Legendary raids won",
+        "numGruntsDefeated": "Grunts defeated",
+        "numTrades": "Trades",
+        "numRemoteTrades": "Remote trades",
+        "numBestBuddies": "Best Buddies",
+        "numUniquePokedexEntries": "Pokédex entries",
+        "numPokemonPurified": "Purified",
+        "numTotalMegaEvolutions": "Mega Evolutions",
+        "numBreadBattlesWon": "Max Battles won",
+        "numMaxLevelFriends": "Best Friends",
+        "numBerriesFed": "Berries fed",
+        "numBattleTrainingWon": "Training battles won",
+        "numNpcCombatsWon": "NPC battles won"
+      }
+    },
+    "items": {
+      "title": "Item Bag",
+      "description": "{{total}} of {{max}} slots. {{note}}",
+      "search": "Search items…",
+      "empty": "No items"
+    },
+    "resources": {
+      "title": "Stardust & Candy",
+      "description": "Stardust and items come from PGSharp. PGSharp does not export Candy per species; you can track it here yourself.",
+      "stardust": "Stardust",
+      "pokecoins": "PokéCoins",
+      "sourcePgsharp": "source: PGSharp",
+      "manual": "Manual amounts",
+      "kind": "Kind",
+      "kinds": {
+        "candy": "Candy",
+        "xl_candy": "XL Candy",
+        "mega": "Mega Energy"
+      },
+      "family": "Family",
+      "chooseFamily": "Choose a family",
+      "quantity": "Quantity",
+      "save": "Save",
+      "entered": "Entered amounts",
+      "nothingEntered": "Nothing entered yet. Without input, OAK shows Candy as unknown.",
+      "manualBadge": "manual"
+    },
+    "history": {
+      "title": "History",
+      "description": "Differences between consecutive syncs. Pokémon that disappeared are called 'no longer in inventory': OAK does not know whether they were transferred.",
+      "tabs": {
+        "new": "New",
+        "changed": "Changed",
+        "missing": "No longer in inventory",
+        "reappeared": "Returned"
+      },
+      "syncSelect": "Sync",
+      "latestSync": "Latest relevant sync",
+      "empty": "No changes",
+      "syncOf": "Sync of {{time}}",
+      "inventory": "Stardust and items over time",
+      "columns": {
+        "moment": "Time",
+        "level": "Level",
+        "stardust": "Stardust",
+        "items": "Items"
+      }
+    }
   }
 }

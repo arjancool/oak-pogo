@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { RequireAccount } from "../../components/layout/RequireAccount";
 import { Card, EmptyState, Input, PageHeader, Spinner } from "../../components/ui";
@@ -16,6 +17,7 @@ interface Item {
 }
 
 function Items({ accountId }: { accountId: number }) {
+  const { t } = useTranslation();
   const [filter, setFilter] = useState("");
   const query = useQuery({
     queryKey: ["items", accountId],
@@ -28,12 +30,12 @@ function Items({ accountId }: { accountId: number }) {
   return (
     <>
       <PageHeader
-        title="Item Bag"
-        description={`${num(query.data.total)} van ${num(query.data.max_item_storage)} plaatsen. ${query.data.note}`}
-        actions={<Input placeholder="Item zoeken…" value={filter} onChange={(e) => setFilter(e.target.value)} className="w-56" />}
+        title={t("account.items.title")}
+        description={t("account.items.description", { total: num(query.data.total), max: num(query.data.max_item_storage), note: query.data.note })}
+        actions={<Input placeholder={t("account.items.search")} value={filter} onChange={(e) => setFilter(e.target.value)} className="w-56" />}
       />
       {groups.size === 0 ? (
-        <EmptyState title="Geen items" />
+        <EmptyState title={t("account.items.empty")} />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {[...groups.entries()].map(([group, list]) => (

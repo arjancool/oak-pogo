@@ -259,5 +259,162 @@
     "warning": "Deze Pokémon zet OAK niet zonder jouw bevestiging op een transferlijst. Vink alleen aan wat je echt kwijt wilt. OAK zet zelf nooit iets over.",
     "confirmOne": "{{name}} bevestigen",
     "newReasons": "Nieuw sinds je vorige bevestiging: {{reasons}}"
+  },
+  "dashboard": {
+    "loadError": "Het dashboard kon niet geladen worden.",
+    "welcome": "Welkom bij OAK",
+    "welcomeName": "Welkom bij OAK, {{name}}",
+    "empty": {
+      "title": "Nog geen Pokémon geïmporteerd",
+      "text": "Koppel PGSharp onder <b>Beheer → PGSharp Sync</b> of upload daar een <code>PGSStats.json</code>. Na de eerste import verschijnt hier je collectie."
+    },
+    "title": "Overzicht",
+    "description": "{{name}} · level {{level}}",
+    "noGameData": {
+      "title": "Geen Game Data",
+      "text": "Zonder Game Data zijn soortnamen, levels, PvP-analyses en cleanup-adviezen niet beschikbaar. Werk de Game Data bij onder Beheer."
+    },
+    "sync": {
+      "title": "Synchronisatie",
+      "lastSuccess": "Laatste succesvolle sync: {{time}}",
+      "status": "Status",
+      "inExport": "Pokémon in export",
+      "new": "Nieuw",
+      "changed": "Gewijzigd",
+      "missing": "Niet meer in inventaris",
+      "unconfirmed": "{{missing}} niet bevestigd (gedeeltelijke import)"
+    },
+    "cards": {
+      "total": "Totaal Pokémon",
+      "shiny": "Shiny",
+      "lucky": "Lucky",
+      "shadow": "Shadow",
+      "hundo": "Hundo",
+      "shundo": "Shundo",
+      "favorites": "Favorieten",
+      "vintage": "Vintage 2016–2019",
+      "legendary": "Legendary",
+      "mythical": "Mythical",
+      "dynamax": "Dynamax",
+      "gigantamax": "Gigantamax",
+      "cleanupCandidates": "Cleanup-kandidaten",
+      "review": "Te beoordelen",
+      "stardust": "Stardust",
+      "storageFree": "Vrije opslag",
+      "storageMax": "van {{max}}",
+      "backgrounds": "Achtergronden",
+      "actionList": "Op actielijst"
+    },
+    "lists": {
+      "recent": "Laatst gevangen",
+      "recentEmpty": "Geen vangstdatum bekend.",
+      "new": "Nieuw sinds vorige sync",
+      "newEmpty": "Geen nieuwe Pokémon, of dit was de eerste synchronisatie.",
+      "missing": "Niet meer in inventaris",
+      "missingEmpty": "Niets verdwenen bij de laatste volledige sync.",
+      "valuable": "Nieuwe waardevolle Pokémon",
+      "valuableEmpty": "Geen nieuwe shiny, hundo, lucky of legendary.",
+      "investment": "Beste investeringskandidaten",
+      "investmentEmpty": "Nog geen BUILD-adviezen.",
+      "cleanup": "Aanbevolen cleanup",
+      "cleanupEmpty": "Geen transfer-kandidaten.",
+      "favoritesChanged_one": "{{count}} favorieten gewijzigd",
+      "favoritesChanged_other": "{{count}} favorieten gewijzigd"
+    },
+    "years": "Vangstjaar"
+  },
+  "account": {
+    "trainer": {
+      "title": "Trainerstatistieken",
+      "description": "Bron: PGSharp-export · laatste sync {{time}}",
+      "trainer": "Trainer",
+      "level": "Level",
+      "xp": "XP",
+      "stardust": "Stardust",
+      "pokecoins": "PokéCoins",
+      "storage": "Pokémon-opslag",
+      "eggs_one": "{{count}} eieren",
+      "eggs_other": "{{count}} eieren",
+      "activity": "Activiteit",
+      "gbl": "GO Battle League",
+      "leagueWins": "{{wins}} van {{battles}} gewonnen",
+      "currentSeason": "Huidig seizoen",
+      "lifetime": "Totaal",
+      "results": "{{wins}} / {{battles}} · rang {{rank}}",
+      "byType": "Gevangen per type",
+      "stats": {
+        "numPokemonCaptured": "Pokémon gevangen",
+        "numPokemonEncountered": "Pokémon tegengekomen",
+        "numEvolutions": "Evoluties",
+        "numEggsHatched": "Eieren uitgebroed",
+        "pokeStopVisits": "PokéStop-bezoeken",
+        "uniquePokestopsVisited": "Unieke PokéStops",
+        "kmWalked": "Kilometer gelopen",
+        "numberOfPokeballThrown": "Poké Balls gegooid",
+        "numRaidBattleWon": "Raids gewonnen",
+        "numRaidBattleTotal": "Raids totaal",
+        "numLegendaryBattleWon": "Legendary raids gewonnen",
+        "numGruntsDefeated": "Grunts verslagen",
+        "numTrades": "Ruilen",
+        "numRemoteTrades": "Ruilen op afstand",
+        "numBestBuddies": "Best Buddies",
+        "numUniquePokedexEntries": "Pokédex-inzendingen",
+        "numPokemonPurified": "Gepurified",
+        "numTotalMegaEvolutions": "Mega-evoluties",
+        "numBreadBattlesWon": "Max Battles gewonnen",
+        "numMaxLevelFriends": "Best Friends",
+        "numBerriesFed": "Berries gevoerd",
+        "numBattleTrainingWon": "Trainingsgevechten gewonnen",
+        "numNpcCombatsWon": "NPC-gevechten gewonnen"
+      }
+    },
+    "items": {
+      "title": "Item Bag",
+      "description": "{{total}} van {{max}} plaatsen. {{note}}",
+      "search": "Item zoeken…",
+      "empty": "Geen items"
+    },
+    "resources": {
+      "title": "Stardust & Candy",
+      "description": "Stardust en items komen uit PGSharp. Candy per soort exporteert PGSharp niet; die kun je hier zelf bijhouden.",
+      "stardust": "Stardust",
+      "pokecoins": "PokéCoins",
+      "sourcePgsharp": "bron: PGSharp",
+      "manual": "Handmatige hoeveelheden",
+      "kind": "Soort",
+      "kinds": {
+        "candy": "Candy",
+        "xl_candy": "XL Candy",
+        "mega": "Mega Energy"
+      },
+      "family": "Familie",
+      "chooseFamily": "Kies een familie",
+      "quantity": "Aantal",
+      "save": "Opslaan",
+      "entered": "Ingevoerde hoeveelheden",
+      "nothingEntered": "Nog niets ingevoerd. Zonder invoer toont OAK candy als onbekend.",
+      "manualBadge": "handmatig"
+    },
+    "history": {
+      "title": "Historie",
+      "description": "Verschillen tussen opeenvolgende synchronisaties. Verdwenen Pokémon heten 'niet meer in inventaris': OAK weet niet of ze zijn overgezet.",
+      "tabs": {
+        "new": "Nieuw",
+        "changed": "Gewijzigd",
+        "missing": "Niet meer in inventaris",
+        "reappeared": "Teruggekeerd"
+      },
+      "syncSelect": "Synchronisatie",
+      "latestSync": "Laatste relevante sync",
+      "empty": "Geen wijzigingen",
+      "syncOf": "Synchronisatie van {{time}}",
+      "inventory": "Stardust en items door de tijd",
+      "columns": {
+        "moment": "Moment",
+        "level": "Level",
+        "stardust": "Stardust",
+        "items": "Items"
+      }
+    }
   }
 }

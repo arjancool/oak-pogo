@@ -1746,5 +1746,26 @@
       "add": "Add",
       "added": "Event added. OAK is recalculating your cleanup advice."
     }
+  },
+  "errors": {
+    "http": {
+      "401": "You are no longer logged in. Please log in again.",
+      "403": "You do not have access to this action.",
+      "408": "The server waited too long for the upload.",
+      "413": "The file is too large for the server or the proxy in front of it.",
+      "429": "Too many requests. Try again in a minute.",
+      "502": "The proxy could not reach OAK.",
+      "503": "OAK is temporarily unavailable.",
+      "504": "OAK did not respond in time.",
+      "other": "The server returned an error."
+    },
+    "invalidResponse": "The server sent a response OAK cannot read.",
+    "uploadAborted": "The upload was cancelled.",
+    "network": "Network error during the upload. Check the connection and try again.",
+    "uploadTimeout": "The upload took too long and was stopped.",
+    "unknown": "Unknown error."
+  },
+  "notFound": {
+    "text": "This page does not exist."
   }
 }

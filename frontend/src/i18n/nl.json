@@ -1746,5 +1746,26 @@
       "add": "Toevoegen",
       "added": "Event toegevoegd. OAK berekent je cleanupadvies opnieuw."
     }
+  },
+  "errors": {
+    "http": {
+      "401": "Je bent niet meer ingelogd. Log opnieuw in.",
+      "403": "Je hebt geen toegang tot deze actie.",
+      "408": "De server wachtte te lang op de upload.",
+      "413": "Het bestand is te groot voor de server of voor de proxy ervoor.",
+      "429": "Te veel verzoeken. Probeer het over een minuut opnieuw.",
+      "502": "De proxy kon OAK niet bereiken.",
+      "503": "OAK is tijdelijk niet beschikbaar.",
+      "504": "OAK reageerde niet op tijd.",
+      "other": "De server gaf een fout."
+    },
+    "invalidResponse": "De server gaf een antwoord dat OAK niet kan lezen.",
+    "uploadAborted": "De upload is geannuleerd.",
+    "network": "Netwerkfout tijdens het uploaden. Controleer de verbinding en probeer het opnieuw.",
+    "uploadTimeout": "De upload duurde te lang en is gestopt.",
+    "unknown": "Onbekende fout."
+  },
+  "notFound": {
+    "text": "Deze pagina bestaat niet."
   }
 }

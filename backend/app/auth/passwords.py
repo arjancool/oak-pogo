@@ -32,6 +32,10 @@ def needs_rehash(stored_hash: str) -> bool:
 
 def validate_password(password: str) -> None:
     if len(password) < MIN_PASSWORD_LENGTH:
-        raise ValidationFailedError(f"Een wachtwoord moet minimaal {MIN_PASSWORD_LENGTH} tekens hebben.")
+        raise ValidationFailedError(
+            f"Een wachtwoord moet minimaal {MIN_PASSWORD_LENGTH} tekens hebben.",
+            context="password_too_short",
+            data={"min": MIN_PASSWORD_LENGTH},
+        )
     if len(password) > MAX_PASSWORD_LENGTH:
-        raise ValidationFailedError("Dit wachtwoord is te lang.")
+        raise ValidationFailedError("Dit wachtwoord is te lang.", context="password_too_long")

@@ -149,7 +149,11 @@ def items(
                 "source_name": row.item_name,
                 "name": label,
                 "group": group,
-                "group_label": ITEM_GROUP_LABELS.get(group, group),
+                "group_label": {
+                    "code": "ITEM_GROUP",
+                    "text": ITEM_GROUP_LABELS.get(group, group),
+                    "data": {"context": group},
+                },
                 "count": row.count,
                 "updated_at": row.updated_at.isoformat(),
                 "source": "pgsharp",
@@ -166,7 +170,10 @@ def items(
         "items": entries,
         "total": total,
         "max_item_storage": account.max_item_storage,
-        "note": "Item-aantallen komen uit de PGSharp-export. Eventpunten tellen niet mee voor de opslag.",
+        "note": {
+            "code": "ITEMS_FROM_EXPORT",
+            "text": "Item-aantallen komen uit de PGSharp-export. Eventpunten tellen niet mee voor de opslag.",
+        },
     }
 
 
@@ -244,7 +251,7 @@ def set_resource(
     """PGSharp does not export species candy; the user may enter it by hand (spec §16.3)."""
     account = owned_account(session, auth.user, body.account_id)
     if not re.fullmatch(r"FAMILY_[A-Z0-9_]+", body.key):
-        raise ValidationFailedError("Gebruik een familie-ID, bijvoorbeeld FAMILY_MAGIKARP.")
+        raise ValidationFailedError("Gebruik een familie-ID, bijvoorbeeld FAMILY_MAGIKARP.", context="family_id")
     row = session.get(ManualResource, (account.id, body.kind, body.key))
     now = container.clock.now()
     if row is None:
@@ -293,7 +300,10 @@ def history_changes(
             "sync_run": None,
             "items": [],
             "runs": _runs(runs),
-            "note": "Bij de eerste synchronisatie is alles nieuw; vergelijking begint vanaf de tweede.",
+            "note": {
+                "code": "FIRST_SYNC",
+                "text": "Bij de eerste synchronisatie is alles nieuw; vergelijking begint vanaf de tweede.",
+            },
         }
     rows = session.execute(
         select(PokemonChangeEvent, Pokemon, PokemonUserMetadata, PokemonAnalysis)

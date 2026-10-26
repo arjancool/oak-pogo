@@ -10,12 +10,13 @@ import { api, errorMessage } from "../../lib/api";
 import { useAuth } from "../../lib/auth";
 import { dateTime, num, relative } from "../../lib/format";
 import { eventKindLabels, label } from "../../lib/i18n";
+import { serverText, type ServerText } from "../../lib/serverText";
 import { SpeciesPicker, type SpeciesOption } from "../battles/shared";
 
 interface EventItem {
   id: number;
   external_id: string;
-  source: string;
+  source: ServerText;
   name: string;
   kind: string;
   starts_at: string;
@@ -39,7 +40,7 @@ interface EventsResponse {
     fetched_at: string | null;
     checked_at: string | null;
     count: number;
-    error: string | null;
+    error: ServerText | null;
   };
   rules: { use_events: boolean; event_hold_days: number };
   events: EventItem[];
@@ -78,7 +79,7 @@ function FeedCard({ data, accountId }: { data: EventsResponse; accountId: number
       </p>
       {feed.error && (
         <div className="mt-3">
-          <Alert tone="warning">{t("events.feed.failed", { error: feed.error })}</Alert>
+          <Alert tone="warning">{t("events.feed.failed", { error: serverText("events", feed.error) })}</Alert>
         </div>
       )}
       {!data.rules.use_events && (
@@ -136,7 +137,7 @@ function EventRow({ event, accountId, rules }: { event: EventItem; accountId: nu
         </p>
         <p className="text-xs text-muted">
           {t(event.local_time ? "events.row.periodLocal" : "events.row.period", { start: dateTime(event.starts_at), end: dateTime(event.ends_at) })} ·{" "}
-          {event.source}
+          {serverText("events", event.source)}
         </p>
         {event.species.length > 0 && (
           <p className="mt-1 text-xs">{t("events.row.species", { names: event.species.map((s) => s.name ?? `#${s.dex}`).join(", ") })}</p>

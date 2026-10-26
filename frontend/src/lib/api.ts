@@ -8,16 +8,21 @@
 import i18n from "i18next";
 import type { z } from "zod";
 
+import { serverText } from "./serverText";
+
 export class ApiError extends Error {
   readonly status: number;
   readonly code: string;
   readonly details: unknown;
+  /** The values in the server's message and its context. Only set for an error OAK itself sent. */
+  readonly data: Record<string, unknown> | undefined;
 
-  constructor(status: number, code: string, message: string, details?: unknown) {
+  constructor(status: number, code: string, message: string, details?: unknown, data?: Record<string, unknown>) {
     super(message);
     this.status = status;
     this.code = code;
     this.details = details;
+    this.data = data;
   }
 }
 
@@ -41,7 +46,7 @@ function statusMessage(status: number): string {
   return i18n.t(key ?? "errors.http.other");
 }
 
-type ErrorBody = { code?: string; message?: string; details?: unknown };
+type ErrorBody = { code?: string; message?: string; details?: unknown; data?: unknown };
 
 function parseJson(text: string): { ok: true; value: unknown } | { ok: false } {
   if (!text) return { ok: true, value: undefined };
@@ -69,6 +74,10 @@ export function readResponse<T>(status: number, text: string): T {
     return parsed.value as T;
   }
   const error = parsed.ok ? errorBody(parsed.value) : undefined;
+  if (error && typeof error.code === "string" && typeof error.message === "string") {
+    const data = typeof error.data === "object" && error.data !== null && !Array.isArray(error.data) ? (error.data as Record<string, unknown>) : {};
+    throw new ApiError(status, error.code, error.message, error.details, data);
+  }
   const fallback = `${statusMessage(status)} (HTTP ${status})`;
   throw new ApiError(status, error?.code ?? "HTTP_ERROR", error?.message ?? fallback, error?.details);
 }
@@ -166,8 +175,16 @@ export function uploadWithProgress<T>(
   });
 }
 
+/**
+ * What to tell the user about a failed request. An error from OAK has a code and the values in its
+ * message, so it reads in the chosen language; without a text in the catalog under
+ * "server.errors" the server's Dutch message is shown (ADR-0025).
+ */
 export function errorMessage(error: unknown): string {
-  if (error instanceof ApiError) return error.message;
+  if (error instanceof ApiError) {
+    if (error.data === undefined) return error.message;
+    return serverText("errors", { code: error.code, text: error.message, data: error.data });
+  }
   if (error instanceof Error) return error.message;
   return i18n.t("errors.unknown");
 }

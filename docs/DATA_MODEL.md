@@ -36,7 +36,7 @@ Alle tabellen onder een traineraccount verwijzen ernaar met `ON DELETE CASCADE`.
 | Tabel | Inhoud |
 |---|---|
 | `import_jobs` | Iedere ontvangen export: bron (webhook, upload of opnieuw), status, voortgang, hash en grootte, het pad van de opgeslagen export, verzoekgegevens, structuursamenvatting, vingerafdruk, exportmoment, classificatie en fouten. |
-| `import_errors` | Meldingen per import, met ernst, code, pad en eventueel de Pokémon-ID. |
+| `import_errors` | Meldingen per import, met ernst, code, de gegevens in de melding, pad en eventueel de Pokémon-ID. |
 | `sync_runs` | Het resultaat van een verwerkte import: classificatie, aantallen nieuw, gewijzigd, ongewijzigd, verdwenen, niet bevestigd en teruggekeerd, en waarschuwingen. Iedere run verwijst naar de vorige. |
 | `background_jobs` | De duurzame wachtrij van de achtergrondverwerker. |
 
@@ -110,5 +110,6 @@ Een nieuwe analyse vervangt de vorige projectie van dat traineraccount in één 
 | `0004` | `game_events`: de eventkalender en eigen events (ADR-0021). |
 | `0005` | `in_gym` in `pokemon`: of een Pokémon nu in een gym staat (ADR-0026). |
 | `0006` | De kolom `league` in `pvp_rankings` en `battle_teams` is 48 tekens breed, voor cup-ID's (ADR-0027). |
+| `0007` | `data` in `import_errors`, `error_data` in `import_jobs` en `errors` in `game_data_versions`: de gegevens in een opgeslagen melding, zodat de interface hem in de gekozen taal toont (ADR-0025). |
 
 OAK voert migraties zelf uit bij het starten en maakt daarvoor een back-up in `backups/`.

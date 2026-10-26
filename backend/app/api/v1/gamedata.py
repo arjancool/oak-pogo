@@ -29,14 +29,15 @@ UPLOAD_FIELDS = {
     "rankings_ultra": "pvpoke-rankings-ultra",
     "rankings_master": "pvpoke-rankings-master",
 }
+# Texts for the interface are {code, text, data}: a code, the Dutch text and its values (ADR-0025).
 DEPENDENT_ANALYSES = [
-    "Soortnamen, vormen en typen in de Pokémon Box",
-    "Pokémon-level uit de CP-multiplier",
-    "PvP-IV-rangen en league-geschiktheid",
-    "Power-up- en evolutiekosten",
-    "Movesetadvies en Elite TM-beperkingen",
-    "Cleanup-aanbevelingen",
-    "Raid-, Rocket- en Max Battle-analyse",
+    {"code": "DEPENDS_NAMES", "text": "Soortnamen, vormen en typen in de Pokémon Box"},
+    {"code": "DEPENDS_LEVEL", "text": "Pokémon-level uit de CP-multiplier"},
+    {"code": "DEPENDS_PVP", "text": "PvP-IV-rangen en league-geschiktheid"},
+    {"code": "DEPENDS_COSTS", "text": "Power-up- en evolutiekosten"},
+    {"code": "DEPENDS_MOVESETS", "text": "Movesetadvies en Elite TM-beperkingen"},
+    {"code": "DEPENDS_CLEANUP", "text": "Cleanup-aanbevelingen"},
+    {"code": "DEPENDS_BATTLES", "text": "Raid-, Rocket- en Max Battle-analyse"},
 ]
 
 
@@ -50,6 +51,8 @@ def _version_out(v: GameDataVersion) -> dict[str, Any]:
         "summary": v.summary,
         "sources": v.sources,
         "error": v.error,
+        # The same errors one by one, as server texts; None for versions from before OAK kept them.
+        "errors": v.errors,
     }
 
 
@@ -75,6 +78,7 @@ def status(
         "versions": [_version_out(v) for v in versions],
         "last_check": get_setting(session, "gamedata.last_check"),
         "last_error": last_failed.error if last_failed else None,
+        "last_errors": last_failed.errors if last_failed else None,
         "update_pending": pending is not None,
         "auto_update": container.settings.gamedata_auto_update,
         "interval_hours": container.settings.gamedata_update_interval_hours,
@@ -90,18 +94,21 @@ def sources(
     return [
         {
             "id": "pokeminers",
-            "name": "PokeMiners Game Master",
+            "name": {"text": "PokeMiners Game Master"},
             "url": urls["pokeminers"],
-            "license": "Geen licentie vermeld; "
-            "gegevens uit de game. OAK downloadt ze tijdens gebruik en verspreidt ze niet.",
-            "role": "primair",
+            "license": {
+                "code": "LICENSE_NONE",
+                "text": "Geen licentie vermeld; "
+                "gegevens uit de game. OAK downloadt ze tijdens gebruik en verspreidt ze niet.",
+            },
+            "role": {"code": "ROLE_PRIMARY", "text": "primair"},
         },
         {
             "id": "pvpoke",
-            "name": "PvPoke gamemaster en rankings",
+            "name": {"code": "SOURCE_PVPOKE", "text": "PvPoke gamemaster en rankings"},
             "url": urls["pvpoke"],
-            "license": "MIT",
-            "role": "aanvullend: namen, legacy-aanvallen, league-rankings",
+            "license": {"text": "MIT"},
+            "role": {"code": "ROLE_SUPPLEMENT", "text": "aanvullend: namen, legacy-aanvallen, league-rankings"},
         },
     ]
 
@@ -141,20 +148,23 @@ async def upload(
                 continue
             content = await upload_file.read(MAX_GAMEDATA_UPLOAD + 1)
             if len(content) > MAX_GAMEDATA_UPLOAD:
-                raise PayloadTooLargeError("Bestand te groot.")
+                raise PayloadTooLargeError("Bestand te groot.", context="game_data_file")
             files[source_id] = content
     finally:
         await form.close()
     if "pokeminers" not in files:
-        raise ValidationFailedError("Het Game Master-bestand van PokeMiners is verplicht.", code="FILE_REQUIRED")
+        raise ValidationFailedError(
+            "Het Game Master-bestand van PokeMiners is verplicht.", code="FILE_REQUIRED", context="game_master"
+        )
     result = await run_in_threadpool(container.gamedata.update_from_upload, files)
     if result.status == "activated":
         enqueue_rederive(container)
     return {
         "status": result.status,
-        "message": result.message,
+        "message": result.text,
         "version_id": result.version_id,
         "warnings": result.warnings,
+        "errors": result.errors,
     }
 
 

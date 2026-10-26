@@ -32,6 +32,13 @@ describe("sentences from the server", () => {
     expect(serverText("reasons", "Gewone tekst")).toBe("Gewone tekst");
   });
 
+  it("explains a vintage Pokémon a bulk action skipped", async () => {
+    const item: ServerText = { code: "VINTAGE_BULK", text: "Vintage 2017: nooit via een bulkactie", data: { year: 2017 } };
+    expect(serverText("guard", item)).toBe(item.text);
+    await changeLanguage("en");
+    expect(serverText("guard", item)).toBe("Vintage 2017: never through a bulk action");
+  });
+
   it("formats numbers for the language", async () => {
     const item: ServerText = { code: "IV", text: "", data: { theirs: 93.75, mine: 62 } };
     expect(serverText("differences", item)).toBe("IV 93,8% tegen 62,0%");

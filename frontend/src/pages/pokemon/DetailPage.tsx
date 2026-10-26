@@ -21,7 +21,7 @@ import {
   statusLabels,
 } from "../../lib/i18n";
 import { pokemonDetail, type PokemonDetail } from "../../lib/schemas";
-import { serverText } from "../../lib/serverText";
+import { type ServerText, serverText } from "../../lib/serverText";
 import type { EvolutionPath, HistoryEvent, PokemonAnalysis, PowerUps, PurifyScenario, Scenario } from "../../lib/types";
 import { useLeagues } from "../battles/shared";
 
@@ -285,7 +285,7 @@ function PurifySummary({ scenario }: { scenario: PurifyScenario }) {
           candy: num(scenario.cost.candy),
         })}
       </p>
-      {scenario.assumption && <p className="mt-1 text-xs text-amber-300">{scenario.assumption}</p>}
+      {scenario.assumption && <p className="mt-1 text-xs text-amber-300">{serverText("analysis", scenario.assumption)}</p>}
       {scenario.source && <p className="mt-1 text-xs text-muted">{t("detail.purify.source", { source: scenario.source })}</p>}
     </div>
   );
@@ -303,7 +303,9 @@ function AnalysisCard({ pokemonId, scenario }: { pokemonId: number; scenario: Sc
   if (!data?.available || !data.leagues) {
     return (
       <Card title={t("detail.analysis.title")}>
-        <p className="text-sm text-muted">{analysis.error ? errorMessage(analysis.error) : (data?.reason ?? t("detail.analysis.unavailable"))}</p>
+        <p className="text-sm text-muted">
+          {analysis.error ? errorMessage(analysis.error) : data?.reason ? serverText("analysis", data.reason) : t("detail.analysis.unavailable")}
+        </p>
       </Card>
     );
   }
@@ -317,9 +319,9 @@ function AnalysisCard({ pokemonId, scenario }: { pokemonId: number; scenario: Sc
       />
       {data.scenario && <PurifySummary scenario={data.scenario} />}
       <div className="mt-3 grid gap-2 text-xs text-muted md:grid-cols-3">
-        <p><b className="text-ink">{t("detail.analysis.ivRank")}</b>: {data.method?.iv_rank}</p>
-        <p><b className="text-ink">{t("detail.analysis.speciesRank")}</b>: {data.method?.species_rank}</p>
-        <p><b className="text-ink">{t("detail.analysis.readiness")}</b>: {data.method?.readiness}</p>
+        <p><b className="text-ink">{t("detail.analysis.ivRank")}</b>: {serverText("analysis", data.method?.iv_rank)}</p>
+        <p><b className="text-ink">{t("detail.analysis.speciesRank")}</b>: {serverText("analysis", data.method?.species_rank)}</p>
+        <p><b className="text-ink">{t("detail.analysis.readiness")}</b>: {serverText("analysis", data.method?.readiness)}</p>
       </div>
       {!current || current.targets.length === 0 ? (
         <p className="mt-4 text-sm text-muted">{t("detail.analysis.noTarget")}</p>
@@ -380,7 +382,7 @@ function AnalysisCard({ pokemonId, scenario }: { pokemonId: number; scenario: Sc
                   </td>
                   <td className="pr-3">
                     <ReadinessBadge readiness={target.readiness} />
-                    <p className="mt-0.5 text-xs text-muted">{target.readiness_reason}</p>
+                    <p className="mt-0.5 text-xs text-muted">{serverText("readiness", target.readiness_reason)}</p>
                   </td>
                   <td className="pr-3 text-xs tabular-nums">
                     {target.cost ? (
@@ -429,14 +431,16 @@ function EvolutionsCard({ pokemonId, scenario }: { pokemonId: number; scenario: 
   const query = useQuery({
     queryKey: ["pokemon-evolutions", pokemonId, scenario],
     queryFn: () =>
-      api.get<{ available: boolean; paths: EvolutionPath[]; reason?: string }>(`/api/v1/pokemon/${pokemonId}/evolutions`, scenarioParams(scenario)),
+      api.get<{ available: boolean; paths: EvolutionPath[]; reason?: ServerText }>(`/api/v1/pokemon/${pokemonId}/evolutions`, scenarioParams(scenario)),
   });
   if (query.isLoading) return null;
   const paths = query.data?.paths ?? [];
   return (
     <Card title={scenario === "purified" ? t("detail.evolutions.titlePurified") : t("detail.evolutions.title")}>
       {paths.length === 0 ? (
-        <p className="text-sm text-muted">{query.error ? errorMessage(query.error) : (query.data?.reason ?? t("detail.evolutions.none"))}</p>
+        <p className="text-sm text-muted">
+          {query.error ? errorMessage(query.error) : query.data?.reason ? serverText("analysis", query.data.reason) : t("detail.evolutions.none")}
+        </p>
       ) : (
         <ul className="space-y-3">
           {paths.map((path) => (
@@ -527,7 +531,7 @@ function PowerUpCard({ pokemonId, scenario }: { pokemonId: number; scenario: Sce
             .filter(Boolean)
             .join(""),
         })}{" "}
-        {t("detail.powerUps.candyUnknown")} {data.note}
+        {t("detail.powerUps.candyUnknown")} {serverText("analysis", data.note)}
       </p>
     </Card>
   );

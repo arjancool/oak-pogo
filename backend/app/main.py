@@ -20,7 +20,7 @@ from app.core.clock import Clock, SystemClock
 from app.core.config import Settings
 from app.core.container import Container
 from app.core.db import Database, create_sqlite_engine
-from app.core.errors import AppError, RateLimitedError
+from app.core.errors import AppError, NotFoundError, RateLimitedError, ValidationFailedError
 from app.core.logging import configure_logging
 from app.core.middleware import (
     RequestLogMiddleware,
@@ -129,39 +129,23 @@ def _register_error_handlers(app: FastAPI) -> None:
             }
             for err in exc.errors()
         ]
-        return JSONResponse(
-            {
-                "error": {
-                    "code": "VALIDATION_FAILED",
-                    "message": "De invoer is ongeldig.",
-                    "details": details,
-                }
-            },
-            status_code=422,
-        )
+        error = ValidationFailedError("De invoer is ongeldig.", context="request", details=details)
+        return JSONResponse(error.to_payload(), status_code=422)
 
     @app.exception_handler(StarletteHTTPException)
     async def http_error(_: Request, exc: StarletteHTTPException) -> JSONResponse:
-        code = "NOT_FOUND" if exc.status_code == 404 else "HTTP_ERROR"
-        message = "Niet gevonden." if exc.status_code == 404 else str(exc.detail)
-        return JSONResponse(
-            {"error": {"code": code, "message": message, "details": None}},
-            status_code=exc.status_code,
-        )
+        if exc.status_code == 404:
+            error = NotFoundError("Niet gevonden.", context="path")
+        else:
+            # Starlette's own reason, such as "Method Not Allowed": not an OAK text, so not in the catalog.
+            error = AppError(str(exc.detail), code="HTTP_ERROR")
+        return JSONResponse(error.to_payload(), status_code=exc.status_code)
 
     @app.exception_handler(Exception)
     async def unhandled(_: Request, exc: Exception) -> JSONResponse:
         log.exception("unhandled error", exc_info=exc)
-        return JSONResponse(
-            {
-                "error": {
-                    "code": "INTERNAL_ERROR",
-                    "message": "Er ging iets mis aan de serverkant.",
-                    "details": None,
-                }
-            },
-            status_code=500,
-        )
+        error = AppError("Er ging iets mis aan de serverkant.", code="INTERNAL_ERROR")
+        return JSONResponse(error.to_payload(), status_code=500)
 
 
 def _register_routes(app: FastAPI) -> None:
@@ -175,23 +159,12 @@ def _register_frontend(app: FastAPI, frontend_dir: Path) -> None:
     @app.get("/{full_path:path}", include_in_schema=False)
     async def spa(full_path: str) -> Response:
         if full_path.startswith(("api/", "health/")):
-            return JSONResponse(
-                {"error": {"code": "NOT_FOUND", "message": "Niet gevonden.", "details": None}},
-                status_code=404,
-            )
+            return JSONResponse(NotFoundError("Niet gevonden.", context="path").to_payload(), status_code=404)
         candidate = (frontend_dir / full_path).resolve()
         if full_path and candidate.is_file() and frontend_dir.resolve() in candidate.parents:
             cache = "public, max-age=31536000, immutable" if full_path.startswith("assets/") else "no-cache"
             return FileResponse(candidate, headers={"Cache-Control": cache})
         if index.is_file():
             return FileResponse(index, headers={"Cache-Control": "no-cache"})
-        return JSONResponse(
-            {
-                "error": {
-                    "code": "FRONTEND_MISSING",
-                    "message": "De frontend is niet gebouwd.",
-                    "details": None,
-                }
-            },
-            status_code=404,
-        )
+        missing = AppError("De frontend is niet gebouwd.", code="FRONTEND_MISSING")
+        return JSONResponse(missing.to_payload(), status_code=404)

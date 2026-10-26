@@ -134,11 +134,13 @@ class ImportProcessor:
                                 severity="error",
                                 code=reason.code,
                                 message=reason.message,
+                                data=reason.data,
                             )
                         )
                     job.status = "rejected"
                     job.error_code = classification.reasons[0].code
                     job.error_message = classification.reasons[0].message
+                    job.error_data = classification.reasons[0].data
                     job.stage = "done"
                     job.progress = 100
                     job.finished_at = finished
@@ -163,6 +165,7 @@ class ImportProcessor:
                             severity="warning",
                             code=reason.code,
                             message=reason.message,
+                            data=reason.data,
                         )
                     )
                 # Link the account only on a full import: an unverified export never decides
@@ -203,6 +206,7 @@ class ImportProcessor:
                 job.status = "failed"
                 job.error_code = code
                 job.error_message = message
+                job.error_data = {}
                 job.stage = "done"
                 job.finished_at = self.clock.now()
                 account = session.get(TrainerAccount, job.trainer_account_id)
@@ -231,15 +235,18 @@ def _store_issues(session: Any, job_id: int, issues: list[Issue]) -> None:
                 message=issue.message,
                 path=issue.path,
                 source_pokemon_id=issue.source_pokemon_id,
+                data=issue.data,
             )
         )
     if len(ordered) > MAX_STORED_ISSUES:
+        skipped = len(ordered) - MAX_STORED_ISSUES
         session.add(
             ImportIssue(
                 import_job_id=job_id,
                 severity="info",
                 code="ISSUES_TRUNCATED",
-                message=f"{len(ordered) - MAX_STORED_ISSUES} meldingen niet opgeslagen.",
+                message=f"{skipped} {'melding' if skipped == 1 else 'meldingen'} niet opgeslagen.",
+                data={"count": skipped},
             )
         )
 

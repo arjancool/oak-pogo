@@ -49,7 +49,8 @@ class WebhookOut(ApiModel):
 class WebhookCreated(ApiModel):
     url: str
     token_identifier: str
-    message: str
+    # A server text: {code, text}, with the Dutch text as the fallback (ADR-0025).
+    message: dict[str, Any]
 
 
 class AccountOut(ApiModel):
@@ -165,9 +166,15 @@ def update_account(
         fraction = body.completeness.get("max_drop_fraction")
         absolute = body.completeness.get("max_drop_absolute")
         if fraction is not None and not 0 < fraction <= 1:
-            raise ValidationFailedError("max_drop_fraction moet tussen 0 en 1 liggen.")
+            raise ValidationFailedError(
+                "max_drop_fraction moet tussen 0 en 1 liggen.",
+                context="out_of_range",
+                data={"field": "max_drop_fraction", "min": 0, "max": 1},
+            )
         if absolute is not None and absolute < 0:
-            raise ValidationFailedError("max_drop_absolute moet positief zijn.")
+            raise ValidationFailedError(
+                "max_drop_absolute moet positief zijn.", context="not_positive", data={"field": "max_drop_absolute"}
+            )
         account.settings = {**(account.settings or {}), "completeness": body.completeness}
     return _account_out(session, account, container)
 
@@ -236,7 +243,10 @@ def create_webhook(
     return WebhookCreated(
         url=f"{container.settings.base_url}{WEBHOOK_PATH}{token}",
         token_identifier=identifier,
-        message="Kopieer deze URL nu. OAK bewaart alleen een hash en kan hem later niet opnieuw tonen.",
+        message={
+            "code": "WEBHOOK_COPY_NOW",
+            "text": "Kopieer deze URL nu. OAK bewaart alleen een hash en kan hem later niet opnieuw tonen.",
+        },
     )
 
 

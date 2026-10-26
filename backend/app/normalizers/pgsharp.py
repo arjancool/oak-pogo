@@ -282,6 +282,7 @@ def parse_export_time(value: Any) -> tuple[datetime | None, Issue | None]:
             Severity.WARNING,
             "EXPORT_TIME_INVALID",
             "Het exporttijdstip is geen bestaande datum of tijd.",
+            data={"context": "date"},
         )
     zone = match["zone"]
     if zone is None:
@@ -301,6 +302,7 @@ def parse_export_time(value: Any) -> tuple[datetime | None, Issue | None]:
                 Severity.WARNING,
                 "EXPORT_TIME_TIMEZONE_UNKNOWN",
                 f"Tijdzone '{zone}' van het exporttijdstip is geen geldige afwijking en wordt niet gebruikt.",
+                data={"context": "offset", "zone": zone},
             )
     hours = _ZONE_OFFSETS_HOURS.get(zone.upper())
     if hours is None:
@@ -308,6 +310,7 @@ def parse_export_time(value: Any) -> tuple[datetime | None, Issue | None]:
             Severity.WARNING,
             "EXPORT_TIME_TIMEZONE_UNKNOWN",
             f"Tijdzone '{zone}' van het exporttijdstip is niet eenduidig en wordt niet gebruikt.",
+            data={"context": "ambiguous", "zone": zone},
         )
     return naive.replace(tzinfo=timezone(timedelta(hours=hours))).astimezone(UTC), None
 
@@ -333,7 +336,12 @@ def normalize_export(
     has_account = isinstance(account, Mapping) and bool(account)
     has_player = isinstance(player, Mapping)
     if not has_account:
-        issues.append(Issue(Severity.WARNING, "ACCOUNT_SECTION_MISSING", "Sectie 'account' ontbreekt."))
+        # The classification has a reason with the same code; "section" tells the two apart.
+        issues.append(
+            Issue(
+                Severity.WARNING, "ACCOUNT_SECTION_MISSING", "Sectie 'account' ontbreekt.", data={"context": "section"}
+            )
+        )
     if not has_player:
         issues.append(Issue(Severity.WARNING, "PLAYER_SECTION_MISSING", "Sectie 'player' ontbreekt."))
     trainer = _normalize_trainer(
@@ -354,6 +362,7 @@ def normalize_export(
                 Severity.ERROR,
                 "POKEMON_LIST_MISSING",
                 "De export bevat geen lijst 'pokemons'. Er is niets te importeren.",
+                data={"context": "section"},
             )
         )
         return NormalizedExport(
@@ -625,6 +634,7 @@ def _normalize_items(records: list[Any], issues: list[Issue]) -> list[ItemCount]
                     "ITEM_INVALID",
                     "Item zonder geldig nummer of aantal.",
                     f"items[{index}]",
+                    data={"context": "values"},
                 )
             )
             continue
@@ -695,6 +705,7 @@ def _normalize_pokemon(
                     f"{key} valt buiten 0–15.",
                     f"{path}.{key}",
                     source_id,
+                    data={"field": key},
                 )
             )
             return None, issues

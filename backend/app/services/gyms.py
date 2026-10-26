@@ -21,22 +21,46 @@ from app.models import Pokemon
 from app.recommendations.cleanup import Confidence
 
 MAX_DEFENDERS = 20
-METHOD = (
+
+
+def _text(code: str, text: str, **data: Any) -> dict[str, Any]:
+    """A sentence for the interface: a code with its data, and the Dutch text as fallback (ADR-0025)."""
+    return {"code": code, "text": text, **({"data": data} if data else {})}
+
+
+METHOD = _text(
+    "GYM_METHOD",
     "Verdedigingswaarde = effectieve Defense × HP, vergeleken met de sterkst mogelijke verdediger uit de Game "
     "Data. Hoe hoger, hoe meer aanvallen een aanvaller nodig heeft. De eigen aanvallen van de verdediger en het "
-    "verlies van motivatie tellen niet mee."
+    "verlies van motivatie tellen niet mee.",
 )
 NOTES = [
-    "Of een Pokémon in een gym mag, komt uit de Game Data (isDeployable). Legendary, Mythical en Ultra Beasts mogen "
-    "meestal niet, maar de Game Data maakt uitzonderingen, zoals Meltan en Melmetal.",
-    "Iedere soort mag maar één keer in dezelfde gym. Daarom staat per soort alleen je sterkste exemplaar in de lijst.",
-    "Hoe snel een verdediger motivatie verliest, staat niet in de Game Data. Volgens metingen uit de community gaat "
-    "dat sneller bij een hogere CP. OAK rekent daar niet mee.",
-    "Staat een Pokémon al in een gym, dan zie je dat bij de laatste import. Zo'n Pokémon kun je niet nog een keer "
-    "plaatsen. OAK leest dat uit de export. Of PGSharp het altijd meestuurt, is nog niet vastgesteld.",
-    "Kies bij voorkeur een type dat de andere verdedigers in de gym nog niet hebben.",
+    _text(
+        "GYM_DEPLOYABLE",
+        "Of een Pokémon in een gym mag, komt uit de Game Data (isDeployable). Legendary, Mythical en Ultra Beasts "
+        "mogen meestal niet, maar de Game Data maakt uitzonderingen, zoals Meltan en Melmetal.",
+    ),
+    _text(
+        "GYM_ONE_PER_SPECIES",
+        "Iedere soort mag maar één keer in dezelfde gym. Daarom staat per soort alleen je sterkste exemplaar in de "
+        "lijst.",
+    ),
+    _text(
+        "GYM_MOTIVATION",
+        "Hoe snel een verdediger motivatie verliest, staat niet in de Game Data. Volgens metingen uit de community "
+        "gaat dat sneller bij een hogere CP. OAK rekent daar niet mee.",
+    ),
+    _text(
+        "GYM_IN_GYM",
+        "Staat een Pokémon al in een gym, dan zie je dat bij de laatste import. Zo'n Pokémon kun je niet nog een "
+        "keer plaatsen. OAK leest dat uit de export. Of PGSharp het altijd meestuurt, is nog niet vastgesteld.",
+    ),
+    _text("GYM_TYPES", "Kies bij voorkeur een type dat de andere verdedigers in de gym nog niet hebben."),
 ]
-OUTDATED = "De actieve Game Data zegt nog niet welke Pokémon in een gym mogen. Werk de Game Data bij."
+OUTDATED = _text(
+    "GYM_OUTDATED", "De actieve Game Data zegt nog niet welke Pokémon in een gym mogen. Werk de Game Data bij."
+)
+SOURCE = _text("GYM_SOURCE", "PGSharp-export en Game Data")
 
 
 def _label(form: Mapping[str, Any]) -> str:
@@ -82,7 +106,7 @@ def gym_defenders(session: Session, gd: GameData, account_id: int, limit: int = 
         "unknown_reason": None,
         "method": METHOD,
         "notes": NOTES,
-        "source": "PGSharp-export en Game Data",
+        "source": SOURCE,
         "game_data_version": gd.version_id,
     }
     reference = _reference(gd)
@@ -120,14 +144,25 @@ def gym_defenders(session: Session, gd: GameData, account_id: int, limit: int = 
         hp = hit_points(base, ivs, cpm)
         defense = effective_defense(base, ivs, cpm, multiplier)
         reasons = [
-            "Mag in een gym volgens de Game Data.",
-            f"{hp} HP en een effectieve Defense van {defense:.0f}.",
-            f"Verdedigingswaarde {value} van 100. Op 100 staat {reference_name} op level {gd.max_level:g} met "
-            "perfecte IV's.",
+            _text("GYM_ALLOWED", "Mag in een gym volgens de Game Data."),
+            _text("GYM_STATS", f"{hp} HP en een effectieve Defense van {defense:.0f}.", hp=hp, defense=round(defense)),
+            _text(
+                "GYM_VALUE",
+                f"Verdedigingswaarde {value} van 100. Op 100 staat {reference_name} op level {gd.max_level:g} met "
+                "perfecte IV's.",
+                value=value,
+                reference=reference_name,
+                level=gd.max_level,
+            ),
         ]
         if shadow:
             reasons.append(
-                f"Shadow: Defense × {shadow_defense:.2f} volgens de Game Data, dus minder stevig dan zonder Shadow."
+                _text(
+                    "GYM_SHADOW",
+                    f"Shadow: Defense × {shadow_defense:.2f} volgens de Game Data, dus minder stevig dan zonder "
+                    "Shadow.",
+                    multiplier=round(shadow_defense, 2),
+                )
             )
         dex = form["dex"]
         count[dex] += 1

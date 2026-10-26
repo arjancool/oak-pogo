@@ -69,6 +69,8 @@ class ImportOut(ApiModel):
     finished_at: UtcDatetime | None
     error_code: str | None
     error_message: str | None
+    # The values in error_message (ADR-0025); None for errors stored before OAK kept them.
+    error_data: dict[str, Any] | None = None
     duplicate_of_id: int | None
     retry_of_id: int | None
     confirm_full: bool
@@ -84,6 +86,8 @@ class IssueOut(ApiModel):
     severity: str
     code: str
     message: str
+    # The values in message (ADR-0025); None for messages stored before OAK kept them.
+    data: dict[str, Any] | None = None
     path: str | None
     source_pokemon_id: str | None
 
@@ -117,7 +121,7 @@ def _owned_job(session: Session, auth: AuthContext, import_id: int) -> ImportJob
         .where(ImportJob.id == import_id, TrainerAccount.user_id == auth.user.id)
     ).first()
     if job is None:
-        raise NotFoundError("Import niet gevonden.")
+        raise NotFoundError("Import niet gevonden.", context="import")
     return job
 
 
@@ -134,15 +138,15 @@ async def upload(
     try:
         file = form_file(form, "file")
         if file is None:
-            raise ValidationFailedError("Kies een bestand om te uploaden.", code="FILE_REQUIRED")
+            raise ValidationFailedError("Kies een bestand om te uploaden.", code="FILE_REQUIRED", context="import")
         raw_account = form_text(form, "account_id")
         try:
             account_id = int(raw_account) if raw_account else None
         except ValueError as exc:
-            raise ValidationFailedError("Ongeldig traineraccount.") from exc
+            raise ValidationFailedError("Ongeldig traineraccount.", context="account_id") from exc
         body = await file.read(limit + 1)
         if len(body) > limit:
-            raise PayloadTooLargeError("Het bestand is groter dan de ingestelde limiet.")
+            raise PayloadTooLargeError("Het bestand is groter dan de ingestelde limiet.", context="file")
         incoming = IncomingPayload(
             body=body,
             source="upload",
@@ -191,11 +195,20 @@ def _accept_upload(container: Container, user_id: int, account_id: int | None, i
                         TrainerAccount.source_fingerprint == fingerprint,
                     )
                 ).first()
-                hint = f" Deze export hoort bij '{other.nickname}'." if other else ""
+                if other is not None:
+                    raise ConflictError(
+                        "Deze export hoort bij een ander Pokémon GO-account dan het gekozen traineraccount. "
+                        f"Deze export hoort bij '{other.nickname}'.",
+                        code="ACCOUNT_MISMATCH",
+                        context="known_account",
+                        data={"nickname": other.nickname},
+                        details={"matching_account_id": other.id},
+                    )
                 raise ConflictError(
-                    "Deze export hoort bij een ander Pokémon GO-account dan het gekozen traineraccount." + hint,
+                    "Deze export hoort bij een ander Pokémon GO-account dan het gekozen traineraccount.",
                     code="ACCOUNT_MISMATCH",
-                    details={"matching_account_id": other.id if other else None},
+                    context="other_account",
+                    details={"matching_account_id": None},
                 )
         job = create_import_job(
             session,
@@ -306,7 +319,9 @@ def retry_import(
 ) -> ImportOut:
     job = _owned_job(session, auth, import_id)
     if job.status not in ("failed", "rejected", "partial"):
-        raise ConflictError("Alleen mislukte, geweigerde of gedeeltelijke imports kunnen opnieuw.")
+        raise ConflictError(
+            "Alleen mislukte, geweigerde of gedeeltelijke imports kunnen opnieuw.", context="retry_not_allowed"
+        )
     retry = _requeue(session, container, job, confirm_full=False)
     session.commit()
     container.runner.notify()

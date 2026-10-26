@@ -59,6 +59,9 @@ class Issue:
     message: str
     path: str | None = None
     source_pokemon_id: str | None = None
+    # The values in the message, so the interface can show it in another language (ADR-0025).
+    # "context" names the variant when one code has more than one message.
+    data: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True, slots=True)

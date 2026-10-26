@@ -23,6 +23,8 @@ class GameDataVersion(Base):
     sources: Mapped[list[dict[str, Any]]] = mapped_column(JSONText, default=list)
     summary: Mapped[dict[str, Any] | None] = mapped_column(JSONText)
     error: Mapped[str | None] = mapped_column(Text)
+    # The validation errors in ``error`` one by one, with code and values (ADR-0025).
+    errors: Mapped[list[dict[str, Any]] | None] = mapped_column(JSONText)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime)
     activated_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
 

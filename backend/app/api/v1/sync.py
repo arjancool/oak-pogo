@@ -16,10 +16,38 @@ from app.schemas.common import ApiModel, UtcDatetime
 router = APIRouter(prefix="/sync", tags=["sync"])
 
 
+def _text(code: str, text: str, **data: Any) -> dict[str, Any]:
+    """A sentence for the interface: a code, the Dutch text and its values (ADR-0025)."""
+    return {"code": code, "text": text, "data": data}
+
+
+def _status_message(pending: int, last_job: ImportJob | None, last_run: SyncRun | None) -> tuple[str, dict[str, Any]]:
+    if pending:
+        return "processing", _text("PROCESSING", "Er wordt een import verwerkt.")
+    if last_job is not None and last_job.status in ("failed", "rejected"):
+        if not last_job.error_message:
+            return "error", _text("LAST_IMPORT_FAILED", "De laatste import is mislukt.")
+        # The import's own message, from the group 'imports'. Without stored data (an import
+        # from before OAK kept it), only the Dutch text is known.
+        error: dict[str, Any] = {"text": last_job.error_message}
+        if last_job.error_data is not None and last_job.error_code:
+            error = {"code": last_job.error_code, "text": last_job.error_message, "data": last_job.error_data}
+        return "error", _text("LAST_IMPORT_ERROR", last_job.error_message, imports=error)
+    if last_job is not None and last_job.status == "partial":
+        return "warning", _text(
+            "LAST_IMPORT_PARTIAL",
+            "De laatste import was gedeeltelijk. Ontbrekende Pokémon zijn niet als verdwenen gemarkeerd.",
+        )
+    if last_run is not None:
+        return "connected", _text("SYNCHRONISED", "Gesynchroniseerd.")
+    return "waiting", _text("NO_EXPORT_YET", "Nog geen export ontvangen.")
+
+
 class SyncStatus(ApiModel):
     account_id: int
     state: str  # waiting | connected | processing | error | warning
-    message: str
+    # A server text: {code, text, data}, with the Dutch text as the fallback (ADR-0025).
+    message: dict[str, Any]
     last_successful_sync_at: UtcDatetime | None
     last_import_attempt_at: UtcDatetime | None
     webhook_active: bool
@@ -56,19 +84,7 @@ def sync_status(
     last_run = session.scalars(
         select(SyncRun).where(SyncRun.trainer_account_id == account.id).order_by(SyncRun.id.desc()).limit(1)
     ).first()
-    if pending:
-        state, message = "processing", "Er wordt een import verwerkt."
-    elif last_job is not None and last_job.status in ("failed", "rejected"):
-        state, message = "error", last_job.error_message or "De laatste import is mislukt."
-    elif last_job is not None and last_job.status == "partial":
-        state, message = (
-            "warning",
-            "De laatste import was gedeeltelijk. Ontbrekende Pokémon zijn niet als verdwenen gemarkeerd.",
-        )
-    elif last_run is not None:
-        state, message = "connected", "Gesynchroniseerd."
-    else:
-        state, message = "waiting", "Nog geen export ontvangen."
+    state, message = _status_message(pending, last_job, last_run)
     return SyncStatus(
         account_id=account.id,
         state=state,

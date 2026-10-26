@@ -106,9 +106,13 @@ def get_app_settings(
     return {
         "sprite_source": source,
         "sprite_url_template": template or None,
-        "sprite_notice": "Pokémon-afbeeldingen zijn auteursrechtelijk beschermd (The Pokémon Company). OAK levert ze "
-        "niet mee. Als je een externe bron inschakelt, laadt je browser de afbeeldingen daar direct. Dat is je eigen "
-        "keuze en verantwoordelijkheid (ADR-0020).",
+        # A server text: {code, text}, with the Dutch text as the fallback (ADR-0025).
+        "sprite_notice": {
+            "code": "SPRITE_NOTICE",
+            "text": "Pokémon-afbeeldingen zijn auteursrechtelijk beschermd (The Pokémon Company). OAK levert ze "
+            "niet mee. Als je een externe bron inschakelt, laadt je browser de afbeeldingen daar direct. Dat is je "
+            "eigen keuze en verantwoordelijkheid (ADR-0020).",
+        },
         "timezone": container.settings.timezone,
         "base_url": container.settings.base_url,
     }
@@ -128,7 +132,9 @@ def put_app_settings(
     else:
         template = (body.sprite_url_template or "").strip()
         if not template.startswith("https://") or "{dex}" not in template:
-            raise ValidationFailedError("Een eigen spritebron moet met https:// beginnen en {dex} bevatten.")
+            raise ValidationFailedError(
+                "Een eigen spritebron moet met https:// beginnen en {dex} bevatten.", context="sprite_template"
+            )
     set_setting(session, SPRITE_KEY, template)
     audit(
         session,
@@ -171,7 +177,7 @@ def create_user(
 ) -> UserOut:
     username = validate_username(body.username)
     if session.scalar(select(User.id).where(User.username == username)):
-        raise ConflictError("Deze gebruikersnaam bestaat al.")
+        raise ConflictError("Deze gebruikersnaam bestaat al.", context="username_taken")
     now = container.clock.now()
     user = User(
         username=username,
@@ -199,12 +205,14 @@ def update_user(
 ) -> UserOut:
     user = session.get(User, user_id)
     if user is None:
-        raise NotFoundError("Gebruiker niet gevonden.")
+        raise NotFoundError("Gebruiker niet gevonden.", context="user")
     if user.id == auth.user.id and body.status == "disabled":
-        raise ValidationFailedError("Je kunt jezelf niet uitschakelen.")
+        raise ValidationFailedError("Je kunt jezelf niet uitschakelen.", context="disable_self")
     if user.id == auth.user.id and body.password:
         # Without the current password, a stolen session could take over the owner account.
-        raise ValidationFailedError("Wijzig je eigen wachtwoord via Wachtwoord wijzigen, met je huidige wachtwoord.")
+        raise ValidationFailedError(
+            "Wijzig je eigen wachtwoord via Wachtwoord wijzigen, met je huidige wachtwoord.", context="own_password"
+        )
     now = container.clock.now()
     if body.status:
         user.status = body.status
@@ -271,7 +279,7 @@ async def create_backup(
     with container.db.transaction() as session:
         audit(session, auth.user.id, "backup_created", path.name if path else None, container)
     if path is None:
-        raise ConflictError("Er is nog geen database om te back-uppen.")
+        raise ConflictError("Er is nog geen database om te back-uppen.", context="no_database")
     return {"name": path.name, "size_bytes": path.stat().st_size}
 
 
@@ -282,10 +290,10 @@ def download_backup(
     container: Container = Depends(get_container),
 ) -> Response:
     if "/" in name or "\\" in name or not name.startswith("oak-") or not name.endswith(".db"):
-        raise NotFoundError("Back-up niet gevonden.")
+        raise NotFoundError("Back-up niet gevonden.", context="backup")
     path = container.settings.backups_dir / name
     if not path.is_file():
-        raise NotFoundError("Back-up niet gevonden.")
+        raise NotFoundError("Back-up niet gevonden.", context="backup")
     with container.db.transaction() as session:
         audit(session, auth.user.id, "backup_downloaded", name, container)
     return FileResponse(path, media_type="application/vnd.sqlite3", filename=name)
@@ -298,6 +306,6 @@ def delete_backup(
     container: Container = Depends(get_container),
 ) -> Response:
     if "/" in name or "\\" in name or not name.startswith("oak-") or not name.endswith(".db"):
-        raise NotFoundError("Back-up niet gevonden.")
+        raise NotFoundError("Back-up niet gevonden.", context="backup")
     (container.settings.backups_dir / name).unlink(missing_ok=True)
     return Response(status_code=204)

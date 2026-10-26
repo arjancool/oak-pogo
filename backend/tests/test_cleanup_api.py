@@ -245,6 +245,8 @@ def test_vintage_needs_an_explicit_override(owner: Any, container: Any, gamedata
         {"account_id": account, "ids": [pid], "action": "add_to_list", "confirmed_ids": [pid]},
     ).json()
     assert bulk["updated"] == 0 and "bulk" in bulk["skipped"][0]["reason"]
+    assert bulk["skipped"][0]["reason_text"]["code"] == "VINTAGE_BULK"
+    assert bulk["skipped"][0]["reason_text"]["text"] == bulk["skipped"][0]["reason"]
 
     refused = owner.patch(f"/api/v1/pokemon/{pid}/metadata", {"override_status": "TRANSFER_CANDIDATE"})
     assert refused.status_code == 409 and refused.json()["error"]["code"] == "VINTAGE_CONFIRMATION_REQUIRED"

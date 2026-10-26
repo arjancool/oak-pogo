@@ -69,13 +69,17 @@ def update_events(settings: Settings, db: Database, now: datetime, content: byte
             return _record(db, {**previous, "etag": etag or previous.get("etag")}, now, status="unchanged")
         events, skipped = parse_events(json.loads(content), ZoneInfo(settings.timezone))
     except (httpx.HTTPError, ValueError) as exc:
-        message = (
-            str(exc)
-            if isinstance(exc, EventFeedError)
-            else f"Eventkalender niet bruikbaar of niet bereikbaar: {type(exc).__name__}"
-        )
-        log.warning("event calendar update failed", extra={"error": message[:300]})
-        return _record(db, previous, now, status="failed", error=message)
+        if isinstance(exc, EventFeedError):
+            text = {"code": exc.code, "text": str(exc), "data": exc.data}
+        else:
+            name = type(exc).__name__
+            text = {
+                "code": "FEED_UNAVAILABLE",
+                "text": f"Eventkalender niet bruikbaar of niet bereikbaar: {name}",
+                "data": {"error": name},
+            }
+        log.warning("event calendar update failed", extra={"error": text["text"][:300]})
+        return _record(db, previous, now, status="failed", error=text)
     with db.transaction() as session:
         session.execute(delete(GameEvent).where(GameEvent.source == FEED))
         for event in events:
@@ -103,12 +107,15 @@ def update_events(settings: Settings, db: Database, now: datetime, content: byte
 
 
 def _record(
-    db: Database, feed: dict[str, Any], now: datetime, *, status: str, error: str | None = None
+    db: Database, feed: dict[str, Any], now: datetime, *, status: str, error: dict[str, Any] | None = None
 ) -> dict[str, Any]:
-    state = {**feed, "checked_at": now.isoformat(), "error": error, "url_source": FEED_SOURCE}
+    """``error`` is a server text: {code, text, data} (ADR-0025). The Dutch text is kept as
+    ``error`` and the whole text as ``error_text``."""
+    message = error["text"] if error else None
+    state = {**feed, "checked_at": now.isoformat(), "error": message, "error_text": error, "url_source": FEED_SOURCE}
     with db.transaction() as session:
         set_setting(session, FEED_KEY, state)
-    return {"status": status, "count": feed.get("count", 0), "error": error}
+    return {"status": status, "count": feed.get("count", 0), "error": message}
 
 
 def feed_status(session: Session, settings: Settings) -> dict[str, Any]:
@@ -122,7 +129,8 @@ def feed_status(session: Session, settings: Settings) -> dict[str, Any]:
         "checked_at": state.get("checked_at"),
         "count": state.get("count", 0),
         "skipped": state.get("skipped", 0),
-        "error": state.get("error"),
+        # A server text; a failure recorded before OAK kept its code has only the Dutch text.
+        "error": state.get("error_text") or ({"text": state["error"]} if state.get("error") else None),
     }
 
 

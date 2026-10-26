@@ -901,7 +901,7 @@
       "activeTitle": "Active version",
       "noActive": "None.",
       "autoUpdate": "Automatic updates: {{state}}. Last check: {{checked}}.",
-      "autoUpdateOn_one": "on, every {{hours}} hour",
+      "autoUpdateOn_one": "on, every hour",
       "autoUpdateOn_other": "on, every {{hours}} hours",
       "autoUpdateOff": "off",
       "dependentTitle": "What depends on it",

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ExternalLink } from "lucide-react";
 import { useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { RequireAccount } from "../../components/layout/RequireAccount";
@@ -45,13 +46,14 @@ interface EventsResponse {
 }
 
 function FeedCard({ data, accountId }: { data: EventsResponse; accountId: number }) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const client = useQueryClient();
   const [message, setMessage] = useState<string | null>(null);
   const update = useMutation({
     mutationFn: () => api.post("/api/v1/events/update"),
     onSuccess: () => {
-      setMessage("Bijwerken gestart. De eventkalender wordt op de achtergrond opgehaald.");
+      setMessage(t("events.feed.updateStarted"));
       window.setTimeout(() => void client.invalidateQueries({ queryKey: ["events", accountId] }), 3000);
     },
     onError: (err) => setMessage(errorMessage(err)),
@@ -60,36 +62,36 @@ function FeedCard({ data, accountId }: { data: EventsResponse; accountId: number
   return (
     <Card className="mb-5">
       <p className="text-sm">
-        Eventgegevens: <a href="https://leekduck.com/events/" className="underline hover:text-oak-300">LeekDuck.com</a> via{" "}
-        <a href="https://github.com/bigfoott/ScrapedDuck" className="underline hover:text-oak-300">
-          ScrapedDuck
-        </a>
-        . Deze gegevens zijn niet officieel. Controleer bij twijfel het event zelf.
+        <Trans
+          i18nKey="events.feed.source"
+          components={{
+            leekduck: <a href="https://leekduck.com/events/" className="underline hover:text-oak-300" />,
+            scrapedduck: <a href="https://github.com/bigfoott/ScrapedDuck" className="underline hover:text-oak-300" />,
+          }}
+        />
       </p>
       <p className="mt-1 text-xs text-muted">
-        {feed.fetched_at ? `Laatst opgehaald ${relative(feed.fetched_at)}, ${num(feed.count)} events, versie ${feed.version}.` : "Nog niet opgehaald."}
-        {feed.auto_update ? " OAK werkt de kalender automatisch bij." : " Automatisch bijwerken staat uit."}
+        {feed.fetched_at
+          ? t("events.feed.fetched", { count: feed.count, n: num(feed.count), when: relative(feed.fetched_at), version: feed.version })
+          : t("events.feed.notFetched")}{" "}
+        {feed.auto_update ? t("events.feed.autoOn") : t("events.feed.autoOff")}
       </p>
       {feed.error && (
         <div className="mt-3">
-          <Alert tone="warning">Laatste poging om bij te werken mislukte: {feed.error} De vorige events blijven gelden.</Alert>
+          <Alert tone="warning">{t("events.feed.failed", { error: feed.error })}</Alert>
         </div>
       )}
       {!data.rules.use_events && (
         <div className="mt-3">
           <Alert tone="info">
-            Events tellen niet mee in je cleanupadvies. Zet dat aan bij de{" "}
-            <Link to="/cleanup?tab=rules" className="underline">
-              Cleanup-regels
-            </Link>
-            .
+            <Trans i18nKey="events.feed.notUsed" components={{ rulesLink: <Link to="/cleanup?tab=rules" className="underline" /> }} />
           </Alert>
         </div>
       )}
       {user?.role === "owner" && (
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <Button size="sm" loading={update.isPending} onClick={() => update.mutate()}>
-            Nu bijwerken
+            {t("events.feed.updateNow")}
           </Button>
           {message && <span className="text-xs text-muted">{message}</span>}
         </div>
@@ -105,6 +107,7 @@ function hasEffect(event: EventItem): boolean {
 }
 
 function EventRow({ event, accountId, rules }: { event: EventItem; accountId: number; rules: EventsResponse["rules"] }) {
+  const { t } = useTranslation();
   const client = useQueryClient();
   const refresh = () => void client.invalidateQueries({ queryKey: ["events", accountId] });
   const ignore = useMutation({
@@ -123,45 +126,48 @@ function EventRow({ event, accountId, rules }: { event: EventItem; accountId: nu
         <p className="flex flex-wrap items-center gap-2">
           <span className="font-medium">{event.name}</span>
           <Badge>{label(eventKindLabels, event.kind)}</Badge>
-          {event.in_reach && effect && <Badge color="#22c55e">Telt mee</Badge>}
-          {event.ignored && <Badge color="#94a3b8">Genegeerd</Badge>}
+          {event.in_reach && effect && <Badge color="#22c55e">{t("events.row.counts")}</Badge>}
+          {event.ignored && <Badge color="#94a3b8">{t("events.row.ignored")}</Badge>}
           {event.link && (
             <a href={event.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-muted hover:text-ink">
-              Details <ExternalLink className="h-3 w-3" />
+              {t("events.row.details")} <ExternalLink className="h-3 w-3" />
             </a>
           )}
         </p>
         <p className="text-xs text-muted">
-          {dateTime(event.starts_at)} tot {dateTime(event.ends_at)}
-          {event.local_time ? " (lokale tijd)" : ""} · {event.source}
+          {t(event.local_time ? "events.row.periodLocal" : "events.row.period", { start: dateTime(event.starts_at), end: dateTime(event.ends_at) })} ·{" "}
+          {event.source}
         </p>
-        {event.species.length > 0 && <p className="mt-1 text-xs">Pokémon: {event.species.map((s) => s.name ?? `#${s.dex}`).join(", ")}</p>}
-        {event.unknown_names.length > 0 && (
-          <p className="mt-1 text-xs text-amber-300">Niet in de Game Data gevonden: {event.unknown_names.join(", ")}. Daarvoor bewaart OAK niets.</p>
+        {event.species.length > 0 && (
+          <p className="mt-1 text-xs">{t("events.row.species", { names: event.species.map((s) => s.name ?? `#${s.dex}`).join(", ") })}</p>
         )}
-        {event.bonuses.length > 0 && <p className="mt-1 text-xs text-muted">Bonussen: {event.bonuses.join(" · ")}</p>}
+        {event.unknown_names.length > 0 && (
+          <p className="mt-1 text-xs text-amber-300">{t("events.row.unknownNames", { names: event.unknown_names.join(", ") })}</p>
+        )}
+        {event.bonuses.length > 0 && <p className="mt-1 text-xs text-muted">{t("events.row.bonuses", { bonuses: event.bonuses.join(" · ") })}</p>}
         {event.held > 0 && (
           <p className="mt-1 text-xs text-oak-300">
-            OAK bewaart hiervoor {num(event.held)} van je Pokémon tot na het event.{" "}
-            <Link to="/cleanup?status=KEEP" className="underline">
-              Bekijk in de Cleanup Manager
-            </Link>
+            <Trans
+              i18nKey="events.row.held"
+              values={{ n: num(event.held) }}
+              components={{ cleanupLink: <Link to="/cleanup?status=KEEP" className="underline" /> }}
+            />
           </p>
         )}
         {event.transfer_bonus && event.in_reach && (
-          <p className="mt-1 text-xs text-oak-300">Tip: zet transfer-kandidaten pas tijdens dit event over ({event.transfer_bonus}).</p>
+          <p className="mt-1 text-xs text-oak-300">{t("events.row.transferTip", { bonus: event.transfer_bonus })}</p>
         )}
         {rules.use_events && effect && !event.in_reach && !event.ignored && (
-          <p className="mt-1 text-xs text-muted">Telt mee vanaf {rules.event_hold_days} dagen voor het begin.</p>
+          <p className="mt-1 text-xs text-muted">{t("events.row.countsFrom", { count: rules.event_hold_days })}</p>
         )}
       </div>
       {manual ? (
         <Button size="sm" variant="ghost" loading={remove.isPending} onClick={() => remove.mutate()}>
-          Verwijderen
+          {t("events.row.remove")}
         </Button>
       ) : (
         <Button size="sm" variant="ghost" loading={ignore.isPending} onClick={() => ignore.mutate(!event.ignored)}>
-          {event.ignored ? "Weer meetellen" : "Negeren"}
+          {event.ignored ? t("events.row.include") : t("events.row.ignore")}
         </Button>
       )}
     </li>
@@ -169,6 +175,7 @@ function EventRow({ event, accountId, rules }: { event: EventItem; accountId: nu
 }
 
 function ManualEventCard({ accountId }: { accountId: number }) {
+  const { t } = useTranslation();
   const client = useQueryClient();
   const [name, setName] = useState("");
   const [start, setStart] = useState("");
@@ -189,17 +196,15 @@ function ManualEventCard({ accountId }: { accountId: number }) {
       setStart("");
       setEnd("");
       setSpecies([]);
-      setMessage({ tone: "success", text: "Event toegevoegd. OAK berekent je cleanupadvies opnieuw." });
+      setMessage({ tone: "success", text: t("events.manual.added") });
       void client.invalidateQueries({ queryKey: ["events", accountId] });
     },
     onError: (err) => setMessage({ tone: "error", text: errorMessage(err) }),
   });
   const valid = name.trim() && start && end && species.length > 0;
   return (
-    <Card title="Eigen event toevoegen">
-      <p className="mb-3 text-sm text-muted">
-        Voor iets dat niet in de kalender staat, zoals een ruilafspraak. OAK bewaart de gekozen Pokémon en hun evolutielijn tot het event voorbij is.
-      </p>
+    <Card title={t("events.manual.title")}>
+      <p className="mb-3 text-sm text-muted">{t("events.manual.intro")}</p>
       <form
         className="grid gap-3 sm:grid-cols-2"
         onSubmit={(e) => {
@@ -208,18 +213,18 @@ function ManualEventCard({ accountId }: { accountId: number }) {
         }}
       >
         <div className="sm:col-span-2">
-          <Field label="Naam">
+          <Field label={t("events.manual.name")}>
             <Input value={name} maxLength={200} onChange={(e) => setName(e.target.value)} />
           </Field>
         </div>
-        <Field label="Begin">
+        <Field label={t("events.manual.start")}>
           <Input type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)} />
         </Field>
-        <Field label="Einde">
+        <Field label={t("events.manual.end")}>
           <Input type="datetime-local" value={end} onChange={(e) => setEnd(e.target.value)} />
         </Field>
         <div className="sm:col-span-2">
-          <SpeciesPicker onPick={(option) => setSpecies((current) => (current.some((s) => s.dex === option.dex) ? current : [...current, option]))} placeholder="Pokémon zoeken, bijv. eevee" />
+          <SpeciesPicker onPick={(option) => setSpecies((current) => (current.some((s) => s.dex === option.dex) ? current : [...current, option]))} placeholder={t("events.manual.species")} />
           {species.length > 0 && (
             <p className="mt-2 flex flex-wrap gap-2">
               {species.map((s) => (
@@ -232,7 +237,7 @@ function ManualEventCard({ accountId }: { accountId: number }) {
         </div>
         <div className="sm:col-span-2">
           <Button type="submit" variant="primary" loading={add.isPending} disabled={!valid}>
-            Toevoegen
+            {t("events.manual.add")}
           </Button>
         </div>
       </form>
@@ -246,6 +251,7 @@ function ManualEventCard({ accountId }: { accountId: number }) {
 }
 
 function Events({ accountId }: { accountId: number }) {
+  const { t } = useTranslation();
   const query = useQuery({
     queryKey: ["events", accountId],
     queryFn: () => api.get<EventsResponse>("/api/v1/events", { account_id: accountId }),
@@ -253,18 +259,15 @@ function Events({ accountId }: { accountId: number }) {
   const data = query.data;
   return (
     <>
-      <PageHeader
-        title="Komende events"
-        description="Events in de komende 60 dagen. Een Community Day houdt transfer-kandidaten uit die evolutielijn tot na het event vast, en bij dubbele Transfer Candy krijg je een tip om te wachten."
-      />
+      <PageHeader title={t("events.title")} description={t("events.description")} />
       {query.isLoading && <Spinner />}
       {query.error && <Alert tone="error">{errorMessage(query.error)}</Alert>}
       {data && (
         <>
           <FeedCard data={data} accountId={accountId} />
-          <Card className="mb-5" title="Kalender">
+          <Card className="mb-5" title={t("events.calendar")}>
             {data.events.length === 0 ? (
-              <EmptyState title="Geen events gevonden">Er staan geen events in de komende 60 dagen.</EmptyState>
+              <EmptyState title={t("events.emptyTitle")}>{t("events.emptyText")}</EmptyState>
             ) : (
               <ul className="divide-y divide-line">
                 {data.events.map((event) => (

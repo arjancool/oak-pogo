@@ -82,6 +82,22 @@ const FILTER_KEYS = [
   "family", "type", "tag", "status", "planned",
 ];
 const COLUMNS_KEY = "oak.boxColumns";
+// Names in the column picker. Columns without a word in their header show the header itself.
+const COLUMN_LABELS: Record<string, ParseKeys | string> = {
+  name: "Pokémon",
+  cp: "CP",
+  level: "box.columns.level",
+  ivs: "box.columns.ivs",
+  iv_percent: "IV%",
+  moves: "box.columns.moves",
+  types: "box.columns.type",
+  caught_at: "box.columns.caught",
+  great: "box.columns.greatRank",
+  ultra: "box.columns.ultraRank",
+  battle: "box.columns.battle",
+  keep: "box.columns.keep",
+  cleanup: "box.columns.cleanup",
+};
 const DEFAULT_PAGE_SIZE = 50;
 
 function loadColumns(): VisibilityState {
@@ -565,7 +581,12 @@ function Box({ accountId }: { accountId: number }) {
             <summary className="cursor-pointer list-none rounded-lg border border-line px-3 py-2 text-sm text-muted">{t("box.toolbar.columns")}</summary>
             <div className="absolute right-0 z-20 mt-1 w-48 space-y-1 rounded-lg border border-line bg-surface p-3 shadow-lg">
               {table.getAllLeafColumns().filter((c) => c.getCanHide()).map((c) => (
-                <Checkbox key={c.id} checked={c.getIsVisible()} onChange={(v) => c.toggleVisibility(v)} label={c.id} />
+                <Checkbox
+                  key={c.id}
+                  checked={c.getIsVisible()}
+                  onChange={(v) => c.toggleVisibility(v)}
+                  label={(COLUMN_LABELS[c.id] ?? c.id).startsWith("box.") ? t(COLUMN_LABELS[c.id] as ParseKeys) : (COLUMN_LABELS[c.id] ?? c.id)}
+                />
               ))}
             </div>
           </details>

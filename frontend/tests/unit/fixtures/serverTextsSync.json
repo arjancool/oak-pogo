@@ -297,7 +297,7 @@
     "count": 1,
     "examples": "NO_SUCH_MOVE"
    },
-   "text": "1 aanvallen zonder definitie: NO_SUCH_MOVE"
+   "text": "1 aanval zonder definitie: NO_SUCH_MOVE"
   },
   {
    "code": "RANKINGS_MISSING",
@@ -327,7 +327,7 @@
     "count": 1,
     "min": 80
    },
-   "text": "CP-multipliertabel heeft 1 regels, minimaal 80 verwacht"
+   "text": "CP-multipliertabel heeft 1 regel, minimaal 80 verwacht"
   },
   {
    "code": "TOO_FEW_SPECIES",
@@ -335,7 +335,7 @@
     "count": 1,
     "min": 800
    },
-   "text": "slechts 1 soorten, minimaal 800 verwacht"
+   "text": "slechts 1 soort, minimaal 800 verwacht"
   },
   {
    "code": "TOO_FEW_FORMS",
@@ -343,7 +343,7 @@
     "count": 1,
     "min": 1000
    },
-   "text": "slechts 1 vormen, minimaal 1000 verwacht"
+   "text": "slechts 1 vorm, minimaal 1000 verwacht"
   },
   {
    "code": "TOO_FEW_MOVES",
@@ -351,7 +351,7 @@
     "count": 1,
     "min": 200
    },
-   "text": "slechts 1 aanvallen, minimaal 200 verwacht"
+   "text": "slechts 1 aanval, minimaal 200 verwacht"
   }
  ],
  "imports": [
@@ -475,7 +475,7 @@
    "data": {
     "count": 3
    },
-   "text": "3 record(s) zonder leesbare Pokémon-ID. Welke Pokémon dat zijn is onbekend, dus ontbrekende Pokémon worden niet als verdwenen gemarkeerd."
+   "text": "3 records zonder leesbare Pokémon-ID. Welke Pokémon dat zijn is onbekend, dus ontbrekende Pokémon worden niet als verdwenen gemarkeerd."
   },
   {
    "code": "ACCOUNT_SECTION_MISSING",
@@ -499,7 +499,7 @@
    "data": {
     "count": 1
    },
-   "text": "De export bevat geen Pokémon terwijl er 1 in de inventaris staan."
+   "text": "De export bevat geen Pokémon terwijl er 1 in de inventaris staat."
   },
   {
    "code": "SUSPICIOUS_DROP",
@@ -578,7 +578,7 @@
    "data": {
     "count": 1
    },
-   "text": "1 meldingen niet opgeslagen."
+   "text": "1 melding niet opgeslagen."
   },
   {
    "code": "PAYLOAD_MISSING",

@@ -239,13 +239,14 @@ def _store_issues(session: Any, job_id: int, issues: list[Issue]) -> None:
             )
         )
     if len(ordered) > MAX_STORED_ISSUES:
+        skipped = len(ordered) - MAX_STORED_ISSUES
         session.add(
             ImportIssue(
                 import_job_id=job_id,
                 severity="info",
                 code="ISSUES_TRUNCATED",
-                message=f"{len(ordered) - MAX_STORED_ISSUES} meldingen niet opgeslagen.",
-                data={"count": len(ordered) - MAX_STORED_ISSUES},
+                message=f"{skipped} {'melding' if skipped == 1 else 'meldingen'} niet opgeslagen.",
+                data={"count": skipped},
             )
         )
 

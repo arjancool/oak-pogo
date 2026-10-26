@@ -42,7 +42,7 @@ describe("sentences about imports, sync, Game Data and events", () => {
 
   it("uses the singular and plural forms", async () => {
     await changeLanguage("en");
-    expect(serverText("imports", { code: "ISSUES_TRUNCATED", text: "1 meldingen niet opgeslagen.", data: { count: 1 } })).toBe("1 message not stored.");
+    expect(serverText("imports", { code: "ISSUES_TRUNCATED", text: "1 melding niet opgeslagen.", data: { count: 1 } })).toBe("1 message not stored.");
     expect(serverText("imports", { code: "ISSUES_TRUNCATED", text: "", data: { count: 1003 } })).toBe("1,003 messages not stored.");
   });
 

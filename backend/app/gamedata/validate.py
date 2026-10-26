@@ -42,6 +42,11 @@ def dataset_not_a_list() -> DatasetInvalidError:
     return DatasetInvalidError([_text("GAME_MASTER_NOT_A_LIST", "PokeMiners-bestand is geen lijst met templates")])
 
 
+def _count(count: int, one: str, other: str) -> str:
+    """A number with the Dutch noun that fits it: "1 vorm", "2 vormen"."""
+    return f"{count} {one if count == 1 else other}"
+
+
 def validate_dataset(dataset: Mapping[str, Any], limits: ValidationLimits | None = None) -> list[dict[str, Any]]:
     """Return a list of warnings. Raises :class:`DatasetInvalidError` on blocking problems."""
     limits = limits or ValidationLimits()
@@ -58,7 +63,8 @@ def validate_dataset(dataset: Mapping[str, Any], limits: ValidationLimits | None
         errors.append(
             _text(
                 "CPM_TOO_SHORT",
-                f"CP-multipliertabel heeft {len(cpm)} regels, minimaal {limits.min_cpm_entries} verwacht",
+                f"CP-multipliertabel heeft {_count(len(cpm), 'regel', 'regels')}, "
+                f"minimaal {limits.min_cpm_entries} verwacht",
                 count=len(cpm),
                 min=limits.min_cpm_entries,
             )
@@ -104,7 +110,7 @@ def validate_dataset(dataset: Mapping[str, Any], limits: ValidationLimits | None
         errors.append(
             _text(
                 "TOO_FEW_SPECIES",
-                f"slechts {len(species)} soorten, minimaal {limits.min_species} verwacht",
+                f"slechts {_count(len(species), 'soort', 'soorten')}, minimaal {limits.min_species} verwacht",
                 count=len(species),
                 min=limits.min_species,
             )
@@ -113,7 +119,7 @@ def validate_dataset(dataset: Mapping[str, Any], limits: ValidationLimits | None
         errors.append(
             _text(
                 "TOO_FEW_FORMS",
-                f"slechts {len(forms)} vormen, minimaal {limits.min_forms} verwacht",
+                f"slechts {_count(len(forms), 'vorm', 'vormen')}, minimaal {limits.min_forms} verwacht",
                 count=len(forms),
                 min=limits.min_forms,
             )
@@ -122,7 +128,7 @@ def validate_dataset(dataset: Mapping[str, Any], limits: ValidationLimits | None
         errors.append(
             _text(
                 "TOO_FEW_MOVES",
-                f"slechts {len(moves)} aanvallen, minimaal {limits.min_moves} verwacht",
+                f"slechts {_count(len(moves), 'aanval', 'aanvallen')}, minimaal {limits.min_moves} verwacht",
                 count=len(moves),
                 min=limits.min_moves,
             )
@@ -138,7 +144,7 @@ def validate_dataset(dataset: Mapping[str, Any], limits: ValidationLimits | None
         warnings.append(
             _text(
                 "FORMS_WITHOUT_STATS",
-                f"{len(bad_stats)} vormen zonder geldige basisstatistieken: {examples}",
+                f"{_count(len(bad_stats), 'vorm', 'vormen')} zonder geldige basisstatistieken: {examples}",
                 count=len(bad_stats),
                 examples=examples,
             )
@@ -154,7 +160,7 @@ def validate_dataset(dataset: Mapping[str, Any], limits: ValidationLimits | None
         warnings.append(
             _text(
                 "MOVES_WITHOUT_DEFINITION",
-                f"{len(unknown_moves)} aanvallen zonder definitie: {examples}",
+                f"{_count(len(unknown_moves), 'aanval', 'aanvallen')} zonder definitie: {examples}",
                 count=len(unknown_moves),
                 examples=examples,
             )

@@ -124,9 +124,13 @@ def classify(
         reasons.append(
             Reason(
                 "UNIDENTIFIABLE_RECORDS",
-                f"{export.unidentifiable_records} record(s) zonder leesbare Pokémon-ID. Welke "
-                "Pokémon dat zijn is onbekend, dus ontbrekende Pokémon worden niet als verdwenen "
-                "gemarkeerd.",
+                (
+                    "1 record zonder leesbare Pokémon-ID. Welke Pokémon dat is, is onbekend"
+                    if export.unidentifiable_records == 1
+                    else f"{export.unidentifiable_records} records zonder leesbare Pokémon-ID. Welke "
+                    "Pokémon dat zijn is onbekend"
+                )
+                + ", dus ontbrekende Pokémon worden niet als verdwenen gemarkeerd.",
                 data={"count": export.unidentifiable_records},
             )
         )
@@ -184,7 +188,8 @@ def classify(
             reasons.append(
                 Reason(
                     "EMPTY_POKEMON_LIST",
-                    f"De export bevat geen Pokémon terwijl er {previous} in de inventaris staan.",
+                    f"De export bevat geen Pokémon terwijl er {previous} in de inventaris "
+                    f"{'staat' if previous == 1 else 'staan'}.",
                     confirmable=True,
                     data={"count": previous},
                 )

@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createColumnHelper, flexRender, getCoreRowModel, useReactTable, type VisibilityState } from "@tanstack/react-table";
 import clsx from "clsx";
+import type { ParseKeys } from "i18next";
 import { Download, Filter, HelpCircle, LayoutGrid, Rows3, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 import { z } from "zod";
 
@@ -17,50 +19,50 @@ import { confirmationItem, pokemonPage, type ConfirmationItem, type PokemonSumma
 import type { Facets } from "../../lib/types";
 import { useUrlState } from "../../lib/useUrlState";
 
-const FLAGS: [string, string][] = [
-  ["shiny", "Shiny"],
-  ["lucky", "Lucky"],
-  ["shadow", "Shadow"],
-  ["purified", "Purified"],
-  ["favorite", "Favoriet"],
-  ["vintage", "Vintage (2016–2019)"],
-  ["unknown_date", "Vangstdatum onbekend"],
-  ["hundo", "Hundo"],
-  ["shundo", "Shundo"],
-  ["legendary", "Legendary"],
-  ["mythical", "Mythical"],
-  ["ultrabeast", "Ultra Beast"],
-  ["costume", "Kostuum"],
-  ["background", "Achtergrond"],
-  ["dynamax", "Dynamax"],
-  ["gigantamax", "Gigantamax"],
-  ["traded", "Geruild"],
-  ["new", "Nieuw"],
-  ["protected", "Beschermd"],
-  ["untagged", "Zonder tag"],
-  ["duplicate", "Dubbel"],
-  ["nicknamed", "Bijnaam"],
+const FLAGS: [string, ParseKeys][] = [
+  ["shiny", "box.flags.shiny"],
+  ["lucky", "box.flags.lucky"],
+  ["shadow", "box.flags.shadow"],
+  ["purified", "box.flags.purified"],
+  ["favorite", "box.flags.favorite"],
+  ["vintage", "box.flags.vintage"],
+  ["unknown_date", "box.flags.unknownDate"],
+  ["hundo", "box.flags.hundo"],
+  ["shundo", "box.flags.shundo"],
+  ["legendary", "box.flags.legendary"],
+  ["mythical", "box.flags.mythical"],
+  ["ultrabeast", "box.flags.ultrabeast"],
+  ["costume", "box.flags.costume"],
+  ["background", "box.flags.background"],
+  ["dynamax", "box.flags.dynamax"],
+  ["gigantamax", "box.flags.gigantamax"],
+  ["traded", "box.flags.traded"],
+  ["new", "box.flags.new"],
+  ["protected", "box.flags.protected"],
+  ["untagged", "box.flags.untagged"],
+  ["duplicate", "box.flags.duplicate"],
+  ["nicknamed", "box.flags.nicknamed"],
 ];
-const SORTS: [string, string][] = [
-  ["-cp", "CP hoog–laag"],
-  ["cp", "CP laag–hoog"],
-  ["name", "Naam"],
-  ["dex", "Pokédex-nummer"],
-  ["-iv", "IV-percentage"],
-  ["-atk", "Attack-IV"],
-  ["-def", "Defense-IV"],
-  ["-sta", "Stamina-IV"],
-  ["-level", "Level"],
-  ["-caught", "Vangstdatum (nieuw eerst)"],
-  ["caught", "Vangstdatum (oud eerst)"],
-  ["great", "Great League-potentie"],
-  ["ultra", "Ultra League-potentie"],
-  ["-master", "Master League-potentie"],
-  ["-cleanup", "Cleanup-prioriteit"],
-  ["-battle", "Bruikbaarheid hoog–laag"],
-  ["keep", "Bewaarscore laag–hoog"],
-  ["-keep", "Bewaarscore hoog–laag"],
-  ["-changed", "Laatst gewijzigd"],
+const SORTS: [string, ParseKeys][] = [
+  ["-cp", "box.sorts.cpDesc"],
+  ["cp", "box.sorts.cpAsc"],
+  ["name", "box.sorts.name"],
+  ["dex", "box.sorts.dex"],
+  ["-iv", "box.sorts.iv"],
+  ["-atk", "box.sorts.atk"],
+  ["-def", "box.sorts.def"],
+  ["-sta", "box.sorts.sta"],
+  ["-level", "box.sorts.level"],
+  ["-caught", "box.sorts.caughtDesc"],
+  ["caught", "box.sorts.caughtAsc"],
+  ["great", "box.sorts.great"],
+  ["ultra", "box.sorts.ultra"],
+  ["-master", "box.sorts.master"],
+  ["-cleanup", "box.sorts.cleanup"],
+  ["-battle", "box.sorts.battle"],
+  ["keep", "box.sorts.keepAsc"],
+  ["-keep", "box.sorts.keepDesc"],
+  ["-changed", "box.sorts.changed"],
 ];
 interface BulkBody {
   action: string;
@@ -80,6 +82,22 @@ const FILTER_KEYS = [
   "family", "type", "tag", "status", "planned",
 ];
 const COLUMNS_KEY = "oak.boxColumns";
+// Names in the column picker. Columns without a word in their header show the header itself.
+const COLUMN_LABELS: Record<string, ParseKeys | string> = {
+  name: "Pokémon",
+  cp: "CP",
+  level: "box.columns.level",
+  ivs: "box.columns.ivs",
+  iv_percent: "IV%",
+  moves: "box.columns.moves",
+  types: "box.columns.type",
+  caught_at: "box.columns.caught",
+  great: "box.columns.greatRank",
+  ultra: "box.columns.ultraRank",
+  battle: "box.columns.battle",
+  keep: "box.columns.keep",
+  cleanup: "box.columns.cleanup",
+};
 const DEFAULT_PAGE_SIZE = 50;
 
 function loadColumns(): VisibilityState {
@@ -93,6 +111,7 @@ function loadColumns(): VisibilityState {
 const column = createColumnHelper<PokemonSummary>();
 
 function TriState({ name, label, value, onChange }: { name: string; label: string; value: string | undefined; onChange: (v: string | null) => void }) {
+  const { t } = useTranslation();
   const next = value === "true" ? "false" : value === "false" ? null : "true";
   return (
     <button
@@ -104,7 +123,7 @@ function TriState({ name, label, value, onChange }: { name: string; label: strin
         value === "false" && "border-red-500/60 bg-red-500/10 text-red-300 line-through",
         !value && "border-line text-muted hover:text-ink",
       )}
-      title="Klik: alleen deze → juist niet → geen filter"
+      title={t("box.filters.flagHint")}
     >
       {label}
     </button>
@@ -112,6 +131,7 @@ function TriState({ name, label, value, onChange }: { name: string; label: strin
 }
 
 function FilterPanel({ state, update, facets }: { state: Record<string, string>; update: (c: Record<string, string | null>) => void; facets: Facets | undefined }) {
+  const { t } = useTranslation();
   const [speciesInput, setSpeciesInput] = useState("");
   const selectedSpecies = (state.species ?? "").split(",").filter(Boolean);
   const selectedYears = (state.years ?? "").split(",").filter(Boolean);
@@ -136,32 +156,32 @@ function FilterPanel({ state, update, facets }: { state: Record<string, string>;
       <div className="space-y-4">
         <div className="flex flex-wrap gap-1.5">
           {FLAGS.map(([key, text]) => (
-            <TriState key={key} name={key} label={text} value={state[key]} onChange={(v) => update({ [key]: v })} />
+            <TriState key={key} name={key} label={t(text)} value={state[key]} onChange={(v) => update({ [key]: v })} />
           ))}
         </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <div>
             <p className="mb-1 text-xs text-muted">CP</p>
             <div className="flex items-center gap-2">
-              {range("cp_min", "min")} – {range("cp_max", "max")}
+              {range("cp_min", t("box.filters.min"))} – {range("cp_max", t("box.filters.max"))}
             </div>
           </div>
           <div>
-            <p className="mb-1 text-xs text-muted">IV-percentage</p>
+            <p className="mb-1 text-xs text-muted">{t("box.filters.ivPercent")}</p>
             <div className="flex items-center gap-2">
-              {range("iv_min", "min")} – {range("iv_max", "max")}
+              {range("iv_min", t("box.filters.min"))} – {range("iv_max", t("box.filters.max"))}
             </div>
           </div>
           <div>
-            <p className="mb-1 text-xs text-muted">Level</p>
+            <p className="mb-1 text-xs text-muted">{t("box.filters.level")}</p>
             <div className="flex items-center gap-2">
-              {range("level_min", "min")} – {range("level_max", "max")}
+              {range("level_min", t("box.filters.min"))} – {range("level_max", t("box.filters.max"))}
             </div>
           </div>
           <div>
-            <p className="mb-1 text-xs text-muted">League-geschiktheid</p>
+            <p className="mb-1 text-xs text-muted">{t("box.filters.league")}</p>
             <Select value={state.league ?? ""} onChange={(e) => update({ league: e.target.value || null })} className="w-full">
-              <option value="">Alle</option>
+              <option value="">{t("box.filters.all")}</option>
               <option value="great">Great League</option>
               <option value="ultra">Ultra League</option>
               <option value="master">Master League</option>
@@ -170,14 +190,14 @@ function FilterPanel({ state, update, facets }: { state: Record<string, string>;
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <p className="mb-1 text-xs text-muted">Soort</p>
+            <p className="mb-1 text-xs text-muted">{t("box.filters.species")}</p>
             <div className="flex flex-wrap items-center gap-1.5">
               {selectedSpecies.map((id) => {
                 const name = facets?.species.find((s) => String(s.species_id) === id)?.name ?? `#${id}`;
                 return (
                   <Badge key={id}>
                     {name}
-                    <button aria-label={`${name} verwijderen`} onClick={() => toggleList("species", selectedSpecies, id)}>
+                    <button aria-label={t("box.filters.removeSpecies", { name })} onClick={() => toggleList("species", selectedSpecies, id)}>
                       <X className="h-3 w-3" />
                     </button>
                   </Badge>
@@ -185,7 +205,7 @@ function FilterPanel({ state, update, facets }: { state: Record<string, string>;
               })}
               <Input
                 list="oak-species"
-                placeholder="Soort toevoegen…"
+                placeholder={t("box.filters.addSpecies")}
                 value={speciesInput}
                 className="w-48"
                 onChange={(event) => {
@@ -207,7 +227,7 @@ function FilterPanel({ state, update, facets }: { state: Record<string, string>;
             </div>
           </div>
           <div>
-            <p className="mb-1 text-xs text-muted">Vangstjaar</p>
+            <p className="mb-1 text-xs text-muted">{t("box.filters.year")}</p>
             <div className="flex flex-wrap gap-1.5">
               {facets?.years.map((y) => (
                 <button
@@ -226,7 +246,7 @@ function FilterPanel({ state, update, facets }: { state: Record<string, string>;
         </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <div>
-            <p className="mb-1 text-xs text-muted">Cleanup-status</p>
+            <p className="mb-1 text-xs text-muted">{t("box.filters.cleanup")}</p>
             <div className="flex flex-wrap gap-1.5">
               {Object.entries(statusLabels).map(([key, text]) => (
                 <button
@@ -243,9 +263,9 @@ function FilterPanel({ state, update, facets }: { state: Record<string, string>;
             </div>
           </div>
           <div>
-            <p className="mb-1 text-xs text-muted">Type</p>
+            <p className="mb-1 text-xs text-muted">{t("box.filters.type")}</p>
             <Select value={state.type ?? ""} onChange={(e) => update({ type: e.target.value || null })} className="w-full">
-              <option value="">Alle typen</option>
+              <option value="">{t("box.filters.allTypes")}</option>
               {facets?.types.map((t) => (
                 <option key={t} value={t}>
                   {typeNames[t] ?? t}
@@ -254,13 +274,13 @@ function FilterPanel({ state, update, facets }: { state: Record<string, string>;
             </Select>
           </div>
           <div>
-            <p className="mb-1 text-xs text-muted">Aanval bevat</p>
-            <Input defaultValue={state.move ?? ""} key={`move-${state.move ?? ""}`} placeholder="bijv. hydro" onBlur={(e) => update({ move: e.target.value || null })} />
+            <p className="mb-1 text-xs text-muted">{t("box.filters.move")}</p>
+            <Input defaultValue={state.move ?? ""} key={`move-${state.move ?? ""}`} placeholder={t("box.filters.movePlaceholder")} onBlur={(e) => update({ move: e.target.value || null })} />
           </div>
           <div>
-            <p className="mb-1 text-xs text-muted">Evolutiefamilie</p>
+            <p className="mb-1 text-xs text-muted">{t("box.filters.family")}</p>
             <Select value={state.family ?? ""} onChange={(e) => update({ family: e.target.value || null })} className="w-full">
-              <option value="">Alle families</option>
+              <option value="">{t("box.filters.allFamilies")}</option>
               {facets?.families.map((f) => (
                 <option key={f} value={f}>
                   {f.replace("FAMILY_", "").replaceAll("_", " ").toLowerCase()}
@@ -270,11 +290,11 @@ function FilterPanel({ state, update, facets }: { state: Record<string, string>;
           </div>
         </div>
         <div>
-          <p className="mb-1 text-xs text-muted">Inventaris</p>
+          <p className="mb-1 text-xs text-muted">{t("box.filters.inventory")}</p>
           <Select value={state.status ?? ""} onChange={(e) => update({ status: e.target.value || null })}>
-            <option value="">In inventaris</option>
-            <option value="not_in_inventory">Niet meer in inventaris</option>
-            <option value="all">Alles</option>
+            <option value="">{t("box.filters.inInventory")}</option>
+            <option value="not_in_inventory">{t("box.filters.notInInventory")}</option>
+            <option value="all">{t("box.filters.everything")}</option>
           </Select>
         </div>
       </div>
@@ -283,25 +303,28 @@ function FilterPanel({ state, update, facets }: { state: Record<string, string>;
 }
 
 function SyntaxHelp({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useTranslation();
+  // The examples are search syntax and stay as they are; only the explanations are translated.
+  // One example has the word "of" (or) between two terms, so that example has its own key.
   const rows: [string, string][] = [
-    ["gyarados", "Naam, bijnaam of vorm bevat de tekst"],
-    ["cp>2500  cp<=1500  cp:1000-2000", "CP vergelijken of een bereik"],
-    ["iv>=90  atk:0  def:15  sta:15", "IV-percentage of losse IV's"],
-    ["ivs:15/15/15  of  4*", "Exacte IV's, 4* is een hundo"],
-    ["shiny lucky shadow purified favorite", "Eigenschappen"],
-    ["legendary mythical ultrabeast dynamax gigantamax", "Klassen en Max-vormen"],
-    ["costume background traded nieuw verdwenen", "Kostuum, achtergrond, geruild, nieuw, verdwenen"],
-    ["2018  year<2019", "Vangstjaar"],
-    ["#130  dex:130", "Pokédex-nummer"],
-    ["move:hydro  type:water  family:magikarp", "Aanval, type of familie"],
-    ["status:transfer_candidate  beschermd  dubbel", "Cleanup-status, bescherming, dubbelen"],
-    ["vintage  datumonbekend", "Gevangen in 2016–2019, of zonder bruikbare vangstdatum"],
-    ["bruikbaarheid>=60  bewaar<40", "Bruikbaarheids- en bewaarscore (0–100)"],
-    ["!favorite", "Een ! keert een term om"],
+    ["gyarados", t("box.syntax.name")],
+    ["cp>2500  cp<=1500  cp:1000-2000", t("box.syntax.cp")],
+    ["iv>=90  atk:0  def:15  sta:15", t("box.syntax.iv")],
+    [t("box.syntax.exactExample"), t("box.syntax.exact")],
+    ["shiny lucky shadow purified favorite", t("box.syntax.properties")],
+    ["legendary mythical ultrabeast dynamax gigantamax", t("box.syntax.classes")],
+    ["costume background traded nieuw verdwenen", t("box.syntax.extras")],
+    ["2018  year<2019", t("box.syntax.year")],
+    ["#130  dex:130", t("box.syntax.dex")],
+    ["move:hydro  type:water  family:magikarp", t("box.syntax.moveTypeFamily")],
+    ["status:transfer_candidate  beschermd  dubbel", t("box.syntax.status")],
+    ["vintage  datumonbekend", t("box.syntax.vintage")],
+    ["bruikbaarheid>=60  bewaar<40", t("box.syntax.scores")],
+    ["!favorite", t("box.syntax.not")],
   ];
   return (
-    <Dialog open={open} onClose={onClose} title="Zoeksyntax" wide>
-      <p className="mb-3 text-sm text-muted">Termen worden met EN gecombineerd. Spaties of &amp; scheiden de termen.</p>
+    <Dialog open={open} onClose={onClose} title={t("box.syntax.title")} wide>
+      <p className="mb-3 text-sm text-muted">{t("box.syntax.intro")}</p>
       <table className="w-full text-sm">
         <tbody>
           {rows.map(([example, meaning]) => (
@@ -317,6 +340,7 @@ function SyntaxHelp({ open, onClose }: { open: boolean; onClose: () => void }) {
 }
 
 function Box({ accountId }: { accountId: number }) {
+  const { t } = useTranslation();
   const [state, update] = useUrlState();
   const navigate = useNavigate();
   const client = useQueryClient();
@@ -370,10 +394,11 @@ function Box({ accountId }: { accountId: number }) {
     mutationFn: async (body: BulkBody) =>
       bulkResult.parse(await api.post("/api/v1/pokemon/bulk", { account_id: accountId, ids: body.ids ?? [...selected], ...body })),
     onSuccess: (result, body) => {
-      const parts = [`${result.updated} Pokémon bijgewerkt.`];
-      if (result.skipped.length) parts.push(`${result.skipped.length} overgeslagen: ${[...new Set(result.skipped.map((s) => s.reason))].join("; ")}.`);
-      if (result.needs_confirmation.length) parts.push(`${result.needs_confirmation.length} wachten op je bevestiging.`);
-      parts.push("Alleen OAK-gegevens zijn gewijzigd.");
+      const parts = [t("box.bulk.updated", { count: result.updated })];
+      if (result.skipped.length)
+        parts.push(t("box.bulk.skipped", { count: result.skipped.length, reasons: [...new Set(result.skipped.map((s) => s.reason))].join("; ") }));
+      if (result.needs_confirmation.length) parts.push(t("box.bulk.waiting", { count: result.needs_confirmation.length }));
+      parts.push(t("box.bulk.oakOnly"));
       setMessage({ tone: "success", text: parts.join(" ") });
       setPending(result.needs_confirmation.length ? { body, items: result.needs_confirmation } : null);
       void client.invalidateQueries({ queryKey: ["pokemon"] });
@@ -435,22 +460,22 @@ function Box({ accountId }: { accountId: number }) {
         cell: (info) => <span className="font-semibold tabular-nums">{num(info.getValue(), "?")}</span>,
       }),
       column.accessor("level", {
-        header: () => <SortHeader label="Level" sortKey="level" sort={sort} onSort={(s) => update({ sort: s })} />,
+        header: () => <SortHeader label={t("box.columns.level")} sortKey="level" sort={sort} onSort={(s) => update({ sort: s })} />,
         cell: (info) => level(info.getValue()),
       }),
       column.display({
         id: "ivs",
-        header: "IV's",
+        header: t("box.columns.ivs"),
         cell: ({ row }) => <span className="font-mono text-xs">{ivs(row.original.iv_attack, row.original.iv_defense, row.original.iv_stamina)}</span>,
       }),
       column.accessor("iv_percent", {
         header: () => <SortHeader label="IV%" sortKey="iv" sort={sort} onSort={(s) => update({ sort: s })} />,
         cell: (info) => <IvPercent value={info.getValue()} />,
       }),
-      column.display({ id: "moves", header: "Aanvallen", cell: ({ row }) => <MoveLine pokemon={row.original} /> }),
+      column.display({ id: "moves", header: t("box.columns.moves"), cell: ({ row }) => <MoveLine pokemon={row.original} /> }),
       column.display({
         id: "types",
-        header: "Type",
+        header: t("box.columns.type"),
         cell: ({ row }) => (
           <div className="flex gap-1">
             {row.original.types.map((t) => (
@@ -460,36 +485,36 @@ function Box({ accountId }: { accountId: number }) {
         ),
       }),
       column.accessor("caught_at", {
-        header: () => <SortHeader label="Gevangen" sortKey="caught" sort={sort} onSort={(s) => update({ sort: s })} />,
+        header: () => <SortHeader label={t("box.columns.caught")} sortKey="caught" sort={sort} onSort={(s) => update({ sort: s })} />,
         cell: (info) => <span className="whitespace-nowrap text-xs">{date(info.getValue())}</span>,
       }),
       column.display({
         id: "great",
-        header: () => <SortHeader label="GL-rang" sortKey="great" sort={sort} onSort={(s) => update({ sort: s === "-great" ? "great" : "-great" })} />,
+        header: () => <SortHeader label={t("box.columns.greatRank")} sortKey="great" sort={sort} onSort={(s) => update({ sort: s === "-great" ? "great" : "-great" })} />,
         cell: ({ row }) => <span className="tabular-nums">{row.original.pvp.great.rank ?? "–"}</span>,
       }),
       column.display({
         id: "ultra",
-        header: () => <SortHeader label="UL-rang" sortKey="ultra" sort={sort} onSort={(s) => update({ sort: s === "-ultra" ? "ultra" : "-ultra" })} />,
+        header: () => <SortHeader label={t("box.columns.ultraRank")} sortKey="ultra" sort={sort} onSort={(s) => update({ sort: s === "-ultra" ? "ultra" : "-ultra" })} />,
         cell: ({ row }) => <span className="tabular-nums">{row.original.pvp.ultra.rank ?? "–"}</span>,
       }),
       column.display({
         id: "battle",
-        header: () => <SortHeader label="Bruikb." sortKey="battle" sort={sort} onSort={(s) => update({ sort: s === "-battle" ? "battle" : "-battle" })} />,
+        header: () => <SortHeader label={t("box.columns.battle")} sortKey="battle" sort={sort} onSort={(s) => update({ sort: s === "-battle" ? "battle" : "-battle" })} />,
         cell: ({ row }) => <span className="tabular-nums">{row.original.cleanup?.battle_score ?? "–"}</span>,
       }),
       column.display({
         id: "keep",
-        header: () => <SortHeader label="Bewaar" sortKey="keep" sort={sort} onSort={(s) => update({ sort: s === "-keep" ? "keep" : "-keep" })} />,
+        header: () => <SortHeader label={t("box.columns.keep")} sortKey="keep" sort={sort} onSort={(s) => update({ sort: s === "-keep" ? "keep" : "-keep" })} />,
         cell: ({ row }) => <span className="tabular-nums">{row.original.cleanup?.keep_score ?? "–"}</span>,
       }),
       column.display({
         id: "cleanup",
-        header: () => <SortHeader label="Cleanup" sortKey="cleanup" sort={sort} onSort={(s) => update({ sort: s })} />,
+        header: () => <SortHeader label={t("box.columns.cleanup")} sortKey="cleanup" sort={sort} onSort={(s) => update({ sort: s })} />,
         cell: ({ row }) => <CleanupBadge status={row.original.cleanup?.status} />,
       }),
     ],
-    [allSelected, items, selected, sort, update],
+    [allSelected, items, selected, sort, t, update],
   );
 
   const table = useReactTable({
@@ -509,8 +534,8 @@ function Box({ accountId }: { accountId: number }) {
   return (
     <>
       <PageHeader
-        title="Pokémon Box"
-        description="Alle Pokémon uit de laatste synchronisatie. Acties hier wijzigen alleen OAK-gegevens, nooit het spel."
+        title={t("box.title")}
+        description={t("box.description")}
         actions={
           <>
             <a href={exportUrl}>
@@ -518,27 +543,27 @@ function Box({ accountId }: { accountId: number }) {
                 CSV
               </Button>
             </a>
-            <Button variant={view === "table" ? "primary" : "outline"} onClick={() => update({ view: null }, false)} icon={<Rows3 className="h-4 w-4" />} aria-label="Tabel" />
-            <Button variant={view === "cards" ? "primary" : "outline"} onClick={() => update({ view: "cards" }, false)} icon={<LayoutGrid className="h-4 w-4" />} aria-label="Kaarten" />
+            <Button variant={view === "table" ? "primary" : "outline"} onClick={() => update({ view: null }, false)} icon={<Rows3 className="h-4 w-4" />} aria-label={t("box.toolbar.table")} />
+            <Button variant={view === "cards" ? "primary" : "outline"} onClick={() => update({ view: "cards" }, false)} icon={<LayoutGrid className="h-4 w-4" />} aria-label={t("box.toolbar.cards")} />
           </>
         }
       />
       <div className="no-print mb-3 flex flex-wrap items-center gap-2">
         <div className="relative min-w-64 flex-1">
-          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Zoeken: gyarados cp>2500 shiny !favorite" aria-label="Zoeken" />
+          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("box.toolbar.searchPlaceholder")} aria-label={t("box.toolbar.search")} />
         </div>
         <Button variant="ghost" onClick={() => setHelp(true)} icon={<HelpCircle className="h-4 w-4" />}>
-          Syntax
+          {t("box.toolbar.syntax")}
         </Button>
-        <Select value={sort} onChange={(e) => update({ sort: e.target.value })} aria-label="Sorteren">
+        <Select value={sort} onChange={(e) => update({ sort: e.target.value })} aria-label={t("box.toolbar.sort")}>
           {SORTS.map(([value, text]) => (
             <option key={value} value={value}>
-              {text}
+              {t(text)}
             </option>
           ))}
         </Select>
         <Button variant={showFilters ? "primary" : "outline"} onClick={() => setShowFilters((v) => !v)} icon={<Filter className="h-4 w-4" />}>
-          Filters{activeFilters.length ? ` (${activeFilters.length})` : ""}
+          {t("box.toolbar.filters")}{activeFilters.length ? ` (${activeFilters.length})` : ""}
         </Button>
         {(activeFilters.length > 0 || state.q) && (
           <Button
@@ -548,15 +573,20 @@ function Box({ accountId }: { accountId: number }) {
               update(Object.fromEntries([...FILTER_KEYS, "q"].map((k) => [k, null])));
             }}
           >
-            Wissen
+            {t("box.toolbar.clear")}
           </Button>
         )}
         {view === "table" && (
           <details className="relative">
-            <summary className="cursor-pointer list-none rounded-lg border border-line px-3 py-2 text-sm text-muted">Kolommen</summary>
+            <summary className="cursor-pointer list-none rounded-lg border border-line px-3 py-2 text-sm text-muted">{t("box.toolbar.columns")}</summary>
             <div className="absolute right-0 z-20 mt-1 w-48 space-y-1 rounded-lg border border-line bg-surface p-3 shadow-lg">
               {table.getAllLeafColumns().filter((c) => c.getCanHide()).map((c) => (
-                <Checkbox key={c.id} checked={c.getIsVisible()} onChange={(v) => c.toggleVisibility(v)} label={c.id} />
+                <Checkbox
+                  key={c.id}
+                  checked={c.getIsVisible()}
+                  onChange={(v) => c.toggleVisibility(v)}
+                  label={(COLUMN_LABELS[c.id] ?? c.id).startsWith("box.") ? t(COLUMN_LABELS[c.id] as ParseKeys) : (COLUMN_LABELS[c.id] ?? c.id)}
+                />
               ))}
             </div>
           </details>
@@ -570,18 +600,18 @@ function Box({ accountId }: { accountId: number }) {
       )}
       {selected.size > 0 && (
         <div className="no-print sticky top-14 z-20 mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-oak-500/40 bg-surface p-3 shadow-lg">
-          <span className="text-sm font-medium">{selected.size} geselecteerd</span>
-          <Button size="sm" onClick={() => bulk.mutate({ action: "protect" })}>Beschermen</Button>
-          <Button size="sm" onClick={() => bulk.mutate({ action: "unprotect" })}>Bescherming opheffen</Button>
-          <Button size="sm" onClick={() => setTagDialog(true)}>OAK-tag toevoegen</Button>
-          <Button size="sm" onClick={() => bulk.mutate({ action: "review" })}>Markeren voor review</Button>
-          <Button size="sm" onClick={() => bulk.mutate({ action: "transfer_candidate" })}>Markeren als transfer-kandidaat</Button>
-          <Button size="sm" onClick={() => bulk.mutate({ action: "add_to_list", value: "cleanup" })}>Op actielijst</Button>
+          <span className="text-sm font-medium">{t("box.selection.selected", { count: selected.size })}</span>
+          <Button size="sm" onClick={() => bulk.mutate({ action: "protect" })}>{t("box.selection.protect")}</Button>
+          <Button size="sm" onClick={() => bulk.mutate({ action: "unprotect" })}>{t("box.selection.unprotect")}</Button>
+          <Button size="sm" onClick={() => setTagDialog(true)}>{t("box.selection.addTag")}</Button>
+          <Button size="sm" onClick={() => bulk.mutate({ action: "review" })}>{t("box.selection.review")}</Button>
+          <Button size="sm" onClick={() => bulk.mutate({ action: "transfer_candidate" })}>{t("box.selection.transferCandidate")}</Button>
+          <Button size="sm" onClick={() => bulk.mutate({ action: "add_to_list", value: "cleanup" })}>{t("box.selection.actionList")}</Button>
           <Button size="sm" disabled={selected.size < 2 || selected.size > 6} onClick={() => navigate(`/compare?ids=${[...selected].join(",")}`)}>
-            Vergelijken
+            {t("box.selection.compare")}
           </Button>
           <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>
-            Selectie wissen
+            {t("box.selection.clear")}
           </Button>
         </div>
       )}
@@ -590,7 +620,7 @@ function Box({ accountId }: { accountId: number }) {
       ) : query.error ? (
         <Alert tone="error">{errorMessage(query.error)}</Alert>
       ) : items.length === 0 ? (
-        <EmptyState title="Geen Pokémon gevonden">Pas de zoekopdracht of filters aan, of importeer eerst een export.</EmptyState>
+        <EmptyState title={t("box.empty.title")}>{t("box.empty.text")}</EmptyState>
       ) : view === "table" ? (
         <div className="overflow-x-auto rounded-xl border border-line bg-surface">
           <table className="w-full text-sm">
@@ -663,7 +693,7 @@ function Box({ accountId }: { accountId: number }) {
       <Dialog
         open={tagDialog}
         onClose={() => setTagDialog(false)}
-        title="OAK-tag toevoegen"
+        title={t("box.tagDialog.title")}
         footer={
           <Button
             variant="primary"
@@ -674,12 +704,12 @@ function Box({ accountId }: { accountId: number }) {
               setTagValue("");
             }}
           >
-            Toevoegen
+            {t("box.tagDialog.add")}
           </Button>
         }
       >
-        <Input value={tagValue} onChange={(e) => setTagValue(e.target.value)} placeholder="bijv. raid, ruilen, pvp" maxLength={40} autoFocus />
-        <p className="mt-2 text-xs text-muted">OAK-tags staan los van de tags in Pokémon GO en veranderen niets in het spel.</p>
+        <Input value={tagValue} onChange={(e) => setTagValue(e.target.value)} placeholder={t("box.tagDialog.placeholder")} maxLength={40} autoFocus />
+        <p className="mt-2 text-xs text-muted">{t("box.tagDialog.hint")}</p>
       </Dialog>
     </>
   );

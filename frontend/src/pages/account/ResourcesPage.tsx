@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { ParseKeys } from "i18next";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { RequireAccount } from "../../components/layout/RequireAccount";
 import { Alert, Badge, Button, Card, Field, Input, PageHeader, Select, Spinner, Stat } from "../../components/ui";
@@ -15,9 +17,14 @@ interface Resource {
   updated_at: string;
   source: string;
 }
-const kindLabels: Record<string, string> = { candy: "Candy", xl_candy: "XL Candy", mega: "Mega Energy" };
+const kindLabels: Record<string, ParseKeys> = {
+  candy: "account.resources.kinds.candy",
+  xl_candy: "account.resources.kinds.xl_candy",
+  mega: "account.resources.kinds.mega",
+};
 
 function Resources({ accountId }: { accountId: number }) {
+  const { t } = useTranslation();
   const client = useQueryClient();
   const { account } = useAccount();
   const [form, setForm] = useState({ kind: "candy", key: "", quantity: 0 });
@@ -34,25 +41,25 @@ function Resources({ accountId }: { accountId: number }) {
   });
   return (
     <>
-      <PageHeader title="Stardust & Candy" description="Stardust en items komen uit PGSharp. Candy per soort exporteert PGSharp niet; die kun je hier zelf bijhouden." />
+      <PageHeader title={t("account.resources.title")} description={t("account.resources.description")} />
       <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Stat label="Stardust" value={num(account?.stardust ?? null)} hint="bron: PGSharp" />
-        <Stat label="PokéCoins" value={num(account?.pokecoins ?? null)} hint="bron: PGSharp" />
+        <Stat label={t("account.resources.stardust")} value={num(account?.stardust ?? null)} hint={t("account.resources.sourcePgsharp")} />
+        <Stat label={t("account.resources.pokecoins")} value={num(account?.pokecoins ?? null)} hint={t("account.resources.sourcePgsharp")} />
       </div>
-      <Card title="Handmatige hoeveelheden" className="mb-5">
+      <Card title={t("account.resources.manual")} className="mb-5">
         <div className="flex flex-wrap items-end gap-3">
-          <Field label="Soort">
+          <Field label={t("account.resources.kind")}>
             <Select value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value })}>
               {Object.entries(kindLabels).map(([key, text]) => (
                 <option key={key} value={key}>
-                  {text}
+                  {t(text)}
                 </option>
               ))}
             </Select>
           </Field>
-          <Field label="Familie">
+          <Field label={t("account.resources.family")}>
             <Select value={form.key} onChange={(e) => setForm({ ...form, key: e.target.value })} className="w-64">
-              <option value="">Kies een familie</option>
+              <option value="">{t("account.resources.chooseFamily")}</option>
               {facets.data?.families.map((f) => (
                 <option key={f} value={f}>
                   {f.replace("FAMILY_", "").replaceAll("_", " ").toLowerCase()}
@@ -60,11 +67,11 @@ function Resources({ accountId }: { accountId: number }) {
               ))}
             </Select>
           </Field>
-          <Field label="Aantal">
+          <Field label={t("account.resources.quantity")}>
             <Input type="number" min={0} value={form.quantity} onChange={(e) => setForm({ ...form, quantity: Number(e.target.value) })} className="w-32" />
           </Field>
           <Button variant="primary" disabled={!form.key} loading={save.isPending} onClick={() => save.mutate()}>
-            Opslaan
+            {t("account.resources.save")}
           </Button>
         </div>
         {error && (
@@ -76,23 +83,26 @@ function Resources({ accountId }: { accountId: number }) {
       {resources.isLoading ? (
         <Spinner />
       ) : (
-        <Card title="Ingevoerde hoeveelheden">
+        <Card title={t("account.resources.entered")}>
           {!resources.data?.length ? (
-            <p className="text-sm text-muted">Nog niets ingevoerd. Zonder invoer toont OAK candy als onbekend.</p>
+            <p className="text-sm text-muted">{t("account.resources.nothingEntered")}</p>
           ) : (
             <table className="w-full text-sm">
               <tbody>
-                {resources.data.map((r) => (
-                  <tr key={`${r.kind}-${r.key}`} className="border-t border-line">
-                    <td className="py-1.5">{r.key.replace("FAMILY_", "").replaceAll("_", " ").toLowerCase()}</td>
-                    <td>{kindLabels[r.kind]}</td>
-                    <td className="tabular-nums">{num(r.quantity)}</td>
-                    <td>
-                      <Badge>handmatig</Badge>
-                    </td>
-                    <td className="text-xs text-muted">{dateTime(r.updated_at)}</td>
-                  </tr>
-                ))}
+                {resources.data.map((r) => {
+                  const kind = kindLabels[r.kind];
+                  return (
+                    <tr key={`${r.kind}-${r.key}`} className="border-t border-line">
+                      <td className="py-1.5">{r.key.replace("FAMILY_", "").replaceAll("_", " ").toLowerCase()}</td>
+                      <td>{kind && t(kind)}</td>
+                      <td className="tabular-nums">{num(r.quantity)}</td>
+                      <td>
+                        <Badge>{t("account.resources.manualBadge")}</Badge>
+                      </td>
+                      <td className="text-xs text-muted">{dateTime(r.updated_at)}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}

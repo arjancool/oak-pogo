@@ -5,6 +5,7 @@
  * and the Zod schemas in ./schemas.ts reject anything else, so a 64-bit identifier can never
  * pass through a JavaScript Number.
  */
+import i18n from "i18next";
 import type { z } from "zod";
 
 export class ApiError extends Error {
@@ -24,16 +25,21 @@ const CSRF_COOKIE = "oak_csrf";
 const UPLOAD_TIMEOUT_MS = 10 * 60 * 1000;
 
 /** What to tell the user when a response carries no OAK error, for example a proxy's HTML page. */
-const STATUS_MESSAGES: Record<number, string> = {
-  401: "Je bent niet meer ingelogd. Log opnieuw in.",
-  403: "Je hebt geen toegang tot deze actie.",
-  408: "De server wachtte te lang op de upload.",
-  413: "Het bestand is te groot voor de server of voor de proxy ervoor.",
-  429: "Te veel verzoeken. Probeer het over een minuut opnieuw.",
-  502: "De proxy kon OAK niet bereiken.",
-  503: "OAK is tijdelijk niet beschikbaar.",
-  504: "OAK reageerde niet op tijd.",
-};
+const STATUS_MESSAGES = {
+  401: "errors.http.401",
+  403: "errors.http.403",
+  408: "errors.http.408",
+  413: "errors.http.413",
+  429: "errors.http.429",
+  502: "errors.http.502",
+  503: "errors.http.503",
+  504: "errors.http.504",
+} as const;
+
+function statusMessage(status: number): string {
+  const key = STATUS_MESSAGES[status as keyof typeof STATUS_MESSAGES];
+  return i18n.t(key ?? "errors.http.other");
+}
 
 type ErrorBody = { code?: string; message?: string; details?: unknown };
 
@@ -59,11 +65,11 @@ function errorBody(value: unknown): ErrorBody | undefined {
 export function readResponse<T>(status: number, text: string): T {
   const parsed = parseJson(text);
   if (status >= 200 && status < 300) {
-    if (!parsed.ok) throw new ApiError(status, "INVALID_RESPONSE", "De server gaf een antwoord dat OAK niet kan lezen.");
+    if (!parsed.ok) throw new ApiError(status, "INVALID_RESPONSE", i18n.t("errors.invalidResponse"));
     return parsed.value as T;
   }
   const error = parsed.ok ? errorBody(parsed.value) : undefined;
-  const fallback = `${STATUS_MESSAGES[status] ?? "De server gaf een fout."} (HTTP ${status})`;
+  const fallback = `${statusMessage(status)} (HTTP ${status})`;
   throw new ApiError(status, error?.code ?? "HTTP_ERROR", error?.message ?? fallback, error?.details);
 }
 
@@ -127,7 +133,7 @@ export function uploadWithProgress<T>(
   options: { signal?: AbortSignal; timeoutMs?: number } = {},
 ): Promise<T> {
   return new Promise((resolve, reject) => {
-    const aborted = () => new ApiError(0, "ABORTED", "De upload is geannuleerd.");
+    const aborted = () => new ApiError(0, "ABORTED", i18n.t("errors.uploadAborted"));
     if (options.signal?.aborted) {
       reject(aborted());
       return;
@@ -149,11 +155,11 @@ export function uploadWithProgress<T>(
       try {
         resolve(readResponse<T>(xhr.status, xhr.responseText));
       } catch (error) {
-        reject(error instanceof ApiError ? error : new ApiError(xhr.status, "INVALID_RESPONSE", "De server gaf een antwoord dat OAK niet kan lezen."));
+        reject(error instanceof ApiError ? error : new ApiError(xhr.status, "INVALID_RESPONSE", i18n.t("errors.invalidResponse")));
       }
     });
-    xhr.onerror = settle(() => reject(new ApiError(0, "NETWORK", "Netwerkfout tijdens het uploaden. Controleer de verbinding en probeer het opnieuw.")));
-    xhr.ontimeout = settle(() => reject(new ApiError(0, "TIMEOUT", "De upload duurde te lang en is gestopt.")));
+    xhr.onerror = settle(() => reject(new ApiError(0, "NETWORK", i18n.t("errors.network"))));
+    xhr.ontimeout = settle(() => reject(new ApiError(0, "TIMEOUT", i18n.t("errors.uploadTimeout"))));
     xhr.onabort = settle(() => reject(aborted()));
     options.signal?.addEventListener("abort", onAbortSignal);
     xhr.send(form);
@@ -163,5 +169,5 @@ export function uploadWithProgress<T>(
 export function errorMessage(error: unknown): string {
   if (error instanceof ApiError) return error.message;
   if (error instanceof Error) return error.message;
-  return "Onbekende fout.";
+  return i18n.t("errors.unknown");
 }

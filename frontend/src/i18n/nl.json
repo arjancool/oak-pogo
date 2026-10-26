@@ -1,0 +1,1771 @@
+{
+  "app": {
+    "tagline": "Pokémon GO Manager"
+  },
+  "common": {
+    "unknown": "onbekend",
+    "never": "nooit",
+    "justNow": "zojuist",
+    "loading": "Laden…",
+    "close": "Sluiten",
+    "previous": "Vorige",
+    "next": "Volgende",
+    "cancel": "Annuleren"
+  },
+  "language": {
+    "label": "Taal"
+  },
+  "nav": {
+    "sections": {
+      "dashboard": "Dashboard",
+      "pokemon": "Pokémon",
+      "battles": "Battles",
+      "account": "Account",
+      "admin": "Beheer"
+    },
+    "overview": "Overzicht",
+    "newPokemon": "Nieuwe Pokémon",
+    "box": "Pokémon Box",
+    "pokedex": "Pokédex",
+    "compare": "Vergelijken",
+    "cleanup": "Cleanup Manager",
+    "planner": "Evolutieplanner",
+    "events": "Komende events",
+    "great": "Great League",
+    "ultra": "Ultra League",
+    "master": "Master League",
+    "cups": "Cups",
+    "teamBuilder": "Team Builder",
+    "rocket": "Team GO Rocket",
+    "raids": "Raids",
+    "max": "Max Battles",
+    "gyms": "Gymverdedigers",
+    "trainer": "Trainerstatistieken",
+    "items": "Item Bag",
+    "resources": "Stardust & Candy",
+    "history": "Historie",
+    "accounts": "Traineraccounts",
+    "sync": "PGSharp Sync",
+    "gamedata": "Game Data",
+    "settings": "Instellingen",
+    "backups": "Back-ups"
+  },
+  "shell": {
+    "openMenu": "Menu openen",
+    "closeMenu": "Menu sluiten",
+    "trainerAccount": "Traineraccount",
+    "createTrainerAccount": "Traineraccount aanmaken",
+    "logout": "Uitloggen",
+    "sync": {
+      "connected": "Gesynchroniseerd",
+      "processing": "Verwerken…",
+      "warning": "Gedeeltelijk",
+      "error": "Fout",
+      "waiting": "Wacht op export"
+    }
+  },
+  "login": {
+    "firstUse": "Eerste gebruik",
+    "firstUseText": "Maak het eigenaaraccount aan. Deze gebruiker beheert OAK en kan later andere gebruikers toevoegen.",
+    "username": "Gebruikersnaam",
+    "password": "Wachtwoord",
+    "passwordHint": "minimaal 10 tekens",
+    "repeatPassword": "Herhaal wachtwoord",
+    "mismatch": "De wachtwoorden zijn niet gelijk.",
+    "createOwner": "Eigenaar aanmaken",
+    "submit": "Inloggen"
+  },
+  "labels": {
+    "types": {
+      "normal": "Normaal",
+      "fighting": "Vechten",
+      "flying": "Vliegend",
+      "poison": "Gif",
+      "ground": "Grond",
+      "rock": "Gesteente",
+      "bug": "Insect",
+      "ghost": "Geest",
+      "steel": "Staal",
+      "fire": "Vuur",
+      "water": "Water",
+      "grass": "Gras",
+      "electric": "Elektrisch",
+      "psychic": "Psychisch",
+      "ice": "IJs",
+      "dragon": "Draak",
+      "dark": "Duister",
+      "fairy": "Fee"
+    },
+    "statuses": {
+      "PROTECT": "Beschermd",
+      "KEEP": "Bewaren",
+      "BUILD": "Investeren",
+      "REVIEW": "Beoordelen",
+      "TRANSFER_CANDIDATE": "Transfer-kandidaat",
+      "UNKNOWN": "Onbekend"
+    },
+    "statusDescriptions": {
+      "PROTECT": "Hard beschermd: vintage, handmatig of door een beschermingsregel",
+      "KEEP": "Beste exemplaar, nuttig in gevechten of een hoge bewaarscore",
+      "BUILD": "Goede kandidaat voor power-up of evolutie",
+      "REVIEW": "Beoordeel zelf, bijvoorbeeld een favoriet waarvan een beter exemplaar bestaat",
+      "TRANSFER_CANDIDATE": "Waarschijnlijk overbodig: er blijft een beter exemplaar. OAK zet nooit zelf iets over",
+      "UNKNOWN": "Onvoldoende betrouwbare gegevens"
+    },
+    "confirmationKinds": {
+      "favorite": "Favoriet",
+      "vintage": "Vintage, bescherming opgeheven",
+      "unknown_date": "Vangstdatum onbekend",
+      "protected": "Beschermd door een regel"
+    },
+    "readiness": {
+      "direct": "Direct inzetbaar",
+      "power_up": "Na power-up",
+      "evolution": "Na evolutie",
+      "not_suitable": "Niet geschikt",
+      "unknown": "Onvoldoende gegevens",
+      "after_evolution": "Na evolutie"
+    },
+    "leagues": {
+      "great": "Great League",
+      "ultra": "Ultra League",
+      "master": "Master League"
+    },
+    "confidence": {
+      "high": "Hoog",
+      "medium": "Gemiddeld",
+      "low": "Laag"
+    },
+    "importStatuses": {
+      "received": "Ontvangen",
+      "queued": "In wachtrij",
+      "processing": "Wordt verwerkt",
+      "succeeded": "Volledig verwerkt",
+      "partial": "Gedeeltelijk verwerkt",
+      "failed": "Mislukt",
+      "rejected": "Geweigerd",
+      "duplicate": "Al eerder ontvangen"
+    },
+    "classifications": {
+      "full": "Volledige inventaris",
+      "partial": "Gedeeltelijke import",
+      "invalid": "Ongeldig",
+      "stale": "Verouderd",
+      "duplicate": "Dubbel"
+    },
+    "changes": {
+      "evolved": "Geëvolueerd",
+      "powered_up": "CP gewijzigd",
+      "moves_changed": "Aanvallen gewijzigd",
+      "favorite_changed": "Favoriet gewijzigd",
+      "tags_changed": "Tags gewijzigd",
+      "lucky_changed": "Lucky gewijzigd",
+      "alignment_changed": "Shadow/Purified gewijzigd",
+      "renamed": "Nieuwe bijnaam",
+      "mega_changed": "Mega gewijzigd",
+      "max_changed": "Max Moves gewijzigd",
+      "other": "Overige wijziging"
+    },
+    "events": {
+      "APPEARED": "Voor het eerst gezien",
+      "CHANGED": "Gewijzigd",
+      "DISAPPEARED": "Niet meer in inventaris",
+      "REAPPEARED": "Weer in inventaris"
+    },
+    "eventKinds": {
+      "community-day": "Community Day",
+      "pokemon-spotlight-hour": "Spotlight Hour",
+      "raid-hour": "Raid Hour",
+      "raid-day": "Raid Day",
+      "raid-battles": "Raids",
+      "max-mondays": "Max Monday",
+      "max-battles": "Max Battles",
+      "go-battle-league": "GO Battle League",
+      "pokemon-go-tour": "Pokémon GO Tour",
+      "wild-area": "Wild Area",
+      "city-safari": "City Safari",
+      "go-pass": "GO Pass",
+      "research": "Onderzoek",
+      "season": "Seizoen",
+      "event": "Event",
+      "manual": "Eigen event"
+    },
+    "moveActions": {
+      "none": "Heeft deze aanval al",
+      "fast_tm": "Fast TM",
+      "charged_tm": "Charged TM",
+      "elite_fast_tm": "Elite Fast TM",
+      "elite_charged_tm": "Elite Charged TM",
+      "unlock": "Tweede aanval vrijspelen",
+      "impossible": "Niet via TM beschikbaar"
+    },
+    "availability": {
+      "normal_tm": "Normale TM",
+      "elite_tm": "Alleen Elite TM",
+      "legacy": "Legacy/event",
+      "special": "Shadow/Purified-aanval",
+      "not_learnable": "Niet meer te leren"
+    },
+    "conditions": {
+      "must_be_buddy": "Moet buddy zijn",
+      "only_day": "Alleen overdag",
+      "only_night": "Alleen 's nachts",
+      "only_full_moon": "Alleen bij volle maan",
+      "only_dusk": "Alleen in de schemering",
+      "only_upside_down": "Telefoon ondersteboven",
+      "move_requirement": "Vereist een bepaalde aanval"
+    },
+    "teams": {
+      "0": "Geen team",
+      "1": "Mystic",
+      "2": "Valor",
+      "3": "Instinct"
+    }
+  },
+  "pagination": {
+    "none": "Geen resultaten",
+    "range": "{{from}}–{{to}} van {{total}}"
+  },
+  "badges": {
+    "vintage": "Vintage {{year}}",
+    "noDate": "Vangstdatum onbekend",
+    "favorite": "Favoriet",
+    "shundo": "Shundo",
+    "shiny": "Shiny",
+    "hundo": "Hundo",
+    "lucky": "Lucky",
+    "shadow": "Shadow",
+    "purified": "Purified",
+    "gigantamax": "Gigantamax",
+    "dynamax": "Dynamax",
+    "legendary": "Legendary",
+    "mythical": "Mythical",
+    "ultraBeast": "Ultra Beast",
+    "costume": "Kostuum",
+    "background": "Achtergrond",
+    "traded": "Geruild",
+    "inGym": "In gym",
+    "protected": "Beschermd",
+    "new": "Nieuw",
+    "gone": "Niet meer in inventaris"
+  },
+  "requireAccount": {
+    "title": "Nog geen traineraccount",
+    "text": "Maak eerst een traineraccount aan onder <accountsLink>Beheer → Traineraccounts</accountsLink>. Daarna kun je PGSharp koppelen of een export uploaden."
+  },
+  "confirmTransfer": {
+    "title": "Bevestiging nodig",
+    "confirm": "{{count}} bevestigen",
+    "warning": "Deze Pokémon zet OAK niet zonder jouw bevestiging op een transferlijst. Vink alleen aan wat je echt kwijt wilt. OAK zet zelf nooit iets over.",
+    "confirmOne": "{{name}} bevestigen",
+    "newReasons": "Nieuw sinds je vorige bevestiging: {{reasons}}"
+  },
+  "dashboard": {
+    "loadError": "Het dashboard kon niet geladen worden.",
+    "welcome": "Welkom bij OAK",
+    "welcomeName": "Welkom bij OAK, {{name}}",
+    "empty": {
+      "title": "Nog geen Pokémon geïmporteerd",
+      "text": "Koppel PGSharp onder <b>Beheer → PGSharp Sync</b> of upload daar een <code>PGSStats.json</code>. Na de eerste import verschijnt hier je collectie."
+    },
+    "title": "Overzicht",
+    "description": "{{name}} · level {{level}}",
+    "noGameData": {
+      "title": "Geen Game Data",
+      "text": "Zonder Game Data zijn soortnamen, levels, PvP-analyses en cleanup-adviezen niet beschikbaar. Werk de Game Data bij onder Beheer."
+    },
+    "sync": {
+      "title": "Synchronisatie",
+      "lastSuccess": "Laatste succesvolle sync: {{time}}",
+      "status": "Status",
+      "inExport": "Pokémon in export",
+      "new": "Nieuw",
+      "changed": "Gewijzigd",
+      "missing": "Niet meer in inventaris",
+      "unconfirmed": "{{missing}} niet bevestigd (gedeeltelijke import)"
+    },
+    "cards": {
+      "total": "Totaal Pokémon",
+      "shiny": "Shiny",
+      "lucky": "Lucky",
+      "shadow": "Shadow",
+      "hundo": "Hundo",
+      "shundo": "Shundo",
+      "favorites": "Favorieten",
+      "vintage": "Vintage 2016–2019",
+      "legendary": "Legendary",
+      "mythical": "Mythical",
+      "dynamax": "Dynamax",
+      "gigantamax": "Gigantamax",
+      "cleanupCandidates": "Cleanup-kandidaten",
+      "review": "Te beoordelen",
+      "stardust": "Stardust",
+      "storageFree": "Vrije opslag",
+      "storageMax": "van {{max}}",
+      "backgrounds": "Achtergronden",
+      "actionList": "Op actielijst"
+    },
+    "lists": {
+      "recent": "Laatst gevangen",
+      "recentEmpty": "Geen vangstdatum bekend.",
+      "new": "Nieuw sinds vorige sync",
+      "newEmpty": "Geen nieuwe Pokémon, of dit was de eerste synchronisatie.",
+      "missing": "Niet meer in inventaris",
+      "missingEmpty": "Niets verdwenen bij de laatste volledige sync.",
+      "valuable": "Nieuwe waardevolle Pokémon",
+      "valuableEmpty": "Geen nieuwe shiny, hundo, lucky of legendary.",
+      "investment": "Beste investeringskandidaten",
+      "investmentEmpty": "Nog geen BUILD-adviezen.",
+      "cleanup": "Aanbevolen cleanup",
+      "cleanupEmpty": "Geen transfer-kandidaten.",
+      "favoritesChanged_one": "{{count}} favoriet gewijzigd",
+      "favoritesChanged_other": "{{count}} favorieten gewijzigd"
+    },
+    "years": "Vangstjaar"
+  },
+  "account": {
+    "trainer": {
+      "title": "Trainerstatistieken",
+      "description": "Bron: PGSharp-export · laatste sync {{time}}",
+      "trainer": "Trainer",
+      "level": "Level",
+      "xp": "XP",
+      "stardust": "Stardust",
+      "pokecoins": "PokéCoins",
+      "storage": "Pokémon-opslag",
+      "eggs_one": "{{count}} ei",
+      "eggs_other": "{{count}} eieren",
+      "activity": "Activiteit",
+      "gbl": "GO Battle League",
+      "leagueWins": "{{wins}} van {{battles}} gewonnen",
+      "currentSeason": "Huidig seizoen",
+      "lifetime": "Totaal",
+      "results": "{{wins}} / {{battles}} · rang {{rank}}",
+      "byType": "Gevangen per type",
+      "stats": {
+        "numPokemonCaptured": "Pokémon gevangen",
+        "numPokemonEncountered": "Pokémon tegengekomen",
+        "numEvolutions": "Evoluties",
+        "numEggsHatched": "Eieren uitgebroed",
+        "pokeStopVisits": "PokéStop-bezoeken",
+        "uniquePokestopsVisited": "Unieke PokéStops",
+        "kmWalked": "Kilometer gelopen",
+        "numberOfPokeballThrown": "Poké Balls gegooid",
+        "numRaidBattleWon": "Raids gewonnen",
+        "numRaidBattleTotal": "Raids totaal",
+        "numLegendaryBattleWon": "Legendary raids gewonnen",
+        "numGruntsDefeated": "Grunts verslagen",
+        "numTrades": "Ruilen",
+        "numRemoteTrades": "Ruilen op afstand",
+        "numBestBuddies": "Best Buddies",
+        "numUniquePokedexEntries": "Pokédex-inzendingen",
+        "numPokemonPurified": "Gepurified",
+        "numTotalMegaEvolutions": "Mega-evoluties",
+        "numBreadBattlesWon": "Max Battles gewonnen",
+        "numMaxLevelFriends": "Best Friends",
+        "numBerriesFed": "Berries gevoerd",
+        "numBattleTrainingWon": "Trainingsgevechten gewonnen",
+        "numNpcCombatsWon": "NPC-gevechten gewonnen"
+      }
+    },
+    "items": {
+      "title": "Item Bag",
+      "description": "{{total}} van {{max}} plaatsen. {{note}}",
+      "search": "Item zoeken…",
+      "empty": "Geen items"
+    },
+    "resources": {
+      "title": "Stardust & Candy",
+      "description": "Stardust en items komen uit PGSharp. Candy per soort exporteert PGSharp niet; die kun je hier zelf bijhouden.",
+      "stardust": "Stardust",
+      "pokecoins": "PokéCoins",
+      "sourcePgsharp": "bron: PGSharp",
+      "manual": "Handmatige hoeveelheden",
+      "kind": "Soort",
+      "kinds": {
+        "candy": "Candy",
+        "xl_candy": "XL Candy",
+        "mega": "Mega Energy"
+      },
+      "family": "Familie",
+      "chooseFamily": "Kies een familie",
+      "quantity": "Aantal",
+      "save": "Opslaan",
+      "entered": "Ingevoerde hoeveelheden",
+      "nothingEntered": "Nog niets ingevoerd. Zonder invoer toont OAK candy als onbekend.",
+      "manualBadge": "handmatig"
+    },
+    "history": {
+      "title": "Historie",
+      "description": "Verschillen tussen opeenvolgende synchronisaties. Verdwenen Pokémon heten 'niet meer in inventaris': OAK weet niet of ze zijn overgezet.",
+      "tabs": {
+        "new": "Nieuw",
+        "changed": "Gewijzigd",
+        "missing": "Niet meer in inventaris",
+        "reappeared": "Teruggekeerd"
+      },
+      "syncSelect": "Synchronisatie",
+      "latestSync": "Laatste relevante sync",
+      "empty": "Geen wijzigingen",
+      "syncOf": "Synchronisatie van {{time}}",
+      "inventory": "Stardust en items door de tijd",
+      "columns": {
+        "moment": "Moment",
+        "level": "Level",
+        "stardust": "Stardust",
+        "items": "Items"
+      }
+    }
+  },
+  "box": {
+    "title": "Pokémon Box",
+    "description": "Alle Pokémon uit de laatste synchronisatie. Acties hier wijzigen alleen OAK-gegevens, nooit het spel.",
+    "flags": {
+      "shiny": "Shiny",
+      "lucky": "Lucky",
+      "shadow": "Shadow",
+      "purified": "Purified",
+      "favorite": "Favoriet",
+      "vintage": "Vintage (2016–2019)",
+      "unknownDate": "Vangstdatum onbekend",
+      "hundo": "Hundo",
+      "shundo": "Shundo",
+      "legendary": "Legendary",
+      "mythical": "Mythical",
+      "ultrabeast": "Ultra Beast",
+      "costume": "Kostuum",
+      "background": "Achtergrond",
+      "dynamax": "Dynamax",
+      "gigantamax": "Gigantamax",
+      "traded": "Geruild",
+      "new": "Nieuw",
+      "protected": "Beschermd",
+      "untagged": "Zonder tag",
+      "duplicate": "Dubbel",
+      "nicknamed": "Bijnaam"
+    },
+    "sorts": {
+      "cpDesc": "CP hoog–laag",
+      "cpAsc": "CP laag–hoog",
+      "name": "Naam",
+      "dex": "Pokédex-nummer",
+      "iv": "IV-percentage",
+      "atk": "Attack-IV",
+      "def": "Defense-IV",
+      "sta": "Stamina-IV",
+      "level": "Level",
+      "caughtDesc": "Vangstdatum (nieuw eerst)",
+      "caughtAsc": "Vangstdatum (oud eerst)",
+      "great": "Great League-potentie",
+      "ultra": "Ultra League-potentie",
+      "master": "Master League-potentie",
+      "cleanup": "Cleanup-prioriteit",
+      "battle": "Bruikbaarheid hoog–laag",
+      "keepAsc": "Bewaarscore laag–hoog",
+      "keepDesc": "Bewaarscore hoog–laag",
+      "changed": "Laatst gewijzigd"
+    },
+    "filters": {
+      "flagHint": "Klik: alleen deze → juist niet → geen filter",
+      "min": "min",
+      "max": "max",
+      "ivPercent": "IV-percentage",
+      "level": "Level",
+      "league": "League-geschiktheid",
+      "all": "Alle",
+      "species": "Soort",
+      "removeSpecies": "{{name}} verwijderen",
+      "addSpecies": "Soort toevoegen…",
+      "year": "Vangstjaar",
+      "cleanup": "Cleanup-status",
+      "type": "Type",
+      "allTypes": "Alle typen",
+      "move": "Aanval bevat",
+      "movePlaceholder": "bijv. hydro",
+      "family": "Evolutiefamilie",
+      "allFamilies": "Alle families",
+      "inventory": "Inventaris",
+      "inInventory": "In inventaris",
+      "notInInventory": "Niet meer in inventaris",
+      "everything": "Alles"
+    },
+    "syntax": {
+      "title": "Zoeksyntax",
+      "intro": "Termen worden met EN gecombineerd. Spaties of & scheiden de termen.",
+      "name": "Naam, bijnaam of vorm bevat de tekst",
+      "cp": "CP vergelijken of een bereik",
+      "iv": "IV-percentage of losse IV's",
+      "exactExample": "ivs:15/15/15  of  4*",
+      "exact": "Exacte IV's, 4* is een hundo",
+      "properties": "Eigenschappen",
+      "classes": "Klassen en Max-vormen",
+      "extras": "Kostuum, achtergrond, geruild, nieuw, verdwenen",
+      "year": "Vangstjaar",
+      "dex": "Pokédex-nummer",
+      "moveTypeFamily": "Aanval, type of familie",
+      "status": "Cleanup-status, bescherming, dubbelen",
+      "vintage": "Gevangen in 2016–2019, of zonder bruikbare vangstdatum",
+      "scores": "Bruikbaarheids- en bewaarscore (0–100)",
+      "not": "Een ! keert een term om"
+    },
+    "bulk": {
+      "updated": "{{count}} Pokémon bijgewerkt.",
+      "skipped": "{{count}} overgeslagen: {{reasons}}.",
+      "waiting_one": "{{count}} wacht op je bevestiging.",
+      "waiting_other": "{{count}} wachten op je bevestiging.",
+      "oakOnly": "Alleen OAK-gegevens zijn gewijzigd."
+    },
+    "columns": {
+      "level": "Level",
+      "ivs": "IV's",
+      "moves": "Aanvallen",
+      "type": "Type",
+      "caught": "Gevangen",
+      "greatRank": "GL-rang",
+      "ultraRank": "UL-rang",
+      "battle": "Bruikb.",
+      "keep": "Bewaar",
+      "cleanup": "Cleanup"
+    },
+    "toolbar": {
+      "table": "Tabel",
+      "cards": "Kaarten",
+      "searchPlaceholder": "Zoeken: gyarados cp>2500 shiny !favorite",
+      "search": "Zoeken",
+      "syntax": "Syntax",
+      "sort": "Sorteren",
+      "filters": "Filters",
+      "clear": "Wissen",
+      "columns": "Kolommen"
+    },
+    "selection": {
+      "selected": "{{count}} geselecteerd",
+      "protect": "Beschermen",
+      "unprotect": "Bescherming opheffen",
+      "addTag": "OAK-tag toevoegen",
+      "review": "Markeren voor review",
+      "transferCandidate": "Markeren als transfer-kandidaat",
+      "actionList": "Op actielijst",
+      "compare": "Vergelijken",
+      "clear": "Selectie wissen"
+    },
+    "empty": {
+      "title": "Geen Pokémon gevonden",
+      "text": "Pas de zoekopdracht of filters aan, of importeer eerst een export."
+    },
+    "tagDialog": {
+      "title": "OAK-tag toevoegen",
+      "add": "Toevoegen",
+      "placeholder": "bijv. raid, ruilen, pvp",
+      "hint": "OAK-tags staan los van de tags in Pokémon GO en veranderen niets in het spel."
+    }
+  },
+  "compare": {
+    "title": "Vergelijken",
+    "description": "IV-rang per league is de rang binnen de soort; de soortrang komt uit PvPoke.",
+    "empty": {
+      "title": "Kies 2 tot 6 Pokémon",
+      "text": "Selecteer Pokémon in de <boxLink>Pokémon Box</boxLink> en kies Vergelijken."
+    },
+    "rows": {
+      "level": "Level",
+      "ivs": "IV's",
+      "fastMove": "Snelle aanval",
+      "chargedMoves": "Geladen aanvallen",
+      "caught": "Gevangen of uitgebroed",
+      "cleanup": "Cleanup",
+      "properties": "Eigenschappen",
+      "advice": "Advies"
+    },
+    "hatched": "{{date}} (uit ei)",
+    "rank": "rang {{rank}} · {{percent}} · {{readiness}}",
+    "stardustNeeded": "{{stardust}} stardust nodig",
+    "notSuitable": "niet geschikt"
+  },
+  "planner": {
+    "title": "Evolutie- en investeringsplanner",
+    "description": "Kies een doel en een budget. OAK zoekt de Pokémon waar je Stardust het meeste oplevert. Je candyvoorraad is onbekend, dus controleer die zelf in het spel.",
+    "goal": "Doel",
+    "maxStardust": "Maximaal Stardust",
+    "maxPokemon": "Maximaal aantal Pokémon",
+    "maxIvRank": "Maximale IV-rang",
+    "allowXl": "XL Candy toestaan",
+    "allowEvolution": "Evoluties toestaan",
+    "none": "Geen kandidaten binnen deze grenzen. Verhoog het budget of de maximale IV-rang.",
+    "proposal": "Voorstel: {{count}} Pokémon, {{stardust}} Stardust",
+    "ranks": "IV-rang {{ivRank}} · soortrang {{speciesRank}} · CP {{cp}} → {{bestCp}}",
+    "moves": "aanvallen: {{moves}}",
+    "cost": "{{stardust}} stardust · {{candy}} candy",
+    "footer": "Prioriteit volgt de geschiktheid (PvPoke-soortscore × IV-kwaliteit). Kosten van TM's, evolutie-items en het vrijspelen van een tweede aanval staan op de detailpagina."
+  },
+  "battles": {
+    "shared": {
+      "either": "{{rest}} of {{last}}",
+      "range": "{{from}} t/m {{to}}",
+      "maxCp": "Maximaal {{cp}} CP.",
+      "noCpLimit": "Geen CP-limiet.",
+      "levelCap": "Maximaal level {{level}}.",
+      "shadow": "Shadow",
+      "rules": {
+        "typeOnly": "Alleen Pokémon met het type {{types}}.",
+        "typeNone": "Geen Pokémon met het type {{types}}.",
+        "tagOnly": "Alleen {{tags}}.",
+        "tagNone": "Geen {{tags}}.",
+        "idOnly": "Alleen {{number}} aangewezen soorten.",
+        "idAlso_one": "Daarnaast mag {{count}} aangewezen soort mee.",
+        "idAlso_other": "Daarnaast mogen {{count}} aangewezen soorten mee.",
+        "idNone_one": "{{count}} aangewezen soort mag niet mee.",
+        "idNone_other": "{{count}} aangewezen soorten mogen niet mee.",
+        "stageOnly": "Alleen {{stages}}.",
+        "stageNone": "Geen {{stages}}.",
+        "dexOnly": "Alleen Pokédex-nummers {{ranges}}.",
+        "dexNone": "Geen Pokédex-nummers {{ranges}}.",
+        "moveOnly_one": "Alleen Pokémon die {{count}} aangewezen aanval kunnen leren.",
+        "moveOnly_other": "Alleen Pokémon die een van {{count}} aangewezen aanvallen kunnen leren.",
+        "moveNone_one": "Geen Pokémon die {{count}} aangewezen aanval kunnen leren.",
+        "moveNone_other": "Geen Pokémon die een van {{count}} aangewezen aanvallen kunnen leren.",
+        "moveTypeOnly": "Alleen Pokémon met een aanval van het type {{types}}.",
+        "moveTypeNone": "Geen Pokémon met een aanval van het type {{types}}.",
+        "costOnly": "Alleen Pokémon waarvan de tweede aanval {{costs}} stardust kost.",
+        "costNone": "Geen Pokémon waarvan de tweede aanval {{costs}} stardust kost.",
+        "distanceOnly": "Alleen Pokémon met een buddy-afstand van {{distances}} km.",
+        "distanceNone": "Geen Pokémon met een buddy-afstand van {{distances}} km.",
+        "other": "Regel van het soort \"{{kind}}\"."
+      },
+      "tags": {
+        "mega": "Mega-evoluties",
+        "shadow": "Shadow Pokémon",
+        "legendary": "Legendary Pokémon",
+        "mythical": "Mythical Pokémon",
+        "ultrabeast": "Ultra Beasts",
+        "starter": "starters",
+        "regional": "regionale Pokémon"
+      },
+      "stages": {
+        "none": "Pokémon zonder evolutie",
+        "first": "Pokémon die nog kunnen evolueren en zelf geen eerdere vorm hebben",
+        "middle": "middelste vormen van een evolutielijn",
+        "final": "laatste vormen van een evolutielijn"
+      },
+      "typeInRule": {
+        "normal": "normaal",
+        "fighting": "vechten",
+        "flying": "vliegend",
+        "poison": "gif",
+        "ground": "grond",
+        "rock": "gesteente",
+        "bug": "insect",
+        "ghost": "geest",
+        "steel": "staal",
+        "fire": "vuur",
+        "water": "water",
+        "grass": "gras",
+        "electric": "elektrisch",
+        "psychic": "psychisch",
+        "ice": "ijs",
+        "dragon": "draak",
+        "dark": "duister",
+        "fairy": "fee"
+      }
+    },
+    "cups": {
+      "title": "Cups",
+      "description": "Speciale formats met eigen regels, zoals de Fantasy Cup. OAK toont de cups die PvPoke nu op zijn site heeft. Daar zitten cups uit de GO Battle League tussen, maar ook toernooien uit de community. Welke cup in het spel loopt, zie je in Pokémon GO zelf.",
+      "emptyTitle": "Geen cups bekend",
+      "emptyText": "De actieve Game Data bevat geen cups. Werk de Game Data bij onder Beheer, dan haalt OAK ze op bij PvPoke.",
+      "ranked": "Ranglijst van PvPoke",
+      "unranked": "Geen ranglijst",
+      "unrankedHint": "Je Pokémon worden alleen op IV-rang gesorteerd.",
+      "eligible": "{{species}} soorten en vormen mogen mee volgens de regels van PvPoke.",
+      "rankedCount": "PvPoke rangschikt er {{species}}.",
+      "yourPokemon": "Je Pokémon voor deze cup",
+      "suggestTeam": "Team voorstellen",
+      "about": "Over dit toernooi"
+    },
+    "league": {
+      "sortSuitable": "Meest geschikt eerst",
+      "readiness": {
+        "label": "Inzetbaarheid",
+        "all": "Alle inzetbaarheid",
+        "direct": "Direct inzetbaar",
+        "powerUp": "Na power-up",
+        "evolution": "Na evolutie"
+      },
+      "cupRules": "Regels van deze cup",
+      "cupRulesSource": "Zoals PvPoke ze beschrijft. Controleer in het spel of de cup nu loopt en of de regels gelijk zijn.",
+      "allCups": "Alle cups",
+      "emptyTitle": "Geen geschikte Pokémon",
+      "emptyCup": "Er zijn geen Pokémon die (na evolutie of power-up) in deze cup passen, of de analyse moet nog draaien.",
+      "emptyLeague": "Er zijn geen Pokémon die (na evolutie of power-up) in deze league passen, of de analyse moet nog draaien.",
+      "columns": {
+        "pokemon": "Pokémon",
+        "target": "Doel",
+        "speciesRank": "Soortrang",
+        "ivRank": "IV-rang",
+        "cpNow": "CP nu",
+        "best": "beste",
+        "readiness": "Inzetbaarheid",
+        "investment": "Investering",
+        "moves": "Aanvallen"
+      },
+      "afterEvolution": "na evolutie",
+      "stardust": "{{amount}} stardust",
+      "quality": {
+        "optimal": "Optimaal",
+        "partial": "Deels",
+        "poor": "Andere aanvallen nodig",
+        "afterEvolution": "Na evolutie bepalen",
+        "unknown": "Onbekend"
+      },
+      "truncated": "Je ziet de eerste {{shown}} van {{total}} Pokémon in deze volgorde. Het sorteren gebeurt over alle {{total}}.",
+      "explanation": "Klik op een kolomkop om te sorteren. Soortrang zegt hoe sterk de soort is (PvPoke). IV-rang zegt hoe goed dit exemplaar binnen die soort is. Een sterke IV-rang bij een zwakke soort maakt nog geen goede battle-Pokémon."
+    },
+    "teamBuilder": {
+      "title": "Team Builder",
+      "description": "Drie teamvarianten uit je eigen collectie: direct inzetbaar, met beperkte upgrades en het beste toekomstige team.",
+      "league": "League of cup",
+      "leagues": "Leagues",
+      "cups": "Cups",
+      "budget": "Stardust-budget per Pokémon (beperkte upgrades)",
+      "suggest": "Teams voorstellen",
+      "save": "Opslaan",
+      "saved": "Team opgeslagen.",
+      "roles": {
+        "lead": "Lead",
+        "switch": "Safe switch",
+        "closer": "Closer"
+      },
+      "memberStats": "CP {{cp}} → {{bestCp}} · IV-rang {{ivRank}} · soortrang {{speciesRank}}",
+      "moves": "Aanvallen: {{moves}}",
+      "summary": "Investering: {{stardust}} stardust · Gedeelde zwaktes: {{weaknesses}}",
+      "noWeaknesses": "geen",
+      "savedTeams": "Opgeslagen teams",
+      "noTeams": "Nog geen teams opgeslagen.",
+      "gone": "{{name}} (weg)",
+      "delete": "Verwijderen"
+    },
+    "raids": {
+      "title": "Raids",
+      "description": "Zonder baas zie je je beste algemene aanvallers. Kies een raid-baas voor counters tegen die specifieke tegenstander.",
+      "search": "Raid-baas zoeken, bijv. kyogre",
+      "general": "Algemene aanvallers",
+      "countersAgainst": "Counters tegen {{name}}",
+      "bestGeneral": "Beste algemene raid-aanvallers",
+      "intro_one": "De aanvaller met de hoogste DPS met zijn huidige aanvallen. Klik op een kolomkop om binnen deze lijst te sorteren. Het nummer blijft zijn plek op DPS.",
+      "intro_other": "De {{count}} aanvallers met de hoogste DPS met hun huidige aanvallen. Klik op een kolomkop om binnen deze lijst te sorteren. Het nummer blijft hun plek op DPS.",
+      "columns": {
+        "pokemon": "Pokémon",
+        "dpsNow": "DPS nu",
+        "currentMoves": "Huidige aanvallen",
+        "bestMoveset": "Beste moveset",
+        "notes": "Opmerkingen"
+      },
+      "fastOnly": "alleen snelle aanval",
+      "eliteTm": "Elite TM nodig",
+      "alreadyBest": "Huidige moveset is al de beste",
+      "weakToBoss": "Zwak tegen baas-type",
+      "superEffective": "Supereffectief"
+    },
+    "rocket": {
+      "title": "Team GO Rocket",
+      "description": "Kies de Pokémon van de grunt, leader of Giovanni. OAK zoekt per tegenstander de beste counters uit je eigen collectie.",
+      "noLineupsTitle": "Geen actuele opstellingen",
+      "noLineups": "OAK heeft geen gevalideerde, gedateerde bron voor actuele Rocket-opstellingen en doet daar dus geen uitspraken over. Je kiest de tegenstanders zelf.",
+      "add": "Tegenstander toevoegen (maximaal 3)",
+      "remove": "{{name}} verwijderen",
+      "find": "Counters zoeken",
+      "resists": "Weerstaat",
+      "weak": "Kwetsbaar"
+    },
+    "max": {
+      "title": "Max Battles",
+      "description": "Dynamax- en Gigantamax-Pokémon uit je collectie, hun Max Moves en wat een upgrade kost.",
+      "search": "Max Battle-tegenstander zoeken",
+      "clear": "Wissen",
+      "attackers": "Aanvallers (Max Attack-type)",
+      "defenders": "Verdedigers (weerstand)",
+      "incoming": "inkomend ×{{value}}",
+      "count": "{{number}} Dynamax/Gigantamax-Pokémon",
+      "emptyTitle": "Geen Dynamax-Pokémon",
+      "emptyText": "De export bevat geen Pokémon met Dynamax- of Gigantamax-status.",
+      "columns": {
+        "pokemon": "Pokémon",
+        "maxAttackType": "Max Attack-type",
+        "maxMoves": "Max Moves",
+        "nextUpgrade": "Volgende upgrade"
+      },
+      "gigantamax": "Gigantamax",
+      "moveLevel": "{{move}} niveau {{level}}",
+      "costCandy": "{{mp}} MP, {{candy}} candy",
+      "costXl": "{{mp}} MP, {{xl}} XL",
+      "maxed": "maximaal",
+      "moves": {
+        "attack": "Max Attack",
+        "guard": "Max Guard",
+        "spirit": "Max Spirit"
+      }
+    },
+    "gyms": {
+      "title": "Gymverdedigers",
+      "description": "De Pokémon die een gym het langst vasthouden: veel HP en Defense, zodat een aanvaller veel aanvallen nodig heeft. Per soort je sterkste exemplaar.",
+      "howCalculated": "Hoe OAK dit berekent",
+      "source": "Bron: {{source}}, Game Data-versie {{version}}.",
+      "excluded": {
+        "text": "Niet meegeteld: {{parts}}.",
+        "notDeployable": "{{number}} mogen volgens de Game Data niet in een gym",
+        "unknownForm_one": "{{number}} heeft een vorm die de Game Data niet kent",
+        "unknownForm_other": "{{number}} hebben een vorm die de Game Data niet kent",
+        "unknownStats_one": "{{number}} mist level of IV's",
+        "unknownStats_other": "{{number}} missen level of IV's"
+      },
+      "emptyTitle": "Geen verdedigers gevonden",
+      "emptyText": "Er staat geen Pokémon in je collectie die volgens de Game Data in een gym mag.",
+      "strongest_one": "Je sterkste verdediger",
+      "strongest_other": "Je {{count}} sterkste verdedigers",
+      "inGym": "Staat in een gym",
+      "value": "Verdedigingswaarde",
+      "sameSpecies": "nog {{number}} andere van deze soort",
+      "confidence": "Betrouwbaarheid: {{level}}",
+      "confidenceLevels": {
+        "high": "Hoog",
+        "medium": "Gemiddeld",
+        "low": "Laag"
+      }
+    }
+  },
+  "admin": {
+    "accounts": {
+      "title": "Traineraccounts",
+      "description": "Ieder Pokémon GO-account krijgt een eigen traineraccount in OAK, met eigen webhook en gegevens.",
+      "newTitle": "Nieuw traineraccount",
+      "name": "Naam",
+      "namePlaceholder": "Bijvoorbeeld Hoofdaccount",
+      "create": "Aanmaken",
+      "emptyTitle": "Nog geen traineraccounts",
+      "emptyText": "Maak hierboven je eerste account aan.",
+      "active": "actief",
+      "linked": "gekoppeld",
+      "notLinked": "nog niet gekoppeld",
+      "use": "Gebruik dit account",
+      "nameInGame": "Naam in Pokémon GO",
+      "nameInGameUnknown": "onbekend tot de eerste import",
+      "pokemonCount": "Pokémon in inventaris",
+      "lastSync": "Laatste succesvolle sync",
+      "webhook": "Webhook",
+      "webhookActive": "actief sinds {{date}}",
+      "webhookNone": "geen",
+      "nameInOak": "Naam in OAK",
+      "maxDropPercent": "Maximale daling (%)",
+      "maxDropPercentHint": "Daalt het aantal Pokémon meer dan dit percentage, dan behandelt OAK de import als gedeeltelijk.",
+      "maxDropCount": "Maximale daling (aantal)",
+      "maxDropCountHint": "Beide grenzen moeten overschreden worden.",
+      "save": "Opslaan",
+      "linkPgsharp": "PGSharp koppelen",
+      "unlinkConfirm": "Koppeling met het Pokémon GO-account vergeten? Gebruik dit alleen als je bewust een ander account aan deze trainer wilt koppelen.",
+      "unlink": "Koppeling vergeten",
+      "delete": "Verwijderen",
+      "deleteTitle": "{{name}} verwijderen",
+      "deleteText": "Alle OAK-gegevens van dit account verdwijnen: Pokémon, notities, tags, plannen, imports en historie. Je Pokémon GO-account zelf verandert niet. Typ <b>{{name}}</b> om te bevestigen.",
+      "deleteConfirmName": "Bevestig naam",
+      "deleteSubmit": "Definitief verwijderen"
+    },
+    "backups": {
+      "ownerOnlyTitle": "Alleen voor de eigenaar",
+      "ownerOnlyText": "Back-ups beheren kan alleen de eigenaar van deze OAK-installatie.",
+      "title": "Back-ups",
+      "description": "OAK maakt automatisch een back-up voor iedere databasemigratie. Hier maak je er zelf een en download je hem.",
+      "create": "Back-up maken",
+      "restoreTitle": "Terugzetten",
+      "restoreText": "Stop de container, vervang <code>/data/oak.db</code> door de back-up en start de container opnieuw. Een volledige back-up van de map<code> /data</code> bevat ook de geheime sleutel en opgeslagen exports. Zie docs/BACKUP_RESTORE.md.",
+      "available": "Beschikbare back-ups",
+      "none": "Nog geen back-ups.",
+      "download": "Downloaden",
+      "deleteConfirm": "Back-up {{name}} verwijderen?",
+      "delete": "Verwijderen"
+    },
+    "gamedata": {
+      "title": "Game Data",
+      "description": "Spelgegevens met versiebeheer. Een nieuwe versie wordt pas actief na controle. De vorige versies blijven bewaard zodat je terug kunt.",
+      "check": "Controleren op updates",
+      "updateNow": "Nu bijwerken",
+      "repairNeeded": "Het bestand van de actieve versie ontbreekt. Kies Nu bijwerken om het opnieuw op te bouwen.",
+      "available": "Er is nieuwe data beschikbaar ({{sources}}).",
+      "noActiveVersion": "nog geen actieve versie",
+      "upToDate": "De actieve versie is actueel.",
+      "updateStarted": "Update gestart. OAK downloadt, controleert en activeert de nieuwe versie op de achtergrond.",
+      "versionActivated": "Versie geactiveerd. Analyses worden opnieuw berekend.",
+      "noActiveTitle": "Geen actieve Game Data",
+      "noActiveText": "Zonder Game Data kan OAK geen soortnamen, levels, PvP-rangen of cleanup-adviezen berekenen. De Pokémon zelf worden wel geïmporteerd.",
+      "lastErrorTitle": "Laatste update mislukt",
+      "lastErrorText": "{{error}} De actieve versie is niet aangeraakt.",
+      "activeTitle": "Actieve versie",
+      "noActive": "Geen.",
+      "autoUpdate": "Automatisch bijwerken: {{state}}. Laatste controle: {{checked}}.",
+      "autoUpdateOn_one": "aan, ieder uur",
+      "autoUpdateOn_other": "aan, iedere {{hours}} uur",
+      "autoUpdateOff": "uit",
+      "dependentTitle": "Wat ervan afhangt",
+      "versionsTitle": "Versies",
+      "versionStatus": {
+        "active": "actief",
+        "archived": "bewaard",
+        "ready": "klaar",
+        "pruned": "opgeruimd",
+        "failed": "mislukt"
+      },
+      "activate": "Activeren",
+      "sourcesTitle": "Bronnen en licenties",
+      "license": "Licentie: {{license}}",
+      "checksums": "Controlegetallen van de actieve versie",
+      "retrieved": "opgehaald {{date}}",
+      "offlineTitle": "Offline installeren",
+      "offlineText": "Heeft de server geen internet, download de bestanden dan elders en upload ze hier. OAK controleert ze op dezelfde manier als een download.",
+      "required": "verplicht",
+      "uploadSubmit": "Uploaden en controleren",
+      "summary": {
+        "version": "Versie",
+        "originUpload": "handmatige upload",
+        "originDownload": "download",
+        "activated": "Geactiveerd",
+        "species": "Soorten",
+        "forms": "Vormen",
+        "moves": "Aanvallen",
+        "pvpokeForms": "Vormen gekoppeld aan PvPoke",
+        "rankings": "League-rankings",
+        "noRankings": "geen",
+        "maxLevel": "Maximaal level zonder Best Buddy"
+      }
+    },
+    "settings": {
+      "title": "Instellingen",
+      "save": "Opslaan",
+      "rules": {
+        "title": "Cleanup-regels",
+        "text": "Favorieten krijgen extra bewaarpunten maar geen harde bescherming. Pokémon uit 2016 tot en met 2019 zijn altijd beschermd als vintage. Gewichten, drempels en de overige beschermingsregels stel je per traineraccount in.",
+        "open": "Cleanup-regels openen"
+      },
+      "sprites": {
+        "title": "Pokémon-afbeeldingen",
+        "saved": "Opgeslagen. Herlaad de pagina om de nieuwe beveiligingsinstellingen voor afbeeldingen te gebruiken.",
+        "source": "Bron",
+        "none": "Geen afbeeldingen (dexnummer en typekleur)",
+        "pokeapi": "PokeAPI sprites via GitHub",
+        "custom": "Eigen bron",
+        "template": "URL-sjabloon",
+        "templateHint": "Moet met https:// beginnen en {dex} bevatten. {shiny_path} wordt 'shiny/' voor shiny Pokémon.",
+        "ownerOnly": "Alleen de eigenaar kan dit wijzigen."
+      },
+      "tags": {
+        "title": "In-game tags",
+        "saved": "Tag opgeslagen. De cleanup-analyse wordt opnieuw berekend.",
+        "intro": "PGSharp exporteert alleen het nummer van een tag, niet de naam. Geef je tags hier een naam en kies welke tags een Pokémon beschermen tegen cleanup-advies.",
+        "none": "Geen tags gevonden in de laatste import.",
+        "name": "Naam van de tag",
+        "protects": "Beschermt"
+      },
+      "password": {
+        "title": "Wachtwoord wijzigen",
+        "changed": "Wachtwoord gewijzigd. Andere sessies zijn afgemeld.",
+        "current": "Huidig wachtwoord",
+        "new": "Nieuw wachtwoord",
+        "minLength": "Minimaal {{length}} tekens.",
+        "submit": "Wijzigen"
+      },
+      "reset": {
+        "title": "Wachtwoord van {{name}} opnieuw instellen",
+        "text": "Geef de gebruiker het nieuwe wachtwoord via een veilige weg. Daarna kan die het zelf wijzigen onder Instellingen. Alle sessies van deze gebruiker eindigen meteen.",
+        "repeat": "Herhaal nieuw wachtwoord",
+        "mismatch": "De wachtwoorden zijn niet gelijk.",
+        "submit": "Opnieuw instellen",
+        "done": "Nieuw wachtwoord ingesteld voor {{name}}. Die is overal uitgelogd en logt in met het nieuwe wachtwoord."
+      },
+      "users": {
+        "title": "Gebruikers",
+        "created": "Gebruiker aangemaakt.",
+        "owner": "eigenaar",
+        "disabled": "uitgeschakeld",
+        "lastLogin": "Laatst ingelogd: {{date}}",
+        "resetPassword": "Wachtwoord opnieuw instellen",
+        "disable": "Uitschakelen",
+        "enable": "Inschakelen",
+        "username": "Gebruikersnaam",
+        "password": "Wachtwoord",
+        "add": "Toevoegen",
+        "note": "Iedere gebruiker ziet alleen zijn eigen traineraccounts. Je eigen wachtwoord wijzig je bij Wachtwoord wijzigen, met je huidige wachtwoord."
+      },
+      "system": {
+        "title": "Systeem",
+        "version": "Versie",
+        "started": "Gestart",
+        "timezone": "Tijdzone",
+        "baseUrl": "Basis-URL",
+        "database": "Database",
+        "freeSpace": "Vrije schijfruimte",
+        "freeSpaceValue": "{{free}} van {{total}}",
+        "jobs": "Achtergrondtaken",
+        "jobsValue": "{{pending}} bezig · {{failed}} mislukt",
+        "failedImports": "Mislukte imports",
+        "lastSync": "Laatste succesvolle sync",
+        "gameData": "Game Data-versie",
+        "gameDataNone": "geen",
+        "secretKey": "Geheime sleutel",
+        "secretGenerated": "automatisch aangemaakt in /data",
+        "secretEnvironment": "uit omgevingsvariabele",
+        "registration": "Registratie",
+        "registrationOpen": "open",
+        "registrationClosed": "gesloten",
+        "retention": "Exports bewaren",
+        "retentionValue_one": "{{days}} dag",
+        "retentionValue_other": "{{days}} dagen",
+        "worker": "Achtergrondverwerking",
+        "workerOn": "actief",
+        "workerOff": "uit"
+      }
+    },
+    "sync": {
+      "title": "PGSharp Sync",
+      "description": "Koppel PGSharp via een webhook of upload een export. Beide routes gebruiken dezelfde verwerking.",
+      "lastSync": "Laatste succesvolle sync: {{date}}",
+      "pending_one": "{{imports}} import in verwerking",
+      "pending_other": "{{imports}} imports in verwerking",
+      "copy": "Kopiëren",
+      "copied": "Gekopieerd",
+      "webhook": {
+        "title": "PGSharp-webhook",
+        "urlLabel": "Webhook-URL (het geheime deel wordt nooit opnieuw getoond)",
+        "created": "Aangemaakt",
+        "lastUsed": "Laatst gebruikt",
+        "neverUsed": "nog nooit",
+        "none": "Er is nog geen actieve webhook voor dit account.",
+        "regenerateConfirm": "Een nieuwe URL maakt de huidige ongeldig. PGSharp moet daarna de nieuwe URL krijgen. Doorgaan?",
+        "regenerate": "Nieuwe URL maken",
+        "create": "Webhook-URL maken",
+        "revokeConfirm": "Webhook intrekken? PGSharp kan daarna niets meer naar dit account sturen.",
+        "revoke": "Intrekken",
+        "dialogTitle": "Je nieuwe webhook-URL",
+        "stored": "Ik heb hem opgeslagen",
+        "secret": "De URL werkt als een wachtwoord. Deel hem niet en zet hem niet in screenshots."
+      },
+      "diagnostics": {
+        "label": "Diagnosemodus (24 uur)",
+        "active": "Actief tot {{date}}. OAK bewaart van elke binnenkomende export de volledige structuur, zonder waarden.",
+        "inactive": "Handig als een import mislukt. OAK legt dan de veldnamen en typen van iedere export vast, nooit de inhoud."
+      },
+      "setup": {
+        "title": "PGSharp instellen",
+        "step1": "Maak hiernaast een webhook-URL en kopieer hem.",
+        "step2": "Open in PGSharp de instellingen en zoek de optie om accountgegevens te exporteren.",
+        "step3": "Plak de URL bij de webhook voor Export Account Data.",
+        "step4": "Start een export. Na een paar seconden verschijnt de import hieronder.",
+        "step5": "Lukt de webhook niet, exporteer dan het bestand PGSStats.json en upload het hier.",
+        "note": "De exacte namen van de menu-opties in PGSharp kunnen per versie verschillen. OAK vraagt nooit om je Pokémon GO-inloggegevens."
+      },
+      "upload": {
+        "title": "Handmatige upload",
+        "duplicate": "Deze export was al eerder ontvangen. Er is niets veranderd.",
+        "received": "Upload ontvangen. De verwerking loopt op de achtergrond.",
+        "drop": "Sleep PGSStats.json hierheen of klik om een bestand te kiezen",
+        "samePipeline": "Het bestand doorloopt dezelfde verwerking als de webhook.",
+        "progress": "Uploadvoortgang"
+      },
+      "schema": {
+        "title": "Structuur van de export",
+        "rootType": "Type van de hoofdstructuur",
+        "pokemonRecords": "Pokémon-records",
+        "itemRecords": "Item-records",
+        "newRootKeys": "Nieuwe velden in de hoofdstructuur",
+        "newPokemonKeys": "Nieuwe Pokémon-velden",
+        "missingPokemonKeys": "Ontbrekende Pokémon-velden",
+        "none": "geen",
+        "allPaths": "Alle veldpaden ({{total}})"
+      },
+      "detail": {
+        "status": "Status",
+        "classification": "Classificatie",
+        "notClassified": "nog niet bepaald",
+        "source": "Bron",
+        "sourceWebhook": "PGSharp-webhook",
+        "sourceUpload": "Upload",
+        "sourceReprocessed": "Opnieuw verwerkt",
+        "received": "Ontvangen",
+        "exportTime": "Exportmoment volgens PGSharp",
+        "size": "Grootte",
+        "payloadStored": "Export nog opgeslagen",
+        "yes": "ja",
+        "no": "nee",
+        "message": "Melding",
+        "retry": "Opnieuw verwerken"
+      },
+      "result": {
+        "title": "Resultaat",
+        "total": "Pokémon in export",
+        "eggs": "Eieren",
+        "new": "Nieuw",
+        "changed": "Gewijzigd",
+        "unchanged": "Ongewijzigd",
+        "missing": "Niet meer in inventaris",
+        "missingUnconfirmed": "Ontbreekt, niet bevestigd",
+        "reappeared": "Teruggekeerd"
+      },
+      "confirmFull": {
+        "title": "Was dit toch een volledige export?",
+        "text": "OAK heeft deze import als gedeeltelijk behandeld, dus ontbrekende Pokémon zijn niet als verdwenen gemarkeerd. Weet je zeker dat je in-game echt Pokémon hebt overgezet, bevestig dan dat de export volledig was.",
+        "confirm": "Bevestigen dat deze export je volledige inventaris bevat? Ontbrekende Pokémon krijgen dan de status 'niet meer in inventaris'.",
+        "button": "Bevestig als volledig"
+      },
+      "issues": {
+        "title": "Meldingen ({{total}})",
+        "error": "fout",
+        "warning": "waarschuwing"
+      },
+      "list": {
+        "title": "Imports",
+        "emptyTitle": "Nog geen imports",
+        "emptyText": "Stuur een export vanuit PGSharp of upload een bestand.",
+        "received": "Ontvangen",
+        "source": "Bron",
+        "status": "Status",
+        "pokemon": "Pokémon",
+        "new": "Nieuw",
+        "changed": "Gewijzigd",
+        "gone": "Weg",
+        "sourceWebhook": "Webhook",
+        "sourceUpload": "Upload",
+        "sourceReprocessed": "Opnieuw",
+        "details": "Details"
+      }
+    }
+  },
+  "pokedex": {
+    "title": "Pokédex",
+    "description": "Zoek iedere Pokémon uit de Game Data. Je ziet wat hij kan, of je hem al hebt en welke Pokémon uit je collectie je ernaartoe kunt evolueren.",
+    "empty": {
+      "title": "Zoek een Pokémon",
+      "text": "Typ een naam of een Pokédex-nummer. Je hoeft de Pokémon niet zelf te hebben."
+    },
+    "noAccount": "Maak een traineraccount aan om te zien wat je collectie met deze Pokémon kan.",
+    "source": "Bron: de actieve Game Data, versie {{version}}. De ranglijsten komen van PvPoke.",
+    "yes": "ja",
+    "no": "nee",
+    "or": "of",
+    "form": "Vorm",
+    "baseStats": "Basiswaarden: Attack {{atk}} · Defense {{def}} · HP {{sta}}",
+    "classes": {
+      "legendary": "Legendary",
+      "mythical": "Mythical",
+      "ultraBeast": "Ultra Beast"
+    },
+    "gender": {
+      "label": "Geslacht: {{gender}}",
+      "male": "alleen mannetjes",
+      "female": "alleen vrouwtjes"
+    },
+    "needs": {
+      "candyUnknown": "candy onbekend",
+      "itemHaveUnknown": "{{item}} (aantal in je tas onbekend)",
+      "itemHave": "{{item}} (je hebt er {{have}})",
+      "lure": "binnen bereik van een {{lure}}",
+      "buddyKm": "{{km}} km lopen als buddy",
+      "quest": "een evolutie-opdracht",
+      "freeAfterTrade": "gratis na ruilen"
+    },
+    "search": {
+      "placeholder": "Naam of nummer, zoals Pyroar of 668",
+      "label": "Pokémon zoeken",
+      "searching": "Zoeken…",
+      "none": "Niets gevonden in de Game Data."
+    },
+    "facts": {
+      "family": "Familie",
+      "buddyKm": "Buddy-afstand",
+      "buddyKmValue": "{{km}} km per candy",
+      "tradable": "Ruilbaar",
+      "transferable": "Over te zetten naar de professor",
+      "deployable": "Mag in een gym",
+      "thirdMove": "Tweede charged-aanval",
+      "purify": "Purify",
+      "mega": "Mega-evolutie",
+      "cost": "{{stardust}} stardust en {{candy}} candy"
+    },
+    "collection": {
+      "owned": "Je hebt {{amount}} {{name}}",
+      "none": "Je hebt nog geen {{name}}",
+      "noneText": "Er staat geen {{name}} in de laatste import van dit traineraccount, in welke vorm dan ook.",
+      "otherForm": "Andere vorm",
+      "topCp": "De {{shown}} met de hoogste CP staan hierboven."
+    },
+    "candidates": {
+      "title": "Uit je collectie te evolueren tot {{name}}",
+      "notEvolved": "{{name}} ontstaat niet door evolutie.",
+      "none": "Je hebt geen {{names}} of een eerdere vorm daarvan.",
+      "candyKnown": "Je hebt {{candy}} candy voor deze familie, zelf ingevuld.",
+      "candyUnknown": "PGSharp exporteert geen candy, dus OAK weet niet of je genoeg hebt. Je kunt het zelf invullen bij <resourcesLink>Stardust & Candy</resourcesLink>.",
+      "strongestFirst": "Sterkste uitkomst eerst.",
+      "steps": "{{steps}} stappen, samen {{candy}} candy.",
+      "cpUnknown": "CP na evolutie onbekend, omdat level of IV's ontbreken.",
+      "firstShown": "De eerste {{shown}} van {{total}} staan hierboven."
+    },
+    "evolution": {
+      "title": "Evolutielijn",
+      "from": "Evolueert uit <names></names>.",
+      "to": "Evolueert tot <target>{{name}}</target>"
+    },
+    "battle": {
+      "title": "In gevechten",
+      "cpTable": "CP met 15/15/15",
+      "speciesRank": "Plaats van de soort bij PvPoke",
+      "notRanked": "niet gerangschikt",
+      "moveset": "Aanvallen: {{moves}}",
+      "gym": "Als gymverdediger:",
+      "gymRank": "#{{rank}} van alle Pokémon die in een gym mogen.",
+      "gymRankEvolution": "#{{rank}} van alle Pokémon die in een gym mogen, na evolutie tot {{name}}.",
+      "gymNotAllowed": "mag niet in een gym.",
+      "gymUnknown": "onbekend, de Game Data zegt niet of hij in een gym mag."
+    },
+    "moves": {
+      "title": "Aanvallen",
+      "fast": "Fast",
+      "charged": "Charged",
+      "legacy": "Legacy"
+    }
+  },
+  "detail": {
+    "notFound": "Pokémon niet gevonden",
+    "back": "Pokémon Box",
+    "hatched": "uitgebroed {{date}}",
+    "caught": "gevangen {{date}}",
+    "inInventory": "in inventaris",
+    "gone": "niet meer in inventaris",
+    "idTitle": "Unieke Pokémon-ID uit PGSharp",
+    "copied": "gekopieerd",
+    "formFallback": "Deze vorm ({{form}}) staat niet in de Game Data. OAK gebruikt de standaardvorm van de soort.",
+    "hpLevel": "HP · level",
+    "yes": "ja",
+    "no": "nee",
+    "maxLevel": "Max level {{level}}",
+    "values": {
+      "title": "Waarden",
+      "fastMove": "Snelle aanval",
+      "chargedMoves": "Geladen aanvallen",
+      "secondMove": "Tweede aanval vrijgespeeld",
+      "maxMoves": "Max Moves",
+      "size": "Lengte / gewicht",
+      "powerUps": "Power-ups gedaan",
+      "buddyKm": "Buddy-km",
+      "fromEgg": "Uit ei",
+      "firstSeen": "Eerst gezien in OAK",
+      "lastChanged": "Laatst gewijzigd",
+      "event": "Event: {{events}}",
+      "gameTags": "Tags in het spel: {{tags}}",
+      "tagNamesUnknown_one": "{{count}} (naam onbekend, geef hem een label in Instellingen)",
+      "tagNamesUnknown_other": "{{count}} (namen onbekend, geef ze een label in Instellingen)"
+    },
+    "recommendation": {
+      "title": "Cleanup-advies",
+      "none": "Nog geen analyse beschikbaar. De analyse draait na iedere import automatisch.",
+      "confidenceTitle": "Betrouwbaarheid",
+      "confidence": "Betrouwbaarheid: {{level}}",
+      "usefulness": "Bruikbaarheid",
+      "usefulnessTitle": "Feitelijke waarde in gevechten, 0–100",
+      "keepScore": "Bewaarscore",
+      "keepScoreTitle": "Reden om te bewaren, 0–100",
+      "protection": "Bescherming: {{reasons}}",
+      "scoresHow": "Hoe zijn de scores opgebouwd?",
+      "scoresNote": "Bruikbaarheid is de hoogste deelwaarde. De bewaarscore telt punten op tot maximaal 100.",
+      "alternatives": "Vergelijkbare Pokémon in je collectie",
+      "alternative": "{{name}} · CP {{cp}} · {{iv}} · bruikbaarheid {{score}} · {{status}}",
+      "better": "beter",
+      "computed": "Berekend op {{date}}. OAK zet nooit zelf een Pokémon over."
+    },
+    "metadata": {
+      "title": "Jouw gegevens (OAK)",
+      "saved": "Opgeslagen. De analyse wordt opnieuw berekend.",
+      "protect": "Handmatig beschermen",
+      "protectHint": "Een beschermde Pokémon wordt nooit als transfer-kandidaat voorgesteld.",
+      "reason": "Reden",
+      "notes": "Notities",
+      "tags": "OAK-tags",
+      "tagsHint": "komma-gescheiden",
+      "plannedAction": "Geplande actie",
+      "none": "Geen",
+      "actions": {
+        "keep": "Bewaren",
+        "evolve": "Evolueren",
+        "powerUp": "Power-up",
+        "tm": "TM gebruiken",
+        "purify": "Purifyen",
+        "trade": "Ruilen",
+        "mega": "Mega",
+        "buddy": "Buddy",
+        "transfer": "Overzetten"
+      },
+      "plannedLeague": "Geplande league",
+      "review": "Review",
+      "toReview": "Te beoordelen",
+      "reviewed": "Beoordeeld",
+      "override": "Advies overschrijven",
+      "followOak": "Advies van OAK volgen",
+      "vintageTitle": "Vintage {{year}}",
+      "vintageWarning": "OAK beschermt Pokémon uit 2016 tot en met 2019 altijd. Met deze keuze hef je die bescherming op voor deze ene Pokémon.",
+      "vintageConfirm": "Dit is een vintage Pokémon uit {{year}}. Weet je zeker dat je de bescherming wilt opheffen?",
+      "save": "Opslaan"
+    },
+    "scenario": {
+      "title": "Rekenen met",
+      "current": "Als Shadow",
+      "purified": "Na purify",
+      "explanation": "Purify zet een Shadow Pokémon op level 25, of op je trainerlevel als dat lager is, en geeft iedere IV 2 punten extra tot 15. Dat is niet terug te draaien, en een level kun je niet verlagen. Een Pokémon kan daardoor te sterk worden voor Great League."
+    },
+    "purify": {
+      "summary": "Na purify: level {{level}}, IV {{ivs}}, CP {{cp}}. Purify kost {{stardust}} stardust en {{candy}} candy.",
+      "source": "Regels voor level en IV's: {{source}}."
+    },
+    "analysis": {
+      "title": "Battle-analyse",
+      "unavailable": "Niet beschikbaar.",
+      "ivRank": "IV-rang",
+      "speciesRank": "Soortrang",
+      "readiness": "Inzetbaarheid",
+      "noTarget": "Geen geschikte vorm voor deze league.",
+      "target": "Doel",
+      "percentOfBest": "% van beste",
+      "bestCp": "Beste CP / level",
+      "cost": "Kosten",
+      "primary": "primair",
+      "afterEvolution": "na evolutie · {{candy}} candy",
+      "recommended": "Aanbevolen:",
+      "withoutElite": "(zonder Elite TM)",
+      "randomFrom": "(willekeurig uit {{size}})",
+      "cpNow": "nu {{cp}}",
+      "score": "score {{score}}",
+      "currentMoves": "Huidige aanvallen",
+      "eliteAvailable": "Elite TM beschikbaar",
+      "eliteUnavailable": "Elite TM niet beschikbaar",
+      "ivNote": "Een Pokémon met uitstekende IV's is niet automatisch een goede battle-Pokémon: kijk ook naar de soortrang en inzetbaarheid."
+    },
+    "evolutions": {
+      "title": "Evoluties",
+      "titlePurified": "Evoluties na purify",
+      "none": "Geen verdere evoluties.",
+      "cpAfter": "CP na evolutie: {{cp}}",
+      "buddyKm": "{{km}} km als buddy",
+      "quest": "evolutie-opdracht",
+      "overCap": "boven CP-limiet",
+      "rank": "rang {{rank}}",
+      "eliteWarning": "Let op: sommige aanvallen van deze evolutie zijn alleen met Elite TM te leren.",
+      "note": "Een hogere CP alleen is nooit een reden om te evolueren. Vergelijk de league-rangen."
+    },
+    "powerUps": {
+      "title": "Power-ups",
+      "titlePurified": "Power-ups na purify",
+      "level": "Level",
+      "showLess": "Minder tonen",
+      "showAll": "Alle levels tonen",
+      "costs": "Kosten zijn cumulatief vanaf {{start}}{{modifiers}}.",
+      "fromCurrent": "het huidige level",
+      "fromPurified": "het level na purify",
+      "lucky": "met Lucky-korting",
+      "shadow": "Shadow-toeslag",
+      "purified": "Purified-korting",
+      "candyUnknown": "Je candyvoorraad is onbekend: PGSharp exporteert die niet."
+    },
+    "cups": {
+      "title": "Cups",
+      "none": "Deze Pokémon past in geen van de cups die PvPoke nu toont, ook niet na evolutie.",
+      "ranking": "{{target}} · IV-rang {{rank}} · beste CP {{cp}}",
+      "speciesRank": "soortrang {{rank}}"
+    },
+    "history": {
+      "title": "Historie",
+      "none": "Geen wijzigingen."
+    }
+  },
+  "cleanup": {
+    "title": "Cleanup Manager",
+    "description": "Uitlegbaar advies over welke Pokémon je bewaart, opbouwt of kunt overzetten. OAK voert zelf nooit een transfer uit.",
+    "tabs": {
+      "recommendations": "Aanbevelingen",
+      "duplicates": "Dubbelen",
+      "list": "Actielijst",
+      "rules": "Regels"
+    },
+    "breakdown": {
+      "summary": "Hoe zijn de scores opgebouwd?",
+      "battle": "Bruikbaarheid {{score}}",
+      "battleNote": "De hoogste waarde telt, niet de som, zodat dezelfde IV's niet dubbel meetellen.",
+      "keep": "Bewaarscore {{score}}",
+      "keepNote": "Punten opgeteld, maximaal 100. Bewaren vanaf {{keep}}, beoordelen vanaf {{review}}."
+    },
+    "similar": {
+      "none": "Geen andere exemplaren van deze soort en vorm.",
+      "label": "Vergelijkbaar:",
+      "scores": "{{iv}} · bruikbaarheid {{battle}} · bewaar {{keep}}",
+      "better": "beter"
+    },
+    "row": {
+      "confidence": "Betrouwbaarheid {{level}}",
+      "inActionList": "Op actielijst",
+      "battle": "Bruikbaarheid",
+      "battleTitle": "Feitelijke waarde in gevechten, 0–100",
+      "keep": "Bewaarscore",
+      "keepTitle": "Reden om te bewaren, 0–100",
+      "protection": "Bescherming: {{reasons}}"
+    },
+    "analysis": {
+      "summary": "Analyse {{when}} · engine {{engine}} · Game Data v{{version}}",
+      "notRun": "nog niet uitgevoerd",
+      "stale": "Verouderd: gegevens of regels zijn gewijzigd",
+      "pending": "Wordt opnieuw berekend…",
+      "rerun": "Opnieuw analyseren"
+    },
+    "statusFilter": {
+      "all": "Alle",
+      "allTitle": "Alle Pokémon"
+    },
+    "sort": {
+      "label": "Sorteren",
+      "priority": "Prioriteit",
+      "keepAsc": "Bewaarscore laag–hoog",
+      "keepDesc": "Bewaarscore hoog–laag",
+      "battleDesc": "Bruikbaarheid hoog–laag",
+      "battleAsc": "Bruikbaarheid laag–hoog",
+      "cpAsc": "CP laag–hoog",
+      "cpDesc": "CP hoog–laag",
+      "name": "Naam",
+      "ivAsc": "IV laag–hoog"
+    },
+    "filters": {
+      "all": "alle",
+      "only": "alleen",
+      "without": "zonder",
+      "favoritesLabel": "Favorieten",
+      "favorites": "Favorieten: {{choice}}",
+      "vintageLabel": "Vintage",
+      "vintage": "Vintage (2016–2019): {{choice}}",
+      "gymLabel": "Gyms",
+      "gym": {
+        "all": "Gyms: alle",
+        "best": "Gyms: beste verdediger per soort",
+        "inGym": "Gyms: staat nu in een gym"
+      }
+    },
+    "recommendations": {
+      "addSelected": "{{n}} op actielijst zetten",
+      "selectPage": "Hele pagina selecteren",
+      "empty": "Geen Pokémon met deze filters",
+      "added": "Actielijst bevat nu {{n}} Pokémon.",
+      "skipped": "{{n}} overgeslagen: {{reasons}}.",
+      "waiting_one": "{{count}} wacht op je bevestiging.",
+      "waiting_other": "{{count}} wachten op je bevestiging."
+    },
+    "duplicates": {
+      "search": "Soort zoeken…",
+      "intro": "Pokémon van dezelfde soort, vorm en Shadow-status naast elkaar, hoogste bruikbaarheid eerst. Favorieten en vintage Pokémon doen gewoon mee in de vergelijking.",
+      "columns": {
+        "ivs": "IV's",
+        "level": "Level",
+        "moves": "Aanvallen",
+        "battle": "Bruikb.",
+        "battleTitle": "Bruikbaarheid in gevechten, 0–100",
+        "keep": "Bewaar",
+        "keepTitle": "Bewaarscore, 0–100",
+        "advice": "Advies",
+        "why": "Waarom"
+      },
+      "vintage": "Vintage {{year}}",
+      "favorite": "Favoriet"
+    },
+    "list": {
+      "emptyTitle": "De actielijst is leeg",
+      "emptyText": "Zet transfer-kandidaten op de lijst vanuit het tabblad Aanbevelingen of de Pokémon Box. Je werkt de lijst daarna zelf in het spel af.",
+      "noTransferTitle": "OAK zet niets over",
+      "noTransferText": "Deze lijst is een hulpmiddel. Zoek iedere Pokémon in het spel op, controleer hem en zet hem zelf over. Daarna markeer je hem hier als afgerond, of de volgende volledige synchronisatie ziet dat hij weg is.",
+      "printable": "Printbare checklist",
+      "clear": "Lijst leegmaken",
+      "heldBackTitle": "{{n}} Pokémon tegengehouden",
+      "heldBackText": "Hun bescherming is veranderd sinds ze op de lijst kwamen, of ze staan niet meer in je inventaris. Ze staan niet in de zoekopdrachten en niet op de checklist.",
+      "searches": "Zoekopdrachten voor Pokémon GO",
+      "copied": "Gekopieerd",
+      "copy": "Kopiëren",
+      "columns": {
+        "reason": "Reden",
+        "protection": "Bescherming",
+        "sourceId": "Bron-ID"
+      },
+      "gone": "Niet meer in inventaris",
+      "blocked": "Tegengehouden: {{reason}}",
+      "reconfirm": "Opnieuw bevestigen: {{reason}}",
+      "newReasons": "nieuw {{reasons}}",
+      "confirm": "Bevestigen",
+      "done": "Afgerond",
+      "remove": "Verwijderen"
+    },
+    "rules": {
+      "saved": "Regels opgeslagen. De analyse wordt opnieuw berekend.",
+      "fixed": {
+        "title": "Vaste regels",
+        "text": "Deze regels staan vast. Wil je één vintage Pokémon toch kwijt, hef de bescherming dan op bij die Pokémon. OAK vraagt daar een bevestiging voor."
+      },
+      "protection": {
+        "title": "Harde bescherming",
+        "text": "Wat hier aan staat, krijgt altijd 'Beschermd', hoe laag de scores ook zijn. Zet je een regel uit, dan telt het kenmerk alleen nog als punten in de bewaarscore."
+      },
+      "keep": {
+        "title": "Bewaarscore (0–100)",
+        "text": "Iedere eigenschap telt één keer. IV's tellen alleen via de bruikbaarheid. Favorieten krijgen extra punten maar geen harde bescherming."
+      },
+      "roles": {
+        "title": "Rollen en spelinstellingen"
+      },
+      "analysis": {
+        "title": "Analyse en drempels"
+      },
+      "save": "Opslaan",
+      "defaults": "Standaardwaarden",
+      "engine": "Engine {{version}}",
+      "points": "Punten",
+      "scoreRange": "0–100",
+      "of4096": "Van 4096",
+      "items": {
+        "protectShiny": {
+          "label": "Shiny's"
+        },
+        "protectLucky": {
+          "label": "Lucky Pokémon"
+        },
+        "protectHundo": {
+          "label": "Hundo's en shundo's"
+        },
+        "protectLocationCard": {
+          "label": "Speciale achtergronden"
+        },
+        "protectCostume": {
+          "label": "Kostuums"
+        },
+        "protectMythical": {
+          "label": "Mythical"
+        },
+        "protectLegendary": {
+          "label": "Legendary"
+        },
+        "protectUltraBeast": {
+          "label": "Ultra Beasts"
+        },
+        "protectShadow": {
+          "label": "Shadow Pokémon"
+        },
+        "protectPurified": {
+          "label": "Purified Pokémon"
+        },
+        "protectDynamax": {
+          "label": "Dynamax"
+        },
+        "protectGigantamax": {
+          "label": "Gigantamax"
+        },
+        "protectEvent": {
+          "label": "Event-Pokémon",
+          "hint": "Met event-herkomst of beperkte uitgave"
+        },
+        "protectNicknamed": {
+          "label": "Pokémon met bijnaam"
+        },
+        "protectMegaProgress": {
+          "label": "Pokémon met mega-voortgang"
+        },
+        "keepBestGreat": {
+          "label": "Bewaar altijd de beste Great League-kandidaat"
+        },
+        "keepBestUltra": {
+          "label": "Bewaar altijd de beste Ultra League-kandidaat"
+        },
+        "keepBestMaster": {
+          "label": "Bewaar het beste Master League-exemplaar"
+        },
+        "keepBestRaid": {
+          "label": "Bewaar de beste raid-aanvaller",
+          "hint": "Hoogste Attack-IV binnen relevante soorten"
+        },
+        "keepBestGym": {
+          "label": "Bewaar de beste gymverdediger",
+          "hint": "Meeste Defense en HP binnen de beste verdedigerssoorten"
+        },
+        "eliteTmAvailable": {
+          "label": "Ik heb Elite TM's",
+          "hint": "Movesetadvies en raidwaarde mogen Elite TM-aanvallen gebruiken"
+        },
+        "includeBestBuddy": {
+          "label": "Rekenen met Best Buddy (+1 level)"
+        },
+        "considerCosts": {
+          "label": "Houd rekening met resourcekosten"
+        },
+        "allowTransferOnPartialImport": {
+          "label": "Transferadvies ook na een gedeeltelijke import",
+          "hint": "Standaard uit: dan krijgt alles hooguit 'Beoordelen'"
+        },
+        "useEvents": {
+          "label": "Houd rekening met komende events",
+          "hint": "Bewaar een transfer-kandidaat tot na de Community Day van zijn evolutielijn"
+        },
+        "keepWeightBattle": {
+          "label": "Aandeel bruikbaarheid",
+          "hint": "Procent van de bruikbaarheidsscore dat meetelt"
+        },
+        "keepPointsBestCopy": {
+          "label": "Beste of enige exemplaar"
+        },
+        "keepPointsFavorite": {
+          "label": "Favoriet",
+          "hint": "Punten. Telt nooit mee in de bruikbaarheid"
+        },
+        "keepPointsShiny": {
+          "label": "Shiny"
+        },
+        "keepPointsLucky": {
+          "label": "Lucky"
+        },
+        "keepPointsRarity": {
+          "label": "Legendary, Mythical, Ultra Beast"
+        },
+        "keepPointsCostume": {
+          "label": "Kostuum"
+        },
+        "keepPointsLocationCard": {
+          "label": "Speciale achtergrond"
+        },
+        "keepPointsEvent": {
+          "label": "Event-Pokémon"
+        },
+        "keepPointsMax": {
+          "label": "Dynamax of Gigantamax"
+        },
+        "keepPointsMega": {
+          "label": "Mega-voortgang"
+        },
+        "keepTraitsCap": {
+          "label": "Maximum voor bijzondere kenmerken samen"
+        },
+        "keepPointsNickname": {
+          "label": "Bijnaam"
+        },
+        "keepPointsPlanned": {
+          "label": "Eigen plan in OAK",
+          "hint": "Punten, niet bij plan 'overzetten'"
+        },
+        "keepThreshold": {
+          "label": "Bewaren vanaf bewaarscore"
+        },
+        "reviewThreshold": {
+          "label": "Beoordelen vanaf bewaarscore",
+          "hint": "0–100, daaronder transfer-kandidaat"
+        },
+        "keepMinPerSpecies": {
+          "label": "Minimaal aantal exemplaren per soort",
+          "hint": "0–10. Het beste exemplaar blijft altijd"
+        },
+        "metaRankThreshold": {
+          "label": "Soort telt mee tot PvPoke-rang",
+          "hint": "Hoe lager, hoe strenger"
+        },
+        "speciesRankFull": {
+          "label": "Soort telt volledig tot PvPoke-rang",
+          "hint": "Daaronder loopt het gewicht af"
+        },
+        "raidTopN": {
+          "label": "Raidwaarde tot plaats",
+          "hint": "Plaats tussen alle aanvallers van een type"
+        },
+        "gymTopN": {
+          "label": "Gymwaarde tot plaats",
+          "hint": "Plaats tussen alle soorten die in een gym mogen"
+        },
+        "goodIvRankThreshold": {
+          "label": "IV-rang die altijd tot review leidt"
+        },
+        "buildIvRankThreshold": {
+          "label": "Maximale IV-rang voor investeringsadvies"
+        },
+        "readyCpFraction": {
+          "label": "Direct inzetbaar vanaf fractie van de beste CP",
+          "hint": "0,5–1"
+        },
+        "maxLevel": {
+          "label": "Maximaal level",
+          "hint": "Volgens Game Data meestal 50"
+        },
+        "eventHoldDays": {
+          "label": "Events tellen mee vanaf dagen ervoor",
+          "hint": "0–60"
+        }
+      }
+    }
+  },
+  "events": {
+    "title": "Komende events",
+    "description": "Events in de komende 60 dagen. Een Community Day houdt transfer-kandidaten uit die evolutielijn tot na het event vast, en bij dubbele Transfer Candy krijg je een tip om te wachten.",
+    "calendar": "Kalender",
+    "emptyTitle": "Geen events gevonden",
+    "emptyText": "Er staan geen events in de komende 60 dagen.",
+    "feed": {
+      "source": "Eventgegevens: <leekduck>LeekDuck.com</leekduck> via <scrapedduck>ScrapedDuck</scrapedduck>. Deze gegevens zijn niet officieel. Controleer bij twijfel het event zelf.",
+      "fetched_one": "Laatst opgehaald {{when}}, {{n}} event, versie {{version}}.",
+      "fetched_other": "Laatst opgehaald {{when}}, {{n}} events, versie {{version}}.",
+      "notFetched": "Nog niet opgehaald.",
+      "autoOn": "OAK werkt de kalender automatisch bij.",
+      "autoOff": "Automatisch bijwerken staat uit.",
+      "failed": "Laatste poging om bij te werken mislukte: {{error}} De vorige events blijven gelden.",
+      "notUsed": "Events tellen niet mee in je cleanupadvies. Zet dat aan bij de <rulesLink>Cleanup-regels</rulesLink>.",
+      "updateNow": "Nu bijwerken",
+      "updateStarted": "Bijwerken gestart. De eventkalender wordt op de achtergrond opgehaald."
+    },
+    "row": {
+      "counts": "Telt mee",
+      "ignored": "Genegeerd",
+      "details": "Details",
+      "period": "{{start}} tot {{end}}",
+      "periodLocal": "{{start}} tot {{end}} (lokale tijd)",
+      "species": "Pokémon: {{names}}",
+      "unknownNames": "Niet in de Game Data gevonden: {{names}}. Daarvoor bewaart OAK niets.",
+      "bonuses": "Bonussen: {{bonuses}}",
+      "held": "OAK bewaart hiervoor {{n}} van je Pokémon tot na het event. <cleanupLink>Bekijk in de Cleanup Manager</cleanupLink>",
+      "transferTip": "Tip: zet transfer-kandidaten pas tijdens dit event over ({{bonus}}).",
+      "countsFrom_one": "Telt mee vanaf {{count}} dag voor het begin.",
+      "countsFrom_other": "Telt mee vanaf {{count}} dagen voor het begin.",
+      "remove": "Verwijderen",
+      "include": "Weer meetellen",
+      "ignore": "Negeren"
+    },
+    "manual": {
+      "title": "Eigen event toevoegen",
+      "intro": "Voor iets dat niet in de kalender staat, zoals een ruilafspraak. OAK bewaart de gekozen Pokémon en hun evolutielijn tot het event voorbij is.",
+      "name": "Naam",
+      "start": "Begin",
+      "end": "Einde",
+      "species": "Pokémon zoeken, bijv. eevee",
+      "add": "Toevoegen",
+      "added": "Event toegevoegd. OAK berekent je cleanupadvies opnieuw."
+    }
+  },
+  "errors": {
+    "http": {
+      "401": "Je bent niet meer ingelogd. Log opnieuw in.",
+      "403": "Je hebt geen toegang tot deze actie.",
+      "408": "De server wachtte te lang op de upload.",
+      "413": "Het bestand is te groot voor de server of voor de proxy ervoor.",
+      "429": "Te veel verzoeken. Probeer het over een minuut opnieuw.",
+      "502": "De proxy kon OAK niet bereiken.",
+      "503": "OAK is tijdelijk niet beschikbaar.",
+      "504": "OAK reageerde niet op tijd.",
+      "other": "De server gaf een fout."
+    },
+    "invalidResponse": "De server gaf een antwoord dat OAK niet kan lezen.",
+    "uploadAborted": "De upload is geannuleerd.",
+    "network": "Netwerkfout tijdens het uploaden. Controleer de verbinding en probeer het opnieuw.",
+    "uploadTimeout": "De upload duurde te lang en is gestopt.",
+    "unknown": "Onbekende fout."
+  },
+  "notFound": {
+    "text": "Deze pagina bestaat niet."
+  }
+}

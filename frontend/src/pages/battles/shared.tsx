@@ -1,9 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
+import type { ParseKeys } from "i18next";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { TypeBadge } from "../../components/pokemon";
 import { Input } from "../../components/ui";
+import i18n from "../../i18n";
 import { api } from "../../lib/api";
+import { level, num } from "../../lib/format";
 import { typeNames } from "../../lib/i18n";
 
 export interface SpeciesOption {
@@ -81,69 +85,83 @@ export function useLeagues() {
   return useQuery({ queryKey: ["leagues"], queryFn: () => api.get<LeagueInfo[]>("/api/v1/battles/leagues"), staleTime: 5 * 60_000 });
 }
 
-const tagNames: Record<string, string> = {
-  mega: "Mega-evoluties",
-  shadow: "Shadow Pokémon",
-  legendary: "Legendary Pokémon",
-  mythical: "Mythical Pokémon",
-  ultrabeast: "Ultra Beasts",
-  starter: "starters",
-  regional: "regionale Pokémon",
+const tagNames: Record<string, ParseKeys> = {
+  mega: "battles.shared.tags.mega",
+  shadow: "battles.shared.tags.shadow",
+  legendary: "battles.shared.tags.legendary",
+  mythical: "battles.shared.tags.mythical",
+  ultrabeast: "battles.shared.tags.ultrabeast",
+  starter: "battles.shared.tags.starter",
+  regional: "battles.shared.tags.regional",
 };
-const stageNames: Record<number, string> = {
-  0: "Pokémon zonder evolutie",
-  1: "Pokémon die nog kunnen evolueren en zelf geen eerdere vorm hebben",
-  2: "middelste vormen van een evolutielijn",
-  3: "laatste vormen van een evolutielijn",
+const stageNames: Record<number, ParseKeys> = {
+  0: "battles.shared.stages.none",
+  1: "battles.shared.stages.first",
+  2: "battles.shared.stages.middle",
+  3: "battles.shared.stages.final",
 };
 
 function either(values: string[]): string {
-  return values.length > 1 ? `${values.slice(0, -1).join(", ")} of ${values[values.length - 1]}` : (values[0] ?? "");
+  return values.length > 1 ? i18n.t("battles.shared.either", { rest: values.slice(0, -1).join(", "), last: values[values.length - 1] }) : (values[0] ?? "");
 }
 
-/** One rule of a cup in plain Dutch. */
+function stageName(value: string | number): string {
+  const key = stageNames[Number(value)];
+  return key ? i18n.t(key) : String(value);
+}
+
+/** A type name as it reads inside a rule: lowercase in Dutch, capitalized in English. */
+function typeInRule(type: string): string {
+  return type in typeNames ? i18n.t(`battles.shared.typeInRule.${type}` as ParseKeys) : type;
+}
+
+/** One rule of a cup in plain language. */
 export function conditionText(c: CupCondition): string {
   const values = c.values.map(String);
+  const t = i18n.t;
   switch (c.kind) {
     case "type": {
-      const types = either(values.map((v) => (typeNames[v] ?? v).toLowerCase()));
-      return c.include ? `Alleen Pokémon met het type ${types}.` : `Geen Pokémon met het type ${types}.`;
+      const types = either(values.map(typeInRule));
+      return c.include ? t("battles.shared.rules.typeOnly", { types }) : t("battles.shared.rules.typeNone", { types });
     }
     case "tag": {
-      const tags = either(values.map((v) => tagNames[v] ?? v));
-      return c.include ? `Alleen ${tags}.` : `Geen ${tags}.`;
+      const tags = either(values.map((v) => (tagNames[v] ? t(tagNames[v]) : v)));
+      return c.include ? t("battles.shared.rules.tagOnly", { tags }) : t("battles.shared.rules.tagNone", { tags });
     }
     case "id":
-      if (!c.include) return `${c.count} aangewezen soorten mogen niet mee.`;
-      return c.alone ? `Alleen ${c.count} aangewezen soorten.` : `Daarnaast mogen ${c.count} aangewezen soorten mee.`;
-    case "evolution":
-      return `${c.include ? "Alleen" : "Geen"} ${either(c.values.map((v) => stageNames[Number(v)] ?? String(v)))}.`;
+      if (!c.include) return t("battles.shared.rules.idNone", { count: c.count });
+      return c.alone ? t("battles.shared.rules.idOnly", { number: c.count }) : t("battles.shared.rules.idAlso", { count: c.count });
+    case "evolution": {
+      const stages = either(c.values.map(stageName));
+      return c.include ? t("battles.shared.rules.stageOnly", { stages }) : t("battles.shared.rules.stageNone", { stages });
+    }
     case "dex": {
       const ranges = [];
-      for (let i = 0; i + 1 < values.length; i += 2) ranges.push(`${values[i]} t/m ${values[i + 1]}`);
-      return `${c.include ? "Alleen" : "Geen"} Pokédex-nummers ${either(ranges)}.`;
+      for (let i = 0; i + 1 < values.length; i += 2) ranges.push(t("battles.shared.range", { from: values[i], to: values[i + 1] }));
+      return c.include ? t("battles.shared.rules.dexOnly", { ranges: either(ranges) }) : t("battles.shared.rules.dexNone", { ranges: either(ranges) });
     }
     case "move":
-      return c.include ? `Alleen Pokémon die een van ${c.count} aangewezen aanvallen kunnen leren.` : `Geen Pokémon die een van ${c.count} aangewezen aanvallen kunnen leren.`;
+      return c.include ? t("battles.shared.rules.moveOnly", { count: c.count }) : t("battles.shared.rules.moveNone", { count: c.count });
     case "moveType": {
-      const types = either(values.map((v) => (typeNames[v] ?? v).toLowerCase()));
-      return `${c.include ? "Alleen" : "Geen"} Pokémon met een aanval van het type ${types}.`;
+      const types = either(values.map(typeInRule));
+      return c.include ? t("battles.shared.rules.moveTypeOnly", { types }) : t("battles.shared.rules.moveTypeNone", { types });
     }
     case "cost":
-      return `${c.include ? "Alleen" : "Geen"} Pokémon waarvan de tweede aanval ${either(values)} stardust kost.`;
+      return c.include ? t("battles.shared.rules.costOnly", { costs: either(values) }) : t("battles.shared.rules.costNone", { costs: either(values) });
     case "distance":
-      return `${c.include ? "Alleen" : "Geen"} Pokémon met een buddy-afstand van ${either(values)} km.`;
+      return c.include ? t("battles.shared.rules.distanceOnly", { distances: either(values) }) : t("battles.shared.rules.distanceNone", { distances: either(values) });
     default:
-      return `Regel van het soort "${c.kind}".`;
+      return t("battles.shared.rules.other", { kind: c.kind });
   }
 }
 
 /** A cup's limits and rules, as OAK applies them. */
 export function CupRules({ info }: { info: LeagueInfo }) {
+  const { t } = useTranslation();
   return (
     <ul className="list-disc space-y-1 pl-5 text-sm">
-      <li>{info.max_cp ? `Maximaal ${info.max_cp.toLocaleString("nl-NL")} CP.` : "Geen CP-limiet."}</li>
-      {info.level_cap !== null && <li>Maximaal level {info.level_cap}.</li>}
+      <li>{info.max_cp ? t("battles.shared.maxCp", { cp: num(info.max_cp) }) : t("battles.shared.noCpLimit")}</li>
+      {info.level_cap !== null && <li>{t("battles.shared.levelCap", { level: level(info.level_cap) })}</li>}
       {info.conditions.map((c, index) => (
         <li key={index}>{conditionText(c)}</li>
       ))}

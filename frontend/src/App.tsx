@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Navigate, Route, Routes, useLocation } from "react-router";
 
 import { AppShell } from "./components/layout/AppShell";
@@ -41,7 +42,8 @@ function RequireAuth({ children }: { children: ReactNode }) {
 }
 
 function NotFound() {
-  return <p className="text-muted">Deze pagina bestaat niet.</p>;
+  const { t } = useTranslation();
+  return <p className="text-muted">{t("notFound.text")}</p>;
 }
 
 export function App() {

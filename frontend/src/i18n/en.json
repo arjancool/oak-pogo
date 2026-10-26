@@ -1,0 +1,1771 @@
+{
+  "app": {
+    "tagline": "Pokémon GO Manager"
+  },
+  "common": {
+    "unknown": "unknown",
+    "never": "never",
+    "justNow": "just now",
+    "loading": "Loading…",
+    "close": "Close",
+    "previous": "Previous",
+    "next": "Next",
+    "cancel": "Cancel"
+  },
+  "language": {
+    "label": "Language"
+  },
+  "nav": {
+    "sections": {
+      "dashboard": "Dashboard",
+      "pokemon": "Pokémon",
+      "battles": "Battles",
+      "account": "Account",
+      "admin": "Admin"
+    },
+    "overview": "Overview",
+    "newPokemon": "New Pokémon",
+    "box": "Pokémon Box",
+    "pokedex": "Pokédex",
+    "compare": "Compare",
+    "cleanup": "Cleanup Manager",
+    "planner": "Evolution planner",
+    "events": "Upcoming events",
+    "great": "Great League",
+    "ultra": "Ultra League",
+    "master": "Master League",
+    "cups": "Cups",
+    "teamBuilder": "Team Builder",
+    "rocket": "Team GO Rocket",
+    "raids": "Raids",
+    "max": "Max Battles",
+    "gyms": "Gym defenders",
+    "trainer": "Trainer statistics",
+    "items": "Item Bag",
+    "resources": "Stardust & Candy",
+    "history": "History",
+    "accounts": "Trainer accounts",
+    "sync": "PGSharp Sync",
+    "gamedata": "Game Data",
+    "settings": "Settings",
+    "backups": "Backups"
+  },
+  "shell": {
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "trainerAccount": "Trainer account",
+    "createTrainerAccount": "Create trainer account",
+    "logout": "Log out",
+    "sync": {
+      "connected": "Synced",
+      "processing": "Processing…",
+      "warning": "Partial",
+      "error": "Error",
+      "waiting": "Waiting for export"
+    }
+  },
+  "login": {
+    "firstUse": "First use",
+    "firstUseText": "Create the owner account. This user manages OAK and can add other users later.",
+    "username": "Username",
+    "password": "Password",
+    "passwordHint": "at least 10 characters",
+    "repeatPassword": "Repeat password",
+    "mismatch": "The passwords do not match.",
+    "createOwner": "Create owner",
+    "submit": "Log in"
+  },
+  "labels": {
+    "types": {
+      "normal": "Normal",
+      "fighting": "Fighting",
+      "flying": "Flying",
+      "poison": "Poison",
+      "ground": "Ground",
+      "rock": "Rock",
+      "bug": "Bug",
+      "ghost": "Ghost",
+      "steel": "Steel",
+      "fire": "Fire",
+      "water": "Water",
+      "grass": "Grass",
+      "electric": "Electric",
+      "psychic": "Psychic",
+      "ice": "Ice",
+      "dragon": "Dragon",
+      "dark": "Dark",
+      "fairy": "Fairy"
+    },
+    "statuses": {
+      "PROTECT": "Protected",
+      "KEEP": "Keep",
+      "BUILD": "Invest",
+      "REVIEW": "Review",
+      "TRANSFER_CANDIDATE": "Transfer candidate",
+      "UNKNOWN": "Unknown"
+    },
+    "statusDescriptions": {
+      "PROTECT": "Hard protection: vintage, set by hand or by a protection rule",
+      "KEEP": "Best of its kind, useful in battles or a high keep score",
+      "BUILD": "Good candidate for a power-up or evolution",
+      "REVIEW": "Your call, for example a favorite when a better one exists",
+      "TRANSFER_CANDIDATE": "Probably not needed: a better one stays. OAK never transfers anything itself",
+      "UNKNOWN": "Not enough reliable data"
+    },
+    "confirmationKinds": {
+      "favorite": "Favorite",
+      "vintage": "Vintage, protection lifted",
+      "unknown_date": "Catch date unknown",
+      "protected": "Protected by a rule"
+    },
+    "readiness": {
+      "direct": "Ready now",
+      "power_up": "After power-up",
+      "evolution": "After evolution",
+      "not_suitable": "Not suitable",
+      "unknown": "Not enough data",
+      "after_evolution": "After evolution"
+    },
+    "leagues": {
+      "great": "Great League",
+      "ultra": "Ultra League",
+      "master": "Master League"
+    },
+    "confidence": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "importStatuses": {
+      "received": "Received",
+      "queued": "Queued",
+      "processing": "Processing",
+      "succeeded": "Fully processed",
+      "partial": "Partly processed",
+      "failed": "Failed",
+      "rejected": "Rejected",
+      "duplicate": "Received before"
+    },
+    "classifications": {
+      "full": "Full inventory",
+      "partial": "Partial import",
+      "invalid": "Invalid",
+      "stale": "Outdated",
+      "duplicate": "Duplicate"
+    },
+    "changes": {
+      "evolved": "Evolved",
+      "powered_up": "CP changed",
+      "moves_changed": "Moves changed",
+      "favorite_changed": "Favorite changed",
+      "tags_changed": "Tags changed",
+      "lucky_changed": "Lucky changed",
+      "alignment_changed": "Shadow/Purified changed",
+      "renamed": "New nickname",
+      "mega_changed": "Mega changed",
+      "max_changed": "Max Moves changed",
+      "other": "Other change"
+    },
+    "events": {
+      "APPEARED": "First seen",
+      "CHANGED": "Changed",
+      "DISAPPEARED": "No longer in inventory",
+      "REAPPEARED": "Back in inventory"
+    },
+    "eventKinds": {
+      "community-day": "Community Day",
+      "pokemon-spotlight-hour": "Spotlight Hour",
+      "raid-hour": "Raid Hour",
+      "raid-day": "Raid Day",
+      "raid-battles": "Raids",
+      "max-mondays": "Max Monday",
+      "max-battles": "Max Battles",
+      "go-battle-league": "GO Battle League",
+      "pokemon-go-tour": "Pokémon GO Tour",
+      "wild-area": "Wild Area",
+      "city-safari": "City Safari",
+      "go-pass": "GO Pass",
+      "research": "Research",
+      "season": "Season",
+      "event": "Event",
+      "manual": "Custom event"
+    },
+    "moveActions": {
+      "none": "Already knows this move",
+      "fast_tm": "Fast TM",
+      "charged_tm": "Charged TM",
+      "elite_fast_tm": "Elite Fast TM",
+      "elite_charged_tm": "Elite Charged TM",
+      "unlock": "Unlock a second move",
+      "impossible": "Not available by TM"
+    },
+    "availability": {
+      "normal_tm": "Normal TM",
+      "elite_tm": "Elite TM only",
+      "legacy": "Legacy/event",
+      "special": "Shadow/Purified move",
+      "not_learnable": "No longer learnable"
+    },
+    "conditions": {
+      "must_be_buddy": "Must be your buddy",
+      "only_day": "Daytime only",
+      "only_night": "Night only",
+      "only_full_moon": "Full moon only",
+      "only_dusk": "Dusk only",
+      "only_upside_down": "Phone upside down",
+      "move_requirement": "Needs a specific move"
+    },
+    "teams": {
+      "0": "No team",
+      "1": "Mystic",
+      "2": "Valor",
+      "3": "Instinct"
+    }
+  },
+  "pagination": {
+    "none": "No results",
+    "range": "{{from}}–{{to}} of {{total}}"
+  },
+  "badges": {
+    "vintage": "Vintage {{year}}",
+    "noDate": "Catch date unknown",
+    "favorite": "Favorite",
+    "shundo": "Shundo",
+    "shiny": "Shiny",
+    "hundo": "Hundo",
+    "lucky": "Lucky",
+    "shadow": "Shadow",
+    "purified": "Purified",
+    "gigantamax": "Gigantamax",
+    "dynamax": "Dynamax",
+    "legendary": "Legendary",
+    "mythical": "Mythical",
+    "ultraBeast": "Ultra Beast",
+    "costume": "Costume",
+    "background": "Background",
+    "traded": "Traded",
+    "inGym": "In a gym",
+    "protected": "Protected",
+    "new": "New",
+    "gone": "No longer in inventory"
+  },
+  "requireAccount": {
+    "title": "No trainer account yet",
+    "text": "First create a trainer account under <accountsLink>Admin → Trainer accounts</accountsLink>. Then you can connect PGSharp or upload an export."
+  },
+  "confirmTransfer": {
+    "title": "Confirmation needed",
+    "confirm": "Confirm {{count}}",
+    "warning": "OAK does not put these Pokémon on a transfer list without your confirmation. Only tick what you really want to let go. OAK never transfers anything itself.",
+    "confirmOne": "Confirm {{name}}",
+    "newReasons": "New since your last confirmation: {{reasons}}"
+  },
+  "dashboard": {
+    "loadError": "The dashboard could not be loaded.",
+    "welcome": "Welcome to OAK",
+    "welcomeName": "Welcome to OAK, {{name}}",
+    "empty": {
+      "title": "No Pokémon imported yet",
+      "text": "Connect PGSharp under <b>Admin → PGSharp Sync</b> or upload a <code>PGSStats.json</code> there. Your collection appears here after the first import."
+    },
+    "title": "Overview",
+    "description": "{{name}} · level {{level}}",
+    "noGameData": {
+      "title": "No Game Data",
+      "text": "Without Game Data, species names, levels, PvP analyses and cleanup advice are not available. Update the Game Data under Admin."
+    },
+    "sync": {
+      "title": "Sync",
+      "lastSuccess": "Last successful sync: {{time}}",
+      "status": "Status",
+      "inExport": "Pokémon in export",
+      "new": "New",
+      "changed": "Changed",
+      "missing": "No longer in inventory",
+      "unconfirmed": "{{missing}} not confirmed (partial import)"
+    },
+    "cards": {
+      "total": "Total Pokémon",
+      "shiny": "Shiny",
+      "lucky": "Lucky",
+      "shadow": "Shadow",
+      "hundo": "Hundo",
+      "shundo": "Shundo",
+      "favorites": "Favorites",
+      "vintage": "Vintage 2016–2019",
+      "legendary": "Legendary",
+      "mythical": "Mythical",
+      "dynamax": "Dynamax",
+      "gigantamax": "Gigantamax",
+      "cleanupCandidates": "Cleanup candidates",
+      "review": "To review",
+      "stardust": "Stardust",
+      "storageFree": "Free storage",
+      "storageMax": "of {{max}}",
+      "backgrounds": "Backgrounds",
+      "actionList": "On action list"
+    },
+    "lists": {
+      "recent": "Recently caught",
+      "recentEmpty": "No catch date known.",
+      "new": "New since last sync",
+      "newEmpty": "No new Pokémon, or this was the first sync.",
+      "missing": "No longer in inventory",
+      "missingEmpty": "Nothing disappeared in the last full sync.",
+      "valuable": "New valuable Pokémon",
+      "valuableEmpty": "No new shiny, hundo, lucky or legendary.",
+      "investment": "Best investment candidates",
+      "investmentEmpty": "No BUILD advice yet.",
+      "cleanup": "Recommended cleanup",
+      "cleanupEmpty": "No transfer candidates.",
+      "favoritesChanged_one": "{{count}} favorite changed",
+      "favoritesChanged_other": "{{count}} favorites changed"
+    },
+    "years": "Catch year"
+  },
+  "account": {
+    "trainer": {
+      "title": "Trainer statistics",
+      "description": "Source: PGSharp export · last sync {{time}}",
+      "trainer": "Trainer",
+      "level": "Level",
+      "xp": "XP",
+      "stardust": "Stardust",
+      "pokecoins": "PokéCoins",
+      "storage": "Pokémon storage",
+      "eggs_one": "{{count}} egg",
+      "eggs_other": "{{count}} eggs",
+      "activity": "Activity",
+      "gbl": "GO Battle League",
+      "leagueWins": "{{wins}} of {{battles}} won",
+      "currentSeason": "Current season",
+      "lifetime": "Total",
+      "results": "{{wins}} / {{battles}} · rank {{rank}}",
+      "byType": "Caught by type",
+      "stats": {
+        "numPokemonCaptured": "Pokémon caught",
+        "numPokemonEncountered": "Pokémon encountered",
+        "numEvolutions": "Evolutions",
+        "numEggsHatched": "Eggs hatched",
+        "pokeStopVisits": "PokéStop visits",
+        "uniquePokestopsVisited": "Unique PokéStops",
+        "kmWalked": "Kilometers walked",
+        "numberOfPokeballThrown": "Poké Balls thrown",
+        "numRaidBattleWon": "Raids won",
+        "numRaidBattleTotal": "Total raids",
+        "numLegendaryBattleWon": "Legendary raids won",
+        "numGruntsDefeated": "Grunts defeated",
+        "numTrades": "Trades",
+        "numRemoteTrades": "Remote trades",
+        "numBestBuddies": "Best Buddies",
+        "numUniquePokedexEntries": "Pokédex entries",
+        "numPokemonPurified": "Purified",
+        "numTotalMegaEvolutions": "Mega Evolutions",
+        "numBreadBattlesWon": "Max Battles won",
+        "numMaxLevelFriends": "Best Friends",
+        "numBerriesFed": "Berries fed",
+        "numBattleTrainingWon": "Training battles won",
+        "numNpcCombatsWon": "NPC battles won"
+      }
+    },
+    "items": {
+      "title": "Item Bag",
+      "description": "{{total}} of {{max}} slots. {{note}}",
+      "search": "Search items…",
+      "empty": "No items"
+    },
+    "resources": {
+      "title": "Stardust & Candy",
+      "description": "Stardust and items come from PGSharp. PGSharp does not export Candy per species; you can track it here yourself.",
+      "stardust": "Stardust",
+      "pokecoins": "PokéCoins",
+      "sourcePgsharp": "source: PGSharp",
+      "manual": "Manual amounts",
+      "kind": "Kind",
+      "kinds": {
+        "candy": "Candy",
+        "xl_candy": "XL Candy",
+        "mega": "Mega Energy"
+      },
+      "family": "Family",
+      "chooseFamily": "Choose a family",
+      "quantity": "Quantity",
+      "save": "Save",
+      "entered": "Entered amounts",
+      "nothingEntered": "Nothing entered yet. Without input, OAK shows Candy as unknown.",
+      "manualBadge": "manual"
+    },
+    "history": {
+      "title": "History",
+      "description": "Differences between consecutive syncs. Pokémon that disappeared are called 'no longer in inventory': OAK does not know whether they were transferred.",
+      "tabs": {
+        "new": "New",
+        "changed": "Changed",
+        "missing": "No longer in inventory",
+        "reappeared": "Returned"
+      },
+      "syncSelect": "Sync",
+      "latestSync": "Latest relevant sync",
+      "empty": "No changes",
+      "syncOf": "Sync of {{time}}",
+      "inventory": "Stardust and items over time",
+      "columns": {
+        "moment": "Time",
+        "level": "Level",
+        "stardust": "Stardust",
+        "items": "Items"
+      }
+    }
+  },
+  "box": {
+    "title": "Pokémon Box",
+    "description": "All Pokémon from the latest sync. Actions here only change OAK data, never the game.",
+    "flags": {
+      "shiny": "Shiny",
+      "lucky": "Lucky",
+      "shadow": "Shadow",
+      "purified": "Purified",
+      "favorite": "Favorite",
+      "vintage": "Vintage (2016–2019)",
+      "unknownDate": "Catch date unknown",
+      "hundo": "Hundo",
+      "shundo": "Shundo",
+      "legendary": "Legendary",
+      "mythical": "Mythical",
+      "ultrabeast": "Ultra Beast",
+      "costume": "Costume",
+      "background": "Background",
+      "dynamax": "Dynamax",
+      "gigantamax": "Gigantamax",
+      "traded": "Traded",
+      "new": "New",
+      "protected": "Protected",
+      "untagged": "Untagged",
+      "duplicate": "Duplicate",
+      "nicknamed": "Nickname"
+    },
+    "sorts": {
+      "cpDesc": "CP high–low",
+      "cpAsc": "CP low–high",
+      "name": "Name",
+      "dex": "Pokédex number",
+      "iv": "IV percentage",
+      "atk": "Attack IV",
+      "def": "Defense IV",
+      "sta": "Stamina IV",
+      "level": "Level",
+      "caughtDesc": "Catch date (newest first)",
+      "caughtAsc": "Catch date (oldest first)",
+      "great": "Great League potential",
+      "ultra": "Ultra League potential",
+      "master": "Master League potential",
+      "cleanup": "Cleanup priority",
+      "battle": "Usefulness high–low",
+      "keepAsc": "Keep score low–high",
+      "keepDesc": "Keep score high–low",
+      "changed": "Last changed"
+    },
+    "filters": {
+      "flagHint": "Click: only these → exclude these → no filter",
+      "min": "min",
+      "max": "max",
+      "ivPercent": "IV percentage",
+      "level": "Level",
+      "league": "League suitability",
+      "all": "All",
+      "species": "Species",
+      "removeSpecies": "Remove {{name}}",
+      "addSpecies": "Add species…",
+      "year": "Catch year",
+      "cleanup": "Cleanup status",
+      "type": "Type",
+      "allTypes": "All types",
+      "move": "Move contains",
+      "movePlaceholder": "e.g. hydro",
+      "family": "Evolution family",
+      "allFamilies": "All families",
+      "inventory": "Inventory",
+      "inInventory": "In inventory",
+      "notInInventory": "No longer in inventory",
+      "everything": "All"
+    },
+    "syntax": {
+      "title": "Search syntax",
+      "intro": "Terms are combined with AND. Spaces or & separate the terms.",
+      "name": "Name, nickname or form contains the text",
+      "cp": "Compare CP or give a range",
+      "iv": "IV percentage or single IVs",
+      "exactExample": "ivs:15/15/15  or  4*",
+      "exact": "Exact IVs, 4* is a hundo",
+      "properties": "Properties",
+      "classes": "Classes and Max forms",
+      "extras": "Costume, background, traded, new, no longer in inventory",
+      "year": "Catch year",
+      "dex": "Pokédex number",
+      "moveTypeFamily": "Move, type or family",
+      "status": "Cleanup status, protection, duplicates",
+      "vintage": "Caught in 2016–2019, or without a usable catch date",
+      "scores": "Usefulness and keep score (0–100)",
+      "not": "A ! inverts a term"
+    },
+    "bulk": {
+      "updated": "{{count}} Pokémon updated.",
+      "skipped": "{{count}} skipped: {{reasons}}.",
+      "waiting_one": "{{count}} needs your confirmation.",
+      "waiting_other": "{{count}} need your confirmation.",
+      "oakOnly": "Only OAK data was changed."
+    },
+    "columns": {
+      "level": "Level",
+      "ivs": "IVs",
+      "moves": "Moves",
+      "type": "Type",
+      "caught": "Caught",
+      "greatRank": "GL rank",
+      "ultraRank": "UL rank",
+      "battle": "Usefulness",
+      "keep": "Keep",
+      "cleanup": "Cleanup"
+    },
+    "toolbar": {
+      "table": "Table",
+      "cards": "Cards",
+      "searchPlaceholder": "Search: gyarados cp>2500 shiny !favorite",
+      "search": "Search",
+      "syntax": "Syntax",
+      "sort": "Sort",
+      "filters": "Filters",
+      "clear": "Clear",
+      "columns": "Columns"
+    },
+    "selection": {
+      "selected": "{{count}} selected",
+      "protect": "Protect",
+      "unprotect": "Remove protection",
+      "addTag": "Add OAK tag",
+      "review": "Mark for review",
+      "transferCandidate": "Mark as transfer candidate",
+      "actionList": "Add to action list",
+      "compare": "Compare",
+      "clear": "Clear selection"
+    },
+    "empty": {
+      "title": "No Pokémon found",
+      "text": "Change the search or filters, or import an export first."
+    },
+    "tagDialog": {
+      "title": "Add OAK tag",
+      "add": "Add",
+      "placeholder": "e.g. raid, trade, pvp",
+      "hint": "OAK tags are separate from the tags in Pokémon GO and change nothing in the game."
+    }
+  },
+  "compare": {
+    "title": "Compare",
+    "description": "IV rank per league is the rank within the species; the species rank comes from PvPoke.",
+    "empty": {
+      "title": "Choose 2 to 6 Pokémon",
+      "text": "Select Pokémon in the <boxLink>Pokémon Box</boxLink> and choose Compare."
+    },
+    "rows": {
+      "level": "Level",
+      "ivs": "IVs",
+      "fastMove": "Fast move",
+      "chargedMoves": "Charged moves",
+      "caught": "Caught or hatched",
+      "cleanup": "Cleanup",
+      "properties": "Properties",
+      "advice": "Advice"
+    },
+    "hatched": "{{date}} (from egg)",
+    "rank": "rank {{rank}} · {{percent}} · {{readiness}}",
+    "stardustNeeded": "{{stardust}} Stardust needed",
+    "notSuitable": "not suitable"
+  },
+  "planner": {
+    "title": "Evolution and investment planner",
+    "description": "Choose a goal and a budget. OAK finds the Pokémon where your Stardust pays off most. Your Candy stock is unknown, so check it yourself in the game.",
+    "goal": "Goal",
+    "maxStardust": "Maximum Stardust",
+    "maxPokemon": "Maximum number of Pokémon",
+    "maxIvRank": "Maximum IV rank",
+    "allowXl": "Allow XL Candy",
+    "allowEvolution": "Allow evolutions",
+    "none": "No candidates within these limits. Raise the budget or the maximum IV rank.",
+    "proposal": "Proposal: {{count}} Pokémon, {{stardust}} Stardust",
+    "ranks": "IV rank {{ivRank}} · species rank {{speciesRank}} · CP {{cp}} → {{bestCp}}",
+    "moves": "moves: {{moves}}",
+    "cost": "{{stardust}} Stardust · {{candy}} Candy",
+    "footer": "Priority follows suitability (PvPoke species score × IV quality). The cost of TMs, evolution items and unlocking a second move is on the detail page."
+  },
+  "battles": {
+    "shared": {
+      "either": "{{rest}} or {{last}}",
+      "range": "{{from}} to {{to}}",
+      "maxCp": "Max {{cp}} CP.",
+      "noCpLimit": "No CP limit.",
+      "levelCap": "Max level {{level}}.",
+      "shadow": "Shadow",
+      "rules": {
+        "typeOnly": "Only Pokémon of type {{types}}.",
+        "typeNone": "No Pokémon of type {{types}}.",
+        "tagOnly": "Only {{tags}}.",
+        "tagNone": "No {{tags}}.",
+        "idOnly": "Only {{number}} listed species.",
+        "idAlso_one": "{{count}} listed species is also allowed.",
+        "idAlso_other": "{{count}} listed species are also allowed.",
+        "idNone_one": "{{count}} listed species is not allowed.",
+        "idNone_other": "{{count}} listed species are not allowed.",
+        "stageOnly": "Only {{stages}}.",
+        "stageNone": "No {{stages}}.",
+        "dexOnly": "Only Pokédex numbers {{ranges}}.",
+        "dexNone": "No Pokédex numbers {{ranges}}.",
+        "moveOnly_one": "Only Pokémon that can learn the listed move.",
+        "moveOnly_other": "Only Pokémon that can learn one of {{count}} listed moves.",
+        "moveNone_one": "No Pokémon that can learn the listed move.",
+        "moveNone_other": "No Pokémon that can learn one of {{count}} listed moves.",
+        "moveTypeOnly": "Only Pokémon with a move of type {{types}}.",
+        "moveTypeNone": "No Pokémon with a move of type {{types}}.",
+        "costOnly": "Only Pokémon whose second charged move costs {{costs}} Stardust.",
+        "costNone": "No Pokémon whose second charged move costs {{costs}} Stardust.",
+        "distanceOnly": "Only Pokémon with a buddy distance of {{distances}} km.",
+        "distanceNone": "No Pokémon with a buddy distance of {{distances}} km.",
+        "other": "Rule of kind \"{{kind}}\"."
+      },
+      "tags": {
+        "mega": "Mega Evolutions",
+        "shadow": "Shadow Pokémon",
+        "legendary": "Legendary Pokémon",
+        "mythical": "Mythical Pokémon",
+        "ultrabeast": "Ultra Beasts",
+        "starter": "starter Pokémon",
+        "regional": "regional Pokémon"
+      },
+      "stages": {
+        "none": "Pokémon that do not evolve",
+        "first": "Pokémon that can still evolve and have no earlier form",
+        "middle": "middle stages of an evolution line",
+        "final": "final stages of an evolution line"
+      },
+      "typeInRule": {
+        "normal": "Normal",
+        "fighting": "Fighting",
+        "flying": "Flying",
+        "poison": "Poison",
+        "ground": "Ground",
+        "rock": "Rock",
+        "bug": "Bug",
+        "ghost": "Ghost",
+        "steel": "Steel",
+        "fire": "Fire",
+        "water": "Water",
+        "grass": "Grass",
+        "electric": "Electric",
+        "psychic": "Psychic",
+        "ice": "Ice",
+        "dragon": "Dragon",
+        "dark": "Dark",
+        "fairy": "Fairy"
+      }
+    },
+    "cups": {
+      "title": "Cups",
+      "description": "Special formats with their own rules, such as the Fantasy Cup. OAK shows the cups PvPoke currently has on its site. These include GO Battle League cups as well as community tournaments. Pokémon GO itself shows which cup is running in the game.",
+      "emptyTitle": "No cups known",
+      "emptyText": "The active Game Data contains no cups. Update the Game Data under Admin and OAK fetches them from PvPoke.",
+      "ranked": "PvPoke rankings",
+      "unranked": "No rankings",
+      "unrankedHint": "Your Pokémon are sorted by IV rank only.",
+      "eligible": "{{species}} species and forms are allowed under PvPoke's rules.",
+      "rankedCount": "PvPoke ranks {{species}} of them.",
+      "yourPokemon": "Your Pokémon for this cup",
+      "suggestTeam": "Suggest a team",
+      "about": "About this tournament"
+    },
+    "league": {
+      "sortSuitable": "Most suitable first",
+      "readiness": {
+        "label": "Readiness",
+        "all": "Any readiness",
+        "direct": "Ready now",
+        "powerUp": "After power-up",
+        "evolution": "After evolution"
+      },
+      "cupRules": "Rules of this cup",
+      "cupRulesSource": "As PvPoke describes them. Check in the game whether the cup is running now and whether the rules are the same.",
+      "allCups": "All cups",
+      "emptyTitle": "No suitable Pokémon",
+      "emptyCup": "No Pokémon fit this cup (after evolution or power-up), or the analysis still has to run.",
+      "emptyLeague": "No Pokémon fit this league (after evolution or power-up), or the analysis still has to run.",
+      "columns": {
+        "pokemon": "Pokémon",
+        "target": "Target",
+        "speciesRank": "Species rank",
+        "ivRank": "IV rank",
+        "cpNow": "CP now",
+        "best": "best",
+        "readiness": "Readiness",
+        "investment": "Investment",
+        "moves": "Moves"
+      },
+      "afterEvolution": "after evolution",
+      "stardust": "{{amount}} Stardust",
+      "quality": {
+        "optimal": "Optimal",
+        "partial": "Partial",
+        "poor": "Needs other moves",
+        "afterEvolution": "Decide after evolution",
+        "unknown": "Unknown"
+      },
+      "truncated": "You see the first {{shown}} of {{total}} Pokémon in this order. Sorting covers all {{total}}.",
+      "explanation": "Click a column header to sort. Species rank says how strong the species is (PvPoke). IV rank says how good this Pokémon is within its species. A strong IV rank in a weak species does not make a good battle Pokémon."
+    },
+    "teamBuilder": {
+      "title": "Team Builder",
+      "description": "Three team variants from your own collection: ready now, with limited upgrades, and the best future team.",
+      "league": "League or cup",
+      "leagues": "Leagues",
+      "cups": "Cups",
+      "budget": "Stardust budget per Pokémon (limited upgrades)",
+      "suggest": "Suggest teams",
+      "save": "Save",
+      "saved": "Team saved.",
+      "roles": {
+        "lead": "Lead",
+        "switch": "Safe switch",
+        "closer": "Closer"
+      },
+      "memberStats": "CP {{cp}} → {{bestCp}} · IV rank {{ivRank}} · species rank {{speciesRank}}",
+      "moves": "Moves: {{moves}}",
+      "summary": "Investment: {{stardust}} Stardust · Shared weaknesses: {{weaknesses}}",
+      "noWeaknesses": "none",
+      "savedTeams": "Saved teams",
+      "noTeams": "No saved teams yet.",
+      "gone": "{{name}} (gone)",
+      "delete": "Delete"
+    },
+    "raids": {
+      "title": "Raids",
+      "description": "Without a boss you see your best general attackers. Pick a raid boss for counters against that specific opponent.",
+      "search": "Search for a raid boss, e.g. kyogre",
+      "general": "General attackers",
+      "countersAgainst": "Counters against {{name}}",
+      "bestGeneral": "Best general raid attackers",
+      "intro_one": "The attacker with the highest DPS using its current moves. Click a column header to sort within this list. The number shows its DPS rank.",
+      "intro_other": "The {{count}} attackers with the highest DPS using their current moves. Click a column header to sort within this list. The number shows their DPS rank.",
+      "columns": {
+        "pokemon": "Pokémon",
+        "dpsNow": "DPS now",
+        "currentMoves": "Current moves",
+        "bestMoveset": "Best moveset",
+        "notes": "Notes"
+      },
+      "fastOnly": "fast move only",
+      "eliteTm": "Elite TM needed",
+      "alreadyBest": "Current moveset is already the best",
+      "weakToBoss": "Weak to the boss's type",
+      "superEffective": "Super effective"
+    },
+    "rocket": {
+      "title": "Team GO Rocket",
+      "description": "Pick the Pokémon of the grunt, leader or Giovanni. For each opponent, OAK finds the best counters in your own collection.",
+      "noLineupsTitle": "No current lineups",
+      "noLineups": "OAK has no validated, dated source for current Rocket lineups, so it makes no claims about them. You pick the opponents yourself.",
+      "add": "Add an opponent (up to 3)",
+      "remove": "Remove {{name}}",
+      "find": "Find counters",
+      "resists": "Resists",
+      "weak": "Vulnerable"
+    },
+    "max": {
+      "title": "Max Battles",
+      "description": "Dynamax and Gigantamax Pokémon from your collection, their Max Moves and what an upgrade costs.",
+      "search": "Search for a Max Battle opponent",
+      "clear": "Clear",
+      "attackers": "Attackers (Max Attack type)",
+      "defenders": "Defenders (resistance)",
+      "incoming": "incoming ×{{value}}",
+      "count": "{{number}} Dynamax/Gigantamax Pokémon",
+      "emptyTitle": "No Dynamax Pokémon",
+      "emptyText": "The export contains no Pokémon with Dynamax or Gigantamax status.",
+      "columns": {
+        "pokemon": "Pokémon",
+        "maxAttackType": "Max Attack type",
+        "maxMoves": "Max Moves",
+        "nextUpgrade": "Next upgrade"
+      },
+      "gigantamax": "Gigantamax",
+      "moveLevel": "{{move}} level {{level}}",
+      "costCandy": "{{mp}} MP, {{candy}} Candy",
+      "costXl": "{{mp}} MP, {{xl}} XL",
+      "maxed": "maxed out",
+      "moves": {
+        "attack": "Max Attack",
+        "guard": "Max Guard",
+        "spirit": "Max Spirit"
+      }
+    },
+    "gyms": {
+      "title": "Gym defenders",
+      "description": "The Pokémon that hold a gym the longest: lots of HP and Defense, so an attacker needs many attacks. Your strongest Pokémon of each species.",
+      "howCalculated": "How OAK calculates this",
+      "source": "Source: {{source}}, Game Data version {{version}}.",
+      "excluded": {
+        "text": "Not counted: {{parts}}.",
+        "notDeployable": "{{number}} may not go in a gym according to the Game Data",
+        "unknownForm_one": "{{number}} has a form the Game Data does not know",
+        "unknownForm_other": "{{number}} have a form the Game Data does not know",
+        "unknownStats_one": "{{number}} is missing level or IVs",
+        "unknownStats_other": "{{number}} are missing level or IVs"
+      },
+      "emptyTitle": "No defenders found",
+      "emptyText": "Your collection has no Pokémon that may go in a gym according to the Game Data.",
+      "strongest_one": "Your strongest defender",
+      "strongest_other": "Your {{count}} strongest defenders",
+      "inGym": "In a gym",
+      "value": "Defense value",
+      "sameSpecies": "{{number}} more of this species",
+      "confidence": "Confidence: {{level}}",
+      "confidenceLevels": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      }
+    }
+  },
+  "admin": {
+    "accounts": {
+      "title": "Trainer accounts",
+      "description": "Every Pokémon GO account gets its own trainer account in OAK, with its own webhook and data.",
+      "newTitle": "New trainer account",
+      "name": "Name",
+      "namePlaceholder": "For example Main account",
+      "create": "Create",
+      "emptyTitle": "No trainer accounts yet",
+      "emptyText": "Create your first account above.",
+      "active": "active",
+      "linked": "linked",
+      "notLinked": "not linked yet",
+      "use": "Use this account",
+      "nameInGame": "Name in Pokémon GO",
+      "nameInGameUnknown": "unknown until the first import",
+      "pokemonCount": "Pokémon in inventory",
+      "lastSync": "Last successful sync",
+      "webhook": "Webhook",
+      "webhookActive": "active since {{date}}",
+      "webhookNone": "none",
+      "nameInOak": "Name in OAK",
+      "maxDropPercent": "Maximum drop (%)",
+      "maxDropPercentHint": "If the number of Pokémon drops by more than this percentage, OAK treats the import as partial.",
+      "maxDropCount": "Maximum drop (number)",
+      "maxDropCountHint": "Both limits must be exceeded.",
+      "save": "Save",
+      "linkPgsharp": "Link PGSharp",
+      "unlinkConfirm": "Forget the link with the Pokémon GO account? Only use this if you deliberately want to link a different account to this trainer.",
+      "unlink": "Forget link",
+      "delete": "Delete",
+      "deleteTitle": "Delete {{name}}",
+      "deleteText": "All OAK data of this account is removed: Pokémon, notes, tags, plans, imports and history. Your Pokémon GO account itself does not change. Type <b>{{name}}</b> to confirm.",
+      "deleteConfirmName": "Confirm name",
+      "deleteSubmit": "Delete permanently"
+    },
+    "backups": {
+      "ownerOnlyTitle": "Owner only",
+      "ownerOnlyText": "Only the owner of this OAK installation can manage backups.",
+      "title": "Backups",
+      "description": "OAK automatically makes a backup before every database migration. Here you can make one yourself and download it.",
+      "create": "Make backup",
+      "restoreTitle": "Restore",
+      "restoreText": "Stop the container, replace <code>/data/oak.db</code> with the backup and start the container again. A full backup of the <code>/data</code> folder also contains the secret key and saved exports. See docs/BACKUP_RESTORE.md.",
+      "available": "Available backups",
+      "none": "No backups yet.",
+      "download": "Download",
+      "deleteConfirm": "Delete backup {{name}}?",
+      "delete": "Delete"
+    },
+    "gamedata": {
+      "title": "Game Data",
+      "description": "Game data with version control. A new version only becomes active after it has been checked. Previous versions are kept so you can go back.",
+      "check": "Check for updates",
+      "updateNow": "Update now",
+      "repairNeeded": "The file of the active version is missing. Choose Update now to rebuild it.",
+      "available": "New data is available ({{sources}}).",
+      "noActiveVersion": "no active version yet",
+      "upToDate": "The active version is up to date.",
+      "updateStarted": "Update started. OAK downloads, checks and activates the new version in the background.",
+      "versionActivated": "Version activated. Analyses are being recalculated.",
+      "noActiveTitle": "No active Game Data",
+      "noActiveText": "Without Game Data, OAK cannot calculate species names, levels, PvP ranks or cleanup advice. The Pokémon themselves are still imported.",
+      "lastErrorTitle": "Last update failed",
+      "lastErrorText": "{{error}} The active version was not touched.",
+      "activeTitle": "Active version",
+      "noActive": "None.",
+      "autoUpdate": "Automatic updates: {{state}}. Last check: {{checked}}.",
+      "autoUpdateOn_one": "on, every hour",
+      "autoUpdateOn_other": "on, every {{hours}} hours",
+      "autoUpdateOff": "off",
+      "dependentTitle": "What depends on it",
+      "versionsTitle": "Versions",
+      "versionStatus": {
+        "active": "active",
+        "archived": "archived",
+        "ready": "ready",
+        "pruned": "cleaned up",
+        "failed": "failed"
+      },
+      "activate": "Activate",
+      "sourcesTitle": "Sources and licenses",
+      "license": "License: {{license}}",
+      "checksums": "Checksums of the active version",
+      "retrieved": "retrieved {{date}}",
+      "offlineTitle": "Install offline",
+      "offlineText": "If the server has no internet access, download the files elsewhere and upload them here. OAK checks them the same way as a download.",
+      "required": "required",
+      "uploadSubmit": "Upload and check",
+      "summary": {
+        "version": "Version",
+        "originUpload": "manual upload",
+        "originDownload": "download",
+        "activated": "Activated",
+        "species": "Species",
+        "forms": "Forms",
+        "moves": "Moves",
+        "pvpokeForms": "Forms linked to PvPoke",
+        "rankings": "League rankings",
+        "noRankings": "none",
+        "maxLevel": "Maximum level without Best Buddy"
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "save": "Save",
+      "rules": {
+        "title": "Cleanup rules",
+        "text": "Favorites get extra keep points but no hard protection. Pokémon from 2016 through 2019 are always protected as vintage. You set weights, thresholds and the other protection rules per trainer account.",
+        "open": "Open cleanup rules"
+      },
+      "sprites": {
+        "title": "Pokémon images",
+        "saved": "Saved. Reload the page to use the new security settings for images.",
+        "source": "Source",
+        "none": "No images (dex number and type color)",
+        "pokeapi": "PokeAPI sprites via GitHub",
+        "custom": "Custom source",
+        "template": "URL template",
+        "templateHint": "Must start with https:// and contain {dex}. {shiny_path} becomes 'shiny/' for shiny Pokémon.",
+        "ownerOnly": "Only the owner can change this."
+      },
+      "tags": {
+        "title": "In-game tags",
+        "saved": "Tag saved. The cleanup analysis is being recalculated.",
+        "intro": "PGSharp only exports the number of a tag, not its name. Name your tags here and choose which tags protect a Pokémon from cleanup advice.",
+        "none": "No tags found in the last import.",
+        "name": "Tag name",
+        "protects": "Protects"
+      },
+      "password": {
+        "title": "Change password",
+        "changed": "Password changed. Other sessions have been signed out.",
+        "current": "Current password",
+        "new": "New password",
+        "minLength": "At least {{length}} characters.",
+        "submit": "Change"
+      },
+      "reset": {
+        "title": "Reset password for {{name}}",
+        "text": "Give the user the new password through a secure channel. They can then change it themselves under Settings. All sessions of this user end immediately.",
+        "repeat": "Repeat new password",
+        "mismatch": "The passwords do not match.",
+        "submit": "Reset",
+        "done": "New password set for {{name}}. They have been signed out everywhere and sign in with the new password."
+      },
+      "users": {
+        "title": "Users",
+        "created": "User created.",
+        "owner": "owner",
+        "disabled": "disabled",
+        "lastLogin": "Last signed in: {{date}}",
+        "resetPassword": "Reset password",
+        "disable": "Disable",
+        "enable": "Enable",
+        "username": "Username",
+        "password": "Password",
+        "add": "Add",
+        "note": "Each user only sees their own trainer accounts. You change your own password under Change password, with your current password."
+      },
+      "system": {
+        "title": "System",
+        "version": "Version",
+        "started": "Started",
+        "timezone": "Time zone",
+        "baseUrl": "Base URL",
+        "database": "Database",
+        "freeSpace": "Free disk space",
+        "freeSpaceValue": "{{free}} of {{total}}",
+        "jobs": "Background jobs",
+        "jobsValue": "{{pending}} running · {{failed}} failed",
+        "failedImports": "Failed imports",
+        "lastSync": "Last successful sync",
+        "gameData": "Game Data version",
+        "gameDataNone": "none",
+        "secretKey": "Secret key",
+        "secretGenerated": "generated automatically in /data",
+        "secretEnvironment": "from environment variable",
+        "registration": "Registration",
+        "registrationOpen": "open",
+        "registrationClosed": "closed",
+        "retention": "Export retention",
+        "retentionValue_one": "{{days}} day",
+        "retentionValue_other": "{{days}} days",
+        "worker": "Background processing",
+        "workerOn": "active",
+        "workerOff": "off"
+      }
+    },
+    "sync": {
+      "title": "PGSharp Sync",
+      "description": "Connect PGSharp with a webhook or upload an export. Both routes use the same processing.",
+      "lastSync": "Last successful sync: {{date}}",
+      "pending_one": "{{imports}} import being processed",
+      "pending_other": "{{imports}} imports being processed",
+      "copy": "Copy",
+      "copied": "Copied",
+      "webhook": {
+        "title": "PGSharp webhook",
+        "urlLabel": "Webhook URL (the secret part is never shown again)",
+        "created": "Created",
+        "lastUsed": "Last used",
+        "neverUsed": "never",
+        "none": "There is no active webhook for this account yet.",
+        "regenerateConfirm": "A new URL makes the current one invalid. PGSharp then needs the new URL. Continue?",
+        "regenerate": "Create new URL",
+        "create": "Create webhook URL",
+        "revokeConfirm": "Revoke the webhook? PGSharp can then no longer send anything to this account.",
+        "revoke": "Revoke",
+        "dialogTitle": "Your new webhook URL",
+        "stored": "I have saved it",
+        "secret": "The URL works like a password. Do not share it and keep it out of screenshots."
+      },
+      "diagnostics": {
+        "label": "Diagnostic mode (24 hours)",
+        "active": "Active until {{date}}. OAK stores the full structure of every incoming export, without values.",
+        "inactive": "Useful when an import fails. OAK then records the field names and types of every export, never the content."
+      },
+      "setup": {
+        "title": "Set up PGSharp",
+        "step1": "Create a webhook URL in the PGSharp webhook card and copy it.",
+        "step2": "In PGSharp, open the settings and look for the option to export account data.",
+        "step3": "Paste the URL into the webhook for Export Account Data.",
+        "step4": "Start an export. After a few seconds the import appears below.",
+        "step5": "If the webhook does not work, export the file PGSStats.json and upload it here.",
+        "note": "The exact names of the menu options in PGSharp can differ per version. OAK never asks for your Pokémon GO login details."
+      },
+      "upload": {
+        "title": "Manual upload",
+        "duplicate": "This export was already received. Nothing has changed.",
+        "received": "Upload received. Processing runs in the background.",
+        "drop": "Drag PGSStats.json here or click to choose a file",
+        "samePipeline": "The file goes through the same processing as the webhook.",
+        "progress": "Upload progress"
+      },
+      "schema": {
+        "title": "Export structure",
+        "rootType": "Type of the root structure",
+        "pokemonRecords": "Pokémon records",
+        "itemRecords": "Item records",
+        "newRootKeys": "New fields in the root structure",
+        "newPokemonKeys": "New Pokémon fields",
+        "missingPokemonKeys": "Missing Pokémon fields",
+        "none": "none",
+        "allPaths": "All field paths ({{total}})"
+      },
+      "detail": {
+        "status": "Status",
+        "classification": "Classification",
+        "notClassified": "not determined yet",
+        "source": "Source",
+        "sourceWebhook": "PGSharp webhook",
+        "sourceUpload": "Upload",
+        "sourceReprocessed": "Reprocessed",
+        "received": "Received",
+        "exportTime": "Export time according to PGSharp",
+        "size": "Size",
+        "payloadStored": "Export still stored",
+        "yes": "yes",
+        "no": "no",
+        "message": "Message",
+        "retry": "Process again"
+      },
+      "result": {
+        "title": "Result",
+        "total": "Pokémon in export",
+        "eggs": "Eggs",
+        "new": "New",
+        "changed": "Changed",
+        "unchanged": "Unchanged",
+        "missing": "No longer in inventory",
+        "missingUnconfirmed": "Missing, not confirmed",
+        "reappeared": "Reappeared"
+      },
+      "confirmFull": {
+        "title": "Was this a full export after all?",
+        "text": "OAK treated this import as partial, so missing Pokémon were not marked as gone. If you are sure you really transferred Pokémon in the game, confirm that the export was complete.",
+        "confirm": "Confirm that this export contains your full inventory? Missing Pokémon then get the status 'No longer in inventory'.",
+        "button": "Confirm as complete"
+      },
+      "issues": {
+        "title": "Issues ({{total}})",
+        "error": "error",
+        "warning": "warning"
+      },
+      "list": {
+        "title": "Imports",
+        "emptyTitle": "No imports yet",
+        "emptyText": "Send an export from PGSharp or upload a file.",
+        "received": "Received",
+        "source": "Source",
+        "status": "Status",
+        "pokemon": "Pokémon",
+        "new": "New",
+        "changed": "Changed",
+        "gone": "Gone",
+        "sourceWebhook": "Webhook",
+        "sourceUpload": "Upload",
+        "sourceReprocessed": "Reprocessed",
+        "details": "Details"
+      }
+    }
+  },
+  "pokedex": {
+    "title": "Pokédex",
+    "description": "Look up any Pokémon from the Game Data. See what it can do, whether you already have it and which Pokémon in your collection can evolve into it.",
+    "empty": {
+      "title": "Search for a Pokémon",
+      "text": "Type a name or a Pokédex number. You don't need to own the Pokémon."
+    },
+    "noAccount": "Create a trainer account to see what your collection can do with this Pokémon.",
+    "source": "Source: the active Game Data, version {{version}}. The rankings come from PvPoke.",
+    "yes": "yes",
+    "no": "no",
+    "or": "or",
+    "form": "Form",
+    "baseStats": "Base stats: Attack {{atk}} · Defense {{def}} · HP {{sta}}",
+    "classes": {
+      "legendary": "Legendary",
+      "mythical": "Mythical",
+      "ultraBeast": "Ultra Beast"
+    },
+    "gender": {
+      "label": "Gender: {{gender}}",
+      "male": "male only",
+      "female": "female only"
+    },
+    "needs": {
+      "candyUnknown": "candy unknown",
+      "itemHaveUnknown": "{{item}} (number in your bag unknown)",
+      "itemHave": "{{item}} (you have {{have}})",
+      "lure": "within range of a {{lure}}",
+      "buddyKm": "walk {{km}} km as buddy",
+      "quest": "an evolution quest",
+      "freeAfterTrade": "free after trading"
+    },
+    "search": {
+      "placeholder": "Name or number, like Pyroar or 668",
+      "label": "Search Pokémon",
+      "searching": "Searching…",
+      "none": "Nothing found in the Game Data."
+    },
+    "facts": {
+      "family": "Family",
+      "buddyKm": "Buddy distance",
+      "buddyKmValue": "{{km}} km per candy",
+      "tradable": "Tradable",
+      "transferable": "Can be transferred to the professor",
+      "deployable": "Allowed in a gym",
+      "thirdMove": "Second charged attack",
+      "purify": "Purify",
+      "mega": "Mega Evolution",
+      "cost": "{{stardust}} stardust and {{candy}} candy"
+    },
+    "collection": {
+      "owned": "You have {{amount}} {{name}}",
+      "none": "You don't have any {{name}} yet",
+      "noneText": "There is no {{name}} in any form in the latest import of this trainer account.",
+      "otherForm": "Other form",
+      "topCp": "The {{shown}} with the highest CP are shown above."
+    },
+    "candidates": {
+      "title": "Can evolve into {{name}} from your collection",
+      "notEvolved": "{{name}} is not obtained through evolution.",
+      "none": "You don't have any {{names}} or an earlier form of it.",
+      "candyKnown": "You have {{candy}} candy for this family, entered by you.",
+      "candyUnknown": "PGSharp does not export candy, so OAK does not know whether you have enough. You can enter it yourself under <resourcesLink>Stardust & Candy</resourcesLink>.",
+      "strongestFirst": "Strongest result first.",
+      "steps": "{{steps}} steps, {{candy}} candy in total.",
+      "cpUnknown": "CP after evolution unknown, because the level or IVs are missing.",
+      "firstShown": "The first {{shown}} of {{total}} are shown above."
+    },
+    "evolution": {
+      "title": "Evolution line",
+      "from": "Evolves from <names></names>.",
+      "to": "Evolves into <target>{{name}}</target>"
+    },
+    "battle": {
+      "title": "In battle",
+      "cpTable": "CP at 15/15/15",
+      "speciesRank": "Species rank at PvPoke",
+      "notRanked": "not ranked",
+      "moveset": "Moves: {{moves}}",
+      "gym": "As a gym defender:",
+      "gymRank": "#{{rank}} of all Pokémon allowed in a gym.",
+      "gymRankEvolution": "#{{rank}} of all Pokémon allowed in a gym, after evolving into {{name}}.",
+      "gymNotAllowed": "not allowed in a gym.",
+      "gymUnknown": "unknown, the Game Data does not say whether it is allowed in a gym."
+    },
+    "moves": {
+      "title": "Moves",
+      "fast": "Fast",
+      "charged": "Charged",
+      "legacy": "Legacy"
+    }
+  },
+  "detail": {
+    "notFound": "Pokémon not found",
+    "back": "Pokémon Box",
+    "hatched": "hatched {{date}}",
+    "caught": "caught {{date}}",
+    "inInventory": "in inventory",
+    "gone": "no longer in inventory",
+    "idTitle": "Unique Pokémon ID from PGSharp",
+    "copied": "copied",
+    "formFallback": "This form ({{form}}) is not in the Game Data. OAK uses the default form of the species.",
+    "hpLevel": "HP · level",
+    "yes": "yes",
+    "no": "no",
+    "maxLevel": "Max level {{level}}",
+    "values": {
+      "title": "Stats",
+      "fastMove": "Fast attack",
+      "chargedMoves": "Charged attacks",
+      "secondMove": "Second move unlocked",
+      "maxMoves": "Max Moves",
+      "size": "Height / weight",
+      "powerUps": "Power-ups done",
+      "buddyKm": "Buddy km",
+      "fromEgg": "From egg",
+      "firstSeen": "First seen in OAK",
+      "lastChanged": "Last changed",
+      "event": "Event: {{events}}",
+      "gameTags": "In-game tags: {{tags}}",
+      "tagNamesUnknown_one": "{{count}} (name unknown, give it a label in Settings)",
+      "tagNamesUnknown_other": "{{count}} (names unknown, give them a label in Settings)"
+    },
+    "recommendation": {
+      "title": "Cleanup advice",
+      "none": "No analysis available yet. The analysis runs automatically after every import.",
+      "confidenceTitle": "Confidence",
+      "confidence": "Confidence: {{level}}",
+      "usefulness": "Usefulness",
+      "usefulnessTitle": "Actual value in battles, 0–100",
+      "keepScore": "Keep score",
+      "keepScoreTitle": "Reason to keep, 0–100",
+      "protection": "Protection: {{reasons}}",
+      "scoresHow": "How are the scores calculated?",
+      "scoresNote": "Usefulness is the highest partial value. The keep score adds up points to a maximum of 100.",
+      "alternatives": "Similar Pokémon in your collection",
+      "alternative": "{{name}} · CP {{cp}} · {{iv}} · usefulness {{score}} · {{status}}",
+      "better": "better",
+      "computed": "Calculated on {{date}}. OAK never transfers a Pokémon by itself."
+    },
+    "metadata": {
+      "title": "Your data (OAK)",
+      "saved": "Saved. The analysis is being recalculated.",
+      "protect": "Protect manually",
+      "protectHint": "A protected Pokémon is never suggested as a transfer candidate.",
+      "reason": "Reason",
+      "notes": "Notes",
+      "tags": "OAK tags",
+      "tagsHint": "comma-separated",
+      "plannedAction": "Planned action",
+      "none": "None",
+      "actions": {
+        "keep": "Keep",
+        "evolve": "Evolve",
+        "powerUp": "Power up",
+        "tm": "Use a TM",
+        "purify": "Purify",
+        "trade": "Trade",
+        "mega": "Mega",
+        "buddy": "Buddy",
+        "transfer": "Transfer"
+      },
+      "plannedLeague": "Planned league",
+      "review": "Review",
+      "toReview": "To review",
+      "reviewed": "Reviewed",
+      "override": "Override advice",
+      "followOak": "Follow OAK's advice",
+      "vintageTitle": "Vintage {{year}}",
+      "vintageWarning": "OAK always protects Pokémon from 2016 through 2019. With this choice you lift that protection for this one Pokémon.",
+      "vintageConfirm": "This is a vintage Pokémon from {{year}}. Are you sure you want to lift its protection?",
+      "save": "Save"
+    },
+    "scenario": {
+      "title": "Calculate as",
+      "current": "As Shadow",
+      "purified": "After purifying",
+      "explanation": "Purifying puts a Shadow Pokémon at level 25, or at your trainer level if that is lower, and gives every IV 2 extra points up to 15. This cannot be undone, and you cannot lower a level. A Pokémon can become too strong for Great League as a result."
+    },
+    "purify": {
+      "summary": "After purifying: level {{level}}, IV {{ivs}}, CP {{cp}}. Purifying costs {{stardust}} stardust and {{candy}} candy.",
+      "source": "Rules for level and IVs: {{source}}."
+    },
+    "analysis": {
+      "title": "Battle analysis",
+      "unavailable": "Not available.",
+      "ivRank": "IV rank",
+      "speciesRank": "Species rank",
+      "readiness": "Readiness",
+      "noTarget": "No suitable form for this league.",
+      "target": "Target",
+      "percentOfBest": "% of best",
+      "bestCp": "Best CP / level",
+      "cost": "Cost",
+      "primary": "primary",
+      "afterEvolution": "after evolution · {{candy}} candy",
+      "recommended": "Recommended:",
+      "withoutElite": "(without Elite TM)",
+      "randomFrom": "(random out of {{size}})",
+      "cpNow": "now {{cp}}",
+      "score": "score {{score}}",
+      "currentMoves": "Current moves",
+      "eliteAvailable": "Elite TM available",
+      "eliteUnavailable": "Elite TM not available",
+      "ivNote": "A Pokémon with excellent IVs is not automatically a good battle Pokémon: also look at the species rank and readiness."
+    },
+    "evolutions": {
+      "title": "Evolutions",
+      "titlePurified": "Evolutions after purifying",
+      "none": "No further evolutions.",
+      "cpAfter": "CP after evolution: {{cp}}",
+      "buddyKm": "{{km}} km as buddy",
+      "quest": "evolution quest",
+      "overCap": "over CP limit",
+      "rank": "rank {{rank}}",
+      "eliteWarning": "Note: some moves of this evolution can only be learned with an Elite TM.",
+      "note": "A higher CP alone is never a reason to evolve. Compare the league ranks."
+    },
+    "powerUps": {
+      "title": "Power-ups",
+      "titlePurified": "Power-ups after purifying",
+      "level": "Level",
+      "showLess": "Show less",
+      "showAll": "Show all levels",
+      "costs": "Costs are cumulative from {{start}}{{modifiers}}.",
+      "fromCurrent": "the current level",
+      "fromPurified": "the level after purifying",
+      "lucky": "with Lucky discount",
+      "shadow": "Shadow surcharge",
+      "purified": "Purified discount",
+      "candyUnknown": "Your candy stock is unknown: PGSharp does not export it."
+    },
+    "cups": {
+      "title": "Cups",
+      "none": "This Pokémon does not fit any of the cups PvPoke currently shows, not even after evolution.",
+      "ranking": "{{target}} · IV rank {{rank}} · best CP {{cp}}",
+      "speciesRank": "species rank {{rank}}"
+    },
+    "history": {
+      "title": "History",
+      "none": "No changes."
+    }
+  },
+  "cleanup": {
+    "title": "Cleanup Manager",
+    "description": "Explainable advice on which Pokémon to keep, build up or transfer. OAK never transfers anything itself.",
+    "tabs": {
+      "recommendations": "Recommendations",
+      "duplicates": "Duplicates",
+      "list": "Action list",
+      "rules": "Rules"
+    },
+    "breakdown": {
+      "summary": "How are the scores built up?",
+      "battle": "Usefulness {{score}}",
+      "battleNote": "The highest value counts, not the sum, so the same IVs don't count twice.",
+      "keep": "Keep score {{score}}",
+      "keepNote": "Points added up, at most 100. Keep from {{keep}}, review from {{review}}."
+    },
+    "similar": {
+      "none": "No other Pokémon of this species and form.",
+      "label": "Similar:",
+      "scores": "{{iv}} · usefulness {{battle}} · keep {{keep}}",
+      "better": "better"
+    },
+    "row": {
+      "confidence": "Confidence {{level}}",
+      "inActionList": "On action list",
+      "battle": "Usefulness",
+      "battleTitle": "Actual value in battles, 0–100",
+      "keep": "Keep score",
+      "keepTitle": "Reason to keep, 0–100",
+      "protection": "Protection: {{reasons}}"
+    },
+    "analysis": {
+      "summary": "Analysis {{when}} · engine {{engine}} · Game Data v{{version}}",
+      "notRun": "not run yet",
+      "stale": "Outdated: data or rules have changed",
+      "pending": "Recalculating…",
+      "rerun": "Analyze again"
+    },
+    "statusFilter": {
+      "all": "All",
+      "allTitle": "All Pokémon"
+    },
+    "sort": {
+      "label": "Sort",
+      "priority": "Priority",
+      "keepAsc": "Keep score low–high",
+      "keepDesc": "Keep score high–low",
+      "battleDesc": "Usefulness high–low",
+      "battleAsc": "Usefulness low–high",
+      "cpAsc": "CP low–high",
+      "cpDesc": "CP high–low",
+      "name": "Name",
+      "ivAsc": "IV low–high"
+    },
+    "filters": {
+      "all": "all",
+      "only": "only",
+      "without": "excluded",
+      "favoritesLabel": "Favorites",
+      "favorites": "Favorites: {{choice}}",
+      "vintageLabel": "Vintage",
+      "vintage": "Vintage (2016–2019): {{choice}}",
+      "gymLabel": "Gyms",
+      "gym": {
+        "all": "Gyms: all",
+        "best": "Gyms: best defender per species",
+        "inGym": "Gyms: in a gym now"
+      }
+    },
+    "recommendations": {
+      "addSelected": "Add {{n}} to action list",
+      "selectPage": "Select whole page",
+      "empty": "No Pokémon match these filters",
+      "added": "The action list now holds {{n}} Pokémon.",
+      "skipped": "{{n}} skipped: {{reasons}}.",
+      "waiting_one": "{{count}} is waiting for your confirmation.",
+      "waiting_other": "{{count}} are waiting for your confirmation."
+    },
+    "duplicates": {
+      "search": "Search species…",
+      "intro": "Pokémon of the same species, form and Shadow status side by side, highest usefulness first. Favorites and vintage Pokémon are compared like any other.",
+      "columns": {
+        "ivs": "IVs",
+        "level": "Level",
+        "moves": "Moves",
+        "battle": "Usefulness",
+        "battleTitle": "Usefulness in battles, 0–100",
+        "keep": "Keep",
+        "keepTitle": "Keep score, 0–100",
+        "advice": "Advice",
+        "why": "Why"
+      },
+      "vintage": "Vintage {{year}}",
+      "favorite": "Favorite"
+    },
+    "list": {
+      "emptyTitle": "The action list is empty",
+      "emptyText": "Add transfer candidates from the Recommendations tab or the Pokémon Box. You then work through the list yourself in the game.",
+      "noTransferTitle": "OAK transfers nothing",
+      "noTransferText": "This list is a tool. Look up each Pokémon in the game, check it and transfer it yourself. Then mark it as done here, or the next full sync will see that it is gone.",
+      "printable": "Printable checklist",
+      "clear": "Clear list",
+      "heldBackTitle": "{{n}} Pokémon held back",
+      "heldBackText": "Their protection changed after they were added to the list, or they are no longer in your inventory. They are left out of the searches and the checklist.",
+      "searches": "Searches for Pokémon GO",
+      "copied": "Copied",
+      "copy": "Copy",
+      "columns": {
+        "reason": "Reason",
+        "protection": "Protection",
+        "sourceId": "Source ID"
+      },
+      "gone": "No longer in inventory",
+      "blocked": "Held back: {{reason}}",
+      "reconfirm": "Confirm again: {{reason}}",
+      "newReasons": "new {{reasons}}",
+      "confirm": "Confirm",
+      "done": "Done",
+      "remove": "Remove"
+    },
+    "rules": {
+      "saved": "Rules saved. The analysis is being recalculated.",
+      "fixed": {
+        "title": "Fixed rules",
+        "text": "These rules are fixed. Want to let go of one vintage Pokémon anyway? Lift the protection on that Pokémon. OAK asks you to confirm that."
+      },
+      "protection": {
+        "title": "Hard protection",
+        "text": "Whatever is turned on here always gets 'Protected', however low the scores are. If you turn a rule off, the trait only counts as points in the keep score."
+      },
+      "keep": {
+        "title": "Keep score (0–100)",
+        "text": "Every trait counts once. IVs only count through usefulness. Favorites get extra points but no hard protection."
+      },
+      "roles": {
+        "title": "Roles and game settings"
+      },
+      "analysis": {
+        "title": "Analysis and thresholds"
+      },
+      "save": "Save",
+      "defaults": "Defaults",
+      "engine": "Engine {{version}}",
+      "points": "Points",
+      "scoreRange": "0–100",
+      "of4096": "Out of 4096",
+      "items": {
+        "protectShiny": {
+          "label": "Shinies"
+        },
+        "protectLucky": {
+          "label": "Lucky Pokémon"
+        },
+        "protectHundo": {
+          "label": "Hundos and shundos"
+        },
+        "protectLocationCard": {
+          "label": "Special backgrounds"
+        },
+        "protectCostume": {
+          "label": "Costumes"
+        },
+        "protectMythical": {
+          "label": "Mythical"
+        },
+        "protectLegendary": {
+          "label": "Legendary"
+        },
+        "protectUltraBeast": {
+          "label": "Ultra Beasts"
+        },
+        "protectShadow": {
+          "label": "Shadow Pokémon"
+        },
+        "protectPurified": {
+          "label": "Purified Pokémon"
+        },
+        "protectDynamax": {
+          "label": "Dynamax"
+        },
+        "protectGigantamax": {
+          "label": "Gigantamax"
+        },
+        "protectEvent": {
+          "label": "Event Pokémon",
+          "hint": "From an event or a limited release"
+        },
+        "protectNicknamed": {
+          "label": "Pokémon with a nickname"
+        },
+        "protectMegaProgress": {
+          "label": "Pokémon with Mega progress"
+        },
+        "keepBestGreat": {
+          "label": "Always keep the best Great League candidate"
+        },
+        "keepBestUltra": {
+          "label": "Always keep the best Ultra League candidate"
+        },
+        "keepBestMaster": {
+          "label": "Keep the best Master League Pokémon"
+        },
+        "keepBestRaid": {
+          "label": "Keep the best raid attacker",
+          "hint": "Highest Attack IV among relevant species"
+        },
+        "keepBestGym": {
+          "label": "Keep the best gym defender",
+          "hint": "Most Defense and HP among the best defender species"
+        },
+        "eliteTmAvailable": {
+          "label": "I have Elite TMs",
+          "hint": "Moveset advice and raid value may use Elite TM moves"
+        },
+        "includeBestBuddy": {
+          "label": "Include Best Buddy (+1 level)"
+        },
+        "considerCosts": {
+          "label": "Take resource costs into account"
+        },
+        "allowTransferOnPartialImport": {
+          "label": "Transfer advice after a partial import too",
+          "hint": "Off by default: then everything gets 'Review' at most"
+        },
+        "useEvents": {
+          "label": "Take upcoming events into account",
+          "hint": "Keep a transfer candidate until after the Community Day of its evolution line"
+        },
+        "keepWeightBattle": {
+          "label": "Usefulness share",
+          "hint": "Percentage of the usefulness score that counts"
+        },
+        "keepPointsBestCopy": {
+          "label": "Best or only one"
+        },
+        "keepPointsFavorite": {
+          "label": "Favorite",
+          "hint": "Points. Never counts toward usefulness"
+        },
+        "keepPointsShiny": {
+          "label": "Shiny"
+        },
+        "keepPointsLucky": {
+          "label": "Lucky"
+        },
+        "keepPointsRarity": {
+          "label": "Legendary, Mythical, Ultra Beast"
+        },
+        "keepPointsCostume": {
+          "label": "Costume"
+        },
+        "keepPointsLocationCard": {
+          "label": "Special background"
+        },
+        "keepPointsEvent": {
+          "label": "Event Pokémon"
+        },
+        "keepPointsMax": {
+          "label": "Dynamax or Gigantamax"
+        },
+        "keepPointsMega": {
+          "label": "Mega progress"
+        },
+        "keepTraitsCap": {
+          "label": "Maximum for special traits combined"
+        },
+        "keepPointsNickname": {
+          "label": "Nickname"
+        },
+        "keepPointsPlanned": {
+          "label": "Your own plan in OAK",
+          "hint": "Points, not for a 'transfer' plan"
+        },
+        "keepThreshold": {
+          "label": "Keep from a keep score of"
+        },
+        "reviewThreshold": {
+          "label": "Review from a keep score of",
+          "hint": "0–100, below that transfer candidate"
+        },
+        "keepMinPerSpecies": {
+          "label": "Minimum number per species",
+          "hint": "0–10. The best one always stays"
+        },
+        "metaRankThreshold": {
+          "label": "Species counts up to PvPoke rank",
+          "hint": "The lower, the stricter"
+        },
+        "speciesRankFull": {
+          "label": "Species counts fully up to PvPoke rank",
+          "hint": "Beyond that, the weight goes down"
+        },
+        "raidTopN": {
+          "label": "Raid value up to place",
+          "hint": "Place among all attackers of a type"
+        },
+        "gymTopN": {
+          "label": "Gym value up to place",
+          "hint": "Place among all species allowed in a gym"
+        },
+        "goodIvRankThreshold": {
+          "label": "IV rank that always leads to review"
+        },
+        "buildIvRankThreshold": {
+          "label": "Highest IV rank for invest advice"
+        },
+        "readyCpFraction": {
+          "label": "Ready now from this fraction of the best CP",
+          "hint": "0.5–1"
+        },
+        "maxLevel": {
+          "label": "Maximum level",
+          "hint": "Usually 50 according to the Game Data"
+        },
+        "eventHoldDays": {
+          "label": "Events count from this many days before",
+          "hint": "0–60"
+        }
+      }
+    }
+  },
+  "events": {
+    "title": "Upcoming events",
+    "description": "Events in the next 60 days. A Community Day holds on to transfer candidates from that evolution line until after the event, and with double Transfer Candy you get a tip to wait.",
+    "calendar": "Calendar",
+    "emptyTitle": "No events found",
+    "emptyText": "There are no events in the next 60 days.",
+    "feed": {
+      "source": "Event data: <leekduck>LeekDuck.com</leekduck> via <scrapedduck>ScrapedDuck</scrapedduck>. This data is not official. If in doubt, check the event itself.",
+      "fetched_one": "Last fetched {{when}}, {{n}} event, version {{version}}.",
+      "fetched_other": "Last fetched {{when}}, {{n}} events, version {{version}}.",
+      "notFetched": "Not fetched yet.",
+      "autoOn": "OAK updates the calendar automatically.",
+      "autoOff": "Automatic updates are off.",
+      "failed": "The last update attempt failed: {{error}} The previous events still apply.",
+      "notUsed": "Events don't count in your cleanup advice. Turn that on in the <rulesLink>cleanup rules</rulesLink>.",
+      "updateNow": "Update now",
+      "updateStarted": "Update started. The event calendar is being fetched in the background."
+    },
+    "row": {
+      "counts": "Counts",
+      "ignored": "Ignored",
+      "details": "Details",
+      "period": "{{start}} to {{end}}",
+      "periodLocal": "{{start}} to {{end}} (local time)",
+      "species": "Pokémon: {{names}}",
+      "unknownNames": "Not found in the Game Data: {{names}}. OAK keeps nothing for these.",
+      "bonuses": "Bonuses: {{bonuses}}",
+      "held": "OAK keeps {{n}} of your Pokémon for this until after the event. <cleanupLink>View in the Cleanup Manager</cleanupLink>",
+      "transferTip": "Tip: wait until this event to transfer your transfer candidates ({{bonus}}).",
+      "countsFrom_one": "Counts from {{count}} day before the start.",
+      "countsFrom_other": "Counts from {{count}} days before the start.",
+      "remove": "Remove",
+      "include": "Count again",
+      "ignore": "Ignore"
+    },
+    "manual": {
+      "title": "Add your own event",
+      "intro": "For something that isn't in the calendar, such as a planned trade. OAK keeps the chosen Pokémon and their evolution line until the event is over.",
+      "name": "Name",
+      "start": "Start",
+      "end": "End",
+      "species": "Search Pokémon, e.g. eevee",
+      "add": "Add",
+      "added": "Event added. OAK is recalculating your cleanup advice."
+    }
+  },
+  "errors": {
+    "http": {
+      "401": "You are no longer logged in. Please log in again.",
+      "403": "You do not have access to this action.",
+      "408": "The server waited too long for the upload.",
+      "413": "The file is too large for the server or the proxy in front of it.",
+      "429": "Too many requests. Try again in a minute.",
+      "502": "The proxy could not reach OAK.",
+      "503": "OAK is temporarily unavailable.",
+      "504": "OAK did not respond in time.",
+      "other": "The server returned an error."
+    },
+    "invalidResponse": "The server sent a response OAK cannot read.",
+    "uploadAborted": "The upload was cancelled.",
+    "network": "Network error during the upload. Check the connection and try again.",
+    "uploadTimeout": "The upload took too long and was stopped.",
+    "unknown": "Unknown error."
+  },
+  "notFound": {
+    "text": "This page does not exist."
+  }
+}

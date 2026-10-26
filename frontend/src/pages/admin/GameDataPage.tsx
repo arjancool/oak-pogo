@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { ParseKeys } from "i18next";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Alert, Badge, Button, Card, KeyValue, PageHeader, Spinner } from "../../components/ui";
 import { useAuth } from "../../lib/auth";
@@ -16,29 +18,37 @@ const UPLOAD_FIELDS = [
   { name: "rankings_master", label: "PvPoke rankings Master League", required: false },
 ] as const;
 
-const statusText: Record<string, string> = { active: "actief", archived: "bewaard", ready: "klaar", pruned: "opgeruimd", failed: "mislukt" };
+const statusText: Record<string, ParseKeys> = {
+  active: "admin.gamedata.versionStatus.active",
+  archived: "admin.gamedata.versionStatus.archived",
+  ready: "admin.gamedata.versionStatus.ready",
+  pruned: "admin.gamedata.versionStatus.pruned",
+  failed: "admin.gamedata.versionStatus.failed",
+};
 const ACTIVATABLE = ["archived", "ready"];
 
 function Summary({ version }: { version: GameDataVersion }) {
+  const { t } = useTranslation();
   const s = version.summary ?? {};
   const rankings = (s.rankings ?? {}) as Record<string, number | null>;
   return (
     <KeyValue
       items={[
-        ["Versie", `#${version.id} (${version.origin === "upload" ? "handmatige upload" : "download"})`],
-        ["Geactiveerd", dateTime(version.activated_at)],
-        ["Soorten", num(s.species as number)],
-        ["Vormen", num(s.forms as number)],
-        ["Aanvallen", num(s.moves as number)],
-        ["Vormen gekoppeld aan PvPoke", num(s.pvpoke_mapped_forms as number)],
-        ["League-rankings", Object.entries(rankings).map(([league, count]) => `${league}: ${num(count)}`).join(" · ") || "geen"],
-        ["Maximaal level zonder Best Buddy", String(s.max_normal_level ?? "onbekend")],
+        [t("admin.gamedata.summary.version"), `#${version.id} (${version.origin === "upload" ? t("admin.gamedata.summary.originUpload") : t("admin.gamedata.summary.originDownload")})`],
+        [t("admin.gamedata.summary.activated"), dateTime(version.activated_at)],
+        [t("admin.gamedata.summary.species"), num(s.species as number)],
+        [t("admin.gamedata.summary.forms"), num(s.forms as number)],
+        [t("admin.gamedata.summary.moves"), num(s.moves as number)],
+        [t("admin.gamedata.summary.pvpokeForms"), num(s.pvpoke_mapped_forms as number)],
+        [t("admin.gamedata.summary.rankings"), Object.entries(rankings).map(([league, count]) => `${league}: ${num(count)}`).join(" · ") || t("admin.gamedata.summary.noRankings")],
+        [t("admin.gamedata.summary.maxLevel"), String(s.max_normal_level ?? t("common.unknown"))],
       ]}
     />
   );
 }
 
 export function GameDataPage() {
+  const { t } = useTranslation();
   const client = useQueryClient();
   const { user } = useAuth();
   const owner = user?.role === "owner";
@@ -61,17 +71,17 @@ export function GameDataPage() {
         r.error
           ? { tone: "error", text: r.error }
           : r.repair_needed
-            ? { tone: "warning", text: "Het bestand van de actieve versie ontbreekt. Kies Nu bijwerken om het opnieuw op te bouwen." }
+            ? { tone: "warning", text: t("admin.gamedata.repairNeeded") }
             : r.available
-            ? { tone: "info", text: `Er is nieuwe data beschikbaar (${(r.changed_sources ?? []).join(", ") || "nog geen actieve versie"}).` }
-            : { tone: "success", text: "De actieve versie is actueel." },
+            ? { tone: "info", text: t("admin.gamedata.available", { sources: (r.changed_sources ?? []).join(", ") || t("admin.gamedata.noActiveVersion") }) }
+            : { tone: "success", text: t("admin.gamedata.upToDate") },
       ),
     onError: (err) => setMessage({ tone: "error", text: errorMessage(err) }),
   });
   const update = useMutation({
     mutationFn: () => api.post("/api/v1/gamedata/update"),
     onSuccess: () => {
-      setMessage({ tone: "info", text: "Update gestart. OAK downloadt, controleert en activeert de nieuwe versie op de achtergrond." });
+      setMessage({ tone: "info", text: t("admin.gamedata.updateStarted") });
       refresh();
     },
     onError: (err) => setMessage({ tone: "error", text: errorMessage(err) }),
@@ -79,7 +89,7 @@ export function GameDataPage() {
   const activate = useMutation({
     mutationFn: (id: number) => api.post(`/api/v1/gamedata/versions/${id}/activate`),
     onSuccess: () => {
-      setMessage({ tone: "success", text: "Versie geactiveerd. Analyses worden opnieuw berekend." });
+      setMessage({ tone: "success", text: t("admin.gamedata.versionActivated") });
       refresh();
     },
     onError: (err) => setMessage({ tone: "error", text: errorMessage(err) }),
@@ -93,21 +103,26 @@ export function GameDataPage() {
     onError: (err) => setMessage({ tone: "error", text: errorMessage(err) }),
   });
 
+  const versionStatus = (code: string) => {
+    const key = statusText[code];
+    return key ? t(key) : code;
+  };
+
   if (status.isLoading || !status.data) return <Spinner />;
   const s = status.data;
   return (
     <>
       <PageHeader
-        title="Game Data"
-        description="Spelgegevens met versiebeheer. Een nieuwe versie wordt pas actief na controle. De vorige versies blijven bewaard zodat je terug kunt."
+        title={t("admin.gamedata.title")}
+        description={t("admin.gamedata.description")}
         actions={
           <>
             <Button loading={check.isPending} onClick={() => check.mutate()}>
-              Controleren op updates
+              {t("admin.gamedata.check")}
             </Button>
             {owner && (
               <Button variant="primary" loading={update.isPending || s.update_pending} onClick={() => update.mutate()}>
-                Nu bijwerken
+                {t("admin.gamedata.updateNow")}
               </Button>
             )}
           </>
@@ -120,50 +135,55 @@ export function GameDataPage() {
       )}
       {!s.active && (
         <div className="mb-4">
-          <Alert tone="warning" title="Geen actieve Game Data">
-            Zonder Game Data kan OAK geen soortnamen, levels, PvP-rangen of cleanup-adviezen berekenen. De Pokémon zelf worden wel geïmporteerd.
+          <Alert tone="warning" title={t("admin.gamedata.noActiveTitle")}>
+            {t("admin.gamedata.noActiveText")}
           </Alert>
         </div>
       )}
       {s.last_error && (
         <div className="mb-4">
-          <Alert tone="error" title="Laatste update mislukt">
-            {s.last_error} De actieve versie is niet aangeraakt.
+          <Alert tone="error" title={t("admin.gamedata.lastErrorTitle")}>
+            {t("admin.gamedata.lastErrorText", { error: s.last_error })}
           </Alert>
         </div>
       )}
       <div className="grid gap-5 lg:grid-cols-2">
-        <Card title="Actieve versie">
-          {s.active ? <Summary version={s.active} /> : <p className="text-sm text-muted">Geen.</p>}
+        <Card title={t("admin.gamedata.activeTitle")}>
+          {s.active ? <Summary version={s.active} /> : <p className="text-sm text-muted">{t("admin.gamedata.noActive")}</p>}
           <p className="mt-3 text-xs text-muted">
-            Automatisch bijwerken: {s.auto_update ? `aan, iedere ${s.interval_hours} uur` : "uit"}. Laatste controle: {dateTime(s.last_check?.at)}.
+            {t("admin.gamedata.autoUpdate", {
+              state: s.auto_update
+                ? t("admin.gamedata.autoUpdateOn", { count: s.interval_hours, hours: num(s.interval_hours) })
+                : t("admin.gamedata.autoUpdateOff"),
+              checked: dateTime(s.last_check?.at),
+            })}
           </p>
         </Card>
-        <Card title="Wat ervan afhangt">
+        <Card title={t("admin.gamedata.dependentTitle")}>
           <ul className="list-disc space-y-1 pl-5 text-sm">
             {s.dependent_analyses.map((a) => (
               <li key={a}>{a}</li>
             ))}
           </ul>
         </Card>
-        <Card title="Versies">
+        <Card title={t("admin.gamedata.versionsTitle")}>
           <ul className="divide-y divide-line text-sm">
             {s.versions.map((v) => (
               <li key={v.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
                 <span>
-                  #{v.id} · {dateTime(v.created_at)} · <Badge color={v.status === "active" ? "#22c55e" : v.status === "failed" ? "#ef4444" : undefined}>{statusText[v.status] ?? v.status}</Badge>
+                  #{v.id} · {dateTime(v.created_at)} · <Badge color={v.status === "active" ? "#22c55e" : v.status === "failed" ? "#ef4444" : undefined}>{versionStatus(v.status)}</Badge>
                   {v.error && <span className="block text-xs text-red-300">{v.error}</span>}
                 </span>
                 {owner && ACTIVATABLE.includes(v.status) && (
                   <Button size="sm" loading={activate.isPending} onClick={() => activate.mutate(v.id)}>
-                    Activeren
+                    {t("admin.gamedata.activate")}
                   </Button>
                 )}
               </li>
             ))}
           </ul>
         </Card>
-        <Card title="Bronnen en licenties">
+        <Card title={t("admin.gamedata.sourcesTitle")}>
           <ul className="space-y-3 text-sm">
             {sources.data?.map((src) => (
               <li key={src.id}>
@@ -171,17 +191,17 @@ export function GameDataPage() {
                   {src.name} <span className="text-xs text-muted">({src.role})</span>
                 </p>
                 <p className="break-all text-xs text-muted">{src.url}</p>
-                <p className="text-xs">Licentie: {src.license}</p>
+                <p className="text-xs">{t("admin.gamedata.license", { license: src.license })}</p>
               </li>
             ))}
           </ul>
           {s.active && (
             <details className="mt-3 text-xs">
-              <summary className="cursor-pointer text-muted">Controlegetallen van de actieve versie</summary>
+              <summary className="cursor-pointer text-muted">{t("admin.gamedata.checksums")}</summary>
               <ul className="mt-2 space-y-1">
                 {s.active.sources.map((src) => (
                   <li key={src.id} className="break-all">
-                    {src.id}: {src.sha256?.slice(0, 16)}… · {bytes(src.bytes ?? null)} · opgehaald {dateTime(src.retrieved_at)}
+                    {src.id}: {src.sha256?.slice(0, 16)}… · {bytes(src.bytes ?? null)} · {t("admin.gamedata.retrieved", { date: dateTime(src.retrieved_at) })}
                   </li>
                 ))}
               </ul>
@@ -189,11 +209,8 @@ export function GameDataPage() {
           )}
         </Card>
         {owner && (
-          <Card title="Offline installeren" className="lg:col-span-2">
-            <p className="mb-3 text-sm text-muted">
-              Heeft de server geen internet, download de bestanden dan elders en upload ze hier. OAK controleert ze op dezelfde manier als een
-              download.
-            </p>
+          <Card title={t("admin.gamedata.offlineTitle")} className="lg:col-span-2">
+            <p className="mb-3 text-sm text-muted">{t("admin.gamedata.offlineText")}</p>
             <form
               className="grid gap-3 md:grid-cols-2"
               onSubmit={(e) => {
@@ -205,14 +222,14 @@ export function GameDataPage() {
                 <label key={f.name} className="text-sm">
                   <span className="mb-1 block text-muted">
                     {f.label}
-                    {f.required && " (verplicht)"}
+                    {f.required && ` (${t("admin.gamedata.required")})`}
                   </span>
                   <input type="file" name={f.name} accept=".json,application/json" required={f.required} className="text-xs" />
                 </label>
               ))}
               <div className="md:col-span-2">
                 <Button type="submit" variant="primary" loading={upload.isPending}>
-                  Uploaden en controleren
+                  {t("admin.gamedata.uploadSubmit")}
                 </Button>
               </div>
             </form>

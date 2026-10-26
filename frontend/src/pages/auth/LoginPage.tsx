@@ -1,11 +1,14 @@
 import { useState, type FormEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { Navigate, useLocation, useNavigate } from "react-router";
 
+import { LanguageSelect } from "../../components/LanguageSelect";
 import { Alert, Button, Field, Input } from "../../components/ui";
 import { errorMessage } from "../../lib/api";
 import { useAuth } from "../../lib/auth";
 
 export function LoginPage({ mode }: { mode: "login" | "setup" }) {
+  const { t } = useTranslation();
   const { status, login, setup, loading } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -23,7 +26,7 @@ export function LoginPage({ mode }: { mode: "login" | "setup" }) {
     event.preventDefault();
     setError(null);
     if (mode === "setup" && password !== confirm) {
-      setError("De wachtwoorden zijn niet gelijk.");
+      setError(t("login.mismatch"));
       return;
     }
     setBusy(true);
@@ -46,19 +49,20 @@ export function LoginPage({ mode }: { mode: "login" | "setup" }) {
           <img src="/oak.svg" alt="" className="h-10 w-10" />
           <div>
             <h1 className="text-lg font-semibold">OAK</h1>
-            <p className="text-xs text-muted">Pokémon GO Manager</p>
+            <p className="text-xs text-muted">{t("app.tagline")}</p>
           </div>
+          <LanguageSelect className="ml-auto w-32" />
         </div>
         {mode === "setup" && (
-          <Alert tone="info" title="Eerste gebruik">
-            Maak het eigenaaraccount aan. Deze gebruiker beheert OAK en kan later andere gebruikers toevoegen.
+          <Alert tone="info" title={t("login.firstUse")}>
+            {t("login.firstUseText")}
           </Alert>
         )}
         {error && <Alert tone="error">{error}</Alert>}
-        <Field label="Gebruikersnaam">
+        <Field label={t("login.username")}>
           <Input autoComplete="username" value={username} onChange={(e) => setUsername(e.target.value)} required autoFocus />
         </Field>
-        <Field label="Wachtwoord" hint={mode === "setup" ? "minimaal 10 tekens" : undefined}>
+        <Field label={t("login.password")} hint={mode === "setup" ? t("login.passwordHint") : undefined}>
           <Input
             type="password"
             autoComplete={mode === "setup" ? "new-password" : "current-password"}
@@ -68,12 +72,12 @@ export function LoginPage({ mode }: { mode: "login" | "setup" }) {
           />
         </Field>
         {mode === "setup" && (
-          <Field label="Herhaal wachtwoord">
+          <Field label={t("login.repeatPassword")}>
             <Input type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required />
           </Field>
         )}
         <Button type="submit" variant="primary" className="w-full" loading={busy}>
-          {mode === "setup" ? "Eigenaar aanmaken" : "Inloggen"}
+          {mode === "setup" ? t("login.createOwner") : t("login.submit")}
         </Button>
       </form>
     </div>

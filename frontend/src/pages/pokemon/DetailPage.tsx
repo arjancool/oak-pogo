@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import { ArrowLeft, Copy } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router";
 
 import { CleanupBadge, IvBars, IvPercent, PokemonSprite, ReadinessBadge, ScoreMeter, StatusBadges, TypeBadge, pokemonName } from "../../components/pokemon";
@@ -28,7 +29,7 @@ const MEASURE_DIGITS = 2;
 const VINTAGE_OVERRIDES = new Set(["REVIEW", "TRANSFER_CANDIDATE"]);
 
 function decimal(value: unknown): string {
-  return typeof value === "number" ? value.toLocaleString("nl-NL", { maximumFractionDigits: MEASURE_DIGITS }) : "onbekend";
+  return num(typeof value === "number" ? Math.round(value * 10 ** MEASURE_DIGITS) / 10 ** MEASURE_DIGITS : null);
 }
 
 /** Display name of a recommended move. The API sends keys and names in the same order. */
@@ -38,30 +39,33 @@ function moveName(moveset: { moveset: string[]; names: string[] } | null, key: s
 }
 
 function RecommendationCard({ pokemon }: { pokemon: PokemonDetail }) {
+  const { t } = useTranslation();
   const rec = pokemon.recommendation;
   if (!rec) {
     return (
-      <Card title="Cleanup-advies">
-        <p className="text-sm text-muted">Nog geen analyse beschikbaar. De analyse draait na iedere import automatisch.</p>
+      <Card title={t("detail.recommendation.title")}>
+        <p className="text-sm text-muted">{t("detail.recommendation.none")}</p>
       </Card>
     );
   }
   return (
     <Card
-      title="Cleanup-advies"
+      title={t("detail.recommendation.title")}
       actions={
         <>
           <CleanupBadge status={rec.status} />
-          <Badge title="Betrouwbaarheid">Betrouwbaarheid: {label(confidenceLabels, rec.confidence)}</Badge>
+          <Badge title={t("detail.recommendation.confidenceTitle")}>
+            {t("detail.recommendation.confidence", { level: label(confidenceLabels, rec.confidence) })}
+          </Badge>
         </>
       }
     >
       <div className="mb-3 flex flex-wrap gap-x-5 gap-y-1">
-        <ScoreMeter label="Bruikbaarheid" value={rec.battle_score} title="Feitelijke waarde in gevechten, 0–100" />
-        <ScoreMeter label="Bewaarscore" value={rec.keep_score} title="Reden om te bewaren, 0–100" />
+        <ScoreMeter label={t("detail.recommendation.usefulness")} value={rec.battle_score} title={t("detail.recommendation.usefulnessTitle")} />
+        <ScoreMeter label={t("detail.recommendation.keepScore")} value={rec.keep_score} title={t("detail.recommendation.keepScoreTitle")} />
       </div>
       {rec.protection_reasons.length > 0 && (
-        <p className="mb-2 text-sm text-sky-300">Bescherming: {rec.protection_reasons.map((r) => r.text).join(" · ")}</p>
+        <p className="mb-2 text-sm text-sky-300">{t("detail.recommendation.protection", { reasons: rec.protection_reasons.map((r) => r.text).join(" · ") })}</p>
       )}
       <ul className="list-disc space-y-1 pl-5 text-sm">
         {rec.reasons.map((reason, index) => (
@@ -69,7 +73,7 @@ function RecommendationCard({ pokemon }: { pokemon: PokemonDetail }) {
         ))}
       </ul>
       <details className="mt-3 text-xs">
-        <summary className="cursor-pointer text-muted">Hoe zijn de scores opgebouwd?</summary>
+        <summary className="cursor-pointer text-muted">{t("detail.recommendation.scoresHow")}</summary>
         <div className="mt-2 grid gap-3 sm:grid-cols-2">
           <ul className="space-y-0.5">
             {rec.scores.battle?.parts.map((part, index) => (
@@ -88,7 +92,7 @@ function RecommendationCard({ pokemon }: { pokemon: PokemonDetail }) {
             ))}
           </ul>
         </div>
-        <p className="mt-1 text-muted">Bruikbaarheid is de hoogste deelwaarde. De bewaarscore telt punten op tot maximaal 100.</p>
+        <p className="mt-1 text-muted">{t("detail.recommendation.scoresNote")}</p>
       </details>
       {rec.warnings.length > 0 && (
         <div className="mt-3">
@@ -97,23 +101,30 @@ function RecommendationCard({ pokemon }: { pokemon: PokemonDetail }) {
       )}
       {rec.alternatives.length > 0 && (
         <div className="mt-3 text-sm">
-          <p className="mb-1 text-xs text-muted">Vergelijkbare Pokémon in je collectie</p>
+          <p className="mb-1 text-xs text-muted">{t("detail.recommendation.alternatives")}</p>
           <div className="flex flex-wrap gap-2">
             {rec.alternatives.map((alt) => (
               <Link key={alt.pokemon_id} to={`/pokemon/${alt.pokemon_id}`} className="rounded-lg border border-line px-2 py-1 text-xs hover:bg-surface-3">
-                {alt.name} · CP {num(alt.cp, "?")} · {pct(alt.iv_percent)} · bruikbaarheid {alt.battle_score ?? "?"} · {label(statusLabels, alt.status)}
-                {alt.better && <span className="ml-1 text-emerald-300">beter</span>}
+                {t("detail.recommendation.alternative", {
+                  name: alt.name,
+                  cp: num(alt.cp, "?"),
+                  iv: pct(alt.iv_percent),
+                  score: alt.battle_score ?? "?",
+                  status: label(statusLabels, alt.status),
+                })}
+                {alt.better && <span className="ml-1 text-emerald-300">{t("detail.recommendation.better")}</span>}
               </Link>
             ))}
           </div>
         </div>
       )}
-      <p className="mt-3 text-xs text-muted">Berekend op {dateTime(rec.computed_at)}. OAK zet nooit zelf een Pokémon over.</p>
+      <p className="mt-3 text-xs text-muted">{t("detail.recommendation.computed", { date: dateTime(rec.computed_at) })}</p>
     </Card>
   );
 }
 
 function MetadataCard({ pokemon }: { pokemon: PokemonDetail }) {
+  const { t } = useTranslation();
   const client = useQueryClient();
   const meta = pokemon.metadata;
   const [form, setForm] = useState({
@@ -135,7 +146,7 @@ function MetadataCard({ pokemon }: { pokemon: PokemonDetail }) {
         protected: form.protected,
         protection_reason: form.protection_reason || null,
         notes: form.notes,
-        tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
+        tags: form.tags.split(",").map((tag) => tag.trim()).filter(Boolean),
         planned_action: form.planned_action || null,
         planned_league: form.planned_league || null,
         review_status: form.review_status,
@@ -148,65 +159,65 @@ function MetadataCard({ pokemon }: { pokemon: PokemonDetail }) {
         ],
       }),
     onSuccess: () => {
-      setSaved("Opgeslagen. De analyse wordt opnieuw berekend.");
+      setSaved(t("detail.metadata.saved"));
       void client.invalidateQueries({ queryKey: ["pokemon-detail", pokemon.id] });
       void client.invalidateQueries({ queryKey: ["pokemon"] });
     },
     onError: (error) => setSaved(errorMessage(error)),
   });
   return (
-    <Card title="Jouw gegevens (OAK)">
+    <Card title={t("detail.metadata.title")}>
       <div className="space-y-3">
         <Switch
           checked={form.protected}
           onChange={(v) => setForm({ ...form, protected: v })}
-          label="Handmatig beschermen"
-          description="Een beschermde Pokémon wordt nooit als transfer-kandidaat voorgesteld."
+          label={t("detail.metadata.protect")}
+          description={t("detail.metadata.protectHint")}
         />
         {form.protected && (
-          <Field label="Reden">
+          <Field label={t("detail.metadata.reason")}>
             <Input value={form.protection_reason} onChange={(e) => setForm({ ...form, protection_reason: e.target.value })} maxLength={200} />
           </Field>
         )}
-        <Field label="Notities">
+        <Field label={t("detail.metadata.notes")}>
           <Textarea rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
         </Field>
-        <Field label="OAK-tags" hint="komma-gescheiden">
+        <Field label={t("detail.metadata.tags")} hint={t("detail.metadata.tagsHint")}>
           <Input value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} />
         </Field>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Geplande actie">
+          <Field label={t("detail.metadata.plannedAction")}>
             <Select className="w-full" value={form.planned_action} onChange={(e) => setForm({ ...form, planned_action: e.target.value })}>
-              <option value="">Geen</option>
-              <option value="keep">Bewaren</option>
-              <option value="evolve">Evolueren</option>
-              <option value="power_up">Power-up</option>
-              <option value="tm">TM gebruiken</option>
-              <option value="purify">Purifyen</option>
-              <option value="trade">Ruilen</option>
-              <option value="mega">Mega</option>
-              <option value="buddy">Buddy</option>
-              <option value="transfer">Overzetten</option>
+              <option value="">{t("detail.metadata.none")}</option>
+              <option value="keep">{t("detail.metadata.actions.keep")}</option>
+              <option value="evolve">{t("detail.metadata.actions.evolve")}</option>
+              <option value="power_up">{t("detail.metadata.actions.powerUp")}</option>
+              <option value="tm">{t("detail.metadata.actions.tm")}</option>
+              <option value="purify">{t("detail.metadata.actions.purify")}</option>
+              <option value="trade">{t("detail.metadata.actions.trade")}</option>
+              <option value="mega">{t("detail.metadata.actions.mega")}</option>
+              <option value="buddy">{t("detail.metadata.actions.buddy")}</option>
+              <option value="transfer">{t("detail.metadata.actions.transfer")}</option>
             </Select>
           </Field>
-          <Field label="Geplande league">
+          <Field label={t("detail.metadata.plannedLeague")}>
             <Select className="w-full" value={form.planned_league} onChange={(e) => setForm({ ...form, planned_league: e.target.value })}>
-              <option value="">Geen</option>
+              <option value="">{t("detail.metadata.none")}</option>
               <option value="great">Great League</option>
               <option value="ultra">Ultra League</option>
               <option value="master">Master League</option>
             </Select>
           </Field>
-          <Field label="Review">
+          <Field label={t("detail.metadata.review")}>
             <Select className="w-full" value={form.review_status} onChange={(e) => setForm({ ...form, review_status: e.target.value })}>
-              <option value="none">Geen</option>
-              <option value="to_review">Te beoordelen</option>
-              <option value="reviewed">Beoordeeld</option>
+              <option value="none">{t("detail.metadata.none")}</option>
+              <option value="to_review">{t("detail.metadata.toReview")}</option>
+              <option value="reviewed">{t("detail.metadata.reviewed")}</option>
             </Select>
           </Field>
-          <Field label="Advies overschrijven">
+          <Field label={t("detail.metadata.override")}>
             <Select className="w-full" value={form.override_status} onChange={(e) => setForm({ ...form, override_status: e.target.value })}>
-              <option value="">Advies van OAK volgen</option>
+              <option value="">{t("detail.metadata.followOak")}</option>
               {Object.entries(statusLabels)
                 .filter(([key]) => key !== "UNKNOWN")
                 .map(([key, text]) => (
@@ -218,8 +229,8 @@ function MetadataCard({ pokemon }: { pokemon: PokemonDetail }) {
           </Field>
         </div>
         {liftsVintage && (
-          <Alert tone="warning" title={`Vintage ${pokemon.vintage_year}`}>
-            OAK beschermt Pokémon uit 2016 tot en met 2019 altijd. Met deze keuze hef je die bescherming op voor deze ene Pokémon.
+          <Alert tone="warning" title={t("detail.metadata.vintageTitle", { year: pokemon.vintage_year })}>
+            {t("detail.metadata.vintageWarning")}
           </Alert>
         )}
         <div className="flex items-center gap-3">
@@ -228,11 +239,10 @@ function MetadataCard({ pokemon }: { pokemon: PokemonDetail }) {
             loading={save.isPending}
             onClick={() => {
               if (!liftsVintage) save.mutate(false);
-              else if (window.confirm(`Dit is een vintage Pokémon uit ${pokemon.vintage_year}. Weet je zeker dat je de bescherming wilt opheffen?`))
-                save.mutate(true);
+              else if (window.confirm(t("detail.metadata.vintageConfirm", { year: pokemon.vintage_year }))) save.mutate(true);
             }}
           >
-            Opslaan
+            {t("detail.metadata.save")}
           </Button>
           {saved && <span className="text-xs text-muted">{saved}</span>}
         </div>
@@ -245,55 +255,60 @@ const scenarioParams = (scenario: Scenario) => (scenario === "purified" ? { scen
 
 /** Lets the battle analysis, evolutions and power-ups describe a Shadow Pokémon after purification. */
 function ScenarioCard({ value, onChange }: { value: Scenario; onChange: (value: Scenario) => void }) {
+  const { t } = useTranslation();
   return (
-    <Card title="Rekenen met">
+    <Card title={t("detail.scenario.title")}>
       <Tabs
         value={value}
         onChange={onChange}
         tabs={[
-          { value: "current", label: "Als Shadow" },
-          { value: "purified", label: "Na purify" },
+          { value: "current", label: t("detail.scenario.current") },
+          { value: "purified", label: t("detail.scenario.purified") },
         ]}
       />
-      <p className="mt-3 text-xs text-muted">
-        Purify zet een Shadow Pokémon op level 25, of op je trainerlevel als dat lager is, en geeft iedere IV 2 punten extra tot 15. Dat is
-        niet terug te draaien, en een level kun je niet verlagen. Een Pokémon kan daardoor te sterk worden voor Great League.
-      </p>
+      <p className="mt-3 text-xs text-muted">{t("detail.scenario.explanation")}</p>
     </Card>
   );
 }
 
 function PurifySummary({ scenario }: { scenario: PurifyScenario }) {
+  const { t } = useTranslation();
   return (
     <div className="mt-3 rounded-lg border border-line bg-surface-2 p-3 text-sm">
       <p>
-        Na purify: level {level(scenario.level)}, IV {scenario.ivs.attack}/{scenario.ivs.defense}/{scenario.ivs.stamina}, CP {num(scenario.cp, "onbekend")}.
-        Purify kost {num(scenario.cost.stardust, "onbekend")} stardust en {num(scenario.cost.candy, "onbekend")} candy.
+        {t("detail.purify.summary", {
+          level: level(scenario.level),
+          ivs: `${scenario.ivs.attack}/${scenario.ivs.defense}/${scenario.ivs.stamina}`,
+          cp: num(scenario.cp),
+          stardust: num(scenario.cost.stardust),
+          candy: num(scenario.cost.candy),
+        })}
       </p>
       {scenario.assumption && <p className="mt-1 text-xs text-amber-300">{scenario.assumption}</p>}
-      {scenario.source && <p className="mt-1 text-xs text-muted">Regels voor level en IV's: {scenario.source}.</p>}
+      {scenario.source && <p className="mt-1 text-xs text-muted">{t("detail.purify.source", { source: scenario.source })}</p>}
     </div>
   );
 }
 
 function AnalysisCard({ pokemonId, scenario }: { pokemonId: number; scenario: Scenario }) {
+  const { t } = useTranslation();
   const [league, setLeague] = useState<"great" | "ultra" | "master">("great");
   const analysis = useQuery({
     queryKey: ["pokemon-analysis", pokemonId, scenario],
     queryFn: () => api.get<PokemonAnalysis>(`/api/v1/pokemon/${pokemonId}/analysis`, scenarioParams(scenario)),
   });
-  if (analysis.isLoading) return <Card title="Battle-analyse"><Spinner /></Card>;
+  if (analysis.isLoading) return <Card title={t("detail.analysis.title")}><Spinner /></Card>;
   const data = analysis.data;
   if (!data?.available || !data.leagues) {
     return (
-      <Card title="Battle-analyse">
-        <p className="text-sm text-muted">{analysis.error ? errorMessage(analysis.error) : (data?.reason ?? "Niet beschikbaar.")}</p>
+      <Card title={t("detail.analysis.title")}>
+        <p className="text-sm text-muted">{analysis.error ? errorMessage(analysis.error) : (data?.reason ?? t("detail.analysis.unavailable"))}</p>
       </Card>
     );
   }
   const current = data.leagues[league];
   return (
-    <Card title="Battle-analyse" actions={<span className="text-xs text-muted">Game Data v{data.game_data_version}</span>}>
+    <Card title={t("detail.analysis.title")} actions={<span className="text-xs text-muted">Game Data v{data.game_data_version}</span>}>
       <Tabs
         value={league}
         onChange={setLeague}
@@ -301,82 +316,85 @@ function AnalysisCard({ pokemonId, scenario }: { pokemonId: number; scenario: Sc
       />
       {data.scenario && <PurifySummary scenario={data.scenario} />}
       <div className="mt-3 grid gap-2 text-xs text-muted md:grid-cols-3">
-        <p><b className="text-ink">IV-rang</b>: {data.method?.iv_rank}</p>
-        <p><b className="text-ink">Soortrang</b>: {data.method?.species_rank}</p>
-        <p><b className="text-ink">Inzetbaarheid</b>: {data.method?.readiness}</p>
+        <p><b className="text-ink">{t("detail.analysis.ivRank")}</b>: {data.method?.iv_rank}</p>
+        <p><b className="text-ink">{t("detail.analysis.speciesRank")}</b>: {data.method?.species_rank}</p>
+        <p><b className="text-ink">{t("detail.analysis.readiness")}</b>: {data.method?.readiness}</p>
       </div>
       {!current || current.targets.length === 0 ? (
-        <p className="mt-4 text-sm text-muted">Geen geschikte vorm voor deze league.</p>
+        <p className="mt-4 text-sm text-muted">{t("detail.analysis.noTarget")}</p>
       ) : (
         <div className="mt-3 overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="text-left text-xs text-muted">
               <tr>
-                <th className="py-2 pr-3">Doel</th>
-                <th className="pr-3">IV-rang</th>
-                <th className="pr-3">% van beste</th>
-                <th className="pr-3">Beste CP / level</th>
-                <th className="pr-3">Inzetbaarheid</th>
-                <th className="pr-3">Kosten</th>
-                <th className="pr-3">Soortrang</th>
+                <th className="py-2 pr-3">{t("detail.analysis.target")}</th>
+                <th className="pr-3">{t("detail.analysis.ivRank")}</th>
+                <th className="pr-3">{t("detail.analysis.percentOfBest")}</th>
+                <th className="pr-3">{t("detail.analysis.bestCp")}</th>
+                <th className="pr-3">{t("detail.analysis.readiness")}</th>
+                <th className="pr-3">{t("detail.analysis.cost")}</th>
+                <th className="pr-3">{t("detail.analysis.speciesRank")}</th>
               </tr>
             </thead>
             <tbody>
-              {current.targets.map((t) => (
-                <tr key={t.target_key} className="border-t border-line align-top">
+              {current.targets.map((target) => (
+                <tr key={target.target_key} className="border-t border-line align-top">
                   <td className="py-2 pr-3">
                     <p className="font-medium">
-                      {t.target_name}
-                      {t.target_key === current.primary_target && <Badge className="ml-2">primair</Badge>}
+                      {target.target_name}
+                      {target.target_key === current.primary_target && <Badge className="ml-2">{t("detail.analysis.primary")}</Badge>}
                     </p>
-                    {t.is_evolution && (
+                    {target.is_evolution && (
                       <p className="text-xs text-muted">
-                        na evolutie · {num(t.evolution_candy, "?")} candy{t.evolution_item ? ` + ${t.evolution_item.replace("ITEM_", "").toLowerCase()}` : ""}
+                        {t("detail.analysis.afterEvolution", { candy: num(target.evolution_candy, "?") })}
+                        {target.evolution_item ? ` + ${target.evolution_item.replace("ITEM_", "").toLowerCase()}` : ""}
                       </p>
                     )}
-                    {t.moveset && (
+                    {target.moveset && (
                       <div className="mt-1 text-xs">
-                        <span className="text-muted">Aanbevolen: </span>
-                        {t.moveset.names.join(" · ")}
-                        {t.moveset.source === "pvpoke_usage_filtered" && <span className="text-amber-300"> (zonder Elite TM)</span>}
+                        <span className="text-muted">{t("detail.analysis.recommended")} </span>
+                        {target.moveset.names.join(" · ")}
+                        {target.moveset.source === "pvpoke_usage_filtered" && <span className="text-amber-300"> {t("detail.analysis.withoutElite")}</span>}
                         <ul className="mt-1 space-y-0.5">
-                          {t.moveset.needs
+                          {target.moveset.needs
                             .filter((n) => n.action !== "none")
                             .map((n, i) => (
                               <li key={i} className={n.action === "impossible" ? "text-red-300" : "text-muted"}>
                                 {label(moveActionLabels, n.action)}
-                                {n.target ? ` → ${moveName(t.moveset, n.target)}` : ""}
-                                {n.pool_size && n.action.endsWith("_tm") && !n.action.startsWith("elite") ? ` (willekeurig uit ${n.pool_size})` : ""}
+                                {n.target ? ` → ${moveName(target.moveset, n.target)}` : ""}
+                                {n.pool_size && n.action.endsWith("_tm") && !n.action.startsWith("elite")
+                                  ? ` ${t("detail.analysis.randomFrom", { size: n.pool_size })}`
+                                  : ""}
                               </li>
                             ))}
                         </ul>
                       </div>
                     )}
                   </td>
-                  <td className="pr-3 tabular-nums">{t.rank}</td>
-                  <td className="pr-3 tabular-nums">{pct(t.percent, 2)}</td>
+                  <td className="pr-3 tabular-nums">{target.rank}</td>
+                  <td className="pr-3 tabular-nums">{pct(target.percent, 2)}</td>
                   <td className="pr-3 tabular-nums">
-                    {num(t.best_cp)} / L{level(t.best_level)}
-                    <p className="text-xs text-muted">nu {num(t.cp_now, "?")}</p>
+                    {num(target.best_cp)} / L{level(target.best_level)}
+                    <p className="text-xs text-muted">{t("detail.analysis.cpNow", { cp: num(target.cp_now, "?") })}</p>
                   </td>
                   <td className="pr-3">
-                    <ReadinessBadge readiness={t.readiness} />
-                    <p className="mt-0.5 text-xs text-muted">{t.readiness_reason}</p>
+                    <ReadinessBadge readiness={target.readiness} />
+                    <p className="mt-0.5 text-xs text-muted">{target.readiness_reason}</p>
                   </td>
                   <td className="pr-3 text-xs tabular-nums">
-                    {t.cost ? (
+                    {target.cost ? (
                       <>
-                        {num(t.cost.stardust)} stardust
+                        {num(target.cost.stardust)} stardust
                         <br />
-                        {num(t.cost.candy)} candy{t.cost.xl_candy ? `, ${num(t.cost.xl_candy)} XL` : ""}
+                        {num(target.cost.candy)} candy{target.cost.xl_candy ? `, ${num(target.cost.xl_candy)} XL` : ""}
                       </>
                     ) : (
                       "–"
                     )}
                   </td>
                   <td className="pr-3 tabular-nums">
-                    {t.species_rank ?? "–"}
-                    {t.species_score !== null && <p className="text-xs text-muted">score {t.species_score}</p>}
+                    {target.species_rank ?? "–"}
+                    {target.species_score !== null && <p className="text-xs text-muted">{t("detail.analysis.score", { score: target.species_score })}</p>}
                   </td>
                 </tr>
               ))}
@@ -386,7 +404,7 @@ function AnalysisCard({ pokemonId, scenario }: { pokemonId: number; scenario: Sc
       )}
       {data.current_moves && data.current_moves.length > 0 && (
         <div className="mt-4 text-sm">
-          <p className="mb-1 text-xs text-muted">Huidige aanvallen</p>
+          <p className="mb-1 text-xs text-muted">{t("detail.analysis.currentMoves")}</p>
           <div className="flex flex-wrap gap-2">
             {data.current_moves.map((m) => (
               <Badge key={m.key}>
@@ -397,15 +415,16 @@ function AnalysisCard({ pokemonId, scenario }: { pokemonId: number; scenario: Sc
         </div>
       )}
       <p className="mt-3 text-xs text-muted">
-        Max level {data.rules?.max_level}
-        {data.rules?.include_best_buddy ? " + Best Buddy" : ""} · Elite TM {data.rules?.elite_tm_available ? "beschikbaar" : "niet beschikbaar"} ·
-        Een Pokémon met uitstekende IV's is niet automatisch een goede battle-Pokémon: kijk ook naar de soortrang en inzetbaarheid.
+        {t("detail.maxLevel", { level: level(data.rules?.max_level) })}
+        {data.rules?.include_best_buddy ? " + Best Buddy" : ""} ·{" "}
+        {data.rules?.elite_tm_available ? t("detail.analysis.eliteAvailable") : t("detail.analysis.eliteUnavailable")} · {t("detail.analysis.ivNote")}
       </p>
     </Card>
   );
 }
 
 function EvolutionsCard({ pokemonId, scenario }: { pokemonId: number; scenario: Scenario }) {
+  const { t } = useTranslation();
   const query = useQuery({
     queryKey: ["pokemon-evolutions", pokemonId, scenario],
     queryFn: () =>
@@ -414,41 +433,50 @@ function EvolutionsCard({ pokemonId, scenario }: { pokemonId: number; scenario: 
   if (query.isLoading) return null;
   const paths = query.data?.paths ?? [];
   return (
-    <Card title={scenario === "purified" ? "Evoluties na purify" : "Evoluties"}>
+    <Card title={scenario === "purified" ? t("detail.evolutions.titlePurified") : t("detail.evolutions.title")}>
       {paths.length === 0 ? (
-        <p className="text-sm text-muted">{query.error ? errorMessage(query.error) : (query.data?.reason ?? "Geen verdere evoluties.")}</p>
+        <p className="text-sm text-muted">{query.error ? errorMessage(query.error) : (query.data?.reason ?? t("detail.evolutions.none"))}</p>
       ) : (
         <ul className="space-y-3">
           {paths.map((path) => (
             <li key={path.target_key} className="rounded-lg border border-line p-3 text-sm">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="font-medium">{path.target_name}</p>
-                <span className="tabular-nums">CP na evolutie: {num(path.cp_after, "onbekend")}</span>
+                <span className="tabular-nums">{t("detail.evolutions.cpAfter", { cp: num(path.cp_after) })}</span>
               </div>
               <p className="mt-1 text-xs text-muted">
                 {num(path.total_candy, "?")} candy
                 {path.steps.map((s) =>
-                  [s.item && ` · ${s.item.replace("ITEM_", "").toLowerCase()}`, s.lure && ` · ${s.lure.replace("ITEM_", "").toLowerCase()}`, s.buddy_km && ` · ${s.buddy_km} km als buddy`, s.quest && " · evolutie-opdracht", ...s.conditions.map((c) => ` · ${label(conditionLabels, c)}`)].filter(Boolean).join(""),
+                  [
+                    s.item && ` · ${s.item.replace("ITEM_", "").toLowerCase()}`,
+                    s.lure && ` · ${s.lure.replace("ITEM_", "").toLowerCase()}`,
+                    s.buddy_km && ` · ${t("detail.evolutions.buddyKm", { km: num(s.buddy_km) })}`,
+                    s.quest && ` · ${t("detail.evolutions.quest")}`,
+                    ...s.conditions.map((c) => ` · ${label(conditionLabels, c)}`),
+                  ]
+                    .filter(Boolean)
+                    .join(""),
                 )}
               </p>
               <div className="mt-2 flex flex-wrap gap-2 text-xs">
                 {Object.entries(path.leagues).map(([lg, info]) => (
                   <Badge key={lg} color={info.over_cap ? "#f87171" : undefined}>
-                    {leagueNames[lg]}: {info.over_cap ? "boven CP-limiet" : `rang ${info.rank ?? "–"}`}
+                    {leagueNames[lg]}: {info.over_cap ? t("detail.evolutions.overCap") : t("detail.evolutions.rank", { rank: info.rank ?? "–" })}
                   </Badge>
                 ))}
               </div>
-              {path.elite_moves.length > 0 && <p className="mt-1 text-xs text-amber-300">Let op: sommige aanvallen van deze evolutie zijn alleen met Elite TM te leren.</p>}
+              {path.elite_moves.length > 0 && <p className="mt-1 text-xs text-amber-300">{t("detail.evolutions.eliteWarning")}</p>}
             </li>
           ))}
         </ul>
       )}
-      <p className="mt-3 text-xs text-muted">Een hogere CP alleen is nooit een reden om te evolueren. Vergelijk de league-rangen.</p>
+      <p className="mt-3 text-xs text-muted">{t("detail.evolutions.note")}</p>
     </Card>
   );
 }
 
 function PowerUpCard({ pokemonId, scenario }: { pokemonId: number; scenario: Scenario }) {
+  const { t } = useTranslation();
   const query = useQuery({
     queryKey: ["pokemon-powerups", pokemonId, scenario],
     queryFn: () => api.get<PowerUps>(`/api/v1/pokemon/${pokemonId}/powerups`, scenarioParams(scenario)),
@@ -458,11 +486,14 @@ function PowerUpCard({ pokemonId, scenario }: { pokemonId: number; scenario: Sce
   if (!data?.available || !data.steps) return null;
   const steps = showAll ? data.steps : data.steps.filter((_, i) => i < 6 || i % 4 === 3);
   return (
-    <Card title={data.scenario ? "Power-ups na purify" : "Power-ups"} actions={<span className="text-xs text-muted">Max level {level(data.max_level)}</span>}>
+    <Card
+      title={data.scenario ? t("detail.powerUps.titlePurified") : t("detail.powerUps.title")}
+      actions={<span className="text-xs text-muted">{t("detail.maxLevel", { level: level(data.max_level) })}</span>}
+    >
       <table className="w-full text-sm">
         <thead className="text-left text-xs text-muted">
           <tr>
-            <th className="py-1">Level</th>
+            <th className="py-1">{t("detail.powerUps.level")}</th>
             <th>CP</th>
             <th>Stardust</th>
             <th>Candy</th>
@@ -482,12 +513,20 @@ function PowerUpCard({ pokemonId, scenario }: { pokemonId: number; scenario: Sce
         </tbody>
       </table>
       <Button size="sm" variant="ghost" className="mt-2" onClick={() => setShowAll((v) => !v)}>
-        {showAll ? "Minder tonen" : "Alle levels tonen"}
+        {showAll ? t("detail.powerUps.showLess") : t("detail.powerUps.showAll")}
       </Button>
       <p className="mt-2 text-xs text-muted">
-        Kosten zijn cumulatief vanaf {data.scenario ? "het level na purify" : "het huidige level"}{data.modifiers?.lucky ? ", met Lucky-korting" : ""}
-        {data.modifiers?.shadow ? ", Shadow-toeslag" : ""}
-        {data.modifiers?.purified ? ", Purified-korting" : ""}. Je candyvoorraad is onbekend: PGSharp exporteert die niet. {data.note}
+        {t("detail.powerUps.costs", {
+          start: data.scenario ? t("detail.powerUps.fromPurified") : t("detail.powerUps.fromCurrent"),
+          modifiers: [
+            data.modifiers?.lucky && `, ${t("detail.powerUps.lucky")}`,
+            data.modifiers?.shadow && `, ${t("detail.powerUps.shadow")}`,
+            data.modifiers?.purified && `, ${t("detail.powerUps.purified")}`,
+          ]
+            .filter(Boolean)
+            .join(""),
+        })}{" "}
+        {t("detail.powerUps.candyUnknown")} {data.note}
       </p>
     </Card>
   );
@@ -505,6 +544,7 @@ interface CupRanking {
 
 /** The cups this Pokémon, or an evolution of it, may enter (ADR-0027). */
 function CupsCard({ pokemonId }: { pokemonId: number }) {
+  const { t } = useTranslation();
   const leagues = useLeagues();
   const query = useQuery({
     queryKey: ["pokemon-battle", pokemonId],
@@ -520,9 +560,9 @@ function CupsCard({ pokemonId }: { pokemonId: number }) {
     })
     .filter((row) => row !== null);
   return (
-    <Card title="Cups">
+    <Card title={t("detail.cups.title")}>
       {rows.length === 0 ? (
-        <p className="text-sm text-muted">Deze Pokémon past in geen van de cups die PvPoke nu toont, ook niet na evolutie.</p>
+        <p className="text-sm text-muted">{t("detail.cups.none")}</p>
       ) : (
         <ul className="space-y-2 text-sm">
           {rows.map(({ cup, best }) => (
@@ -531,8 +571,8 @@ function CupsCard({ pokemonId }: { pokemonId: number }) {
                 {cup.name}
               </Link>
               <span className="text-xs text-muted">
-                {best.target} · IV-rang {best.rank} · beste CP {num(best.best_cp)}
-                {best.species_rank !== null ? ` · soortrang ${best.species_rank}` : ""}
+                {t("detail.cups.ranking", { target: best.target, rank: best.rank, cp: num(best.best_cp) })}
+                {best.species_rank !== null ? ` · ${t("detail.cups.speciesRank", { rank: best.species_rank })}` : ""}
               </span>
               <ReadinessBadge readiness={best.readiness} />
             </li>
@@ -544,12 +584,13 @@ function CupsCard({ pokemonId }: { pokemonId: number }) {
 }
 
 function HistoryCard({ pokemonId }: { pokemonId: number }) {
+  const { t } = useTranslation();
   const query = useQuery({ queryKey: ["pokemon-history", pokemonId], queryFn: () => api.get<HistoryEvent[]>(`/api/v1/pokemon/${pokemonId}/history`) });
   const events = query.data ?? [];
   return (
-    <Card title="Historie">
+    <Card title={t("detail.history.title")}>
       {events.length === 0 ? (
-        <p className="text-sm text-muted">Geen wijzigingen.</p>
+        <p className="text-sm text-muted">{t("detail.history.none")}</p>
       ) : (
         <ol className="space-y-2 text-sm">
           {events.map((e) => (
@@ -572,6 +613,7 @@ function HistoryCard({ pokemonId }: { pokemonId: number }) {
 }
 
 export function DetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const pokemonId = Number(id);
   const [copied, setCopied] = useState(false);
@@ -586,7 +628,7 @@ export function DetailPage() {
     setScenario(null);
   }, [pokemonId]);
   if (query.isLoading) return <Spinner />;
-  if (query.error || !query.data) return <EmptyState title="Pokémon niet gevonden">{query.error ? errorMessage(query.error) : null}</EmptyState>;
+  if (query.error || !query.data) return <EmptyState title={t("detail.notFound")}>{query.error ? errorMessage(query.error) : null}</EmptyState>;
   const p = query.data;
   const details = p.details as Record<string, unknown>;
   // A Shadow Pokémon you plan to purify is shown as purified, until you choose otherwise.
@@ -594,7 +636,7 @@ export function DetailPage() {
   return (
     <>
       <Link to="/pokemon" className="mb-4 inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
-        <ArrowLeft className="h-4 w-4" /> Pokémon Box
+        <ArrowLeft className="h-4 w-4" /> {t("detail.back")}
       </Link>
       <div className="mb-5 flex flex-wrap items-start gap-5 rounded-2xl border border-line bg-surface p-5">
         <PokemonSprite dex={p.species_id} shiny={p.shiny} types={p.types} size={112} />
@@ -611,7 +653,8 @@ export function DetailPage() {
           </div>
           <StatusBadges pokemon={p} />
           <p className="text-sm text-muted">
-            #{p.species_id} · {p.hatched_from_egg ? "uitgebroed" : "gevangen"} {date(p.caught_at)} · {p.inventory_status === "in_inventory" ? "in inventaris" : "niet meer in inventaris"}
+            #{p.species_id} · {p.hatched_from_egg ? t("detail.hatched", { date: date(p.caught_at) }) : t("detail.caught", { date: date(p.caught_at) })} ·{" "}
+            {p.inventory_status === "in_inventory" ? t("detail.inInventory") : t("detail.gone")}
           </p>
           <button
             className="inline-flex items-center gap-1 font-mono text-xs text-muted hover:text-ink"
@@ -619,13 +662,11 @@ export function DetailPage() {
               void navigator.clipboard?.writeText(p.source_pokemon_id);
               setCopied(true);
             }}
-            title="Unieke Pokémon-ID uit PGSharp"
+            title={t("detail.idTitle")}
           >
-            ID {p.source_pokemon_id} <Copy className="h-3 w-3" /> {copied && "gekopieerd"}
+            ID {p.source_pokemon_id} <Copy className="h-3 w-3" /> {copied && t("detail.copied")}
           </button>
-          {p.form_resolution === "fallback_default_form" && (
-            <Alert tone="warning">Deze vorm ({p.form_name}) staat niet in de Game Data. OAK gebruikt de standaardvorm van de soort.</Alert>
-          )}
+          {p.form_resolution === "fallback_default_form" && <Alert tone="warning">{t("detail.formFallback", { form: p.form_name ?? "" })}</Alert>}
         </div>
         <div className="grid w-full grid-cols-3 gap-3 sm:w-auto sm:grid-cols-1">
           <div className="text-right">
@@ -633,7 +674,7 @@ export function DetailPage() {
             <p className="text-3xl font-semibold tabular-nums">{num(p.cp, "?")}</p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-muted">HP · level</p>
+            <p className="text-xs text-muted">{t("detail.hpLevel")}</p>
             <p className="tabular-nums">
               {num(p.max_hp, "?")} · L{level(p.level)}
             </p>
@@ -654,30 +695,35 @@ export function DetailPage() {
           {chosen === "current" && <CupsCard pokemonId={p.id} />}
         </div>
         <div className="space-y-5">
-          <Card title="Waarden">
+          <Card title={t("detail.values.title")}>
             <IvBars attack={p.iv_attack} defense={p.iv_defense} stamina={p.iv_stamina} />
             <div className="mt-4">
               <KeyValue
                 items={[
-                  ["Snelle aanval", p.fast_move?.name ?? "?"],
-                  ["Geladen aanvallen", p.charged_moves.map((m) => m.name).join(" / ") || "?"],
-                  ["Tweede aanval vrijgespeeld", p.second_move_unlocked === null ? "onbekend" : p.second_move_unlocked ? "ja" : "nee"],
-                  ["Max Moves", p.max_moves.length ? p.max_moves.map((m) => `${m.type.replace("max_", "Max ")} ${m.level}`).join(", ") : "–"],
-                  ["Lengte / gewicht", `${decimal(details.height_m)} m / ${decimal(details.weight_kg)} kg`],
-                  ["Power-ups gedaan", num(details.num_upgrades as number | null)],
-                  ["Buddy-km", num(details.buddy_km_walked as number | null)],
-                  ["Uit ei", p.hatched_from_egg === null ? "onbekend" : p.hatched_from_egg ? "ja" : "nee"],
-                  ["Eerst gezien in OAK", dateTime(p.first_seen_at)],
-                  ["Laatst gewijzigd", dateTime(p.last_changed_at)],
+                  [t("detail.values.fastMove"), p.fast_move?.name ?? "?"],
+                  [t("detail.values.chargedMoves"), p.charged_moves.map((m) => m.name).join(" / ") || "?"],
+                  [
+                    t("detail.values.secondMove"),
+                    p.second_move_unlocked === null ? t("common.unknown") : p.second_move_unlocked ? t("detail.yes") : t("detail.no"),
+                  ],
+                  [t("detail.values.maxMoves"), p.max_moves.length ? p.max_moves.map((m) => `${m.type.replace("max_", "Max ")} ${m.level}`).join(", ") : "–"],
+                  [t("detail.values.size"), `${decimal(details.height_m)} m / ${decimal(details.weight_kg)} kg`],
+                  [t("detail.values.powerUps"), num(details.num_upgrades as number | null)],
+                  [t("detail.values.buddyKm"), num(details.buddy_km_walked as number | null)],
+                  [t("detail.values.fromEgg"), p.hatched_from_egg === null ? t("common.unknown") : p.hatched_from_egg ? t("detail.yes") : t("detail.no")],
+                  [t("detail.values.firstSeen"), dateTime(p.first_seen_at)],
+                  [t("detail.values.lastChanged"), dateTime(p.last_changed_at)],
                 ]}
               />
             </div>
             {Array.isArray(details.origin_events) && details.origin_events.length > 0 && (
-              <p className="mt-3 text-xs text-muted">Event: {(details.origin_events as string[]).join(", ")}</p>
+              <p className="mt-3 text-xs text-muted">{t("detail.values.event", { events: (details.origin_events as string[]).join(", ") })}</p>
             )}
             {p.tag_ids.length > 0 && (
               <p className="mt-2 text-xs text-muted">
-                Tags in het spel: {p.tag_labels.length ? p.tag_labels.join(", ") : `${p.tag_ids.length} (namen onbekend, geef ze een label in Instellingen)`}
+                {t("detail.values.gameTags", {
+                  tags: p.tag_labels.length ? p.tag_labels.join(", ") : t("detail.values.tagNamesUnknown", { count: p.tag_ids.length }),
+                })}
               </p>
             )}
           </Card>

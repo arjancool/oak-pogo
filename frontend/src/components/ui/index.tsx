@@ -13,6 +13,9 @@ import {
   type TextareaHTMLAttributes,
 } from "react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
+
+import { num } from "../../lib/format";
 
 export { clsx as cn };
 
@@ -178,10 +181,11 @@ export function Switch({ checked, onChange, label, description }: { checked: boo
   );
 }
 
-export function Spinner({ label = "Laden…" }: { label?: string }) {
+export function Spinner({ label }: { label?: string }) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center gap-2 p-6 text-sm text-muted" role="status">
-      <Loader2 className="h-4 w-4 animate-spin" /> {label}
+      <Loader2 className="h-4 w-4 animate-spin" /> {label ?? t("common.loading")}
     </div>
   );
 }
@@ -292,6 +296,7 @@ if (typeof document !== "undefined") {
  * first control in the body. A footer action never gets focus on its own (audit A14).
  */
 export function Dialog({ open, onClose, title, children, footer, wide }: { open: boolean; onClose: () => void; title: ReactNode; children: ReactNode; footer?: ReactNode; wide?: boolean }) {
+  const { t } = useTranslation();
   const titleId = useId();
   const panel = useRef<HTMLDivElement>(null);
   const body = useRef<HTMLDivElement>(null);
@@ -367,7 +372,7 @@ export function Dialog({ open, onClose, title, children, footer, wide }: { open:
           <h2 id={titleId} className="font-semibold">
             {title}
           </h2>
-          <Button variant="ghost" size="sm" onClick={onClose} aria-label="Sluiten" icon={<X className="h-4 w-4" />} />
+          <Button variant="ghost" size="sm" onClick={onClose} aria-label={t("common.close")} icon={<X className="h-4 w-4" />} />
         </header>
         <div ref={body} className="p-5">
           {children}
@@ -380,21 +385,22 @@ export function Dialog({ open, onClose, title, children, footer, wide }: { open:
 }
 
 export function Pagination({ page, pageSize, total, onPage }: { page: number; pageSize: number; total: number; onPage: (page: number) => void }) {
+  const { t } = useTranslation();
   const pages = Math.max(1, Math.ceil(total / pageSize));
   return (
     <div className="flex items-center justify-between gap-2 text-sm text-muted">
       <span>
-        {total === 0 ? "Geen resultaten" : `${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, total)} van ${total.toLocaleString("nl-NL")}`}
+        {total === 0 ? t("pagination.none") : t("pagination.range", { from: num((page - 1) * pageSize + 1), to: num(Math.min(page * pageSize, total)), total: num(total) })}
       </span>
       <div className="flex gap-1">
         <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => onPage(page - 1)}>
-          Vorige
+          {t("common.previous")}
         </Button>
         <span className="px-2 py-1.5 text-xs">
           {page} / {pages}
         </span>
         <Button size="sm" variant="outline" disabled={page >= pages} onClick={() => onPage(page + 1)}>
-          Volgende
+          {t("common.next")}
         </Button>
       </div>
     </div>

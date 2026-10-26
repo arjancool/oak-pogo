@@ -33,7 +33,7 @@ OAK draait als één Docker-container op je eigen server, NAS of computer. Alles
 
 OAK vraagt nooit om je Pokémon GO-wachtwoord. Het leest alleen de export die PGSharp maakt.
 
-De interface is Nederlands of Engels. Je kiest de taal rechtsboven in het scherm of op de inlogpagina. In het Engels zijn de uitleg en de redenen die de server maakt, zoals in het cleanupadvies, nog Nederlands.
+De interface is Nederlands of Engels. Je kiest de taal rechtsboven in het scherm of op de inlogpagina. Ook de uitleg en meldingen van de server, zoals de redenen in het cleanupadvies, volgen die taal. Alleen de CSV-export, de printbare checklist en een paar itemnamen zijn nog Nederlands.
 
 ## Functies
 

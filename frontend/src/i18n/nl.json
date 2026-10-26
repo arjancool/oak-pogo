@@ -1889,6 +1889,7 @@
     "guard": {
       "BLOCKED_MANUAL": "Handmatig beschermd",
       "BLOCKED_VINTAGE": "Vintage {{year}}: hef eerst de bescherming op bij deze Pokémon",
+      "VINTAGE_BULK": "Vintage {{year}}: nooit via een bulkactie",
       "VINTAGE_LIFTED": "Vintage {{year}}, bescherming opgeheven",
       "VINTAGE": "Vintage {{year}}",
       "FAVORITE": "Favoriet",

@@ -1889,6 +1889,7 @@
     "guard": {
       "BLOCKED_MANUAL": "Protected by hand",
       "BLOCKED_VINTAGE": "Vintage {{year}}: first lift the protection on this Pokémon",
+      "VINTAGE_BULK": "Vintage {{year}}: never through a bulk action",
       "VINTAGE_LIFTED": "Vintage {{year}}, protection lifted",
       "VINTAGE": "Vintage {{year}}",
       "FAVORITE": "Favorite",

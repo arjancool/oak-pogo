@@ -55,7 +55,7 @@ from app.repositories.pokemon_query import (
 )
 from app.services.analysis import rules_for
 from app.services.pokemon_view import PokemonSummary, detail_extras, summarize
-from app.services.transfer_guard import check_transfer, confirmation_item, guard_context
+from app.services.transfer_guard import bulk_vintage_text, check_transfer, confirmation_item, guard_context
 
 router = APIRouter(prefix="/pokemon", tags=["pokemon"])
 MAX_PAGE_SIZE = 500
@@ -842,11 +842,12 @@ def bulk_action(
             if year is not None:
                 # Vintage Pokémon never enter a transfer list in bulk; only one by one, after the
                 # protection was lifted with a confirmation.
-                skipped.append({"pokemon_id": pokemon.id, "reason": f"Vintage {year}: nooit via een bulkactie"})
+                text = bulk_vintage_text(year)
+                skipped.append({"pokemon_id": pokemon.id, "reason": text["text"], "reason_text": text})
                 continue
             check = check_transfer(pokemon, metadata, guard)
             if check.blocked:
-                skipped.append({"pokemon_id": pokemon.id, "reason": check.blocked})
+                skipped.append({"pokemon_id": pokemon.id, "reason": check.blocked, "reason_text": check.blocked_text})
                 continue
             if check.needs and pokemon.id not in confirmed:
                 needs_confirmation.append(confirmation_item(pokemon, check))

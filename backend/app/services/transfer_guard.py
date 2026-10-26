@@ -98,6 +98,11 @@ class TransferCheck:
         return [key for key in self.reasons if key not in done]
 
 
+def bulk_vintage_text(year: int) -> dict[str, Any]:
+    """Why a bulk action skipped a vintage Pokémon: it only goes on a list one by one."""
+    return _text("VINTAGE_BULK", f"Vintage {year}: nooit via een bulkactie", year=year)
+
+
 def check_transfer(pokemon: Pokemon, metadata: PokemonUserMetadata | None, context: GuardContext) -> TransferCheck:
     check = TransferCheck()
     if metadata is not None and metadata.protected:

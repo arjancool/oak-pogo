@@ -66,6 +66,8 @@ De interface heeft per taal één bestand in `frontend/src/i18n/`. Nederlands is
 - Namen van Pokémon, vormen en aanvallen blijven zoals ze in de Game Data staan.
 - Het Engels volgt de Amerikaanse spelling van Pokémon GO, zoals *favorite*.
 
+Een zin die de server maakt, zoals een reden in het cleanupadvies, gaat als `{code, text, data}` naar de interface. `text` is de Nederlandse zin en `data` bevat iedere waarde die erin staat. De interface toont `server.<groep>.<code>` uit de catalogus, en de Nederlandse zin als die tekst of een waarde ontbreekt (`lib/serverText.ts`). Een nieuwe code krijgt in beide catalogi een tekst, en de Nederlandse tekst geeft precies dezelfde zin als de server. De tests `backend/tests/test_server_texts*.py` en `test_error_texts.py` controleren dat iedere code een tekst heeft.
+
 Vaste termen:
 
 | Nederlands | Engels |

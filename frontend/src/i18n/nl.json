@@ -1257,7 +1257,7 @@
       "lastChanged": "Laatst gewijzigd",
       "event": "Event: {{events}}",
       "gameTags": "Tags in het spel: {{tags}}",
-      "tagNamesUnknown_one": "{{count}} (namen onbekend, geef ze een label in Instellingen)",
+      "tagNamesUnknown_one": "{{count}} (naam onbekend, geef hem een label in Instellingen)",
       "tagNamesUnknown_other": "{{count}} (namen onbekend, geef ze een label in Instellingen)"
     },
     "recommendation": {
@@ -1455,7 +1455,7 @@
       "empty": "Geen Pokémon met deze filters",
       "added": "Actielijst bevat nu {{n}} Pokémon.",
       "skipped": "{{n}} overgeslagen: {{reasons}}.",
-      "waiting_one": "{{count}} wachten op je bevestiging.",
+      "waiting_one": "{{count}} wacht op je bevestiging.",
       "waiting_other": "{{count}} wachten op je bevestiging."
     },
     "duplicates": {
@@ -1709,7 +1709,7 @@
     "emptyText": "Er staan geen events in de komende 60 dagen.",
     "feed": {
       "source": "Eventgegevens: <leekduck>LeekDuck.com</leekduck> via <scrapedduck>ScrapedDuck</scrapedduck>. Deze gegevens zijn niet officieel. Controleer bij twijfel het event zelf.",
-      "fetched_one": "Laatst opgehaald {{when}}, {{n}} events, versie {{version}}.",
+      "fetched_one": "Laatst opgehaald {{when}}, {{n}} event, versie {{version}}.",
       "fetched_other": "Laatst opgehaald {{when}}, {{n}} events, versie {{version}}.",
       "notFetched": "Nog niet opgehaald.",
       "autoOn": "OAK werkt de kalender automatisch bij.",
@@ -1730,7 +1730,7 @@
       "bonuses": "Bonussen: {{bonuses}}",
       "held": "OAK bewaart hiervoor {{n}} van je Pokémon tot na het event. <cleanupLink>Bekijk in de Cleanup Manager</cleanupLink>",
       "transferTip": "Tip: zet transfer-kandidaten pas tijdens dit event over ({{bonus}}).",
-      "countsFrom_one": "Telt mee vanaf {{count}} dagen voor het begin.",
+      "countsFrom_one": "Telt mee vanaf {{count}} dag voor het begin.",
       "countsFrom_other": "Telt mee vanaf {{count}} dagen voor het begin.",
       "remove": "Verwijderen",
       "include": "Weer meetellen",

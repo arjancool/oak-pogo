@@ -2,7 +2,7 @@
 
 Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](https://keepachangelog.com/nl/1.1.0/) en de versies volgen [Semantic Versioning](https://semver.org/lang/nl/).
 
-## [2.0.0] - nog niet uitgebracht
+## [2.0.0] - 2026-10-27
 
 De eerste openbare versie van OAK.
 

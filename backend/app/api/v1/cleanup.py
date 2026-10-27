@@ -19,7 +19,7 @@ from app.api.deps import AuthContext, get_auth, get_container, get_session, owne
 from app.api.v1.pokemon import sync_bounds, tag_label_map
 from app.core.container import Container
 from app.core.errors import NotFoundError
-from app.domain.pokemon import FIRST_GAME_YEAR, VINTAGE_FIRST_YEAR, VINTAGE_LAST_YEAR, extreme_size
+from app.domain.pokemon import FIRST_GAME_YEAR, VINTAGE_FIRST_YEAR, VINTAGE_LAST_YEAR
 from app.jobs.tasks import enqueue
 from app.models import (
     AnalysisRun,
@@ -456,8 +456,6 @@ def _action_list(
                 "protection": protection,
                 "protection_texts": analysis.protection_reasons if analysis else [],
                 "still_in_inventory": still_in_inventory,
-                # 'xxs' or 'xxl': a rare size the user should see before transferring.
-                "size": extreme_size(pokemon.size_class),
                 "blocked": check.blocked,
                 "blocked_text": check.blocked_text,
                 "needs_confirmation": confirmation_item(pokemon, check, action.confirmed)
@@ -484,33 +482,25 @@ def _guard_for(session: Session, account_id: int, tz: ZoneInfo) -> GuardContext:
     return guard_context(session, account, tz)
 
 
-# Per species the regular Pokémon first, then the rare sizes.
-SIZE_ORDER: dict[str | None, int] = {None: 0, "xxs": 1, "xxl": 2}
-
-
 def search_hint(items: list[dict[str, Any]]) -> dict[str, Any]:
     """Pokémon GO search strings that narrow the in-game box down to the listed species and CP.
 
     The game cannot search for OAK's or PGSharp's internal IDs. The string uses the Pokédex
     number and an exact CP per Pokémon, which is precise enough to find each one by hand.
     "pokemon_ids" says which listed Pokémon a string finds, so the interface can name them.
-
-    An XXS or XXL gets a string of its own, apart from the regular ones of its species. Selecting
-    everything a regular string finds then never takes a rare size along by accident.
     """
     open_items = [i for i in items if i["executable"]]
-    groups: dict[tuple[int, str | None], list[dict[str, Any]]] = defaultdict(list)
+    by_species: dict[int, list[dict[str, Any]]] = defaultdict(list)
     for item in open_items:
         if item["pokemon"]["cp"] is not None:
-            groups[(item["pokemon"]["species_id"], item["size"])].append(item["pokemon"])
+            by_species[item["pokemon"]["species_id"]].append(item["pokemon"])
     queries = []
-    for (dex, size), pokemon in sorted(groups.items(), key=lambda g: (g[0][0], SIZE_ORDER[g[0][1]])):
+    for dex, pokemon in sorted(by_species.items()):
         pokemon.sort(key=lambda p: (p["cp"], p["id"]))
         cps = sorted({p["cp"] for p in pokemon})
         queries.append(
             {
                 "species_id": dex,
-                "size": size,
                 "query": f"{dex}&" + ",".join(f"cp{cp}" for cp in cps),
                 "pokemon_ids": [p["id"] for p in pokemon],
             }
@@ -571,10 +561,9 @@ def export_action_list(
     data = _action_list(session, container, account.id, list_name, sort)
     if output == "html":
         rows = "".join(
-            "<tr><td>☐</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}/{}/{}</td><td>{}</td><td>{}</td><td><code>{}</code></td></tr>".format(
+            "<tr><td>☐</td><td>{}</td><td>{}</td><td>{}</td><td>{}/{}/{}</td><td>{}</td><td>{}</td><td><code>{}</code></td></tr>".format(
                 html.escape(str(i["pokemon"]["species_name"] or "")),
                 html.escape(str(i["pokemon"]["form_label"] or "")),
-                (i["size"] or "").upper(),
                 i["pokemon"]["cp"],
                 i["pokemon"]["iv_attack"],
                 i["pokemon"]["iv_defense"],
@@ -599,7 +588,7 @@ def export_action_list(
             "td,th{border:1px solid #999;padding:4px 6px;font-size:12px;text-align:left}code{font-size:10px}</style>"
             "</head><body><h1>Cleanup-checklist</h1><p>Gesorteerd op CP. OAK voert zelf niets uit: controleer iedere "
             f"Pokémon in het spel voordat je hem overzet.</p>{note}"
-            "<table><thead><tr><th></th><th>Pokémon</th><th>Vorm</th><th>Grootte</th>"
+            "<table><thead><tr><th></th><th>Pokémon</th><th>Vorm</th>"
             "<th>CP</th><th>IV</th><th>Reden</th><th>Bescherming</th><th>Bron-ID</th></tr></thead><tbody>"
             f"{rows}</tbody></table></body></html>"
         )
@@ -621,7 +610,6 @@ def export_action_list(
             "status",
             "uitvoerbaar",
             "geblokkeerd",
-            "grootte",
         ]
     )
     for item in data["items"]:
@@ -643,7 +631,6 @@ def export_action_list(
                     item["status"],
                     "ja" if item["executable"] else "nee",
                     _held_back_reason(item),
-                    (item["size"] or "").upper(),
                 )
             ]
         )

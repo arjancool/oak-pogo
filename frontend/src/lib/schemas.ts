@@ -228,8 +228,6 @@ export const actionList = z.object({
       protection: z.array(z.string()),
       protection_texts: z.array(reason).default([]),
       still_in_inventory: z.boolean(),
-      // A rare size the user should see before transferring.
-      size: z.enum(["xxs", "xxl"]).nullable().default(null),
       // Checked again on every read: a protection that appeared later holds the item back.
       blocked: z.string().nullable(),
       blocked_text: reason.nullable().default(null),
@@ -242,10 +240,8 @@ export const actionList = z.object({
     note_text: reason.optional(),
     safety_suffix: z.string(),
     // pokemon_ids: the listed Pokémon a search string finds, so the page can name them.
-    // An XXS or XXL has a search string of its own (size), apart from the regular ones.
-    queries: z.array(
-      z.object({ species_id: z.number(), size: z.enum(["xxs", "xxl"]).nullable().default(null), query: z.string(), pokemon_ids: z.array(z.number()).default([]) }),
-    ),
+    // pokemon_ids: the listed Pokémon a search string finds, so the page can name them.
+    queries: z.array(z.object({ species_id: z.number(), query: z.string(), pokemon_ids: z.array(z.number()).default([]) })),
   }),
 });
 export type ActionList = z.infer<typeof actionList>;

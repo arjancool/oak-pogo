@@ -1500,11 +1500,7 @@
       "done": "Done",
       "remove": "Remove",
       "searchPokemon": "{{name}} CP {{cp}}",
-      "searchPokemonNickname": "{{name}} “{{nickname}}” CP {{cp}}",
-      "sizeXxl": "XXL: useful for a showcase. Are you sure you want to let it go?",
-      "sizeXxs": "XXS: a rare size. Are you sure you want to let it go?",
-      "searchPokemonSize": "{{name}} {{size}} CP {{cp}}",
-      "searchPokemonNicknameSize": "{{name}} “{{nickname}}” {{size}} CP {{cp}}"
+      "searchPokemonNickname": "{{name}} “{{nickname}}” CP {{cp}}"
     },
     "rules": {
       "saved": "Rules saved. The analysis is being recalculated.",
@@ -1857,9 +1853,7 @@
       "TRADED": "Traded before",
       "UNKNOWN_DATE": "Catch date unknown: OAK does not assume this Pokémon is new",
       "VINTAGE_OVERRIDE": "Vintage {{year}}: you lifted the protection yourself",
-      "FAVORITE": "Favorite: check for yourself whether you really want to let it go",
-      "SIZE_xxl": "XXL: the biggest ones have the best chance in a showcase",
-      "SIZE_xxs": "XXS: a rare size, mainly worth something for your collection"
+      "FAVORITE": "Favorite: check for yourself whether you really want to let it go"
     },
     "parts": {
       "GREAT": "{{leagueName}}: {{target}}, {{species}}, IV rank {{iv_rank}}{{notes}}",

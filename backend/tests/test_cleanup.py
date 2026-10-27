@@ -219,7 +219,7 @@ def test_only_the_two_rare_sizes_count() -> None:
 
 
 @pytest.mark.parametrize("size", ["xxl", "xxs"])
-def test_a_rare_size_adds_keep_points_and_a_warning_but_no_protection(size: str) -> None:
+def test_a_rare_size_adds_keep_points_like_other_traits(size: str) -> None:
     rules = CleanupRules(keep_min_per_species=0)
     plain = evaluate([view(1)], rules, CTX)[0]
     sized = evaluate([view(1, size=size)], rules, CTX)[0]
@@ -227,12 +227,10 @@ def test_a_rare_size_adds_keep_points_and_a_warning_but_no_protection(size: str)
     traits = next(p for p in sized.scores["keep"]["parts"] if p["code"] == "TRAITS")
     assert traits["data"]["traits"] == [{"code": "SIZE", "text": size.upper(), "data": {"context": size}}]
     assert plain.keep_score is not None and sized.keep_score == plain.keep_score + points
-    # The size never counts in the usefulness score, and it is no hard protection.
+    # Only points: no usefulness, no hard protection and no warning of its own.
     assert sized.battle_score == plain.battle_score
     assert sized.status is not Status.PROTECT and not sized.protection_reasons
-    warning = next(w for w in sized.warnings if w["code"] == "SIZE")
-    assert warning["data"] == {"context": size}
-    assert "SIZE" not in codes(plain.warnings)
+    assert sized.warnings == plain.warnings
     assert rules.keep_points_xxl > rules.keep_points_xxs
 
 

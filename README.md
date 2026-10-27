@@ -232,7 +232,7 @@ Onder **Regels** stel je in welke kenmerken hard beschermen, hoeveel punten iede
 
 ### De actielijst
 
-Zet transfer-kandidaten op de actielijst en werk die daarna zelf in het spel af. Het tabblad **Actielijst** geeft per soort een zoektekst met het Pokédex-nummer en de exacte CP, zodat je de Pokémon in het spel terugvindt. Boven iedere zoektekst staat welke Pokémon het zijn. Je kunt de lijst ook als CSV downloaden of als checklist printen.
+Zet transfer-kandidaten op de actielijst en werk die daarna zelf in het spel af. In het tabblad **Dubbelen** zet je met de knop *Transfer-kandidaat* alle transfer-kandidaten van een soort in één keer op de lijst. Vintage Pokémon slaat die knop over, en favorieten vragen eerst je bevestiging per Pokémon. Het tabblad **Actielijst** geeft per soort een zoektekst met het Pokédex-nummer en de exacte CP, zodat je de Pokémon in het spel terugvindt. Boven iedere zoektekst staat welke Pokémon het zijn. Je kunt de lijst ook als CSV downloaden of als checklist printen.
 
 Pokémon GO kan niet zoeken op ID. Controleer iedere Pokémon daarom in het spel voordat je hem overzet. Voor de zekerheid sluiten de zoekteksten favorieten, shiny's, lucky's, hundo's, Legendary, Mythical, Shadow en kostuums uit.
 

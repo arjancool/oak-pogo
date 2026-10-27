@@ -199,6 +199,16 @@ def duplicates(
         .where(Pokemon.trainer_account_id == account.id, Pokemon.inventory_status == "in_inventory")
     ).all()
     gd = container.gamedata.active()
+    # Pokémon already open on the action list, so the page can leave them out of a group action.
+    listed = set(
+        session.scalars(
+            select(PlannedAction.pokemon_id).where(
+                PlannedAction.trainer_account_id == account.id,
+                PlannedAction.list_name == "cleanup",
+                PlannedAction.status == "open",
+            )
+        )
+    )
     groups: dict[str, list[Any]] = defaultdict(list)
     for pokemon, meta, analysis in rows:
         key = f"{pokemon.form_key or pokemon.species_id}|{'shadow' if pokemon.alignment == 1 else 'regular'}"
@@ -227,6 +237,7 @@ def duplicates(
                 "members": [
                     {
                         **summarize(p, m, a, gd).model_dump(mode="json"),
+                        "on_action_list": p.id in listed,
                         "recommendation": {
                             "status": a.status,
                             "reasons": a.reasons[:3],

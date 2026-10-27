@@ -1473,7 +1473,10 @@
         "why": "Waarom"
       },
       "vintage": "Vintage {{year}}",
-      "favorite": "Favoriet"
+      "favorite": "Favoriet",
+      "addCandidatesTitle_one": "Zet deze transfer-kandidaat op de actielijst",
+      "addCandidatesTitle_other": "Zet deze {{count}} transfer-kandidaten op de actielijst",
+      "onActionList": "Op de actielijst"
     },
     "list": {
       "emptyTitle": "De actielijst is leeg",

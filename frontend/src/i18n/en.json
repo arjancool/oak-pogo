@@ -1473,7 +1473,10 @@
         "why": "Why"
       },
       "vintage": "Vintage {{year}}",
-      "favorite": "Favorite"
+      "favorite": "Favorite",
+      "addCandidatesTitle_one": "Put this transfer candidate on the action list",
+      "addCandidatesTitle_other": "Put these {{count}} transfer candidates on the action list",
+      "onActionList": "On the action list"
     },
     "list": {
       "emptyTitle": "The action list is empty",

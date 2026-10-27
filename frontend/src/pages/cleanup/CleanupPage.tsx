@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import type { ParseKeys } from "i18next";
-import { Copy, Download, Printer, RefreshCw } from "lucide-react";
+import { Check, Copy, Download, ListPlus, Printer, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
@@ -139,6 +139,46 @@ const GYM_FILTERS = [
   { value: "in_gym", text: "cleanup.filters.gym.inGym" },
 ] as const;
 
+/**
+ * Puts Pokémon on the action list. The server checks every one of them again: vintage Pokémon are
+ * skipped, and favorites and other protected Pokémon come back to be confirmed one by one.
+ */
+function useAddToActionList(accountId: number, onAdded?: () => void) {
+  const { t } = useTranslation();
+  const client = useQueryClient();
+  const [message, setMessage] = useState<string | null>(null);
+  const [pending, setPending] = useState<ConfirmationItem[]>([]);
+  const mutation = useMutation({
+    mutationFn: async (body: { ids: number[]; confirmed_ids?: number[] }) =>
+      actionListUpdate.parse(await api.post("/api/v1/cleanup/action-list", { account_id: accountId, mode: "add", ...body })),
+    onSuccess: (result) => {
+      const parts = [t("cleanup.recommendations.added", { n: num(result.count) })];
+      if (result.skipped.length)
+        parts.push(
+          t("cleanup.recommendations.skipped", { n: num(result.skipped.length), reasons: [...new Set(result.skipped.map((s) => serverText("guard", s.reason_text ?? s.reason)))].join("; ") }),
+        );
+      if (result.needs_confirmation.length) parts.push(t("cleanup.recommendations.waiting", { count: result.needs_confirmation.length }));
+      setMessage(parts.join(" "));
+      setPending(result.needs_confirmation);
+      onAdded?.();
+      void client.invalidateQueries({ queryKey: ["cleanup"] });
+      void client.invalidateQueries({ queryKey: ["duplicates"] });
+      void client.invalidateQueries({ queryKey: ["action-list"] });
+    },
+    onError: (error) => setMessage(errorMessage(error)),
+  });
+  const dialog = (
+    <ConfirmTransferDialog
+      key={pending.map((p) => p.pokemon_id).join(",")}
+      items={pending}
+      busy={mutation.isPending}
+      onCancel={() => setPending([])}
+      onConfirm={(ids) => mutation.mutate({ ids, confirmed_ids: ids })}
+    />
+  );
+  return { add: (ids: number[]) => mutation.mutate({ ids }), busy: mutation.isPending, message, dialog };
+}
+
 function Recommendations({ accountId }: { accountId: number }) {
   const { t } = useTranslation();
   const [state, update] = useUrlState();
@@ -150,8 +190,7 @@ function Recommendations({ accountId }: { accountId: number }) {
   const vintage = state.vintage ?? "";
   const gym = state.gym ?? "";
   const [selected, setSelected] = useState<Set<number>>(new Set());
-  const [message, setMessage] = useState<string | null>(null);
-  const [pending, setPending] = useState<ConfirmationItem[]>([]);
+  const addToList = useAddToActionList(accountId, () => setSelected(new Set()));
   const query = useQuery({
     queryKey: ["cleanup", accountId, status, sort, page, favorite, vintage, gym],
     queryFn: async () =>
@@ -172,24 +211,6 @@ function Recommendations({ accountId }: { accountId: number }) {
   const analyze = useMutation({
     mutationFn: () => api.post("/api/v1/cleanup/analyze", undefined, { account_id: accountId }),
     onSuccess: () => void client.invalidateQueries({ queryKey: ["cleanup"] }),
-  });
-  const addToList = useMutation({
-    mutationFn: async (body: { ids: number[]; confirmed_ids?: number[] }) =>
-      actionListUpdate.parse(await api.post("/api/v1/cleanup/action-list", { account_id: accountId, mode: "add", ...body })),
-    onSuccess: (result) => {
-      const parts = [t("cleanup.recommendations.added", { n: num(result.count) })];
-      if (result.skipped.length)
-        parts.push(
-          t("cleanup.recommendations.skipped", { n: num(result.skipped.length), reasons: [...new Set(result.skipped.map((s) => serverText("guard", s.reason_text ?? s.reason)))].join("; ") }),
-        );
-      if (result.needs_confirmation.length) parts.push(t("cleanup.recommendations.waiting", { count: result.needs_confirmation.length }));
-      setMessage(parts.join(" "));
-      setPending(result.needs_confirmation);
-      setSelected(new Set());
-      void client.invalidateQueries({ queryKey: ["cleanup"] });
-      void client.invalidateQueries({ queryKey: ["action-list"] });
-    },
-    onError: (error) => setMessage(errorMessage(error)),
   });
   const data = query.data;
   const counts = data?.analysis.counts ?? {};
@@ -274,7 +295,7 @@ function Recommendations({ accountId }: { accountId: number }) {
           ))}
         </Select>
         {selected.size > 0 && (
-          <Button variant="primary" onClick={() => addToList.mutate({ ids: [...selected] })} loading={addToList.isPending}>
+          <Button variant="primary" onClick={() => addToList.add([...selected])} loading={addToList.busy}>
             {t("cleanup.recommendations.addSelected", { n: num(selected.size) })}
           </Button>
         )}
@@ -284,7 +305,7 @@ function Recommendations({ accountId }: { accountId: number }) {
           </Button>
         )}
       </div>
-      {message && <Alert tone="info">{message}</Alert>}
+      {addToList.message && <Alert tone="info">{addToList.message}</Alert>}
       {query.isLoading ? (
         <Spinner />
       ) : !data || data.items.length === 0 ? (
@@ -302,13 +323,7 @@ function Recommendations({ accountId }: { accountId: number }) {
           <Pagination page={page} pageSize={PAGE_SIZE} total={data.total} onPage={(p) => update({ page: String(p) }, false)} />
         </div>
       )}
-      <ConfirmTransferDialog
-        key={pending.map((p) => p.pokemon_id).join(",")}
-        items={pending}
-        busy={addToList.isPending}
-        onCancel={() => setPending([])}
-        onConfirm={(ids) => addToList.mutate({ ids, confirmed_ids: ids })}
-      />
+      {addToList.dialog}
     </div>
   );
 }
@@ -324,6 +339,7 @@ const duplicatesSchema = z.object({
       statuses: z.record(z.string(), z.number()),
       members: z.array(
         pokemonSummary.extend({
+          on_action_list: z.boolean().default(false),
           recommendation: z
             .object({
               status: z.string(),
@@ -342,6 +358,7 @@ const duplicatesSchema = z.object({
 function Duplicates({ accountId }: { accountId: number }) {
   const { t } = useTranslation();
   const [filter, setFilter] = useState("");
+  const addToList = useAddToActionList(accountId);
   const query = useQuery({
     queryKey: ["duplicates", accountId],
     queryFn: async () => duplicatesSchema.parse(await api.get("/api/v1/cleanup/duplicates", { account_id: accountId })),
@@ -352,15 +369,35 @@ function Duplicates({ accountId }: { accountId: number }) {
     <div className="space-y-3">
       <Input placeholder={t("cleanup.duplicates.search")} value={filter} onChange={(e) => setFilter(e.target.value)} className="max-w-xs" />
       <p className="text-xs text-muted">{t("cleanup.duplicates.intro")}</p>
-      {groups.map((group) => (
+      {addToList.message && <Alert tone="info">{addToList.message}</Alert>}
+      {groups.map((group) => {
+        // Transfer candidates not yet on the list. Vintage Pokémon never go on it through a group action.
+        const toAdd = group.members
+          .filter((m) => m.recommendation?.status === "TRANSFER_CANDIDATE" && m.vintage_year === null && !m.on_action_list)
+          .map((m) => m.id);
+        return (
         <Card
           key={group.group_key}
           title={`${group.name}${group.shadow ? " (Shadow)" : ""} · ${group.count}×`}
-          actions={STATUS_ORDER.filter((s) => group.statuses[s]).map((s) => (
-            <Badge key={s}>
-              {statusLabels[s]} {group.statuses[s]}
-            </Badge>
-          ))}
+          actions={STATUS_ORDER.filter((s) => group.statuses[s]).map((s) =>
+            s === "TRANSFER_CANDIDATE" && toAdd.length > 0 ? (
+              <Button
+                key={s}
+                size="sm"
+                variant="outline"
+                icon={<ListPlus className="h-3.5 w-3.5" />}
+                loading={addToList.busy}
+                title={t("cleanup.duplicates.addCandidatesTitle", { count: toAdd.length })}
+                onClick={() => addToList.add(toAdd)}
+              >
+                {statusLabels[s]} {group.statuses[s]}
+              </Button>
+            ) : (
+              <Badge key={s}>
+                {statusLabels[s]} {group.statuses[s]}
+              </Badge>
+            ),
+          )}
         >
           <div className="overflow-x-auto">
             <table className="w-full text-sm [&_td]:pr-3 [&_th]:pr-3">
@@ -402,6 +439,12 @@ function Duplicates({ accountId }: { accountId: number }) {
                         <CleanupBadge status={m.recommendation?.status} />
                         {m.vintage_year !== null && <Badge color="#d97706">{t("cleanup.duplicates.vintage", { year: m.vintage_year })}</Badge>}
                         {m.favorite && <Badge color="#facc15">{t("cleanup.duplicates.favorite")}</Badge>}
+                        {m.on_action_list && (
+                          <Badge color="#34d399">
+                            <Check className="mr-0.5 inline h-3 w-3" />
+                            {t("cleanup.duplicates.onActionList")}
+                          </Badge>
+                        )}
                       </div>
                     </td>
                     <td className="max-w-md text-xs text-muted">{serverText("reasons", m.recommendation?.reasons[0])}</td>
@@ -411,7 +454,9 @@ function Duplicates({ accountId }: { accountId: number }) {
             </table>
           </div>
         </Card>
-      ))}
+        );
+      })}
+      {addToList.dialog}
     </div>
   );
 }

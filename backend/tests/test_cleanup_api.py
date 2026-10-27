@@ -124,6 +124,24 @@ def test_the_size_from_the_export_counts_as_keep_points(
     assert all(w["code"] != "SIZE" for w in item["warnings"])
 
 
+def test_duplicates_say_which_pokemon_are_on_the_action_list(
+    owner: Any, container: Any, gamedata: Any, export: dict[str, Any]
+) -> None:
+    account = _imported(owner, container, export)
+    groups = owner.get("/api/v1/cleanup/duplicates", account_id=account).json()["groups"]
+    member = next(
+        m
+        for g in groups
+        for m in g["members"]
+        if m["recommendation"] and m["recommendation"]["status"] == "TRANSFER_CANDIDATE" and not m["favorite"]
+    )
+    assert member["on_action_list"] is False
+    owner.post("/api/v1/cleanup/action-list", {"account_id": account, "ids": [member["id"]]})
+    groups = owner.get("/api/v1/cleanup/duplicates", account_id=account).json()["groups"]
+    listed = {m["id"] for g in groups for m in g["members"] if m["on_action_list"]}
+    assert listed == {member["id"]}
+
+
 def test_the_same_pokemon_twice_in_one_request_is_added_once(
     owner: Any, container: Any, gamedata: Any, export: dict[str, Any]
 ) -> None:

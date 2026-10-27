@@ -447,6 +447,7 @@ function ActionListTab({ accountId }: { accountId: number }) {
     setCopied(text);
   };
   const heldBack = data.items.filter((item) => item.status === "open" && !item.executable).length;
+  const byId = new Map(data.items.map((item) => [item.pokemon.id, item.pokemon]));
   return (
     <div className="space-y-4">
       <Alert tone="info" title={t("cleanup.list.noTransferTitle")}>
@@ -478,15 +479,34 @@ function ActionListTab({ accountId }: { accountId: number }) {
       )}
       <Card title={t("cleanup.list.searches")}>
         <p className="mb-2 text-xs text-muted">{serverText("actionList", data.search_hint.note_text ?? data.search_hint.note)}</p>
-        <div className="space-y-1">
-          {data.search_hint.queries.map((q) => (
-            <div key={q.query} className="flex items-center gap-2">
-              <code className="flex-1 truncate rounded bg-surface-3 px-2 py-1 text-xs">{q.query + data.search_hint.safety_suffix}</code>
-              <Button size="sm" variant="ghost" icon={<Copy className="h-3.5 w-3.5" />} onClick={() => copy(q.query + data.search_hint.safety_suffix)}>
-                {copied === q.query + data.search_hint.safety_suffix ? t("cleanup.list.copied") : t("cleanup.list.copy")}
-              </Button>
-            </div>
-          ))}
+        <div className="space-y-2">
+          {data.search_hint.queries.map((q) => {
+            const search = q.query + data.search_hint.safety_suffix;
+            const found = q.pokemon_ids.flatMap((id) => byId.get(id) ?? []);
+            return (
+              <div key={q.query} className="rounded-lg border border-line px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <p className="min-w-0 flex-1 text-sm">
+                    {found.length
+                      ? found
+                          .map((p) =>
+                            p.nickname
+                              ? t("cleanup.list.searchPokemonNickname", { name: pokemonName(p), nickname: p.nickname, cp: num(p.cp) })
+                              : t("cleanup.list.searchPokemon", { name: pokemonName(p), cp: num(p.cp) }),
+                          )
+                          .join(" · ")
+                      : `#${q.species_id}`}
+                  </p>
+                  <Button size="sm" variant="ghost" icon={<Copy className="h-3.5 w-3.5" />} onClick={() => copy(search)}>
+                    {copied === search ? t("cleanup.list.copied") : t("cleanup.list.copy")}
+                  </Button>
+                </div>
+                <code className="mt-1 block truncate rounded bg-surface-3 px-2 py-1 text-xs text-muted" title={search}>
+                  {search}
+                </code>
+              </div>
+            );
+          })}
         </div>
       </Card>
       <div className="overflow-x-auto rounded-xl border border-line bg-surface">

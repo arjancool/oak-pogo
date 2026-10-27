@@ -239,7 +239,8 @@ export const actionList = z.object({
     note: z.string(),
     note_text: reason.optional(),
     safety_suffix: z.string(),
-    queries: z.array(z.object({ species_id: z.number(), query: z.string() })),
+    // pokemon_ids: the listed Pokémon a search string finds, so the page can name them.
+    queries: z.array(z.object({ species_id: z.number(), query: z.string(), pokemon_ids: z.array(z.number()).default([]) })),
   }),
 });
 export type ActionList = z.infer<typeof actionList>;

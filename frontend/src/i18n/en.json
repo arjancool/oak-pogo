@@ -1498,7 +1498,9 @@
       "newReasons": "new {{reasons}}",
       "confirm": "Confirm",
       "done": "Done",
-      "remove": "Remove"
+      "remove": "Remove",
+      "searchPokemon": "{{name}} CP {{cp}}",
+      "searchPokemonNickname": "{{name}} “{{nickname}}” CP {{cp}}"
     },
     "rules": {
       "saved": "Rules saved. The analysis is being recalculated.",

@@ -1498,7 +1498,9 @@
       "newReasons": "nieuw {{reasons}}",
       "confirm": "Bevestigen",
       "done": "Afgerond",
-      "remove": "Verwijderen"
+      "remove": "Verwijderen",
+      "searchPokemon": "{{name}} CP {{cp}}",
+      "searchPokemonNickname": "{{name}} “{{nickname}}” CP {{cp}}"
     },
     "rules": {
       "saved": "Regels opgeslagen. De analyse wordt opnieuw berekend.",

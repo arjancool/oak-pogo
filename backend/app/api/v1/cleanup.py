@@ -481,16 +481,24 @@ def search_hint(items: list[dict[str, Any]]) -> dict[str, Any]:
 
     The game cannot search for OAK's or PGSharp's internal IDs. The string uses the Pokédex
     number and an exact CP per Pokémon, which is precise enough to find each one by hand.
+    "pokemon_ids" says which listed Pokémon a string finds, so the interface can name them.
     """
     open_items = [i for i in items if i["executable"]]
-    by_species: dict[int, list[int]] = defaultdict(list)
+    by_species: dict[int, list[dict[str, Any]]] = defaultdict(list)
     for item in open_items:
         if item["pokemon"]["cp"] is not None:
-            by_species[item["pokemon"]["species_id"]].append(item["pokemon"]["cp"])
-    queries = [
-        {"species_id": dex, "query": f"{dex}&" + ",".join(f"cp{cp}" for cp in sorted(set(cps)))}
-        for dex, cps in sorted(by_species.items())
-    ]
+            by_species[item["pokemon"]["species_id"]].append(item["pokemon"])
+    queries = []
+    for dex, pokemon in sorted(by_species.items()):
+        pokemon.sort(key=lambda p: (p["cp"], p["id"]))
+        cps = sorted({p["cp"] for p in pokemon})
+        queries.append(
+            {
+                "species_id": dex,
+                "query": f"{dex}&" + ",".join(f"cp{cp}" for cp in cps),
+                "pokemon_ids": [p["id"] for p in pokemon],
+            }
+        )
     note = (
         "Pokémon GO kan niet op Pokémon-ID zoeken. Gebruik per soort het Pokédex-nummer met de exacte CP, "
         "en controleer de Pokémon in het spel voordat je hem overzet. '&!favorite&!shiny&!lucky' sluit "

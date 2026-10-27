@@ -115,4 +115,6 @@ De actielijst van de Cleanup Manager maakt aparte zoekteksten in de syntax van P
 129&cp45,cp112&!favorite&!shiny&!lucky&!4*&!legendary&!mythical&!shadow&!costume
 ```
 
+Boven iedere zoektekst staat welke Pokémon hij vindt, met naam en CP en de bijnaam als hij er een heeft. Bijvoorbeeld *Magikarp CP 45 · Magikarp CP 112*. De knop *Kopiëren* kopieert alleen de zoektekst.
+
 Twee Pokémon van dezelfde soort met dezelfde CP zijn zo niet van elkaar te onderscheiden. Controleer daarom iedere Pokémon in het spel voordat je hem overzet. Deze teksten werken niet in het zoekveld van OAK.

@@ -127,7 +127,14 @@ def test_action_list_checks_protection_again_on_every_read(
 
     items = {i["pokemon"]["id"]: i for i in listed()["items"]}
     assert items[pid]["executable"] and items[fid]["executable"], "a confirmed favorite stays executable"
-    assert len(listed()["search_hint"]["queries"]) >= 1
+    queries = listed()["search_hint"]["queries"]
+    assert len(queries) >= 1
+    # Every search string names the listed Pokémon it finds, with the species and CP it searches for.
+    assert {i for q in queries for i in q["pokemon_ids"]} == {pid, fid}
+    for query in queries:
+        for listed_id in query["pokemon_ids"]:
+            pokemon = items[listed_id]["pokemon"]
+            assert pokemon["species_id"] == query["species_id"] and f"cp{pokemon['cp']}" in query["query"]
 
     # Protection that appears after the Pokémon was listed takes it out of everything executable.
     assert owner.patch(f"/api/v1/pokemon/{pid}/metadata", {"protected": True}).status_code == 200
@@ -135,6 +142,7 @@ def test_action_list_checks_protection_again_on_every_read(
     item = next(i for i in data["items"] if i["pokemon"]["id"] == pid)
     assert not item["executable"] and item["blocked"] == "Handmatig beschermd"
     assert f"cp{candidate['cp']}" not in " ".join(q["query"] for q in data["search_hint"]["queries"])
+    assert pid not in {i for q in data["search_hint"]["queries"] for i in q["pokemon_ids"]}
     done = owner.post("/api/v1/cleanup/action-list", {"account_id": account, "ids": [pid], "mode": "done"}).json()
     assert done["skipped"][0]["reason"] == "Handmatig beschermd"
     csv = owner.get("/api/v1/cleanup/export", account_id=account).text

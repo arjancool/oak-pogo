@@ -184,7 +184,7 @@ De bewaarscore zegt hoeveel reden er is om dit exemplaar te bewaren. OAK telt pu
 
 "Beste exemplaar" volgt uit een vaste volgorde binnen de groep: eerst bruikbaarheid, dan IV-percentage, dan CP.
 
-XXL en XXS zijn de zeldzaamste groottes. Bij een showcase op een PokéStop maakt een XXL de meeste kans, en een XXS heeft vooral waarde voor een verzameling. Daarom krijgt een XXL meer punten dan een XXS. De grootte is geen harde bescherming en telt niet mee in de bruikbaarheid, want ze verandert niets aan CP, IV's of aanvallen. Wel staat er bij iedere XXS of XXL een waarschuwing in het advies, en tonen de actielijst, de zoekteksten, de CSV-export en de checklist de grootte. OAK leest de grootte uit het veld `size` van de export: 1 is XXS en 5 is XXL. Dat 1 voor XXS staat, is gecontroleerd met een echte export en het spel. Voor 5 volgt het uit dezelfde nummering. Een onbekende grootte geeft geen punten.
+XXL en XXS zijn de zeldzaamste groottes. Bij een showcase op een PokéStop maakt een XXL de meeste kans, en een XXS heeft vooral waarde voor een verzameling. Daarom krijgt een XXL meer punten dan een XXS. De grootte is geen harde bescherming en telt niet mee in de bruikbaarheid, want ze verandert niets aan CP, IV's of aanvallen. Wel staat er bij iedere XXS of XXL een waarschuwing in het advies, en tonen de actielijst, de zoekteksten, de CSV-export en de checklist de grootte. Een XXS of XXL op de actielijst krijgt een eigen zoektekst. OAK leest de grootte uit het veld `size` van de export: 1 is XXS en 5 is XXL. Dat 1 voor XXS staat, is gecontroleerd met een echte export en het spel. Voor 5 volgt het uit dezelfde nummering. Een onbekende grootte geeft geen punten.
 
 ### Harde bescherming
 

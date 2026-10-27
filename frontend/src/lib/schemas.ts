@@ -242,7 +242,10 @@ export const actionList = z.object({
     note_text: reason.optional(),
     safety_suffix: z.string(),
     // pokemon_ids: the listed Pokémon a search string finds, so the page can name them.
-    queries: z.array(z.object({ species_id: z.number(), query: z.string(), pokemon_ids: z.array(z.number()).default([]) })),
+    // An XXS or XXL has a search string of its own (size), apart from the regular ones.
+    queries: z.array(
+      z.object({ species_id: z.number(), size: z.enum(["xxs", "xxl"]).nullable().default(null), query: z.string(), pokemon_ids: z.array(z.number()).default([]) }),
+    ),
   }),
 });
 export type ActionList = z.infer<typeof actionList>;

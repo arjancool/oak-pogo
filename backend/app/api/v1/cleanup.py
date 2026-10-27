@@ -11,7 +11,7 @@ from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import HTMLResponse, StreamingResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import String, and_, func, not_, or_, select, type_coerce
 from sqlalchemy.orm import Session
 
@@ -319,6 +319,12 @@ class ActionListRequest(BaseModel):
     # vintage Pokémon whose protection was lifted. See app/services/transfer_guard.py.
     confirmed_ids: list[int] = Field(default_factory=list, max_length=2000)
 
+    @field_validator("ids")
+    @classmethod
+    def _once_each(cls, ids: list[int]) -> list[int]:
+        """The same Pokémon twice in one request counts once, in the order it came first."""
+        return list(dict.fromkeys(ids))
+
 
 @router.post("/action-list", response_model=dict[str, Any])
 def update_action_list(
@@ -478,25 +484,33 @@ def _guard_for(session: Session, account_id: int, tz: ZoneInfo) -> GuardContext:
     return guard_context(session, account, tz)
 
 
+# Per species the regular Pokémon first, then the rare sizes.
+SIZE_ORDER: dict[str | None, int] = {None: 0, "xxs": 1, "xxl": 2}
+
+
 def search_hint(items: list[dict[str, Any]]) -> dict[str, Any]:
     """Pokémon GO search strings that narrow the in-game box down to the listed species and CP.
 
     The game cannot search for OAK's or PGSharp's internal IDs. The string uses the Pokédex
     number and an exact CP per Pokémon, which is precise enough to find each one by hand.
     "pokemon_ids" says which listed Pokémon a string finds, so the interface can name them.
+
+    An XXS or XXL gets a string of its own, apart from the regular ones of its species. Selecting
+    everything a regular string finds then never takes a rare size along by accident.
     """
     open_items = [i for i in items if i["executable"]]
-    by_species: dict[int, list[dict[str, Any]]] = defaultdict(list)
+    groups: dict[tuple[int, str | None], list[dict[str, Any]]] = defaultdict(list)
     for item in open_items:
         if item["pokemon"]["cp"] is not None:
-            by_species[item["pokemon"]["species_id"]].append(item["pokemon"])
+            groups[(item["pokemon"]["species_id"], item["size"])].append(item["pokemon"])
     queries = []
-    for dex, pokemon in sorted(by_species.items()):
+    for (dex, size), pokemon in sorted(groups.items(), key=lambda g: (g[0][0], SIZE_ORDER[g[0][1]])):
         pokemon.sort(key=lambda p: (p["cp"], p["id"]))
         cps = sorted({p["cp"] for p in pokemon})
         queries.append(
             {
                 "species_id": dex,
+                "size": size,
                 "query": f"{dex}&" + ",".join(f"cp{cp}" for cp in cps),
                 "pokemon_ids": [p["id"] for p in pokemon],
             }

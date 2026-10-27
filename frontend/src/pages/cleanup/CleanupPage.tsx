@@ -489,7 +489,7 @@ function ActionListTab({ accountId }: { accountId: number }) {
             const search = q.query + data.search_hint.safety_suffix;
             const found = q.pokemon_ids.flatMap((id) => byId.get(id) ?? []);
             return (
-              <div key={q.query} className="rounded-lg border border-line px-3 py-2">
+              <div key={`${q.query}|${q.size ?? ""}`} className={clsx("rounded-lg border px-3 py-2", q.size ? "border-amber-400/60" : "border-line")}>
                 <div className="flex items-center gap-2">
                   <p className="min-w-0 flex-1 text-sm">
                     {found.length ? found.map(searchLabel).join(" · ") : `#${q.species_id}`}

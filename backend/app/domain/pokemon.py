@@ -46,6 +46,22 @@ class BreadMode(IntEnum):
     GIGANTAMAX = 2
 
 
+class PokemonSize(IntEnum):
+    """PGSharp ``size``: the size class the game shows, from XXS to XXL.
+
+    Verified in a real export: a Pokémon with 1 is the one the game called XXS, and most
+    Pokémon have 3. The order of the other values follows the community protocol definitions.
+    0 means the export did not say.
+    """
+
+    UNSET = 0
+    XXS = 1
+    XS = 2
+    M = 3
+    XL = 4
+    XXL = 5
+
+
 class Severity(StrEnum):
     ERROR = "error"
     WARNING = "warning"
@@ -187,6 +203,15 @@ def is_hundo(attack: int | None, defense: int | None, stamina: int | None) -> bo
 def catch_date_known(caught_year: int | None) -> bool:
     """False when the export has no usable catch date. OAK then never assumes the Pokémon is new."""
     return caught_year is not None and caught_year >= FIRST_GAME_YEAR
+
+
+def extreme_size(size_class: int | None) -> str | None:
+    """'xxs' or 'xxl' for the two rare sizes, otherwise None, also when the size is unknown."""
+    if size_class == PokemonSize.XXS:
+        return "xxs"
+    if size_class == PokemonSize.XXL:
+        return "xxl"
+    return None
 
 
 def vintage_year(caught_year: int | None) -> int | None:

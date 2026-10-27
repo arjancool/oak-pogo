@@ -19,7 +19,7 @@ from app.api.deps import AuthContext, get_auth, get_container, get_session, owne
 from app.api.v1.pokemon import sync_bounds, tag_label_map
 from app.core.container import Container
 from app.core.errors import NotFoundError
-from app.domain.pokemon import FIRST_GAME_YEAR, VINTAGE_FIRST_YEAR, VINTAGE_LAST_YEAR
+from app.domain.pokemon import FIRST_GAME_YEAR, VINTAGE_FIRST_YEAR, VINTAGE_LAST_YEAR, extreme_size
 from app.jobs.tasks import enqueue
 from app.models import (
     AnalysisRun,
@@ -450,6 +450,8 @@ def _action_list(
                 "protection": protection,
                 "protection_texts": analysis.protection_reasons if analysis else [],
                 "still_in_inventory": still_in_inventory,
+                # 'xxs' or 'xxl': a rare size the user should see before transferring.
+                "size": extreme_size(pokemon.size_class),
                 "blocked": check.blocked,
                 "blocked_text": check.blocked_text,
                 "needs_confirmation": confirmation_item(pokemon, check, action.confirmed)
@@ -555,9 +557,10 @@ def export_action_list(
     data = _action_list(session, container, account.id, list_name, sort)
     if output == "html":
         rows = "".join(
-            "<tr><td>☐</td><td>{}</td><td>{}</td><td>{}</td><td>{}/{}/{}</td><td>{}</td><td>{}</td><td><code>{}</code></td></tr>".format(
+            "<tr><td>☐</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}/{}/{}</td><td>{}</td><td>{}</td><td><code>{}</code></td></tr>".format(
                 html.escape(str(i["pokemon"]["species_name"] or "")),
                 html.escape(str(i["pokemon"]["form_label"] or "")),
+                (i["size"] or "").upper(),
                 i["pokemon"]["cp"],
                 i["pokemon"]["iv_attack"],
                 i["pokemon"]["iv_defense"],
@@ -582,7 +585,7 @@ def export_action_list(
             "td,th{border:1px solid #999;padding:4px 6px;font-size:12px;text-align:left}code{font-size:10px}</style>"
             "</head><body><h1>Cleanup-checklist</h1><p>Gesorteerd op CP. OAK voert zelf niets uit: controleer iedere "
             f"Pokémon in het spel voordat je hem overzet.</p>{note}"
-            "<table><thead><tr><th></th><th>Pokémon</th><th>Vorm</th>"
+            "<table><thead><tr><th></th><th>Pokémon</th><th>Vorm</th><th>Grootte</th>"
             "<th>CP</th><th>IV</th><th>Reden</th><th>Bescherming</th><th>Bron-ID</th></tr></thead><tbody>"
             f"{rows}</tbody></table></body></html>"
         )
@@ -604,6 +607,7 @@ def export_action_list(
             "status",
             "uitvoerbaar",
             "geblokkeerd",
+            "grootte",
         ]
     )
     for item in data["items"]:
@@ -625,6 +629,7 @@ def export_action_list(
                     item["status"],
                     "ja" if item["executable"] else "nee",
                     _held_back_reason(item),
+                    (item["size"] or "").upper(),
                 )
             ]
         )

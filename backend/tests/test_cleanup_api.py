@@ -112,6 +112,29 @@ def test_action_list_needs_confirmation_for_favorites(
     assert confirmed["count"] == 1 and not confirmed["needs_confirmation"]
 
 
+def test_a_rare_size_shows_on_the_action_list_and_in_the_exports(
+    owner: Any, container: Any, gamedata: Any, export: dict[str, Any]
+) -> None:
+    for record in export["pokemons"]:
+        record["size"] = 5  # XXL
+    account = _imported(owner, container, export)
+    item = next(
+        i
+        for i in _all(owner, account, favorite="false", vintage="false")
+        if i["status"] in ("TRANSFER_CANDIDATE", "REVIEW")
+    )
+    assert any(w["code"] == "SIZE" and w.get("data") == {"context": "xxl"} for w in item["warnings"])
+    pid = item["pokemon"]["id"]
+    added = owner.post("/api/v1/cleanup/action-list", {"account_id": account, "ids": [pid], "confirmed_ids": [pid]})
+    assert added.json()["count"] == 1
+    listed = owner.get("/api/v1/cleanup/action-list", account_id=account).json()
+    assert next(i for i in listed["items"] if i["pokemon"]["id"] == pid)["size"] == "xxl"
+    csv = owner.get("/api/v1/cleanup/export", account_id=account).text.splitlines()
+    assert csv[0].endswith(";grootte") and csv[1].endswith(";XXL")
+    checklist = owner.get("/api/v1/cleanup/export", account_id=account, format="html").text
+    assert "<th>Grootte</th>" in checklist and "<td>XXL</td>" in checklist
+
+
 def test_action_list_checks_protection_again_on_every_read(
     owner: Any, container: Any, gamedata: Any, export: dict[str, Any]
 ) -> None:

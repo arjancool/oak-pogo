@@ -22,7 +22,7 @@ from typing import Any
 
 from app.core.errors import ValidationFailedError
 
-ENGINE_VERSION = "cleanup-2.3"
+ENGINE_VERSION = "cleanup-2.4"
 SCORE_MAX = 100
 MAX_KEEP_MIN = 10
 MAX_EVENT_HOLD_DAYS = 60
@@ -100,6 +100,8 @@ class CleanupRules:
     keep_points_location_card: int = 10
     keep_points_event: int = 10
     keep_points_max: int = 10  # Dynamax or Gigantamax
+    keep_points_xxl: int = 10  # the biggest size, the best chance in a showcase
+    keep_points_xxs: int = 5  # the smallest size, mainly for a collection
     keep_points_mega: int = 5
     # Special traits together never add more than this.
     keep_traits_cap: int = 30

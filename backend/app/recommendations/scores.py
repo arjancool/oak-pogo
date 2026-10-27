@@ -206,6 +206,9 @@ def _traits(view: PokemonView, rules: CleanupRules) -> list[tuple[str, str, int,
         traits.append(("LOCATION_CARD", "Speciale achtergrond", rules.keep_points_location_card, {}))
     if view.event:
         traits.append(("EVENT", "Event-Pokémon", rules.keep_points_event, {}))
+    if view.size is not None:
+        points = rules.keep_points_xxl if view.size == "xxl" else rules.keep_points_xxs
+        traits.append(("SIZE", view.size.upper(), points, {"context": view.size}))
     if view.gigantamax or view.dynamax:
         kind = "gigantamax" if view.gigantamax else "dynamax"
         traits.append(("MAX", "Gigantamax" if view.gigantamax else "Dynamax", rules.keep_points_max, {"context": kind}))

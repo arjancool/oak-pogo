@@ -228,6 +228,8 @@ export const actionList = z.object({
       protection: z.array(z.string()),
       protection_texts: z.array(reason).default([]),
       still_in_inventory: z.boolean(),
+      // A rare size the user should see before transferring.
+      size: z.enum(["xxs", "xxl"]).nullable().default(null),
       // Checked again on every read: a protection that appeared later holds the item back.
       blocked: z.string().nullable(),
       blocked_text: reason.nullable().default(null),

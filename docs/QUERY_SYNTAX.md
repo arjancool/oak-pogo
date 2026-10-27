@@ -117,4 +117,6 @@ De actielijst van de Cleanup Manager maakt aparte zoekteksten in de syntax van P
 
 Boven iedere zoektekst staat welke Pokémon hij vindt, met naam en CP en de bijnaam als hij er een heeft. Bijvoorbeeld *Magikarp CP 45 · Magikarp CP 112*. De knop *Kopiëren* kopieert alleen de zoektekst.
 
+Een XXS of XXL krijgt een eigen zoektekst, los van de gewone exemplaren van die soort. Selecteer je alles wat de gewone zoektekst vindt, dan zit er dus geen XXS of XXL tussen die op de lijst staat. Over die bijzondere exemplaren beslis je apart. Pokémon GO lijkt geen zoekterm voor de grootte te hebben, daarom splitst OAK op de CP. Staat er een XXS of XXL met precies dezelfde CP in je inventaris, dan vindt de gewone zoektekst die ook. Het spel waarschuwt dan zelf nog voor de grootte.
+
 Twee Pokémon van dezelfde soort met dezelfde CP zijn zo niet van elkaar te onderscheiden. Controleer daarom iedere Pokémon in het spel voordat je hem overzet. Deze teksten werken niet in het zoekveld van OAK.

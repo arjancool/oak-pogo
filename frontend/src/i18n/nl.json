@@ -1500,7 +1500,11 @@
       "done": "Afgerond",
       "remove": "Verwijderen",
       "searchPokemon": "{{name}} CP {{cp}}",
-      "searchPokemonNickname": "{{name}} “{{nickname}}” CP {{cp}}"
+      "searchPokemonNickname": "{{name}} “{{nickname}}” CP {{cp}}",
+      "sizeXxl": "XXL: handig voor een showcase. Weet je zeker dat je hem kwijt wilt?",
+      "sizeXxs": "XXS: zeldzame grootte. Weet je zeker dat je hem kwijt wilt?",
+      "searchPokemonSize": "{{name}} {{size}} CP {{cp}}",
+      "searchPokemonNicknameSize": "{{name}} “{{nickname}}” {{size}} CP {{cp}}"
     },
     "rules": {
       "saved": "Regels opgeslagen. De analyse wordt opnieuw berekend.",
@@ -1699,6 +1703,14 @@
         "eventHoldDays": {
           "label": "Events tellen mee vanaf dagen ervoor",
           "hint": "0–60"
+        },
+        "keepPointsXxl": {
+          "label": "XXL",
+          "hint": "Punten. Handig voor showcases"
+        },
+        "keepPointsXxs": {
+          "label": "XXS",
+          "hint": "Punten. Vooral voor je verzameling"
         }
       }
     }
@@ -1845,7 +1857,9 @@
       "TRADED": "Is eerder geruild",
       "UNKNOWN_DATE": "Vangstdatum onbekend: OAK neemt niet aan dat deze Pokémon nieuw is",
       "VINTAGE_OVERRIDE": "Vintage {{year}}: je hebt de bescherming zelf opgeheven",
-      "FAVORITE": "Favoriet: controleer zelf of je hem echt kwijt wilt"
+      "FAVORITE": "Favoriet: controleer zelf of je hem echt kwijt wilt",
+      "SIZE_xxl": "XXL: de grootste maken de meeste kans bij een showcase",
+      "SIZE_xxs": "XXS: zeldzame grootte, vooral van waarde voor je verzameling"
     },
     "parts": {
       "GREAT": "{{leagueName}}: {{target}}, {{species}}, IV-rang {{iv_rank}}{{notes}}",
@@ -1886,7 +1900,9 @@
       "EVENT": "Event-Pokémon",
       "MAX_gigantamax": "Gigantamax",
       "MAX_dynamax": "Dynamax",
-      "MEGA": "Mega-voortgang"
+      "MEGA": "Mega-voortgang",
+      "SIZE_xxl": "XXL",
+      "SIZE_xxs": "XXS"
     },
     "guard": {
       "BLOCKED_MANUAL": "Handmatig beschermd",

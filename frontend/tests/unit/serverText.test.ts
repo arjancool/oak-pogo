@@ -39,6 +39,16 @@ describe("sentences from the server", () => {
     expect(serverText("guard", item)).toBe("Vintage 2017: never through a bulk action");
   });
 
+  it("explains a rare size in the keep score and the warnings", async () => {
+    const warning: ServerText = { code: "SIZE", text: "XXL: de grootste maken de meeste kans bij een showcase", data: { context: "xxl" } };
+    const trait: ServerText = { code: "SIZE", text: "XXS", data: { context: "xxs" } };
+    expect(serverText("warnings", warning)).toBe(warning.text);
+    expect(serverText("traits", trait)).toBe("XXS");
+    await changeLanguage("en");
+    expect(serverText("warnings", warning)).toBe("XXL: the biggest ones have the best chance in a showcase");
+    expect(serverText("traits", trait)).toBe("XXS");
+  });
+
   it("formats numbers for the language", async () => {
     const item: ServerText = { code: "IV", text: "", data: { theirs: 93.75, mine: 62 } };
     expect(serverText("differences", item)).toBe("IV 93,8% tegen 62,0%");

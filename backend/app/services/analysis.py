@@ -21,7 +21,7 @@ from app.analysis.stats import IVs
 from app.core.clock import Clock
 from app.core.config import Settings
 from app.core.db import Database
-from app.domain.pokemon import Alignment, BreadMode
+from app.domain.pokemon import Alignment, BreadMode, extreme_size
 from app.gamedata.store import GameDataStore
 from app.models import (
     AnalysisRun,
@@ -295,6 +295,7 @@ def pokemon_view(pokemon: Pokemon, meta: PokemonUserMetadata | None, protecting:
         dynamax=pokemon.bread_mode == BreadMode.DYNAMAX,
         gigantamax=pokemon.bread_mode == BreadMode.GIGANTAMAX,
         event=bool(pokemon.origin_events) or bool(pokemon.limited_identifier),
+        size=extreme_size(pokemon.size_class),
         nicknamed=bool(pokemon.nickname),
         mega_progress=bool(pokemon.has_mega_evolved),
         traded=pokemon.traded_at is not None,

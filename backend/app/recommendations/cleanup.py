@@ -338,6 +338,10 @@ def _base_warnings(view: PokemonView, rules: CleanupRules) -> list[dict[str, Any
         warnings.append(_reason("PURIFIED", "Purified: lagere power-upkosten en mogelijk Return"))
     if view.traded:
         warnings.append(_reason("TRADED", "Is eerder geruild"))
+    if view.size == "xxl":
+        warnings.append(_reason("SIZE", "XXL: de grootste maken de meeste kans bij een showcase", context="xxl"))
+    elif view.size == "xxs":
+        warnings.append(_reason("SIZE", "XXS: zeldzame grootte, vooral van waarde voor je verzameling", context="xxs"))
     if not view.catch_date_known:
         warnings.append(_reason("UNKNOWN_DATE", "Vangstdatum onbekend: OAK neemt niet aan dat deze Pokémon nieuw is"))
     return warnings

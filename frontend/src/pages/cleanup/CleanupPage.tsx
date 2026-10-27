@@ -447,7 +447,12 @@ function ActionListTab({ accountId }: { accountId: number }) {
     setCopied(text);
   };
   const heldBack = data.items.filter((item) => item.status === "open" && !item.executable).length;
-  const byId = new Map(data.items.map((item) => [item.pokemon.id, item.pokemon]));
+  const byId = new Map(data.items.map((item) => [item.pokemon.id, item]));
+  const searchLabel = ({ pokemon: p, size }: (typeof data.items)[number]) => {
+    const values = { name: pokemonName(p), nickname: p.nickname, size: size?.toUpperCase(), cp: num(p.cp) };
+    if (p.nickname) return t(size ? "cleanup.list.searchPokemonNicknameSize" : "cleanup.list.searchPokemonNickname", values);
+    return t(size ? "cleanup.list.searchPokemonSize" : "cleanup.list.searchPokemon", values);
+  };
   return (
     <div className="space-y-4">
       <Alert tone="info" title={t("cleanup.list.noTransferTitle")}>
@@ -484,18 +489,10 @@ function ActionListTab({ accountId }: { accountId: number }) {
             const search = q.query + data.search_hint.safety_suffix;
             const found = q.pokemon_ids.flatMap((id) => byId.get(id) ?? []);
             return (
-              <div key={q.query} className="rounded-lg border border-line px-3 py-2">
+              <div key={`${q.query}|${q.size ?? ""}`} className={clsx("rounded-lg border px-3 py-2", q.size ? "border-amber-400/60" : "border-line")}>
                 <div className="flex items-center gap-2">
                   <p className="min-w-0 flex-1 text-sm">
-                    {found.length
-                      ? found
-                          .map((p) =>
-                            p.nickname
-                              ? t("cleanup.list.searchPokemonNickname", { name: pokemonName(p), nickname: p.nickname, cp: num(p.cp) })
-                              : t("cleanup.list.searchPokemon", { name: pokemonName(p), cp: num(p.cp) }),
-                          )
-                          .join(" · ")
-                      : `#${q.species_id}`}
+                    {found.length ? found.map(searchLabel).join(" · ") : `#${q.species_id}`}
                   </p>
                   <Button size="sm" variant="ghost" icon={<Copy className="h-3.5 w-3.5" />} onClick={() => copy(search)}>
                     {copied === search ? t("cleanup.list.copied") : t("cleanup.list.copy")}
@@ -529,6 +526,11 @@ function ActionListTab({ accountId }: { accountId: number }) {
                   <Link to={`/pokemon/${item.pokemon.id}`} className="font-medium hover:text-oak-300">
                     {pokemonName(item.pokemon)}
                   </Link>
+                  {item.size && (
+                    <Badge className="ml-2" color="#fbbf24">
+                      {item.size.toUpperCase()}
+                    </Badge>
+                  )}
                   {!item.still_in_inventory && <Badge className="ml-2">{t("cleanup.list.gone")}</Badge>}
                   {item.blocked && (
                     <Badge className="ml-2" color="#f87171">
@@ -546,6 +548,7 @@ function ActionListTab({ accountId }: { accountId: number }) {
                       })}
                     </Badge>
                   )}
+                  {item.size && <p className="mt-1 text-xs text-amber-300">{t(item.size === "xxl" ? "cleanup.list.sizeXxl" : "cleanup.list.sizeXxs")}</p>}
                 </td>
                 <td className="tabular-nums">{num(item.pokemon.cp, "?")}</td>
                 <td className="font-mono text-xs">{ivs(item.pokemon.iv_attack, item.pokemon.iv_defense, item.pokemon.iv_stamina)}</td>
@@ -632,6 +635,8 @@ const KEEP_RULES: Record<string, [ParseKeys, ParseKeys]> = {
   keep_points_location_card: ["cleanup.rules.items.keepPointsLocationCard.label", "cleanup.rules.points"],
   keep_points_event: ["cleanup.rules.items.keepPointsEvent.label", "cleanup.rules.points"],
   keep_points_max: ["cleanup.rules.items.keepPointsMax.label", "cleanup.rules.points"],
+  keep_points_xxl: ["cleanup.rules.items.keepPointsXxl.label", "cleanup.rules.items.keepPointsXxl.hint"],
+  keep_points_xxs: ["cleanup.rules.items.keepPointsXxs.label", "cleanup.rules.items.keepPointsXxs.hint"],
   keep_points_mega: ["cleanup.rules.items.keepPointsMega.label", "cleanup.rules.points"],
   keep_traits_cap: ["cleanup.rules.items.keepTraitsCap.label", "cleanup.rules.points"],
   keep_points_nickname: ["cleanup.rules.items.keepPointsNickname.label", "cleanup.rules.points"],

@@ -10,6 +10,7 @@ from app.analysis.league import Subject, analyze_leagues
 from app.analysis.raid import raid_potential
 from app.analysis.stats import IVs
 from app.core.errors import ValidationFailedError
+from app.domain.pokemon import extreme_size
 from app.recommendations.cleanup import CollectionContext, PokemonView, Recommendation, Status, evaluate
 from app.recommendations.rules import CleanupRules
 
@@ -210,6 +211,29 @@ def test_scores_are_transparent_and_count_each_property_once(gamedata: Any) -> N
         "LUCKY",
     ]  # a hundo counts only through the battle score
     assert traits["value"] <= rules.keep_traits_cap
+
+
+def test_only_the_two_rare_sizes_count() -> None:
+    # The export's size codes: 0 unknown, 1 XXS, 2 XS, 3 regular, 4 XL, 5 XXL.
+    assert [extreme_size(code) for code in (None, 0, 1, 2, 3, 4, 5)] == [None, None, "xxs", None, None, None, "xxl"]
+
+
+@pytest.mark.parametrize("size", ["xxl", "xxs"])
+def test_a_rare_size_adds_keep_points_and_a_warning_but_no_protection(size: str) -> None:
+    rules = CleanupRules(keep_min_per_species=0)
+    plain = evaluate([view(1)], rules, CTX)[0]
+    sized = evaluate([view(1, size=size)], rules, CTX)[0]
+    points = rules.keep_points_xxl if size == "xxl" else rules.keep_points_xxs
+    traits = next(p for p in sized.scores["keep"]["parts"] if p["code"] == "TRAITS")
+    assert traits["data"]["traits"] == [{"code": "SIZE", "text": size.upper(), "data": {"context": size}}]
+    assert plain.keep_score is not None and sized.keep_score == plain.keep_score + points
+    # The size never counts in the usefulness score, and it is no hard protection.
+    assert sized.battle_score == plain.battle_score
+    assert sized.status is not Status.PROTECT and not sized.protection_reasons
+    warning = next(w for w in sized.warnings if w["code"] == "SIZE")
+    assert warning["data"] == {"context": size}
+    assert "SIZE" not in codes(plain.warnings)
+    assert rules.keep_points_xxl > rules.keep_points_xxs
 
 
 def test_hard_protection_is_independent_of_the_score() -> None:

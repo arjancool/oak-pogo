@@ -35,6 +35,8 @@ class PokemonView:
     dynamax: bool = False
     gigantamax: bool = False
     event: bool = False
+    # 'xxs' or 'xxl': a rare size, worth something for showcases (XXL) or a collection.
+    size: str | None = None
     nicknamed: bool = False
     mega_progress: bool = False
     traded: bool = False

@@ -6,6 +6,7 @@ from typing import Any
 
 from sqlalchemy import select
 
+from app.api.v1.cleanup import search_hint
 from app.jobs.tasks import schedule_outdated_analyses
 from app.models import AnalysisRun, BackgroundJob, PlannedAction, Pokemon
 from app.recommendations.rules import ENGINE_VERSION
@@ -110,6 +111,55 @@ def test_action_list_needs_confirmation_for_favorites(
         {"account_id": account, "ids": [favorite["id"]], "confirmed_ids": [favorite["id"]]},
     ).json()
     assert confirmed["count"] == 1 and not confirmed["needs_confirmation"]
+
+
+def test_a_rare_size_shows_on_the_action_list_and_in_the_exports(
+    owner: Any, container: Any, gamedata: Any, export: dict[str, Any]
+) -> None:
+    for record in export["pokemons"]:
+        record["size"] = 5  # XXL
+    account = _imported(owner, container, export)
+    item = next(
+        i
+        for i in _all(owner, account, favorite="false", vintage="false")
+        if i["status"] in ("TRANSFER_CANDIDATE", "REVIEW")
+    )
+    assert any(w["code"] == "SIZE" and w.get("data") == {"context": "xxl"} for w in item["warnings"])
+    pid = item["pokemon"]["id"]
+    added = owner.post("/api/v1/cleanup/action-list", {"account_id": account, "ids": [pid], "confirmed_ids": [pid]})
+    assert added.json()["count"] == 1
+    listed = owner.get("/api/v1/cleanup/action-list", account_id=account).json()
+    assert next(i for i in listed["items"] if i["pokemon"]["id"] == pid)["size"] == "xxl"
+    csv = owner.get("/api/v1/cleanup/export", account_id=account).text.splitlines()
+    assert csv[0].endswith(";grootte") and csv[1].endswith(";XXL")
+    checklist = owner.get("/api/v1/cleanup/export", account_id=account, format="html").text
+    assert "<th>Grootte</th>" in checklist and "<td>XXL</td>" in checklist
+
+
+def test_the_same_pokemon_twice_in_one_request_is_added_once(
+    owner: Any, container: Any, gamedata: Any, export: dict[str, Any]
+) -> None:
+    account = _imported(owner, container, export)
+    pid = _all(owner, account, status="TRANSFER_CANDIDATE", favorite="false")[0]["pokemon"]["id"]
+    added = owner.post(
+        "/api/v1/cleanup/action-list", {"account_id": account, "ids": [pid, pid], "confirmed_ids": [pid]}
+    )
+    assert added.status_code == 200 and added.json()["count"] == 1
+
+
+def test_a_rare_size_gets_its_own_search_string() -> None:
+    def item(pid: int, cp: int, size: str | None = None, executable: bool = True) -> dict[str, Any]:
+        return {"executable": executable, "size": size, "pokemon": {"id": pid, "species_id": 831, "cp": cp}}
+
+    hint = search_hint(
+        [item(1, 540), item(2, 237, "xxs"), item(3, 300), item(4, 900, "xxl"), item(5, 100, "xxs", executable=False)]
+    )
+    # Selecting everything the regular string finds never takes an XXS or XXL along.
+    assert [(q["size"], q["query"], q["pokemon_ids"]) for q in hint["queries"]] == [
+        (None, "831&cp300,cp540", [3, 1]),
+        ("xxs", "831&cp237", [2]),
+        ("xxl", "831&cp900", [4]),
+    ]
 
 
 def test_action_list_checks_protection_again_on_every_read(

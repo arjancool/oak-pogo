@@ -1500,7 +1500,11 @@
       "done": "Done",
       "remove": "Remove",
       "searchPokemon": "{{name}} CP {{cp}}",
-      "searchPokemonNickname": "{{name}} “{{nickname}}” CP {{cp}}"
+      "searchPokemonNickname": "{{name}} “{{nickname}}” CP {{cp}}",
+      "sizeXxl": "XXL: useful for a showcase. Are you sure you want to let it go?",
+      "sizeXxs": "XXS: a rare size. Are you sure you want to let it go?",
+      "searchPokemonSize": "{{name}} {{size}} CP {{cp}}",
+      "searchPokemonNicknameSize": "{{name}} “{{nickname}}” {{size}} CP {{cp}}"
     },
     "rules": {
       "saved": "Rules saved. The analysis is being recalculated.",
@@ -1699,6 +1703,14 @@
         "eventHoldDays": {
           "label": "Events count from this many days before",
           "hint": "0–60"
+        },
+        "keepPointsXxl": {
+          "label": "XXL",
+          "hint": "Points. Useful for showcases"
+        },
+        "keepPointsXxs": {
+          "label": "XXS",
+          "hint": "Points. Mainly for your collection"
         }
       }
     }
@@ -1845,7 +1857,9 @@
       "TRADED": "Traded before",
       "UNKNOWN_DATE": "Catch date unknown: OAK does not assume this Pokémon is new",
       "VINTAGE_OVERRIDE": "Vintage {{year}}: you lifted the protection yourself",
-      "FAVORITE": "Favorite: check for yourself whether you really want to let it go"
+      "FAVORITE": "Favorite: check for yourself whether you really want to let it go",
+      "SIZE_xxl": "XXL: the biggest ones have the best chance in a showcase",
+      "SIZE_xxs": "XXS: a rare size, mainly worth something for your collection"
     },
     "parts": {
       "GREAT": "{{leagueName}}: {{target}}, {{species}}, IV rank {{iv_rank}}{{notes}}",
@@ -1886,7 +1900,9 @@
       "EVENT": "Event Pokémon",
       "MAX_gigantamax": "Gigantamax",
       "MAX_dynamax": "Dynamax",
-      "MEGA": "Mega progress"
+      "MEGA": "Mega progress",
+      "SIZE_xxl": "XXL",
+      "SIZE_xxs": "XXS"
     },
     "guard": {
       "BLOCKED_MANUAL": "Protected by hand",

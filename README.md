@@ -96,7 +96,11 @@ services:
       - OAK_BASE_URL=http://192.168.1.10:8080
 ```
 
-Vervang `OAK_BASE_URL` door het adres waarop je OAK opent. Dat adres komt ook in de webhook-URL. Start daarna:
+Vervang `OAK_BASE_URL` door het adres waarop je OAK opent. Dat adres komt ook in de webhook-URL.
+
+Met `latest` krijg je bij iedere update de nieuwste versie. Wil je zelf bepalen wanneer je overstapt, gebruik dan een vaste versie, zoals `ghcr.io/arjancool/oak-pogo:2.0` voor de nieuwste 2.0.x of `ghcr.io/arjancool/oak-pogo:2.0.0` voor precies die versie.
+
+Start daarna:
 
 ```bash
 docker compose up -d

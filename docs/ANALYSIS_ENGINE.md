@@ -97,7 +97,7 @@ Wat OAK niet meeneemt:
 - De eigen aanvallen van de verdediger.
 - Het verlies van motivatie. Hoe snel dat gaat, staat niet in de Game Data. Volgens metingen uit de community gaat het sneller bij een hogere CP.
 
-Staat een Pokémon nu in een gym, dan toont het overzicht dat. OAK leest dat uit de export (`deployedFortId`) en bewaart alleen ja of nee, nooit welke gym (ADR-0026). Of PGSharp dat veld vult, is nog niet met een echte export vastgesteld.
+Staat een Pokémon nu in een gym, dan toont het overzicht dat. OAK leest dat uit de export (`deployedFortId`) en bewaart alleen ja of nee, nooit welke gym (ADR-0026). Met een echte export is gecontroleerd dat PGSharp dat veld vult en dat het label klopt.
 
 ## Purify
 

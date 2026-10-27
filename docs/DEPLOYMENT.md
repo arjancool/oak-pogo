@@ -15,7 +15,7 @@ Open daarna het adres uit `OAK_BASE_URL`. De eerste gebruiker die zich aanmeldt,
 
 ## Kant-en-klare image
 
-Iedere push naar `main` publiceert `ghcr.io/arjancool/oak-pogo:latest` en `ghcr.io/arjancool/oak-pogo:sha-<commit>`. Een tag `v2.1.0` publiceert ook `2.1.0` en `2.1`. De image is er voor amd64 en arm64.
+Iedere push naar `main` publiceert `ghcr.io/arjancool/oak-pogo:latest` en `ghcr.io/arjancool/oak-pogo:sha-<commit>`. Een tag `v2.1.0` publiceert ook `2.1.0` en `2.1`. De image is er voor amd64 en arm64. De eerste uitgebrachte versie is `2.0.0`. Met een vaste versie zoals `2.0` bepaal je zelf wanneer je naar een nieuwe minor-versie overstapt.
 
 Publiceren is de laatste stap van de CI-run voor die commit. Hij start pas als de backend-, frontend- en browsertests, de Docker-build, de beveiligingscontroles en de kwetsbaarheidsscan allemaal zijn geslaagd. Faalt er één, dan verschijnt er geen nieuwe image. Een handmatige run via **Actions → CI → Run workflow** doorloopt dezelfde controles en publiceert alleen vanaf `main` of een versietag. De releasejob bouwt de image één keer voor amd64 en arm64, zet hem zonder tag op ghcr.io en test precies die image per platform: starten, gezondheid, beveiliging en een scan op bekende kwetsbaarheden. De arm64-image draait daarbij onder emulatie. Pas als dat slaagt, krijgt de image zijn tags.
 

@@ -205,6 +205,18 @@ def catch_date_known(caught_year: int | None) -> bool:
     return caught_year is not None and caught_year >= FIRST_GAME_YEAR
 
 
+def has_costume(costume_id: int | None, costume_form: bool | None) -> bool | None:
+    """A costume from the export's costume field, or a form the Game Master marks as a costume.
+
+    None when neither says anything, so OAK never reads an unknown value as 'no costume'.
+    """
+    if (costume_id is not None and costume_id != 0) or costume_form:
+        return True
+    if costume_id is None and costume_form is None:
+        return None
+    return False
+
+
 def extreme_size(size_class: int | None) -> str | None:
     """'xxs' or 'xxl' for the two rare sizes, otherwise None, also when the size is unknown."""
     if size_class == PokemonSize.XXS:

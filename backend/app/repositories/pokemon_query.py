@@ -105,7 +105,7 @@ def flag_condition(flag: str, account_id: int, latest_sync_id: int | None) -> Co
     if flag == "gigantamax":
         return Pokemon.bread_mode == BreadMode.GIGANTAMAX
     if flag == "costume":
-        return and_(Pokemon.costume_id.is_not(None), Pokemon.costume_id != 0)
+        return or_(and_(Pokemon.costume_id.is_not(None), Pokemon.costume_id != 0), Pokemon.costume_form.is_(True))
     if flag == "background":
         return Pokemon.location_card.is_not(None)
     if flag == "hundo":

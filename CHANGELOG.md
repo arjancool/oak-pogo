@@ -2,6 +2,12 @@
 
 Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](https://keepachangelog.com/nl/1.1.0/) en de versies volgen [Semantic Versioning](https://semver.org/lang/nl/).
 
+## [Nog niet uitgebracht]
+
+### Opgelost
+
+- Een Pokémon met een vorm die de Game Master als kostuum markeert, zoals een Pikachu met een eventhoed, telt nu als kostuum. Dat gold eerder alleen als PGSharp het kostuumveld vulde, en dat doet PGSharp niet altijd. Zo'n Pokémon krijgt nu de kostuumbescherming, de kostuumpunten in de bewaarscore, het label en de plek in het filter en de telling van kostuums. Migratie 0008 voegt daarvoor een afgeleide kolom toe.
+
 ## [2.0.0] - 2026-10-27
 
 De eerste openbare versie van OAK.

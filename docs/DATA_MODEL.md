@@ -47,7 +47,7 @@ Alle tabellen onder een traineraccount verwijzen ernaar met `ON DELETE CASCADE`.
 Eén rij per Pokémon per traineraccount. De identiteit is `trainer_account_id` plus `source_pokemon_id` (uniek). Twee Pokémon van dezelfde soort met dezelfde CP zijn dus nooit vanzelf hetzelfde exemplaar.
 
 - **Brongegevens** uit de export: soort en vorm, kostuum, geslacht, shiny, Shadow of Purified, lucky, favoriet, CP en HP, IV's, CP-multiplier, aanvallen, power-ups, lengte en gewicht, vangstmoment, ruilmoment, herkomst, of de Pokémon nu in een gym staat (`in_gym`), achtergrond, Dynamax-stand en Max Moves, mega-voortgang, bijnaam, buddy- en gevechtsgegevens, tag-ID's en onbekende extra velden (`extra`).
-- **Afgeleide kolommen** uit Game Data en tijdzone: IV-percentage, vangstjaar, level, soortnaam, vormsleutel, vormlabel, hoe de vorm is gevonden (`form_resolution`), typen, klasse (Legendary, Mythical of Ultra Beast), familie en de sleutels van de aanvallen. `derived_version_id` zegt met welke Game Data-versie ze berekend zijn. Na een Game Data-wissel berekent OAK ze opnieuw.
+- **Afgeleide kolommen** uit Game Data en tijdzone: IV-percentage, vangstjaar, level, soortnaam, vormsleutel, vormlabel, hoe de vorm is gevonden (`form_resolution`), of de Game Master de vorm als kostuum markeert (`costume_form`), typen, klasse (Legendary, Mythical of Ultra Beast), familie en de sleutels van de aanvallen. `derived_version_id` zegt met welke Game Data-versie ze berekend zijn. Na een Game Data-wissel berekent OAK ze opnieuw.
 - **Inventarisstatus**: `in_inventory` of `not_in_inventory`, met de eerste en laatste synchronisatie waarin de Pokémon voorkwam en het moment van verdwijnen.
 
 Een Pokémon die uit de inventaris verdwijnt, blijft als rij bestaan. Komt hij in een latere export terug, dan krijgt hij de status `in_inventory` weer.
@@ -111,5 +111,6 @@ Een nieuwe analyse vervangt de vorige projectie van dat traineraccount in één 
 | `0005` | `in_gym` in `pokemon`: of een Pokémon nu in een gym staat (ADR-0026). |
 | `0006` | De kolom `league` in `pvp_rankings` en `battle_teams` is 48 tekens breed, voor cup-ID's (ADR-0027). |
 | `0007` | `data` in `import_errors`, `error_data` in `import_jobs` en `errors` in `game_data_versions`: de gegevens in een opgeslagen melding, zodat de interface hem in de gekozen taal toont (ADR-0025). |
+| `0008` | `costume_form` in `pokemon`: de Game Master markeert de vorm als kostuum. Een afgeleide kolom, die OAK bij het starten voor iedere Pokémon vult. |
 
 OAK voert migraties zelf uit bij het starten en maakt daarvoor een back-up in `backups/`.

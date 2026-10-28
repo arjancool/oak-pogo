@@ -11,7 +11,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
-from sqlalchemy import String, and_, func, select, type_coerce
+from sqlalchemy import String, and_, func, or_, select, type_coerce
 from sqlalchemy.orm import Session
 
 from app.api.deps import AuthContext, get_auth, get_container, get_session, owned_account
@@ -479,7 +479,7 @@ def dashboard(
             "ultra_beast": count(Pokemon.pokemon_class == "ultra_beast"),
             "dynamax": count(Pokemon.bread_mode == 1),
             "gigantamax": count(Pokemon.bread_mode == 2),
-            "costume": count(Pokemon.costume_id > 0),
+            "costume": count(or_(Pokemon.costume_id > 0, Pokemon.costume_form.is_(True))),
             "background": count(Pokemon.location_card.is_not(None)),
             "cleanup_candidates": int(statuses.get("TRANSFER_CANDIDATE", 0)),
             "stardust": account.stardust,

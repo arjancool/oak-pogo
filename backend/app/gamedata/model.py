@@ -40,6 +40,15 @@ class GameData:
         self.rankings: Mapping[str, Any] = dataset.get("rankings", {})
         self.items: Mapping[str, Mapping[str, Any]] = dataset.get("items", {})
         self._name_to_dex = {record["key"]: int(dex) for dex, record in self.species.items()}
+        # Per species the forms the Game Master marks as a costume (isCostume), as comparison keys.
+        self._costume_forms = {
+            int(dex): frozenset(
+                norm_key(name)
+                for key in record.get("forms", [])
+                for name in self.forms.get(key, {}).get("costume_forms", [])
+            )
+            for dex, record in self.species.items()
+        }
         self.gmax_moves: Mapping[str, list[Mapping[str, Any]]] | None = dataset.get("bread", {}).get("gmax_moves")
 
     @property
@@ -100,6 +109,14 @@ class GameData:
         if exact is not None:
             return FormResolution(exact, "exact")
         return FormResolution(self._default_form(dex, record), "fallback_default_form")
+
+    def is_costume_form(self, dex: int, form_name: str | None) -> bool:
+        """True when the Game Master marks this form as a costume.
+
+        PGSharp does not always fill the costume field for such a Pokémon, for example a Pikachu
+        with a hat from an event. The form name says it as well.
+        """
+        return bool(form_name) and norm_key(form_name) in self._costume_forms.get(dex, frozenset())
 
     def _default_form(self, dex: int, record: Mapping[str, Any]) -> Mapping[str, Any] | None:
         normal = self.forms.get(f"{dex}:{norm_key(record['key'])}NORMAL")

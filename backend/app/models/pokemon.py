@@ -93,6 +93,8 @@ class Pokemon(Base):
     form_key: Mapped[str | None] = mapped_column(String(80))
     form_label: Mapped[str | None] = mapped_column(String(64))
     form_resolution: Mapped[str | None] = mapped_column(String(24))
+    # The Game Master marks the form as a costume, also when the export's costume field is empty.
+    costume_form: Mapped[bool | None] = mapped_column(Boolean)
     type_1: Mapped[str | None] = mapped_column(String(12))
     type_2: Mapped[str | None] = mapped_column(String(12))
     pokemon_class: Mapped[str | None] = mapped_column(String(16))

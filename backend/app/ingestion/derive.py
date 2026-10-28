@@ -14,7 +14,8 @@ from app.models import Pokemon
 
 # Raised when stored derived columns may be wrong and must be recomputed once for every Pokémon.
 # 2: a catch date corrected by a later import did not update the catch year (audit F01).
-DERIVE_REVISION = 2
+# 3: a form the Game Master marks as a costume counts as a costume (costume_form).
+DERIVE_REVISION = 3
 
 
 def apply_derived(row: Pokemon, gd: GameData | None, tz: ZoneInfo) -> None:
@@ -27,6 +28,7 @@ def apply_derived(row: Pokemon, gd: GameData | None, tz: ZoneInfo) -> None:
     form = resolution.form
     record = gd.species_record(row.species_id)
     row.form_resolution = resolution.status
+    row.costume_form = gd.is_costume_form(row.species_id, row.form_name)
     row.species_key = record["key"] if record else None
     row.species_name = (form or {}).get("name") or (record["name"] if record else None)
     row.form_key = form["key"] if form else None

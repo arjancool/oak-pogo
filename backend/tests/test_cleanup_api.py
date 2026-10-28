@@ -142,6 +142,22 @@ def test_duplicates_say_which_pokemon_are_on_the_action_list(
     assert listed == {member["id"]}
 
 
+def test_a_costume_form_from_the_game_master_counts_as_a_costume(
+    owner: Any, container: Any, gamedata: Any, export: dict[str, Any]
+) -> None:
+    pikachu = next(r for r in export["pokemons"] if r.get("pokemonId") == 25)
+    # An event Pikachu: the Game Master marks the form as a costume, the export's field stays 0.
+    pikachu["pokemonDisplay"]["formName"] = "PikachuCostume2020"
+    pikachu["pokemonDisplay"]["costume"] = 0
+    account = _imported(owner, container, export)
+    item = next(i for i in _all(owner, account) if i["pokemon"]["source_pokemon_id"] == str(pikachu["id"]))
+    assert item["pokemon"]["costume"] is True
+    assert item["status"] == "PROTECT" and "COSTUME" in {r["code"] for r in item["protection_reasons"]}
+    costumes = owner.get("/api/v1/pokemon", account_id=account, q="costume", page_size=500).json()["items"]
+    assert str(pikachu["id"]) in {p["source_pokemon_id"] for p in costumes}
+    assert owner.get("/api/v1/dashboard", account_id=account).json()["cards"]["costume"] >= 2
+
+
 def test_the_same_pokemon_twice_in_one_request_is_added_once(
     owner: Any, container: Any, gamedata: Any, export: dict[str, Any]
 ) -> None:

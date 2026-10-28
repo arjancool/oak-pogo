@@ -8,7 +8,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
-from app.domain.pokemon import Alignment, BreadMode, catch_date_known, vintage_year
+from app.domain.pokemon import Alignment, BreadMode, catch_date_known, has_costume, vintage_year
 from app.gamedata.model import GameData
 from app.models import Pokemon, PokemonAnalysis, PokemonUserMetadata
 from app.schemas.common import UtcDatetime
@@ -202,7 +202,7 @@ def summarize(
         purified=_optional(pokemon.alignment, Alignment.PURIFIED),
         dynamax=None if pokemon.bread_mode is None else pokemon.bread_mode in (BreadMode.DYNAMAX, BreadMode.GIGANTAMAX),
         gigantamax=_optional(pokemon.bread_mode, BreadMode.GIGANTAMAX),
-        costume=None if pokemon.costume_id is None else pokemon.costume_id != 0,
+        costume=has_costume(pokemon.costume_id, pokemon.costume_form),
         location_card=pokemon.location_card,
         traded=pokemon.traded_at is not None,
         hatched_from_egg=pokemon.hatched_from_egg,

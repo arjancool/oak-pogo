@@ -8,6 +8,7 @@ from typing import Any
 import pytest
 from sqlalchemy import select
 
+from app.domain.pokemon import has_costume
 from app.gamedata.transform import build_dataset, norm_key
 from app.gamedata.validate import DatasetInvalidError, validate_dataset
 from app.jobs.tasks import schedule_gamedata_check
@@ -123,6 +124,20 @@ def test_missing_active_file_is_rebuilt_from_unchanged_sources(container: Any, m
     assert result.status == "activated"
     assert store.active() is not None
     assert store.update_from_downloads(downloads(), origin="download").status == "unchanged"
+
+
+def test_a_form_the_game_master_marks_as_costume_is_recognised(gamedata: Any) -> None:
+    # The test Game Master marks PIKACHU_COSTUME_2020 with isCostume; PGSharp writes PikachuCostume2020.
+    assert gamedata.is_costume_form(25, "PikachuCostume2020") is True
+    assert gamedata.is_costume_form(25, "PikachuNormal") is False
+    assert gamedata.is_costume_form(25, None) is False
+    assert gamedata.is_costume_form(6, "CharizardGoggles2026") is False  # not in this Game Master
+
+
+def test_a_costume_comes_from_the_export_field_or_the_form() -> None:
+    assert has_costume(None, None) is None  # nothing known, never 'no costume'
+    assert has_costume(0, False) is False and has_costume(0, None) is False and has_costume(None, False) is False
+    assert has_costume(12, None) is True and has_costume(0, True) is True and has_costume(None, True) is True
 
 
 def test_rederive_after_switch(owner: Any, container: Any, export: dict[str, Any]) -> None:

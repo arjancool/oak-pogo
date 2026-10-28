@@ -197,6 +197,8 @@ Harde bescherming staat los van beide scores. Een Pokémon met een harde reden k
 
 Zet je zo'n regel uit, dan telt het kenmerk alleen nog als punten in de bewaarscore.
 
+Een kostuum herkent OAK op twee manieren. PGSharp vult het kostuumveld van de Pokémon, of de Game Master markeert de vorm als kostuum (`isCostume`). Het tweede geldt bijvoorbeeld voor een Pikachu met een eventhoed, waarbij PGSharp het kostuumveld niet altijd vult. Staat een nieuwe vorm nog niet in de Game Data, dan rekent OAK met de standaardvorm en zet hij de Pokémon op Beoordelen, nooit op transfer-kandidaat.
+
 ### Van scores naar status
 
 OAK beslist in deze volgorde:
@@ -246,7 +248,7 @@ OAK zet zelf nooit iets over. De actielijst is een hulpmiddel om in het spel af 
 
 ## Herberekening
 
-Een analyse is een projectie en kan altijd opnieuw worden berekend. OAK berekent opnieuw na iedere import, na een wijziging van regels of OAK-gegevens, na een Game Data-wissel, als een event binnen de termijn komt of voorbij is, en bij het starten als de engineversie is veranderd. De huidige engineversie is `cleanup-2.5`.
+Een analyse is een projectie en kan altijd opnieuw worden berekend. OAK berekent opnieuw na iedere import, na een wijziging van regels of OAK-gegevens, na een Game Data-wissel, als een event binnen de termijn komt of voorbij is, en bij het starten als de engineversie is veranderd. De huidige engineversie is `cleanup-2.6`.
 
 ## Controle op een echte export
 

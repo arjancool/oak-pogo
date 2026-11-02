@@ -13,7 +13,7 @@ gyarados&shiny&cp>2500
 
 Een `!` voor een term keert hem om. `!favorite` geeft alles behalve favorieten.
 
-Een komma voor "of", zoals in Pokémon GO, kent OAK niet. Hoofdletters maken niet uit. Je kunt hoogstens 20 termen gebruiken.
+Een komma voor "of", zoals in Pokémon GO, kent OAK niet. Hoofdletters maken niet uit. Je kunt hoogstens 20 termen gebruiken. Dezelfde term twee keer telt als één.
 
 Een onbekend veld, zoals `onbekend:3`, of een ongeldige waarde, zoals `cp>abc`, geeft een foutmelding. Een los woord zonder veld zoekt OAK altijd als tekst in de naam. Een tikfout daarin geeft dus geen melding, maar gewoon geen resultaten.
 

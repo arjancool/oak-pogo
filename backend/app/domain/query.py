@@ -126,7 +126,8 @@ def parse_query(query: str) -> list[Term]:
     tokens = [t for t in re.split(r"[\s&]+", query.strip().lower()) if t]
     if len(tokens) > MAX_TERMS:
         raise QuerySyntaxError(f"Maximaal {MAX_TERMS} zoektermen.", "too_many_terms", {"max": MAX_TERMS})
-    return [_parse_token(token) for token in tokens]
+    # The same term twice changes nothing, so it is used once.
+    return list(dict.fromkeys(_parse_token(token) for token in tokens))
 
 
 def _parse_token(token: str) -> Term:

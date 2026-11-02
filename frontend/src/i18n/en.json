@@ -2081,7 +2081,8 @@
       "VALIDATION_FAILED_iv_rank": "An IV rank is between 1 and 4096.",
       "VALIDATION_FAILED_max_level": "max_level is invalid.",
       "VALIDATION_FAILED_review_threshold": "The review threshold may not be above the keep threshold.",
-      "VALIDATION_FAILED_rules": "Invalid rule settings."
+      "VALIDATION_FAILED_rules": "Invalid rule settings.",
+      "PAYLOAD_TOO_LARGE_request": "The request is larger than allowed."
     },
     "imports": {
       "POKEMON_LIST_MISSING": "The export has no Pokémon list.",

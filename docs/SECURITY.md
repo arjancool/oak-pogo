@@ -29,6 +29,7 @@ OAK is vaak via internet bereikbaar, omdat PGSharp de webhook vanaf je telefoon 
 - Per webhook zijn standaard 60 verzoeken per uur toegestaan. Na 20 verzoeken met een ongeldig token blokkeert OAK het IP-adres 10 minuten.
 - Een verzoek mag na het uitpakken hoogstens `OAK_MAX_IMPORT_MB` (64 MB) groot zijn. Gecomprimeerde inhoud wordt begrensd uitgepakt, zodat een zip-bom geen geheugen opeet.
 - Een upload via de interface wordt pas gelezen na de inlogcontrole, en nooit verder dan de limiet. Een te grote `Content-Length` wordt meteen geweigerd, en zonder die header stopt OAK zodra de limiet bereikt is.
+- Ieder ander verzoek mag hoogstens 1 MB groot zijn. OAK controleert dat voordat een route de body leest, dus ook zonder login. Een te grote `Content-Length` krijgt meteen 413, en een body zonder die header telt OAK tijdens het binnenkomen.
 - Het token staat in het pad van de URL, omdat PGSharp geen eigen headers kan meesturen. OAK schrijft het nooit in zijn logboek. Zorg dat je reverse proxy het ook niet logt: zie `docs/DEPLOYMENT.md`.
 - Een export wordt nooit alleen op basis van de trainernaam aan een account gekoppeld. OAK gebruikt een HMAC-vingerafdruk van de spelers-ID uit de export.
 

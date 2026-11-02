@@ -2081,7 +2081,8 @@
       "VALIDATION_FAILED_iv_rank": "Een IV-rang ligt tussen 1 en 4096.",
       "VALIDATION_FAILED_max_level": "max_level is ongeldig.",
       "VALIDATION_FAILED_review_threshold": "De reviewdrempel mag niet boven de bewaardrempel liggen.",
-      "VALIDATION_FAILED_rules": "Ongeldige regelinstellingen."
+      "VALIDATION_FAILED_rules": "Ongeldige regelinstellingen.",
+      "PAYLOAD_TOO_LARGE_request": "Het verzoek is groter dan toegestaan."
     },
     "imports": {
       "POKEMON_LIST_MISSING": "De export bevat geen Pokémon-lijst.",

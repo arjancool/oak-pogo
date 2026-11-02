@@ -12,7 +12,7 @@ from app.core.clock import Clock
 from app.core.config import Settings
 from app.core.db import Database
 from app.domain.classification import AccountContext, CompletenessPolicy, ImportKind, classify
-from app.domain.pokemon import Issue, Severity
+from app.domain.pokemon import MAX_ISSUES_PER_SEVERITY, Issue, Severity
 from app.gamedata.store import GameDataStore
 from app.ingestion.receive import APPLIED_STATUSES, load_payload
 from app.ingestion.sync import apply_export, in_inventory_count
@@ -20,7 +20,9 @@ from app.models import BackgroundJob, ImportIssue, ImportJob, SyncRun, TrainerAc
 from app.normalizers.pgsharp import normalize_export
 
 log = logging.getLogger("oak.ingest")
-MAX_STORED_ISSUES = 500
+# The normalizer keeps this many issues of each severity, so storing the first ones after sorting
+# gives the same result as when it had kept them all.
+MAX_STORED_ISSUES = MAX_ISSUES_PER_SEVERITY
 POLICY_KEY = "completeness"
 
 
@@ -122,7 +124,7 @@ class ImportProcessor:
                     policy=_policy(account.settings),
                     confirm_full=job.confirm_full,
                 )
-                _store_issues(session, job.id, export.issues)
+                _store_issues(session, job.id, export.issues, export.issues_dropped)
                 job.classification = classification.kind.value
                 finished = self.clock.now()
 
@@ -224,7 +226,7 @@ def _policy(account_settings: dict[str, Any] | None) -> CompletenessPolicy:
     )
 
 
-def _store_issues(session: Any, job_id: int, issues: list[Issue]) -> None:
+def _store_issues(session: Any, job_id: int, issues: list[Issue], dropped: int = 0) -> None:
     ordered = sorted(issues, key=lambda i: {Severity.ERROR: 0, Severity.WARNING: 1, Severity.INFO: 2}[i.severity])
     for issue in ordered[:MAX_STORED_ISSUES]:
         session.add(
@@ -238,8 +240,8 @@ def _store_issues(session: Any, job_id: int, issues: list[Issue]) -> None:
                 data=issue.data,
             )
         )
-    if len(ordered) > MAX_STORED_ISSUES:
-        skipped = len(ordered) - MAX_STORED_ISSUES
+    skipped = max(0, len(ordered) - MAX_STORED_ISSUES) + dropped
+    if skipped:
         session.add(
             ImportIssue(
                 import_job_id=job_id,

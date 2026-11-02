@@ -6,6 +6,7 @@ carry this value*; it never stands in for ``False`` or ``0``.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import IntEnum, StrEnum
@@ -78,6 +79,34 @@ class Issue:
     # The values in the message, so the interface can show it in another language (ADR-0025).
     # "context" names the variant when one code has more than one message.
     data: dict[str, Any] = field(default_factory=dict)
+
+
+# Issues kept per severity while reading an export. OAK stores at most this many in total, errors
+# first, so keeping this many of each severity stores exactly the same issues as keeping them all.
+MAX_ISSUES_PER_SEVERITY = 500
+
+
+class IssueLog:
+    """The issues found while reading an export, in the order they were found. After
+    ``MAX_ISSUES_PER_SEVERITY`` of one severity, further ones are only counted, so an export full
+    of unreadable records does not fill the memory with messages."""
+
+    def __init__(self, limit: int = MAX_ISSUES_PER_SEVERITY) -> None:
+        self.limit = limit
+        self.items: list[Issue] = []
+        self.dropped = 0
+        self._counts: dict[Severity, int] = dict.fromkeys(Severity, 0)
+
+    def append(self, issue: Issue) -> None:
+        if self._counts[issue.severity] < self.limit:
+            self._counts[issue.severity] += 1
+            self.items.append(issue)
+        else:
+            self.dropped += 1
+
+    def extend(self, issues: Iterable[Issue]) -> None:
+        for issue in issues:
+            self.append(issue)
 
 
 @dataclass(frozen=True, slots=True)
@@ -188,6 +217,8 @@ class NormalizedExport:
     # Records with a readable ID but unreadable content. They prove presence, not state.
     unreadable_records: list[str]
     issues: list[Issue]
+    # Issues found but not kept, see IssueLog.
+    issues_dropped: int = 0
 
 
 def iv_percent(attack: int | None, defense: int | None, stamina: int | None) -> float | None:

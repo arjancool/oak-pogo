@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import threading
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -17,6 +18,9 @@ SECONDS_PER_MINUTE = 60
 SECONDS_PER_HOUR = 3600
 INVALID_TOKEN_LIMIT = 20
 INVALID_TOKEN_WINDOW_SECONDS = 600
+# Exports read and stored at the same time. More wait their turn, so a burst of large exports
+# cannot together use more memory than two do.
+IMPORT_SLOTS = 2
 
 
 @dataclass
@@ -35,6 +39,7 @@ class Container:
     login_by_ip: SlidingWindowLimiter = field(init=False)
     webhook_by_token: SlidingWindowLimiter = field(init=False)
     webhook_invalid_by_ip: SlidingWindowLimiter = field(init=False)
+    import_slots: threading.BoundedSemaphore = field(init=False)
 
     def __post_init__(self) -> None:
         window = self.settings.login_window_minutes * SECONDS_PER_MINUTE
@@ -42,3 +47,4 @@ class Container:
         self.login_by_ip = SlidingWindowLimiter(self.settings.login_max_attempts * 3, window)
         self.webhook_by_token = SlidingWindowLimiter(self.settings.webhook_rate_limit_per_hour, SECONDS_PER_HOUR)
         self.webhook_invalid_by_ip = SlidingWindowLimiter(INVALID_TOKEN_LIMIT, INVALID_TOKEN_WINDOW_SECONDS)
+        self.import_slots = threading.BoundedSemaphore(IMPORT_SLOTS)

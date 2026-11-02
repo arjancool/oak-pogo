@@ -2129,7 +2129,14 @@
       "MULTIPART_WITHOUT_FILE": "The multipart request has no file.",
       "ENCODING_INVALID": "The content is not valid {{charset}} text.",
       "EMPTY_BODY": "The request has no content.",
-      "INVALID_JSON": "Invalid JSON at line {{line}}, column {{column}}."
+      "INVALID_JSON": "Invalid JSON at line {{line}}, column {{column}}.",
+      "STRUCTURE_TOO_LARGE_pokemons": "The export has more than {{max, number}} Pokémon records.",
+      "STRUCTURE_TOO_LARGE_containers": "The export has more than {{max, number}} objects and lists.",
+      "STRUCTURE_TOO_LARGE_values": "The export has more than {{max, number}} values.",
+      "STRUCTURE_TOO_LARGE_depth": "The export is nested deeper than {{max, number}} levels.",
+      "STRUCTURE_TOO_LARGE_keys": "An object in the export has more than {{max, number}} fields.",
+      "STRUCTURE_TOO_LARGE_number": "A number in the export has more than {{max, number}} digits.",
+      "PROCESSING_INTERRUPTED": "Processing was interrupted {{attempts}} times, for example by a restart or a lack of memory. OAK will not try again. Nothing was changed."
     },
     "sync": {
       "PROCESSING": "An import is being processed.",

@@ -27,6 +27,7 @@ MODULES = {
         "normalizers/pgsharp.py",
         "ingestion/receive.py",
         "ingestion/processor.py",
+        "jobs/runner.py",
     ),
     "sync": ("api/v1/sync.py", "api/v1/accounts.py"),
     "gamedata": ("gamedata/validate.py", "gamedata/store.py", "api/v1/gamedata.py", "api/v1/system.py"),

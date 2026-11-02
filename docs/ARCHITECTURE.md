@@ -60,7 +60,7 @@ Upload en webhook gebruiken vanaf stap 2 precies dezelfde code.
 
 ### Achtergrondverwerking
 
-De verwerker is een thread in hetzelfde proces. De wachtrij staat in de tabel `background_jobs`, zodat werk een herstart overleeft: bij het starten zet OAK onderbroken taken terug in de wachtrij. Taken zijn imports, analyses, Game Data-updates, het opnieuw afleiden na een Game Data-wissel en het ophalen van de eventkalender. Ieder uur draait onderhoud: opgeslagen exports opnieuw filteren als het privacyfilter strenger werd, ze opruimen na de bewaartermijn, zo nodig op nieuwe Game Data en een nieuwe eventkalender controleren, en analyses opnieuw inplannen als een event binnen de termijn komt of voorbij is.
+De verwerker is een thread in hetzelfde proces. De wachtrij staat in de tabel `background_jobs`, zodat werk een herstart overleeft: bij het starten zet OAK onderbroken taken terug in de wachtrij. Een taak die al drie keer is onderbroken, zet OAK op mislukt. Taken zijn imports, analyses, Game Data-updates, het opnieuw afleiden na een Game Data-wissel en het ophalen van de eventkalender. Ieder uur draait onderhoud: opgeslagen exports opnieuw filteren als het privacyfilter strenger werd, ze opruimen na de bewaartermijn, zo nodig op nieuwe Game Data en een nieuwe eventkalender controleren, en analyses opnieuw inplannen als een event binnen de termijn komt of voorbij is.
 
 ### Database
 

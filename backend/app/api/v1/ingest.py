@@ -26,6 +26,7 @@ from app.api.deps import get_container
 from app.auth.tokens import constant_time_equal, parse_webhook_token, sha256_hex
 from app.core.container import Container
 from app.core.errors import NotFoundError, PayloadTooLargeError, RateLimitedError
+from app.core.ratelimit import address_key
 from app.ingestion.receive import (
     IncomingPayload,
     create_import_job,
@@ -54,7 +55,8 @@ async def read_limited_body(request: Request, max_bytes: int) -> bytes:
 
 
 def _client_ip(request: Request) -> str:
-    return request.client.host if request.client else "unknown"
+    """The address the limit on invalid tokens counts, an IPv6 address per /64 block."""
+    return address_key(request.client.host) if request.client else "unknown"
 
 
 @router.post("/pgsharp/{token}", status_code=202)

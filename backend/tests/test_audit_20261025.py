@@ -118,6 +118,7 @@ def test_login_throttle_does_not_allocate_for_blocked_ip(client: TestClient, con
         response = client.post("/api/v1/auth/login", json={"username": f"audit-{i}", "password": "invalid"})
         assert response.status_code == 429
     assert len(container.login_by_user) == 0
+    assert len(container.login_by_pair) == 0
 
 
 def test_expired_rate_limit_keys_are_collected() -> None:

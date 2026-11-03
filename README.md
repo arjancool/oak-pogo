@@ -294,7 +294,7 @@ Bij het starten voert OAK database-migraties zelf uit, na een automatische back-
 | De container wordt niet *healthy* | Bekijk `docker logs oak`. Vaak kan OAK niet schrijven in de datamap. Controleer `PUID` en `PGID`. |
 | `docker compose pull` geeft *denied* | Het pakket staat op privé. Log in met `docker login ghcr.io`. |
 | Na inloggen sta je weer op het inlogscherm | `OAK_BASE_URL` begint met `https://`, maar je opent OAK via http. Open het https-adres, of pas `OAK_BASE_URL` aan. |
-| "Te veel mislukte inlogpogingen" | Wacht hooguit een kwartier. Draait OAK achter een reverse proxy, stel dan `OAK_TRUSTED_PROXY_CIDRS` in. |
+| "Te veel mislukte inlogpogingen" | Wacht hooguit een kwartier. De blokkade geldt alleen voor het adres waar de pogingen vandaan kwamen. Draait OAK achter een reverse proxy, stel dan `OAK_TRUSTED_PROXY_CIDRS` in op het adres van de proxy. |
 | De poort is al in gebruik | Kies een andere hostpoort in `ports`, bijvoorbeeld `"8093:8080"`. |
 | Geen namen, PvP-rangen of cleanup-advies | Er is nog geen Game Data. Kijk op **Beheer → Game Data**. Zonder internet kun je de bestanden daar uploaden. |
 | De import verschijnt niet | Controleer of OAK bereikbaar is op het adres in de webhook-URL en of je opnieuw hebt ingelogd in PGSharp. Upload anders `PGSStats.json`. |

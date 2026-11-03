@@ -17,7 +17,7 @@ OAK is vaak via internet bereikbaar, omdat PGSharp de webhook vanaf je telefoon 
 - **Verlopen:** een sessie verloopt na 168 uur zonder gebruik en altijd na 30 dagen. Uitloggen trekt de sessie in. Een nieuw wachtwoord of het uitschakelen van een gebruiker trekt de andere sessies van die gebruiker in.
 - **Wachtwoord opnieuw instellen:** de eigenaar kan voor een andere gebruiker een nieuw wachtwoord instellen. Alle sessies van die gebruiker eindigen dan meteen. Het auditlog vermeldt dat het wachtwoord opnieuw is ingesteld, nooit het wachtwoord zelf. Zijn eigen wachtwoord wijzigt ook de eigenaar alleen met zijn huidige wachtwoord, zodat een overgenomen sessie het eigenaaraccount niet kan overnemen.
 - **CSRF:** ieder verzoek dat iets wijzigt, heeft de header `X-CSRF-Token` nodig. Die waarde is een HMAC van het sessietoken met de geheime sleutel. De frontend leest hem uit het cookie `oak_csrf`.
-- **Throttling:** na 10 mislukte pogingen per gebruikersnaam of 30 per IP-adres in 15 minuten weigert OAK tijdelijk (instelbaar). OAK kijkt eerst naar het IP-adres, en een geweigerd verzoek legt niets vast. De administratie ruimt verlopen pogingen zelf op en houdt hoogstens 10.000 sleutels per limiet bij. Registratie heeft ook een limiet per IP-adres.
+- **Throttling:** na 10 mislukte pogingen voor één gebruikersnaam vanaf één adres in 15 minuten blokkeert OAK dat adres tijdelijk voor die naam (instelbaar). Vanaf een ander adres kan de gebruiker gewoon inloggen. Na 30 mislukte pogingen vanaf één adres blokkeert OAK dat adres voor iedere naam. Mislukken er voor één naam 50 pogingen vanaf verschillende adressen, dan laat OAK voor die naam nog één poging per 5 seconden toe. Dat vertraagt raden, maar sluit niemand buiten. OAK neemt een plek in iedere grens voordat het wachtwoord wordt gecontroleerd, zodat pogingen die tegelijk binnenkomen de grens niet kunnen passeren. Een geslaagde login geeft zijn plek terug. Een IPv6-adres telt per /64-blok. OAK kijkt eerst naar het adres, en een geweigerd verzoek legt niets vast. De administratie ruimt verlopen pogingen zelf op en houdt hoogstens 10.000 sleutels per limiet bij. Registratie heeft ook een limiet per IP-adres.
 
 ## Webhook
 
@@ -79,7 +79,7 @@ Daarna scant [Grype](https://github.com/anchore/grype) de image op bekende kwets
 - Zet OAK achter https. Zonder https gaan wachtwoord en sessie onversleuteld over het netwerk.
 - Maak het eigenaaraccount aan voordat OAK via internet bereikbaar is. Zolang er geen eigenaar is, kan de eerste bezoeker die aanmaken.
 - Draait je reverse proxy op dezelfde machine, publiceer de poort dan alleen lokaal: `127.0.0.1:8080:8080` in plaats van `8080:8080`.
-- Stel `OAK_TRUSTED_PROXY_CIDRS` in op het netwerk van je reverse proxy. Anders delen alle bezoekers één limiet voor inlogpogingen.
+- Stel `OAK_TRUSTED_PROXY_CIDRS` in op het adres van je reverse proxy, niet op de hele Docker-range. Anders delen alle bezoekers één limiet voor inlogpogingen, of kan een andere container zich voordoen als ieder adres. Zie `docs/DEPLOYMENT.md`.
 - Zet het toegangslog van je proxy uit voor `/api/v1/ingest/`, of maskeer het pad.
 - Bewaar back-ups van `/data` op een veilige plek. Daarin staan je hele collectie en de geheime sleutel.
 - Houd de image bij met `docker compose pull`.

@@ -95,7 +95,7 @@ Zet OAK achter een reverse proxy met https. Stel `OAK_BASE_URL` in op het publie
 
 De webhook-URL bevat een geheim token. OAK schrijft dat token nooit in zijn eigen logboek, maar de toegangslogs van je proxy doen dat standaard wel. Zet die logs uit voor `/api/v1/ingest/` of maskeer het pad.
 
-Exports kunnen enkele megabytes groot zijn. Zorg dat de proxy verzoeken tot de ingestelde `OAK_MAX_IMPORT_MB` doorlaat.
+Exports kunnen enkele megabytes groot zijn. Alleen de webhook en de twee uploads (`/api/v1/imports/upload` en `/api/v1/gamedata/upload`) nemen grote verzoeken aan, tot `OAK_MAX_IMPORT_MB`. Iedere andere body boven 1 MB weigert OAK zelf met 413. Geef de grote grens in de proxy daarom alleen aan die paden en houd de rest klein, zoals in de voorbeelden hieronder.
 
 ### Nginx Proxy Manager
 
@@ -105,9 +105,17 @@ Exports kunnen enkele megabytes groot zijn. Zorg dat de proxy verzoeken tot de i
 4. Voeg onder **Advanced** toe:
 
 ```nginx
-client_max_body_size 64m;
+client_max_body_size 2m;
 location /api/v1/ingest/ {
     access_log off;
+    client_max_body_size 64m;
+    proxy_pass http://<docker-host>:8093;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+location ~ ^/api/v1/(imports|gamedata)/upload$ {
+    client_max_body_size 64m;
     proxy_pass http://<docker-host>:8093;
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -125,10 +133,19 @@ server {
     server_name oak.example.org;
     # ssl_certificate ...;
 
-    client_max_body_size 64m;
+    client_max_body_size 2m;
 
     location /api/v1/ingest/ {
         access_log off;
+        client_max_body_size 64m;
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location ~ ^/api/v1/(imports|gamedata)/upload$ {
+        client_max_body_size 64m;
         proxy_pass http://127.0.0.1:8080;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -150,8 +167,18 @@ Hier draait nginx op de host zelf: `OAK_TRUSTED_PROXY_CIDRS=127.0.0.1/32` en in 
 
 ```caddy
 oak.example.org {
-    request_body {
-        max_size 64MB
+    @large path /api/v1/ingest/* /api/v1/imports/upload /api/v1/gamedata/upload
+    handle @large {
+        request_body {
+            max_size 64MB
+        }
+        reverse_proxy oak:8080
+    }
+    handle {
+        request_body {
+            max_size 2MB
+        }
+        reverse_proxy oak:8080
     }
     log {
         output file /var/log/caddy/oak.log
@@ -162,7 +189,6 @@ oak.example.org {
             }
         }
     }
-    reverse_proxy oak:8080
 }
 ```
 

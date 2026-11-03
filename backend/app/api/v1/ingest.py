@@ -6,6 +6,9 @@ the user who owns that account is active. That is checked before the body is rea
 the transaction that stores the import, so revoking a webhook or disabling a user also stops an
 upload that was already under way (audit F04 and F05 of 25 October). A disabled user's webhooks
 stay stored and work again when the user is enabled again.
+
+The export is read, filtered and stored before that transaction, so a large export does not keep
+other writers waiting (see app/ingestion/receive.py).
 """
 
 from __future__ import annotations
@@ -23,7 +26,13 @@ from app.api.deps import get_container
 from app.auth.tokens import constant_time_equal, parse_webhook_token, sha256_hex
 from app.core.container import Container
 from app.core.errors import NotFoundError, PayloadTooLargeError, RateLimitedError
-from app.ingestion.receive import IncomingPayload, create_import_job, decode_payload, is_connection_test
+from app.ingestion.receive import (
+    IncomingPayload,
+    create_import_job,
+    decode_payload,
+    is_connection_test,
+    prepare_import,
+)
 from app.models import TrainerAccount, User, WebhookCredential
 
 router = APIRouter(prefix="/ingest", tags=["ingest"])
@@ -60,7 +69,7 @@ async def pgsharp_webhook(token: str, request: Request, container: Container = D
         container.webhook_invalid_by_ip.hit(f"ip:{ip}")
         log.warning("webhook with unknown token", extra={"client": ip})
         raise NotFoundError("Onbekende webhook.", code="UNKNOWN_WEBHOOK")
-    credential_id, account_id = credential
+    credential_id, account_id, diagnostics = credential
     retry = container.webhook_by_token.hit(f"wh:{credential_id}")
     if retry:
         raise RateLimitedError("Te veel exports in korte tijd voor deze webhook.", retry_after=retry, context="webhook")
@@ -75,7 +84,7 @@ async def pgsharp_webhook(token: str, request: Request, container: Container = D
         method=request.method,
         header_names=list(request.headers.keys()),
     )
-    result = await run_in_threadpool(_accept, container, credential_id, account_id, incoming)
+    result = await run_in_threadpool(_accept, container, credential_id, account_id, diagnostics, incoming)
     if result["status"] == "connection_test":
         return JSONResponse(result, status_code=200)
     container.runner.notify()
@@ -94,7 +103,8 @@ def _usable_account(session: Session, cred: WebhookCredential | None, account_id
     return account if user is not None and user.status == "active" else None
 
 
-def _find_credential(container: Container, identifier: str | None, token: str) -> tuple[int, int] | None:
+def _find_credential(container: Container, identifier: str | None, token: str) -> tuple[int, int, bool] | None:
+    """The credential and its trainer account, and whether that account collects diagnostics."""
     if identifier is None:
         return None
     with container.db.transaction() as session:
@@ -106,21 +116,21 @@ def _find_credential(container: Container, identifier: str | None, token: str) -
         ).first()
         if cred is None or not constant_time_equal(cred.token_hash, sha256_hex(token)):
             return None
-        if _usable_account(session, cred, cred.trainer_account_id) is None:
+        account = _usable_account(session, cred, cred.trainer_account_id)
+        if account is None:
             return None
-        return cred.id, cred.trainer_account_id
+        until = account.diagnostics_until
+        return cred.id, account.id, until is not None and until > container.clock.now()
 
 
-def _accept(container: Container, credential_id: int, account_id: int, incoming: IncomingPayload) -> dict[str, Any]:
-    decoded = decode_payload(incoming, container.settings.max_import_bytes)
-    with container.db.transaction() as session:
-        cred = session.get(WebhookCredential, credential_id)
-        account = _usable_account(session, cred, account_id)
-        if account is None or cred is None:
-            raise NotFoundError("Onbekende webhook.", code="UNKNOWN_WEBHOOK")
-        now = container.clock.now()
-        cred.last_used_at = now
+def _accept(
+    container: Container, credential_id: int, account_id: int, diagnostics: bool, incoming: IncomingPayload
+) -> dict[str, Any]:
+    with container.import_slots:
+        decoded = decode_payload(incoming, container.settings.max_import_bytes)
         if is_connection_test(decoded):
+            with container.db.transaction() as session:
+                account = _still_usable(session, container, credential_id, account_id)
             log.info(
                 "webhook connection test",
                 extra={
@@ -134,21 +144,39 @@ def _accept(container: Container, credential_id: int, account_id: int, incoming:
                 "status": "connection_test",
                 "message": "De verbinding met OAK werkt. Een testverzoek wordt niet geïmporteerd.",
             }
-        diagnostics = account.diagnostics_until is not None and account.diagnostics_until > now
-        job = create_import_job(
-            session,
-            account=account,
-            user_id=None,
-            incoming=incoming,
-            decoded=decoded,
-            secret=container.secret,
-            imports_dir=container.settings.imports_dir,
-            now=now,
-            detailed_structure=diagnostics,
-        )
-        return {
-            "import_id": job.id,
-            "status": job.status,
-            "error": job.error_code,
-            "message": job.error_message,
-        }
+        with (
+            prepare_import(
+                decoded,
+                secret=container.secret,
+                imports_dir=container.settings.imports_dir,
+                detailed_structure=diagnostics,
+            ) as prepared,
+            container.db.transaction() as session,
+        ):
+            account = _still_usable(session, container, credential_id, account_id)
+            job = create_import_job(
+                session,
+                account=account,
+                user_id=None,
+                incoming=incoming,
+                decoded=decoded,
+                prepared=prepared,
+                now=container.clock.now(),
+            )
+            return {
+                "import_id": job.id,
+                "status": job.status,
+                "error": job.error_code,
+                "message": job.error_message,
+            }
+
+
+def _still_usable(session: Session, container: Container, credential_id: int, account_id: int) -> TrainerAccount:
+    """Checked again in the transaction that stores the import, because the webhook may have been
+    revoked while the body was on its way."""
+    cred = session.get(WebhookCredential, credential_id)
+    account = _usable_account(session, cred, account_id)
+    if account is None or cred is None:
+        raise NotFoundError("Onbekende webhook.", code="UNKNOWN_WEBHOOK")
+    cred.last_used_at = container.clock.now()
+    return account

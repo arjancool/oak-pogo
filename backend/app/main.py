@@ -23,9 +23,12 @@ from app.core.db import Database, create_sqlite_engine
 from app.core.errors import AppError, NotFoundError, RateLimitedError, ValidationFailedError
 from app.core.logging import configure_logging
 from app.core.middleware import (
+    RequestBodyTooLarge,
     RequestLogMiddleware,
+    RequestSizeLimitMiddleware,
     SecurityHeadersMiddleware,
     content_security_policy,
+    request_too_large,
 )
 from app.core.migrations import migrate
 from app.gamedata.store import GameDataStore
@@ -102,6 +105,8 @@ def create_app(settings: Settings | None = None, clock: Clock | None = None) -> 
         template = container.sprite_template if container is not None else settings.sprite_url_template
         return content_security_policy(template)
 
+    # Innermost, so a refused body still gets the security headers.
+    app.add_middleware(RequestSizeLimitMiddleware)
     app.add_middleware(SecurityHeadersMiddleware, https=settings.secure_cookies, csp_provider=csp)
     app.add_middleware(RequestLogMiddleware)
     if settings.trusted_proxies:
@@ -134,6 +139,9 @@ def _register_error_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(StarletteHTTPException)
     async def http_error(_: Request, exc: StarletteHTTPException) -> JSONResponse:
+        if isinstance(exc, RequestBodyTooLarge):
+            too_large = request_too_large()
+            return JSONResponse(too_large.to_payload(), status_code=too_large.status_code)
         if exc.status_code == 404:
             error = NotFoundError("Niet gevonden.", context="path")
         else:

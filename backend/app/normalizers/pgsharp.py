@@ -20,6 +20,7 @@ from app.domain.pokemon import (
     Alignment,
     Gender,
     Issue,
+    IssueLog,
     ItemCount,
     NormalizedExport,
     NormalizedPokemon,
@@ -321,7 +322,7 @@ def normalize_export(
     species_resolver: SpeciesResolver | None = None,
     move_resolver: MoveResolver | None = None,
 ) -> NormalizedExport:
-    issues: list[Issue] = []
+    issues = IssueLog()
     if not isinstance(raw, Mapping):
         issues.append(Issue(Severity.ERROR, "ROOT_NOT_OBJECT", "De export is geen JSON-object."))
         return _empty_export(issues)
@@ -379,7 +380,8 @@ def normalize_export(
             pokemon_records=0,
             unidentifiable_records=0,
             unreadable_records=[],
-            issues=issues,
+            issues=issues.items,
+            issues_dropped=issues.dropped,
         )
 
     pokemon: list[NormalizedPokemon] = []
@@ -442,7 +444,8 @@ def normalize_export(
         pokemon_records=len(records),
         unidentifiable_records=unidentifiable,
         unreadable_records=unreadable,
-        issues=issues,
+        issues=issues.items,
+        issues_dropped=issues.dropped,
     )
 
 
@@ -460,7 +463,7 @@ def player_identifier(raw: Any) -> str | None:
 # --- helpers ----------------------------------------------------------------------------------
 
 
-def _empty_export(issues: list[Issue]) -> NormalizedExport:
+def _empty_export(issues: IssueLog) -> NormalizedExport:
     return NormalizedExport(
         export_time=None,
         export_time_raw=None,
@@ -475,7 +478,8 @@ def _empty_export(issues: list[Issue]) -> NormalizedExport:
         pokemon_records=0,
         unidentifiable_records=0,
         unreadable_records=[],
-        issues=issues,
+        issues=issues.items,
+        issues_dropped=issues.dropped,
     )
 
 
@@ -612,7 +616,7 @@ def _normalize_trainer(account: Mapping[str, Any], player: Mapping[str, Any]) ->
     )
 
 
-def _normalize_items(records: list[Any], issues: list[Issue]) -> list[ItemCount]:
+def _normalize_items(records: list[Any], issues: IssueLog) -> list[ItemCount]:
     totals: dict[int, ItemCount] = {}
     for index, record in enumerate(records):
         if not isinstance(record, Mapping):

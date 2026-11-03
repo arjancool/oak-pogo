@@ -16,6 +16,7 @@ from sqlalchemy import (
     not_,
     or_,
     select,
+    tuple_,
     type_coerce,
 )
 from sqlalchemy.orm import aliased
@@ -139,19 +140,35 @@ def flag_condition(flag: str, account_id: int, latest_sync_id: int | None) -> Co
             return Pokemon.id < 0
         return and_(Pokemon.first_seen_sync_id == latest_sync_id, _has_previous_sync(latest_sync_id))
     if flag == "duplicate":
-        other = aliased(Pokemon)
-        return exists(
-            select(other.id).where(
-                other.trainer_account_id == account_id,
-                other.inventory_status == "in_inventory",
-                other.id != Pokemon.id,
-                func.coalesce(other.form_key, type_coerce(other.species_id, String))
-                == func.coalesce(Pokemon.form_key, type_coerce(Pokemon.species_id, String)),
-                func.coalesce(other.alignment, 0) == func.coalesce(Pokemon.alignment, 0),
-            )
-        )
+        return _duplicate(account_id)
     msg = f"unknown flag {flag}"
     raise ValueError(msg)
+
+
+def _group_key(model: Any) -> tuple[Any, Any]:
+    """Pokémon of the same form and the same alignment (shadow, purified) are duplicates."""
+    return (
+        func.coalesce(model.form_key, type_coerce(model.species_id, String)),
+        func.coalesce(model.alignment, 0),
+    )
+
+
+def _duplicate(account_id: int) -> ColumnElement[bool]:
+    """Another Pokémon with the same group key is in the inventory. The groups are counted once
+    for the whole query, instead of looking for a partner row by row, which took quadratic time.
+    A Pokémon in the inventory needs a group of at least two, one that is gone needs one."""
+    other = aliased(Pokemon)
+    key = _group_key(other)
+    groups = (
+        select(*key)
+        .where(other.trainer_account_id == account_id, other.inventory_status == "in_inventory")
+        .group_by(*key)
+    )
+    own = tuple_(*_group_key(Pokemon))
+    return or_(
+        and_(Pokemon.inventory_status == "in_inventory", own.in_(groups.having(func.count() > 1))),
+        and_(Pokemon.inventory_status != "in_inventory", own.in_(groups)),
+    )
 
 
 def _text(column: Any) -> Any:

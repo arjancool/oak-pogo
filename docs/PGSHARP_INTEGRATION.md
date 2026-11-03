@@ -61,11 +61,28 @@ OAK accepteert:
 | `202` met `"status": "queued"` | Ontvangen en in de wachtrij gezet. |
 | `202` met `"status": "duplicate"` | Precies deze export was al ontvangen. Er verandert niets. |
 | `200` met `"status": "connection_test"` | Een verbindingstest. Er is niets geïmporteerd. |
-| `400` | De inhoud is geen leesbare JSON. De import staat als geweigerd in OAK, met de reden. |
+| `400` | De inhoud is geen leesbare JSON, of de structuur valt buiten de grenzen hieronder. De import staat als geweigerd in OAK, met de reden. |
 | `404` | Onbekend of ingetrokken token. |
 | `413` | Groter dan `OAK_MAX_IMPORT_MB` (standaard 64 MB). |
 | `415` | Een niet-ondersteunde `Content-Encoding`. |
 | `429` | Te veel verzoeken. Per webhook standaard 60 per uur. Per IP-adres blokkeert OAK na 20 ongeldige tokens 10 minuten lang. |
+
+### Grenzen aan de structuur
+
+Naast de grootte in bytes controleert OAK de opbouw van een export. Zo kost het lezen nooit veel meer geheugen dan de export groot is. Een echte export met ongeveer 1.000 Pokémon heeft zo'n 8.400 objecten en lijsten, 100.000 waarden, 9 niveaus en hoogstens 82 velden in één object. De grenzen liggen daar ruim boven:
+
+| Grens | Maximum |
+|---|---|
+| Pokémon-records in `pokemons` | 25.000 |
+| Objecten en lijsten samen | 500.000 |
+| Waarden | 4.000.000 |
+| Niveaus | 32 |
+| Velden in één object | 1.000 |
+| Cijfers in één getal | 4.300 |
+
+Het aantal objecten, lijsten en waarden telt OAK voordat het de JSON leest. Een export die over een grens gaat, weigert OAK met de code `STRUCTURE_TOO_LARGE` en de grens die overschreden is.
+
+OAK leest, filtert en bewaart een export voordat het de database op slot zet voor de import. Een grote export houdt andere schrijvers dus niet op. Hoogstens twee exports worden tegelijk gelezen. De rest wacht even.
 
 ### Verbindingstest
 
@@ -168,6 +185,10 @@ De inhoud van de export legt OAK in geen van beide gevallen vast. Van de headers
 ## Bewaren van exports
 
 Een ontvangen export bewaart OAK opgeschoond en gecomprimeerd in `/data/imports`, zodat een mislukte import opnieuw kan. Na `OAK_RAW_IMPORT_RETENTION_DAYS` (standaard 14) dagen verwijdert OAK het bestand. De resultaten van de import blijven staan.
+
+Wordt OAK midden in een import gestopt, bijvoorbeeld door een herstart, dan verwerkt OAK de import bij het starten opnieuw. Na drie onderbroken pogingen stopt OAK ermee en zet de import op mislukt, met de reden. Zo kan een import die OAK steeds laat vastlopen dat niet bij iedere start opnieuw doen.
+
+Een import met veel fouten bewaart hoogstens 500 meldingen. De rest telt OAK alleen, en het aantal staat bij de import.
 
 ## Problemen oplossen
 

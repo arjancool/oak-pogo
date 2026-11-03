@@ -2081,7 +2081,8 @@
       "VALIDATION_FAILED_iv_rank": "Een IV-rang ligt tussen 1 en 4096.",
       "VALIDATION_FAILED_max_level": "max_level is ongeldig.",
       "VALIDATION_FAILED_review_threshold": "De reviewdrempel mag niet boven de bewaardrempel liggen.",
-      "VALIDATION_FAILED_rules": "Ongeldige regelinstellingen."
+      "VALIDATION_FAILED_rules": "Ongeldige regelinstellingen.",
+      "PAYLOAD_TOO_LARGE_request": "Het verzoek is groter dan toegestaan."
     },
     "imports": {
       "POKEMON_LIST_MISSING": "De export bevat geen Pokémon-lijst.",
@@ -2128,7 +2129,14 @@
       "MULTIPART_WITHOUT_FILE": "Het multipart-verzoek bevat geen bestand.",
       "ENCODING_INVALID": "De inhoud is geen geldige {{charset}}-tekst.",
       "EMPTY_BODY": "Het verzoek bevat geen inhoud.",
-      "INVALID_JSON": "Ongeldige JSON op regel {{line}}, kolom {{column}}."
+      "INVALID_JSON": "Ongeldige JSON op regel {{line}}, kolom {{column}}.",
+      "STRUCTURE_TOO_LARGE_pokemons": "De export bevat meer dan {{max, number}} Pokémon-records.",
+      "STRUCTURE_TOO_LARGE_containers": "De export bevat meer dan {{max, number}} objecten en lijsten.",
+      "STRUCTURE_TOO_LARGE_values": "De export bevat meer dan {{max, number}} waarden.",
+      "STRUCTURE_TOO_LARGE_depth": "De export is dieper genest dan {{max, number}} niveaus.",
+      "STRUCTURE_TOO_LARGE_keys": "Een object in de export heeft meer dan {{max, number}} velden.",
+      "STRUCTURE_TOO_LARGE_number": "Een getal in de export heeft meer dan {{max, number}} cijfers.",
+      "PROCESSING_INTERRUPTED": "De verwerking is {{attempts}} keer onderbroken, bijvoorbeeld door een herstart of te weinig geheugen. OAK probeert het niet opnieuw. Er is niets gewijzigd."
     },
     "sync": {
       "PROCESSING": "Er wordt een import verwerkt.",

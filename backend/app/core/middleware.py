@@ -1,4 +1,4 @@
-"""Security headers and request logging (spec §21.4, §26.1)."""
+"""Security headers, request logging and the request size limit (spec §21.4, §26.1)."""
 
 from __future__ import annotations
 
@@ -6,11 +6,13 @@ import logging
 import time
 from urllib.parse import urlparse
 
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
-from starlette.responses import Response
-from starlette.types import ASGIApp
+from starlette.responses import JSONResponse, Response
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
+from app.core.errors import PayloadTooLargeError
 from app.core.logging import redact
 
 log = logging.getLogger("oak.http")
@@ -78,3 +80,65 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
                 },
             )
         return response
+
+
+# Enough for every JSON request the interface sends. The webhook and the two uploads stream far
+# larger bodies and check their own limit before they read it (audit A04, OAK_MAX_IMPORT_MB).
+MAX_REQUEST_BYTES = 1024 * 1024
+SIZE_LIMIT_EXEMPT = ("/api/v1/ingest/", "/api/v1/imports/upload", "/api/v1/gamedata/upload")
+
+
+def request_too_large() -> PayloadTooLargeError:
+    return PayloadTooLargeError("Het verzoek is groter dan toegestaan.", context="request")
+
+
+class RequestBodyTooLarge(StarletteHTTPException):
+    """Raised while a body is read. FastAPI passes an HTTP exception on unchanged."""
+
+    def __init__(self) -> None:
+        super().__init__(status_code=413)
+
+
+class RequestSizeLimitMiddleware:
+    """Refuse a request body above the limit before a route reads it (security issue #37).
+
+    FastAPI reads and parses a JSON body before the login and rate-limit checks run, so without
+    this a large body costs memory even when the request is refused afterwards. A declared length
+    above the limit is refused at once; a streamed body is counted while it arrives.
+    """
+
+    def __init__(self, app: ASGIApp, max_bytes: int = MAX_REQUEST_BYTES) -> None:
+        self.app = app
+        self.max_bytes = max_bytes
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http" or str(scope["path"]).startswith(SIZE_LIMIT_EXEMPT):
+            await self.app(scope, receive, send)
+            return
+        declared = _content_length(scope)
+        if declared is not None and declared > self.max_bytes:
+            error = request_too_large()
+            await JSONResponse(error.to_payload(), status_code=error.status_code)(scope, receive, send)
+            return
+        received = 0
+
+        async def counted() -> Message:
+            nonlocal received
+            message = await receive()
+            if message["type"] == "http.request":
+                received += len(message.get("body", b""))
+                if received > self.max_bytes:
+                    raise RequestBodyTooLarge
+            return message
+
+        await self.app(scope, counted, send)
+
+
+def _content_length(scope: Scope) -> int | None:
+    for name, value in scope.get("headers", []):
+        if name == b"content-length":
+            try:
+                return int(value)
+            except ValueError:
+                return None
+    return None

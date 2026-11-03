@@ -22,12 +22,12 @@ from app.core.errors import (
 from app.domain.classification import CONFIRMABLE_CODES
 from app.ingestion.receive import (
     IncomingPayload,
+    PreparedImport,
     create_import_job,
     decode_payload,
-    fingerprint_for,
+    prepare_import,
 )
 from app.models import BackgroundJob, ImportIssue, ImportJob, SyncRun, TrainerAccount, User
-from app.normalizers.pgsharp import player_identifier
 from app.schemas.common import ApiModel, UtcDatetime
 
 router = APIRouter(prefix="/imports", tags=["imports"])
@@ -163,64 +163,72 @@ async def upload(
 def _accept_upload(container: Container, user_id: int, account_id: int | None, incoming: IncomingPayload) -> ImportOut:
     if incoming.content_type and incoming.content_type.startswith("multipart/"):
         incoming.content_type = "application/json"
-    decoded = decode_payload(incoming, container.settings.max_import_bytes)
-    with container.db.transaction() as session:
-        user = session.get(User, user_id)
-        assert user is not None
-        fingerprint = fingerprint_for(container.secret, player_identifier(decoded.data)) if decoded.data else None
-        if account_id is None:
-            matches = (
-                session.scalars(
-                    select(TrainerAccount).where(
-                        TrainerAccount.user_id == user_id,
-                        TrainerAccount.source_fingerprint == fingerprint,
-                    )
-                ).all()
-                if fingerprint
-                else []
+    with container.import_slots:
+        decoded = decode_payload(incoming, container.settings.max_import_bytes)
+        # The export is read, filtered and stored before the write transaction (app/ingestion/receive.py).
+        with (
+            prepare_import(decoded, secret=container.secret, imports_dir=container.settings.imports_dir) as prepared,
+            container.db.transaction() as session,
+        ):
+            user = session.get(User, user_id)
+            assert user is not None
+            account = _upload_account(session, user, account_id, prepared)
+            job = create_import_job(
+                session,
+                account=account,
+                user_id=user_id,
+                incoming=incoming,
+                decoded=decoded,
+                prepared=prepared,
+                now=container.clock.now(),
             )
-            if len(matches) != 1:
-                raise ValidationFailedError(
-                    "OAK kan het traineraccount niet automatisch herkennen. "
-                    "Kies het account waar deze export bij hoort.",
-                    code="ACCOUNT_REQUIRED",
+            return import_out(session, job, detail=True)
+
+
+def _upload_account(session: Session, user: User, account_id: int | None, prepared: PreparedImport) -> TrainerAccount:
+    """The chosen trainer account, or the one the export belongs to when none was chosen."""
+    fingerprint = prepared.fingerprint
+    if account_id is None:
+        matches = (
+            session.scalars(
+                select(TrainerAccount).where(
+                    TrainerAccount.user_id == user.id,
+                    TrainerAccount.source_fingerprint == fingerprint,
                 )
-            account = matches[0]
-        else:
-            account = owned_account(session, user, account_id)
-            if fingerprint and account.source_fingerprint and account.source_fingerprint != fingerprint:
-                other = session.scalars(
-                    select(TrainerAccount).where(
-                        TrainerAccount.user_id == user_id,
-                        TrainerAccount.source_fingerprint == fingerprint,
-                    )
-                ).first()
-                if other is not None:
-                    raise ConflictError(
-                        "Deze export hoort bij een ander Pokémon GO-account dan het gekozen traineraccount. "
-                        f"Deze export hoort bij '{other.nickname}'.",
-                        code="ACCOUNT_MISMATCH",
-                        context="known_account",
-                        data={"nickname": other.nickname},
-                        details={"matching_account_id": other.id},
-                    )
-                raise ConflictError(
-                    "Deze export hoort bij een ander Pokémon GO-account dan het gekozen traineraccount.",
-                    code="ACCOUNT_MISMATCH",
-                    context="other_account",
-                    details={"matching_account_id": None},
-                )
-        job = create_import_job(
-            session,
-            account=account,
-            user_id=user_id,
-            incoming=incoming,
-            decoded=decoded,
-            secret=container.secret,
-            imports_dir=container.settings.imports_dir,
-            now=container.clock.now(),
+            ).all()
+            if fingerprint
+            else []
         )
-        return import_out(session, job, detail=True)
+        if len(matches) != 1:
+            raise ValidationFailedError(
+                "OAK kan het traineraccount niet automatisch herkennen. Kies het account waar deze export bij hoort.",
+                code="ACCOUNT_REQUIRED",
+            )
+        return matches[0]
+    account = owned_account(session, user, account_id)
+    if fingerprint and account.source_fingerprint and account.source_fingerprint != fingerprint:
+        other = session.scalars(
+            select(TrainerAccount).where(
+                TrainerAccount.user_id == user.id,
+                TrainerAccount.source_fingerprint == fingerprint,
+            )
+        ).first()
+        if other is not None:
+            raise ConflictError(
+                "Deze export hoort bij een ander Pokémon GO-account dan het gekozen traineraccount. "
+                f"Deze export hoort bij '{other.nickname}'.",
+                code="ACCOUNT_MISMATCH",
+                context="known_account",
+                data={"nickname": other.nickname},
+                details={"matching_account_id": other.id},
+            )
+        raise ConflictError(
+            "Deze export hoort bij een ander Pokémon GO-account dan het gekozen traineraccount.",
+            code="ACCOUNT_MISMATCH",
+            context="other_account",
+            details={"matching_account_id": None},
+        )
+    return account
 
 
 @router.get("", response_model=dict[str, Any])

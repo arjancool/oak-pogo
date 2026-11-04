@@ -65,7 +65,7 @@ OAK accepteert:
 | `404` | Onbekend of ingetrokken token. |
 | `413` | Groter dan `OAK_MAX_IMPORT_MB` (standaard 64 MB). |
 | `415` | Een niet-ondersteunde `Content-Encoding`. |
-| `429` | Te veel verzoeken. Per webhook standaard 60 per uur. Per IP-adres blokkeert OAK na 20 ongeldige tokens 10 minuten lang. |
+| `429` | Te veel verzoeken. Per webhook standaard 60 per uur. Per IP-adres weigert OAK na 20 ongeldige tokens 10 minuten lang verdere ongeldige tokens. Een geldig token werkt dan gewoon. |
 
 ### Grenzen aan de structuur
 

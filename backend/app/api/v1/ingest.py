@@ -2,7 +2,8 @@
 send headers. The token is never logged (see app/core/logging.py).
 
 A webhook works only while its credential is active, still belongs to the trainer account and
-the user who owns that account is active. That is checked before the body is read and again in
+the user who owns that account is active. An address that sent many invalid tokens is refused
+only for invalid tokens; a valid token always gets through. That is checked before the body is read and again in
 the transaction that stores the import, so revoking a webhook or disabling a user also stops an
 upload that was already under way (audit F04 and F05 of 25 October). A disabled user's webhooks
 stay stored and work again when the user is enabled again.
@@ -62,12 +63,15 @@ def _client_ip(request: Request) -> str:
 @router.post("/pgsharp/{token}", status_code=202)
 async def pgsharp_webhook(token: str, request: Request, container: Container = Depends(get_container)) -> JSONResponse:
     ip = _client_ip(request)
-    blocked = container.webhook_invalid_by_ip.blocked(f"ip:{ip}")
-    if blocked:
-        raise RateLimitedError("Te veel ongeldige verzoeken.", retry_after=blocked, context="webhook_invalid")
     identifier = parse_webhook_token(token)
     credential = await run_in_threadpool(_find_credential, container, identifier, token)
     if credential is None:
+        # The block only stops invalid tokens. A valid token always gets through, also from an
+        # address that sent many invalid ones, for example a proxy that all requests come from
+        # (issue #44). Guessing a token is not feasible: its secret part has 256 bits.
+        blocked = container.webhook_invalid_by_ip.blocked(f"ip:{ip}")
+        if blocked:
+            raise RateLimitedError("Te veel ongeldige verzoeken.", retry_after=blocked, context="webhook_invalid")
         container.webhook_invalid_by_ip.hit(f"ip:{ip}")
         log.warning("webhook with unknown token", extra={"client": ip})
         raise NotFoundError("Onbekende webhook.", code="UNKNOWN_WEBHOOK")

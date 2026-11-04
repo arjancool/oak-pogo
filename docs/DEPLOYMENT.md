@@ -108,7 +108,7 @@ docker exec oak env | grep OAK_
 
 ## Reverse proxy
 
-Zet OAK achter een reverse proxy met https. Stel `OAK_BASE_URL` in op het publieke adres en `OAK_TRUSTED_PROXY_CIDRS` op het adres van de proxy. Zonder die laatste instelling ziet OAK ieder verzoek als afkomstig van de proxy, en delen alle gebruikers dan één limiet voor inlogpogingen.
+Zet OAK achter een reverse proxy met https. Stel `OAK_BASE_URL` in op het publieke adres en `OAK_TRUSTED_PROXY_CIDRS` op het adres van de proxy. Zonder die laatste instelling ziet OAK ieder verzoek als afkomstig van de proxy. Dan delen alle gebruikers één limiet voor inlogpogingen, en telt OAK de ongeldige webhook-tokens van iedereen samen.
 
 ### Alleen de proxy vertrouwen
 

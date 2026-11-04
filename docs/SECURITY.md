@@ -29,7 +29,7 @@ OAK is vaak via internet bereikbaar, omdat PGSharp de webhook vanaf je telefoon 
 - OAK vergelijkt de hash in constante tijd.
 - Per traineraccount is er hoogstens één actieve webhook. Een nieuwe URL maakt de oude direct ongeldig. Intrekken kan altijd.
 - Een webhook werkt alleen zolang hij actief is en de gebruiker van het traineraccount actief is. OAK controleert dat voor het lezen van de export en opnieuw in de transactie die de import opslaat. Intrekken of uitschakelen stopt dus ook een upload die al bezig was. Wordt een uitgeschakelde gebruiker weer actief, dan werkt zijn bestaande webhook weer. Wil je dat niet, trek de webhook dan in.
-- Per webhook zijn standaard 60 verzoeken per uur toegestaan. Na 20 verzoeken met een ongeldig token blokkeert OAK het IP-adres 10 minuten.
+- Per webhook zijn standaard 60 verzoeken per uur toegestaan. Na 20 verzoeken met een ongeldig token weigert OAK 10 minuten lang verdere ongeldige tokens van dat IP-adres. Een geldig token werkt dan gewoon, zodat een proxy waar alle verzoeken vandaan lijken te komen een webhook niet kan blokkeren.
 - Een verzoek mag na het uitpakken hoogstens `OAK_MAX_IMPORT_MB` (64 MB) groot zijn. Gecomprimeerde inhoud wordt begrensd uitgepakt, zodat een zip-bom geen geheugen opeet.
 - Ook de opbouw van een export is begrensd: hoogstens 25.000 Pokémon-records, 500.000 objecten en lijsten, 4 miljoen waarden, 32 niveaus en 1.000 velden per object. OAK telt objecten, lijsten en waarden voordat het de JSON leest. Zie `docs/PGSHARP_INTEGRATION.md`.
 - Een export wordt gelezen, gefilterd en bewaard buiten de schrijftransactie, en hoogstens twee tegelijk. Een import die drie keer is onderbroken, bijvoorbeeld door een herstart, start niet opnieuw.

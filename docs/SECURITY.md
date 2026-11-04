@@ -11,6 +11,7 @@ OAK is vaak via internet bereikbaar, omdat PGSharp de webhook vanaf je telefoon 
 ## Inloggen en sessies
 
 - **Wachtwoorden** worden gehasht met Argon2id, met de standaardparameters van argon2-cffi volgens RFC 9106. Een wachtwoord heeft minimaal 10 tekens.
+- Hashen en controleren gebeurt buiten iedere schrijftransactie. Een inlogpoging laat andere schrijvers, zoals een webhook-import, dus niet wachten. Verandert het wachtwoord of de status van een gebruiker terwijl OAK een poging controleert, dan telt de nieuwe stand.
 - **Eerste gebruik:** er is geen standaardaccount en geen standaardwachtwoord. De eerste gebruiker maakt zelf het eigenaaraccount aan. Daarna is het setupscherm dicht.
 - **Registratie** staat standaard uit (`OAK_ALLOW_REGISTRATION=false`). De eigenaar maakt gebruikers aan. Staat registratie aan, dan kan dat pas als de eigenaar bestaat. Zolang er geen eigenaar is, blijft het setupscherm beschikbaar.
 - **Sessies** zijn een willekeurig token van 256 bits in een cookie met `HttpOnly` en `SameSite=Lax`. Als `OAK_BASE_URL` met `https://` begint, krijgt het cookie ook `Secure`. De database bewaart alleen de SHA-256-hash van het token. Er staat niets in `localStorage`.

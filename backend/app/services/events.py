@@ -22,6 +22,8 @@ from sqlalchemy.orm import Session
 
 from app.core.config import Settings
 from app.core.db import Database
+from app.core.download import EVENTS_MAX_BYTES, fetch
+from app.core.download import client as download_client
 from app.gamedata.fetch import USER_AGENT
 from app.gamedata.model import GameData
 from app.gamedata.transform import norm_key
@@ -53,16 +55,12 @@ def update_events(settings: Settings, db: Database, now: datetime, content: byte
     etag = None
     try:
         if content is None:
-            with httpx.Client(
-                timeout=settings.gamedata_timeout_seconds,
-                headers={"User-Agent": USER_AGENT},
-                follow_redirects=True,
-            ) as client:
+            with download_client(settings.gamedata_timeout_seconds, USER_AGENT) as http:
                 headers = {"If-None-Match": previous["etag"]} if previous.get("etag") else {}
-                response = client.get(settings.events_url, headers=headers)
+                # At most EVENTS_MAX_BYTES, and no redirect to another host (issue #49).
+                response = fetch(http, settings.events_url, max_bytes=EVENTS_MAX_BYTES, headers=headers)
                 if response.status_code == HTTP_NOT_MODIFIED:
                     return _record(db, previous, now, status="unchanged")
-                response.raise_for_status()
                 content, etag = response.content, response.headers.get("etag")
         sha = hashlib.sha256(content).hexdigest()
         if sha == previous.get("sha256"):

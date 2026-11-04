@@ -100,7 +100,7 @@ docker exec oak env | grep OAK_
 | `OAK_GAMEDATA_UPDATE_INTERVAL_HOURS` | `24` | Hoe vaak OAK op nieuwe Game Data controleert. |
 | `OAK_EVENTS_AUTO_UPDATE` | `true` | De eventkalender automatisch bijwerken vanaf LeekDuck.com via ScrapedDuck (ADR-0021). |
 | `OAK_EVENTS_UPDATE_INTERVAL_HOURS` | `12` | Hoe vaak OAK de eventkalender ophaalt. |
-| `OAK_EVENTS_URL` | ScrapedDuck `events.json` | Adres van de eventkalender, bijvoorbeeld voor een eigen spiegel. |
+| `OAK_EVENTS_URL` | ScrapedDuck `events.json` | Adres van de eventkalender, bijvoorbeeld voor een eigen spiegel. Moet met `https://` beginnen, net als de adressen van de Game Data. |
 | `OAK_SPRITE_URL_TEMPLATE` | leeg | Beginwaarde voor een externe spritebron (ADR-0020). Beheer je normaal in de instellingen. Alleen een `https://`-adres met een gewone hostnaam en `{dex}` werkt. Een andere waarde negeert OAK, met een melding in het logboek. |
 | `OAK_PORT` | `8080` | Poort binnen de container. |
 | `PUID`, `PGID` | `1000` | Eigenaar van de datamap en gebruiker waaronder OAK draait. |

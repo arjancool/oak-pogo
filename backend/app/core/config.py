@@ -97,6 +97,15 @@ class Settings(BaseSettings):
                 raise ValueError(msg) from exc
         return value
 
+    @field_validator("gamedata_pokeminers_url", "gamedata_pvpoke_base_url", "events_url")
+    @classmethod
+    def _https_source(cls, value: str) -> str:
+        # Downloads from outside go over https only (issue #49).
+        if not value.startswith("https://"):
+            msg = f"Een bron voor Game Data of events moet met https:// beginnen: '{value}'"
+            raise ValueError(msg)
+        return value
+
     @field_validator("secret_key")
     @classmethod
     def _valid_secret(cls, value: str | None) -> str | None:

@@ -106,3 +106,5 @@ Deze projecten zijn bekeken als functionele referentie. OAK neemt er geen code, 
 - Na een wissel van versie berekent OAK de afgeleide gegevens en alle analyses opnieuw. Ieder advies vermeldt de versie waarmee het is berekend.
 
 De bron-URL's zijn aan te passen met `OAK_GAMEDATA_POKEMINERS_URL` en `OAK_GAMEDATA_PVPOKE_BASE_URL`, bijvoorbeeld voor een eigen spiegel. OAK haalt alleen openbare bestanden op, met een herkenbare user-agent, en omzeilt geen toegangslimieten.
+
+Iedere download gaat over https. Een bestand van de Game Data mag hoogstens 150 MB zijn, de eventkalender hoogstens 5 MB. OAK stopt bij die grens, ook als de server de grootte niet vooraf meldt. Een doorverwijzing volgt OAK alleen naar https op dezelfde host, en hoogstens vijf keer. Bij een dataset legt OAK het adres vast waar de inhoud echt vandaan kwam.

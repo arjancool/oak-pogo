@@ -33,6 +33,8 @@ services:
     image: ghcr.io/arjancool/oak-pogo:latest
     container_name: oak
     restart: unless-stopped
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_READ_SEARCH, FOWNER, SETGID, SETPCAP, SETUID]
     ports:
       - "127.0.0.1:8080:8080"
     networks:
@@ -62,7 +64,7 @@ Bijwerken gaat met `docker compose pull && docker compose up -d`. Voor iedere da
 
 ## Gebruiker en rechten
 
-De container start als root, maakt de datamap eigendom van `PUID:PGID` en laat daarna alle rechten vallen. OAK zelf draait nooit als root. `PUID` of `PGID` 0 weigert de container. Wie de container liever direct als vaste gebruiker start (`user: "1000:1000"` in compose of `runAsUser` in Kubernetes), moet zelf zorgen dat die gebruiker in de datamap kan schrijven.
+De container start als root, maakt de datamap eigendom van `PUID:PGID` en laat daarna alle rechten vallen. OAK zelf draait nooit als root, zonder enige capability en met `no_new_privs`. `PUID` en `PGID` moeten getallen zijn, en 0 weigert de container in iedere schrijfwijze, ook als `00`. De entrypoint heeft alleen `CHOWN`, `DAC_READ_SEARCH`, `FOWNER`, `SETGID`, `SETPCAP` en `SETUID` nodig. Met `cap_drop: [ALL]` en die `cap_add`, zoals in de voorbeelden, krijgt de container verder niets. Wie de container liever direct als vaste gebruiker start (`user: "1000:1000"` in compose of `runAsUser` in Kubernetes), moet zelf zorgen dat die gebruiker in de datamap kan schrijven.
 
 De datamap is alleen voor OAK zelf. De container zet `/data` op rechten 700 en maakt nieuwe bestanden met `umask 077`, zodat de database, de back-ups, de imports en de Game Data alleen leesbaar zijn voor `PUID`. Start je OAK zonder container, dan doet OAK hetzelfde bij het starten. Wil je de map vanaf de host lezen, bijvoorbeeld voor een back-up, doe dat dan als die gebruiker of als root.
 
@@ -100,15 +102,15 @@ docker exec oak env | grep OAK_
 | `OAK_GAMEDATA_UPDATE_INTERVAL_HOURS` | `24` | Hoe vaak OAK op nieuwe Game Data controleert. |
 | `OAK_EVENTS_AUTO_UPDATE` | `true` | De eventkalender automatisch bijwerken vanaf LeekDuck.com via ScrapedDuck (ADR-0021). |
 | `OAK_EVENTS_UPDATE_INTERVAL_HOURS` | `12` | Hoe vaak OAK de eventkalender ophaalt. |
-| `OAK_EVENTS_URL` | ScrapedDuck `events.json` | Adres van de eventkalender, bijvoorbeeld voor een eigen spiegel. |
-| `OAK_SPRITE_URL_TEMPLATE` | leeg | Beginwaarde voor een externe spritebron (ADR-0020). Beheer je normaal in de instellingen. |
+| `OAK_EVENTS_URL` | ScrapedDuck `events.json` | Adres van de eventkalender, bijvoorbeeld voor een eigen spiegel. Moet met `https://` beginnen, net als de adressen van de Game Data. |
+| `OAK_SPRITE_URL_TEMPLATE` | leeg | Beginwaarde voor een externe spritebron (ADR-0020). Beheer je normaal in de instellingen. Alleen een `https://`-adres met een gewone hostnaam en `{dex}` werkt. Een andere waarde negeert OAK, met een melding in het logboek. |
 | `OAK_PORT` | `8080` | Poort binnen de container. |
 | `PUID`, `PGID` | `1000` | Eigenaar van de datamap en gebruiker waaronder OAK draait. |
 | `TZ` | `Europe/Amsterdam` | Tijdzone van de container. |
 
 ## Reverse proxy
 
-Zet OAK achter een reverse proxy met https. Stel `OAK_BASE_URL` in op het publieke adres en `OAK_TRUSTED_PROXY_CIDRS` op het adres van de proxy. Zonder die laatste instelling ziet OAK ieder verzoek als afkomstig van de proxy, en delen alle gebruikers dan één limiet voor inlogpogingen.
+Zet OAK achter een reverse proxy met https. Stel `OAK_BASE_URL` in op het publieke adres en `OAK_TRUSTED_PROXY_CIDRS` op het adres van de proxy. Zonder die laatste instelling ziet OAK ieder verzoek als afkomstig van de proxy. Dan delen alle gebruikers één limiet voor inlogpogingen, en telt OAK de ongeldige webhook-tokens van iedereen samen.
 
 ### Alleen de proxy vertrouwen
 

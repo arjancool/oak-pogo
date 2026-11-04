@@ -6,12 +6,18 @@ changes in a new PGSharp version.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping
 from typing import Any
 
 MAX_LIST_SAMPLES = 200
 MAX_PATHS = 1500
 MAX_DEPTH = 6
+# Every list in the summary keeps at most this many entries, with the full count beside it.
+MAX_LIST_ITEMS = 200
+# A key that looks like a field name. Anything else, such as a gym name used as a dictionary
+# key, is data and shows as "*" (issue #46).
+_NAME = re.compile(r"[A-Za-z_][A-Za-z0-9_]{0,63}")
 
 # Pokémon record keys observed in a real PGSharp export (October 2026, 983 records).
 REFERENCE_POKEMON_KEYS = frozenset(
@@ -128,7 +134,7 @@ def summarize_structure(raw: Any, max_list_samples: int | None = None) -> dict[s
         if isinstance(node, Mapping):
             for key, value in node.items():
                 # Numeric dictionary keys (badge ids, souvenir ids) collapse into one path.
-                segment = "#" if str(key).isdigit() else str(key)
+                segment = _segment(key)
                 walk(value, f"{path}.{segment}" if path else segment, depth + 1)
         elif isinstance(node, list):
             for item in node[:samples]:
@@ -141,7 +147,7 @@ def summarize_structure(raw: Any, max_list_samples: int | None = None) -> dict[s
         "truncated": len(paths) >= MAX_PATHS,
     }
     if isinstance(raw, Mapping):
-        summary["root_keys"] = sorted(str(k) for k in raw)
+        summary["root_keys"] = sorted({_segment(k) for k in raw})
         pokemons = raw.get("pokemons")
         summary["counts"] = {
             "pokemons": len(pokemons) if isinstance(pokemons, list) else None,
@@ -151,8 +157,21 @@ def summarize_structure(raw: Any, max_list_samples: int | None = None) -> dict[s
             keys: set[str] = set()
             for record in pokemons[:samples]:
                 if isinstance(record, Mapping):
-                    keys.update(str(k) for k in record)
+                    keys.update(_segment(k) for k in record)
             summary["pokemon_keys_new"] = sorted(keys - REFERENCE_POKEMON_KEYS)
             summary["pokemon_keys_missing"] = sorted(REFERENCE_POKEMON_KEYS - keys) if keys else []
         summary["root_keys_new"] = sorted(set(summary["root_keys"]) - REFERENCE_ROOT_KEYS)
+    for name in ("root_keys", "root_keys_new", "pokemon_keys_new", "pokemon_keys_missing"):
+        values = summary.get(name)
+        if isinstance(values, list) and len(values) > MAX_LIST_ITEMS:
+            summary[name] = values[:MAX_LIST_ITEMS]
+            summary.setdefault("list_counts", {})[name] = len(values)
+            summary["truncated"] = True
     return summary
+
+
+def _segment(key: Any) -> str:
+    text = str(key)
+    if text.isdigit():
+        return "#"
+    return text if _NAME.fullmatch(text) else "*"

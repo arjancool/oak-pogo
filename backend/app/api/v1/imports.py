@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, Query, Request
 from fastapi.concurrency import run_in_threadpool
 from pydantic import Field
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, defer
 
 from app.api.deps import AuthContext, get_auth, get_container, get_session, owned_account
 from app.api.uploads import bounded_form, form_file, form_text
@@ -17,6 +17,7 @@ from app.core.errors import (
     ConflictError,
     NotFoundError,
     PayloadTooLargeError,
+    RateLimitedError,
     ValidationFailedError,
 )
 from app.domain.classification import CONFIRMABLE_CODES
@@ -28,7 +29,7 @@ from app.ingestion.receive import (
     prepare_import,
 )
 from app.models import BackgroundJob, ImportIssue, ImportJob, SyncRun, TrainerAccount, User
-from app.schemas.common import ApiModel, UtcDatetime
+from app.schemas.common import MAX_PAGE, ApiModel, UtcDatetime
 
 router = APIRouter(prefix="/imports", tags=["imports"])
 MAX_PAGE_SIZE = 200
@@ -93,10 +94,12 @@ class IssueOut(ApiModel):
 
 
 def import_out(session: Session, job: ImportJob, *, detail: bool = False) -> ImportOut:
-    out = ImportOut.model_validate(job)
+    # The structure summary is only for the detail view; a list never loads it (issue #46).
+    fields = {name: getattr(job, name) for name in ImportOut.model_fields if name in IMPORT_COLUMNS}
+    if detail:
+        fields["schema_summary"] = job.schema_summary
+    out = ImportOut.model_validate(fields)
     out.payload_available = job.payload_file is not None and job.payload_purged_at is None
-    if not detail:
-        out.schema_summary = None
     if job.sync_run_id:
         run = session.get(SyncRun, job.sync_run_id)
         if run is not None:
@@ -112,6 +115,9 @@ def import_out(session: Session, job: ImportJob, *, detail: bool = False) -> Imp
         warnings = {w["code"] for w in (out.sync_run.warnings if out.sync_run else [])}
         out.confirmable = bool(warnings) and warnings <= CONFIRMABLE_CODES and "UNIDENTIFIABLE_RECORDS" not in codes
     return out
+
+
+IMPORT_COLUMNS = frozenset(ImportJob.__table__.columns.keys()) - {"schema_summary"}
 
 
 def _owned_job(session: Session, auth: AuthContext, import_id: int) -> ImportJob:
@@ -133,6 +139,7 @@ async def upload(
 ) -> ImportOut:
     """Upload PGSStats.json. The fields are ``file`` and an optional ``account_id``. The body
     is only read after the login check, and never beyond the configured limit (audit A04)."""
+    _count_import(container, auth)
     limit = container.settings.max_import_bytes
     form = await bounded_form(request, limit, max_files=1)
     try:
@@ -173,6 +180,7 @@ def _accept_upload(container: Container, user_id: int, account_id: int | None, i
             user = session.get(User, user_id)
             assert user is not None
             account = _upload_account(session, user, account_id, prepared)
+            require_nothing_queued(session, account.id)
             job = create_import_job(
                 session,
                 account=account,
@@ -234,7 +242,7 @@ def _upload_account(session: Session, user: User, account_id: int | None, prepar
 @router.get("", response_model=dict[str, Any])
 def list_imports(
     account_id: int,
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=MAX_PAGE),
     page_size: int = Query(25, ge=1, le=MAX_PAGE_SIZE),
     auth: AuthContext = Depends(get_auth),
     session: Session = Depends(get_session),
@@ -246,6 +254,7 @@ def list_imports(
     )
     jobs = session.scalars(
         select(ImportJob)
+        .options(defer(ImportJob.schema_summary))
         .where(ImportJob.trainer_account_id == account.id)
         .order_by(ImportJob.id.desc())
         .offset((page - 1) * page_size)
@@ -280,7 +289,30 @@ def get_import_errors(
     return [IssueOut.model_validate(i) for i in session.scalars(stmt.order_by(ImportIssue.id).limit(1000))]
 
 
+def _count_import(container: Container, auth: AuthContext) -> None:
+    """Uploads, retries and confirmations per user, so one user cannot keep the single worker
+    busy for everyone (issue #45)."""
+    retry = container.imports_by_user.hit(f"user:{auth.user.id}")
+    if retry:
+        raise RateLimitedError(
+            "Te veel imports in korte tijd. Probeer het later opnieuw.", retry_after=retry, context="imports"
+        )
+
+
+def require_nothing_queued(session: Session, account_id: int) -> None:
+    """At most one manual import per trainer account waits in the queue (issue #45)."""
+    waiting = session.scalar(
+        select(ImportJob.id).where(ImportJob.trainer_account_id == account_id, ImportJob.status == "queued").limit(1)
+    )
+    if waiting is not None:
+        raise ConflictError(
+            "Er wacht al een import voor dit traineraccount. Probeer het opnieuw als die klaar is.",
+            code="IMPORT_QUEUED",
+        )
+
+
 def _requeue(session: Session, container: Container, job: ImportJob, *, confirm_full: bool) -> ImportJob:
+    require_nothing_queued(session, job.trainer_account_id)
     if job.payload_file is None or job.payload_purged_at is not None:
         raise ConflictError(
             "De opgeslagen export is niet meer beschikbaar. Upload hem opnieuw.",
@@ -298,7 +330,7 @@ def _requeue(session: Session, container: Container, job: ImportJob, *, confirm_
         payload_file=job.payload_file,
         filename=job.filename,
         request_meta=job.request_meta,
-        schema_summary=job.schema_summary,
+        # Not copied: the summary belongs to the import that received the export (issue #46).
         fingerprint=job.fingerprint,
         confirm_full=confirm_full,
         retry_of_id=job.id,
@@ -326,6 +358,7 @@ def retry_import(
     container: Container = Depends(get_container),
 ) -> ImportOut:
     job = _owned_job(session, auth, import_id)
+    _count_import(container, auth)
     if job.status not in ("failed", "rejected", "partial"):
         raise ConflictError(
             "Alleen mislukte, geweigerde of gedeeltelijke imports kunnen opnieuw.", context="retry_not_allowed"
@@ -346,6 +379,7 @@ def confirm_full_import(
     """The user confirms that a partial import really was a complete export. Only then are the
     missing Pokémon marked as no longer in inventory (spec §4.7)."""
     job = _owned_job(session, auth, import_id)
+    _count_import(container, auth)
     out = import_out(session, job)
     if not out.confirmable:
         raise ConflictError("Deze import kan niet als volledig bevestigd worden.", code="NOT_CONFIRMABLE")

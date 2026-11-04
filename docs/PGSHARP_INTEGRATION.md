@@ -65,7 +65,7 @@ OAK accepteert:
 | `404` | Onbekend of ingetrokken token. |
 | `413` | Groter dan `OAK_MAX_IMPORT_MB` (standaard 64 MB). |
 | `415` | Een niet-ondersteunde `Content-Encoding`. |
-| `429` | Te veel verzoeken. Per webhook standaard 60 per uur. Per IP-adres blokkeert OAK na 20 ongeldige tokens 10 minuten lang. |
+| `429` | Te veel verzoeken. Per webhook standaard 60 per uur. Per IP-adres weigert OAK na 20 ongeldige tokens 10 minuten lang verdere ongeldige tokens. Een geldig token werkt dan gewoon. |
 
 ### Grenzen aan de structuur
 
@@ -80,7 +80,7 @@ Naast de grootte in bytes controleert OAK de opbouw van een export. Zo kost het 
 | Velden in één object | 1.000 |
 | Cijfers in één getal | 4.300 |
 
-Het aantal objecten, lijsten en waarden telt OAK voordat het de JSON leest. Een export die over een grens gaat, weigert OAK met de code `STRUCTURE_TOO_LARGE` en de grens die overschreden is.
+Ook tekst met een ongeldig teken (een losse surrogate) en getallen die niet eindig zijn, zoals `NaN`, `Infinity` en `1e999`, weigert OAK met een eigen code. Het aantal objecten, lijsten en waarden telt OAK voordat het de JSON leest. Een export die over een grens gaat, weigert OAK met de code `STRUCTURE_TOO_LARGE` en de grens die overschreden is.
 
 OAK leest, filtert en bewaart een export voordat het de database op slot zet voor de import. Een grote export houdt andere schrijvers dus niet op. Hoogstens twee exports worden tegelijk gelezen. De rest wacht even.
 
@@ -176,7 +176,7 @@ Was een gedeeltelijke import toch volledig, bijvoorbeeld na een grote opruimacti
 
 ## Diagnose
 
-Bij iedere import legt OAK vast hoe het verzoek eruitzag: methode, `Content-Type`, compressie, tekenset, user-agent, grootte en de namen van de headers. Daarnaast maakt OAK een samenvatting van de structuur: de veldpaden met hun typen (maximaal 1.500 paden en 6 niveaus diep), de aantallen, en welke velden nieuw zijn of ontbreken ten opzichte van de geverifieerde export. Je ziet dit bij de details van een import.
+Bij iedere import legt OAK vast hoe het verzoek eruitzag: methode, `Content-Type`, compressie, tekenset, user-agent, grootte en de namen van de headers. Daarnaast maakt OAK een samenvatting van de structuur: de veldpaden met hun typen (maximaal 1.500 paden en 6 niveaus diep), de aantallen, en welke velden nieuw zijn of ontbreken ten opzichte van de geverifieerde export. Iedere lijst daarin houdt hoogstens 200 namen, met het volledige aantal erbij. Een sleutel die geen veldnaam is, zoals de naam van een gym, staat er als `*`, zodat er geen gegevens in de samenvatting komen. Een nieuwe poging neemt de samenvatting niet over. Je ziet dit bij de details van een import.
 
 Normaal kijkt OAK voor die samenvatting naar de eerste 200 records van iedere lijst. Met de diagnosemodus, die je onder **Beheer → PGSharp Sync** 24 uur aanzet, bekijkt OAK alle records, tot 20.000 per lijst. Dat helpt als een zeldzaam veld maar bij enkele Pokémon voorkomt.
 
@@ -184,7 +184,7 @@ De inhoud van de export legt OAK in geen van beide gevallen vast. Van de headers
 
 ## Bewaren van exports
 
-Een ontvangen export bewaart OAK opgeschoond en gecomprimeerd in `/data/imports`, zodat een mislukte import opnieuw kan. Na `OAK_RAW_IMPORT_RETENTION_DAYS` (standaard 14) dagen verwijdert OAK het bestand. De resultaten van de import blijven staan.
+Een ontvangen export bewaart OAK opgeschoond en gecomprimeerd in `/data/imports`, zodat een mislukte import opnieuw kan. Na `OAK_RAW_IMPORT_RETENTION_DAYS` (standaard 14) dagen verwijdert OAK het bestand. De resultaten van de import blijven staan. Een nieuwe poging gebruikt het bestand van de import die hij opnieuw probeert. Daarom telt de termijn vanaf de nieuwste import die het bestand gebruikt, en verwijdert OAK nooit een bestand van een import die nog wacht of loopt.
 
 Wordt OAK midden in een import gestopt, bijvoorbeeld door een herstart, dan verwerkt OAK de import bij het starten opnieuw. Na drie onderbroken pogingen stopt OAK ermee en zet de import op mislukt, met de reden. Zo kan een import die OAK steeds laat vastlopen dat niet bij iedere start opnieuw doen.
 

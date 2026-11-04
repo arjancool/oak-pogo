@@ -13,6 +13,7 @@ import hashlib
 import hmac
 import json
 import logging
+import math
 import re
 import uuid
 import zlib
@@ -159,7 +160,11 @@ def decode_payload(payload: IncomingPayload, max_bytes: int) -> DecodedPayload:
     if too_large:
         return _structure_rejected(body, meta, too_large)
     try:
-        data = json.loads(text)
+        data = json.loads(text, parse_constant=_not_finite, parse_float=_finite_float)
+    except NonFiniteNumberError:
+        return DecodedPayload(
+            body, None, "NUMBER_INVALID", "De export bevat een getal dat niet eindig is, zoals NaN of Infinity.", meta
+        )
     except json.JSONDecodeError as exc:
         return DecodedPayload(
             body,
@@ -174,9 +179,45 @@ def decode_payload(payload: IncomingPayload, max_bytes: int) -> DecodedPayload:
     except ValueError:
         return _structure_rejected(body, meta, "number")
     too_large = _shape_problem(data)
+    if too_large == "text":
+        # Valid JSON can still hold a lone surrogate ("\ud800"), which no file or database can
+        # store as UTF-8 (issue #47).
+        return DecodedPayload(
+            body,
+            None,
+            "ENCODING_INVALID",
+            "De export bevat tekst met een ongeldig teken.",
+            meta,
+            {"charset": "utf-8", "context": "character"},
+        )
     if too_large:
         return _structure_rejected(body, meta, too_large)
     return DecodedPayload(body, data, None, None, meta)
+
+
+class NonFiniteNumberError(ValueError):
+    """NaN, Infinity or a number too large for a float: not a value an export can hold."""
+
+
+def _not_finite(name: str) -> float:
+    raise NonFiniteNumberError(name)
+
+
+def _finite_float(text: str) -> float:
+    value = float(text)
+    if not math.isfinite(value):
+        raise NonFiniteNumberError(text)
+    return value
+
+
+def _valid_text(value: str) -> bool:
+    if value.isascii():
+        return True
+    try:
+        value.encode("utf-8")
+    except UnicodeEncodeError:
+        return False
+    return True
 
 
 def _structure_rejected(body: bytes, meta: dict[str, Any], context: str) -> DecodedPayload:
@@ -210,7 +251,10 @@ def _count_problem(text: str) -> str | None:
 
 
 def _shape_problem(data: Any) -> str | None:
-    """Depth, fields per object and Pokémon records, checked without recursion."""
+    """Depth, fields per object, text that cannot be stored and Pokémon records, checked
+    without recursion."""
+    if isinstance(data, str):
+        return None if _valid_text(data) else "text"
     stack: list[tuple[Any, int]] = [(data, 1)]
     while stack:
         node, depth = stack.pop()
@@ -219,10 +263,18 @@ def _shape_problem(data: Any) -> str | None:
         if isinstance(node, dict):
             if len(node) > MAX_KEYS:
                 return "keys"
+            if not all(_valid_text(key) for key in node):
+                return "text"
             children: Any = node.values()
-        else:
+        elif isinstance(node, list):
             children = node
-        stack.extend((child, depth + 1) for child in children if isinstance(child, dict | list))
+        else:
+            continue
+        for child in children:
+            if isinstance(child, dict | list):
+                stack.append((child, depth + 1))
+            elif isinstance(child, str) and not _valid_text(child):
+                return "text"
     records = data.get("pokemons") if isinstance(data, dict) else None
     if isinstance(records, list) and len(records) > MAX_POKEMON_RECORDS:
         return "pokemons"

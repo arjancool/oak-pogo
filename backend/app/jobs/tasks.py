@@ -6,7 +6,7 @@ import logging
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
-from sqlalchemy import func, select
+from sqlalchemy import case, func, select, update
 from sqlalchemy.exc import OperationalError
 
 from app.ingestion.derive import DERIVE_REVISION, apply_derived
@@ -215,34 +215,32 @@ def resanitize_payloads(container: Container) -> None:
 
 
 def purge_payloads(container: Container) -> None:
-    """Delete stored (sanitized) exports older than OAK_RAW_IMPORT_RETENTION_DAYS."""
+    """Delete stored (sanitized) exports older than OAK_RAW_IMPORT_RETENTION_DAYS.
+
+    A retry uses the file of the import it retries. So the retention period of a file counts
+    from the newest import that uses it, and a file goes only when no import that uses it is
+    waiting or running. All imports that used it are then marked as purged (issue #35)."""
     days = container.settings.raw_import_retention_days
-    cutoff = container.clock.now() - timedelta(days=days)
+    now = container.clock.now()
+    cutoff = now - timedelta(days=days)
+    active = case((ImportJob.status.in_(("queued", "processing")), 1), else_=0)
     with container.db.transaction() as session:
-        jobs = session.scalars(
-            select(ImportJob).where(
-                ImportJob.payload_file.is_not(None),
-                ImportJob.payload_purged_at.is_(None),
-                ImportJob.received_at < cutoff,
-                ImportJob.status.not_in(("queued", "processing")),
-            )
+        usage = session.execute(
+            select(ImportJob.payload_file, func.max(ImportJob.received_at), func.max(active))
+            .where(ImportJob.payload_file.is_not(None), ImportJob.payload_purged_at.is_(None))
+            .group_by(ImportJob.payload_file)
         ).all()
-        files = {j.payload_file for j in jobs}
-        still_needed = set(
-            session.scalars(
-                select(ImportJob.payload_file).where(
-                    ImportJob.payload_file.in_(files),
-                    ImportJob.status.in_(("queued", "processing")),
-                )
+        expired = [str(name) for name, newest, in_use in usage if newest < cutoff and not in_use]
+        for name in expired:
+            (container.settings.imports_dir / name).unlink(missing_ok=True)
+        if expired:
+            session.execute(
+                update(ImportJob)
+                .where(ImportJob.payload_file.in_(expired), ImportJob.payload_purged_at.is_(None))
+                .values(payload_purged_at=now)
             )
-        )
-        for job in jobs:
-            if job.payload_file in still_needed:
-                continue
-            (container.settings.imports_dir / str(job.payload_file)).unlink(missing_ok=True)
-            job.payload_purged_at = container.clock.now()
-    if jobs:
-        log.info("purged stored exports", extra={"count": len(jobs), "retention_days": days})
+    if expired:
+        log.info("purged stored exports", extra={"count": len(expired), "retention_days": days})
 
 
 def schedule_gamedata_check(container: Container) -> None:

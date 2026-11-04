@@ -42,11 +42,11 @@ def test_uvicorn_access_log_stays_off() -> None:
     assert logging.getLogger("uvicorn.error").propagate
 
 
-def test_health_and_version(client: Any) -> None:
+def test_health_and_version(client: Any, owner: Any) -> None:
     assert client.get("/health/live").json() == {"status": "ok"}
     ready = client.get("/health/ready")
     assert ready.status_code == 200 and ready.json()["status"] == "ok"
-    assert client.get("/api/v1/system/version").json()["version"] == "2.0.0"
+    assert owner.get("/api/v1/system/version").json()["version"] == "2.0.0"
 
 
 def test_system_status_and_backup(owner: Any) -> None:

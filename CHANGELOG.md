@@ -15,12 +15,26 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 - De geheime sleutel in `/data/.secret_key` heeft vanaf het begin de rechten 600. Is het bestand leeg of te kort, dan start OAK niet en zegt waarom, in plaats van stil een nieuwe sleutel te maken. De datamap krijgt de rechten 700 en nieuwe bestanden `umask 077`.
 - De opgeslagen kopie van een export bewaart van een Pokémon alleen de velden die OAK leest, en onbekende velden alleen als ze onschuldig zijn. Het privacyfilter herkent meer gevoelige veldnamen, ook met cijfers zoals `s2Id`. Bewaarde exports worden bij de volgende start opnieuw gefilterd.
 
+- Wachtwoord wijzigen heeft een grens op foute pogingen, en iedere foute poging komt in het auditlogboek. Na een wijziging eindigen alle sessies, ook de huidige, en krijgt de browser een nieuwe sessie. Hoogstens vier Argon2-berekeningen draaien tegelijk.
+- Een eigen spritebron moet een `https://`-adres met een gewone hostnaam zijn. Alleen de host en de poort komen in de Content-Security-Policy. Een ongeldige `OAK_SPRITE_URL_TEMPLATE` negeert OAK met een melding.
+- Downloads van de Game Data en de eventkalender hebben een maximale grootte, gaan alleen over https en volgen een doorverwijzing alleen naar dezelfde host. Bij een dataset staat het adres waar de inhoud echt vandaan kwam.
+- Een lege eventkalender laat de vorige events staan, met een melding. Eerder verdwenen dan alle events en de regels voor *even bewaren*.
+- Een geldig webhook-token werkt ook vanaf een adres dat eerder veel ongeldige tokens stuurde. Alleen ongeldige tokens worden dan geweigerd.
+- Handmatige uploads en nieuwe pogingen zijn begrensd op 30 per gebruiker per uur, en per traineraccount wacht hoogstens één handmatige import.
+- De structuursamenvatting van een import houdt per lijst hoogstens 200 namen, en een sleutel die geen veldnaam is, staat er als `*`.
+- Geldige maar onverwachte JSON, zoals tekst met een losse surrogate of `NaN`, geeft een geweigerde import in plaats van een fout 500. Een onverwachte structuur in de Game Data of de eventkalender wordt een mislukte versie of update op de pagina.
+- De volledige systeemstatus en de controle op nieuwe Game Data zijn alleen voor de eigenaar. De versie van OAK is pas na het inloggen te zien.
+- Paginanummers, id's, voorkeuren, volledigheidsinstellingen en teamleden hebben een type en een grens. Een te groot getal of een onbekend veld geeft 422 in plaats van een fout 500 of opslag zonder grens.
+- De images van BuildKit en QEMU in CI staan op een digest. Dependabot stelt een nieuwe versie pas een week na verschijnen voor.
+- Kleine verbeteringen uit de audit: beveiligingsheaders ook bij een fout 500, uitloggen wist altijd de cookies, inloggen beëindigt een oude sessie van dezelfde browser, het verwijderen van een back-up komt in het auditlogboek, alleen https-links bij cups, een vaste controle op bestandsnamen van Game Data en back-ups, geen waarden van databasefouten in het logboek, geen verwerking meer voor een uitgeschakelde gebruiker, en een entrypoint die alleen numerieke PUID en PGID accepteert en zonder enige capability start.
+
 ### Gewijzigd
 
 - Het filter op dubbelen (`dup`) is bij een grote collectie veel sneller. Dezelfde zoekterm twee keer telt als één.
 
 ### Opgelost
 
+- Het opruimen van bewaarde exports kon een bestand verwijderen dat een nieuwe poging nog nodig had. De bewaartermijn telt nu vanaf de nieuwste import die het bestand gebruikt.
 - Een Pokémon met een vorm die de Game Master als kostuum markeert, zoals een Pikachu met een eventhoed, telt nu als kostuum. Dat gold eerder alleen als PGSharp het kostuumveld vulde, en dat doet PGSharp niet altijd. Zo'n Pokémon krijgt nu de kostuumbescherming, de kostuumpunten in de bewaarscore, het label en de plek in het filter en de telling van kostuums. Migratie 0008 voegt daarvoor een afgeleide kolom toe.
 
 ## [2.0.0] - 2026-10-27

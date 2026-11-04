@@ -114,7 +114,10 @@ def sources(
 
 
 @router.get("/check", response_model=dict[str, Any])
-async def check(auth: AuthContext = Depends(get_auth), container: Container = Depends(get_container)) -> dict[str, Any]:
+async def check(
+    auth: AuthContext = Depends(require_owner), container: Container = Depends(get_container)
+) -> dict[str, Any]:
+    """Only for the owner: every call asks the sources outside for their version (issue #52)."""
     return await run_in_threadpool(container.gamedata.check_remote)
 
 

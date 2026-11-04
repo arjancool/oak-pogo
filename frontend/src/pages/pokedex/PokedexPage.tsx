@@ -285,6 +285,7 @@ function Evolution({ data, onPick }: { data: PokedexSpecies; onPick: (dex: numbe
               <Trans
                 i18nKey="pokedex.evolution.to"
                 values={{ name: step.to_name }}
+                tOptions={{ interpolation: { escapeValue: true } }}
                 components={{ target: <button className="text-oak-400 underline" onClick={() => onPick(step.dex, step.to_key)} /> }}
               />
               <span className="text-muted">: {stepNeeds(t, step).join(", ")}</span>

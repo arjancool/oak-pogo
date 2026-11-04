@@ -1,5 +1,9 @@
 # Wekelijkse voorstellen voor alle vastgezette afhankelijkheden. Kleine updates komen per
 # ecosysteem in één pull request; een nieuwe hoofdversie krijgt een eigen pull request.
+# Een nieuwe versie wordt pas na een week voorgesteld (cooldown), zodat een overgenomen release
+# meestal al is ontdekt en ingetrokken voordat hij hier binnenkomt (issue #54).
+# Niet gedekt, en dus met de hand bij te werken: de images van BuildKit, binfmt en Grype in
+# .github/workflows/ci.yml, en backend/build-requirements.txt.
 version: 2
 updates:
   # uv updates pyproject.toml and the lock with every indirect package (backend/uv.lock).
@@ -7,6 +11,8 @@ updates:
     directory: /backend
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       python:
         update-types: [minor, patch]
@@ -14,6 +20,8 @@ updates:
     directory: /frontend
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       npm:
         update-types: [minor, patch]
@@ -21,6 +29,8 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       actions:
         update-types: [minor, patch]
@@ -28,3 +38,5 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7

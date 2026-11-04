@@ -25,6 +25,8 @@ def create_sqlite_engine(url: str) -> Engine:
         url,
         connect_args={"check_same_thread": False, "timeout": BUSY_TIMEOUT_MS / 1000},
         pool_pre_ping=True,
+        # A database error never puts the values of a statement in the log (issue #55).
+        hide_parameters=True,
     )
 
     @event.listens_for(engine, "connect")

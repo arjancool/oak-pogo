@@ -133,9 +133,11 @@ export function GameDataPage() {
         description={t("admin.gamedata.description")}
         actions={
           <>
-            <Button loading={check.isPending} onClick={() => check.mutate()}>
-              {t("admin.gamedata.check")}
-            </Button>
+            {owner && (
+              <Button loading={check.isPending} onClick={() => check.mutate()}>
+                {t("admin.gamedata.check")}
+              </Button>
+            )}
             {owner && (
               <Button variant="primary" loading={update.isPending || s.update_pending} onClick={() => update.mutate()}>
                 {t("admin.gamedata.updateNow")}

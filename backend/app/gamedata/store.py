@@ -6,6 +6,7 @@ import gzip
 import hashlib
 import json
 import logging
+import re
 import threading
 from collections.abc import Mapping
 from dataclasses import dataclass, field
@@ -54,6 +55,9 @@ def _unreachable(exc: Exception) -> dict[str, Any]:
     return {"code": "SOURCE_UNREACHABLE", "text": f"Bron niet bereikbaar: {name}", "data": {"error": name}}
 
 
+GAMEDATA_FILE = re.compile(r"oak-gamedata-\d+\.json\.gz")
+
+
 class GameDataStore:
     def __init__(self, settings: Settings, db: Database) -> None:
         self.settings = settings
@@ -87,6 +91,11 @@ class GameDataStore:
         return self._active
 
     def _path(self, file_name: str) -> Path:
+        # Only names OAK gives itself, so a changed database row cannot point outside the
+        # Game Data directory (issue #55).
+        if not GAMEDATA_FILE.fullmatch(file_name):
+            msg = f"Ongeldige bestandsnaam voor Game Data: {file_name!r}"
+            raise ValueError(msg)
         return self.settings.gamedata_dir / file_name
 
     def _read(self, file_name: str) -> dict[str, Any]:
@@ -145,9 +154,10 @@ class GameDataStore:
                     generated_at=now.isoformat(),
                 )
                 warnings = validate_dataset(dataset, self.limits)
-            except (DatasetInvalidError, ValueError, KeyError, TypeError) as exc:
+            # Any unexpected structure is a failed version on the page, never an error 500 (issue #47).
+            except Exception as exc:
                 errors = exc.errors if isinstance(exc, DatasetInvalidError) else []
-                message = "; ".join(e["text"] for e in errors) if errors else str(exc)
+                message = "; ".join(e["text"] for e in errors) if errors else (str(exc) or type(exc).__name__)
                 with self.db.transaction() as session:
                     session.add(
                         GameDataVersion(
@@ -181,7 +191,7 @@ class GameDataStore:
                 version.file_name = f"oak-gamedata-{version.id}.json.gz"
                 version_id = version.id
                 file_name = str(version.file_name)
-            tmp = self._path(file_name + ".tmp")
+            tmp = self._path(file_name).with_name(file_name + ".tmp")
             with gzip.open(tmp, "wb") as handle:
                 handle.write(content)
             tmp.replace(self._path(file_name))
@@ -274,7 +284,7 @@ class GameDataStore:
         except Exception as exc:  # report, do not raise: the page must still render
             # The error is a server text: {code, text, data} (ADR-0025).
             return {"available": None, "error": _unreachable(exc)}
-        with self.db.transaction() as session:
+        with self.db.read() as session:
             version = session.scalars(select(GameDataVersion).where(GameDataVersion.status == "active")).first()
             known = {s["id"]: s.get("etag") for s in version.sources} if version else {}
         changed = [sid for sid, tag in etags.items() if tag is None or known.get(sid) != tag]

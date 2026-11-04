@@ -22,6 +22,7 @@ from app.core.container import Container
 from app.core.errors import NotFoundError, ServiceUnavailableError, ValidationFailedError
 from app.gamedata.model import GameData
 from app.models import BattleTeam, BattleTeamMember, Pokemon, PvpRanking
+from app.schemas.common import MAX_ID
 from app.services.analysis import rules_for
 from app.services.battles import (
     LEAGUE_SORTS,
@@ -276,13 +277,20 @@ def team_builder(
     }
 
 
+class TeamMemberIn(BaseModel):
+    """One team member: a Pokémon of the account and an optional role (issue #53)."""
+
+    pokemon_id: int = Field(ge=1, le=MAX_ID)
+    role: str | None = Field(default=None, max_length=40)
+
+
 class TeamIn(BaseModel):
     account_id: int
     name: str = Field(min_length=1, max_length=64)
     kind: str = Field(default="pvp", pattern="^(pvp|raid|max|rocket)$")
     league: str | None = Field(default=None, pattern=LEAGUE_ID)
     notes: str | None = Field(default=None, max_length=2000)
-    members: list[dict[str, Any]] = Field(default_factory=list, max_length=6)
+    members: list[TeamMemberIn] = Field(default_factory=list, max_length=6)
 
 
 def _team_out(session: Session, team: BattleTeam) -> dict[str, Any]:
@@ -334,7 +342,7 @@ def save_team(
 ) -> dict[str, Any]:
     account = owned_account(session, auth.user, body.account_id)
     now = container.clock.now()
-    ids = [int(m["pokemon_id"]) for m in body.members if "pokemon_id" in m]
+    ids = [m.pokemon_id for m in body.members]
     owned = set(
         session.scalars(select(Pokemon.id).where(Pokemon.trainer_account_id == account.id, Pokemon.id.in_(ids)))
     )
@@ -369,8 +377,8 @@ def save_team(
             BattleTeamMember(
                 team_id=team.id,
                 position=position,
-                pokemon_id=int(member["pokemon_id"]),
-                role=member.get("role"),
+                pokemon_id=member.pokemon_id,
+                role=member.role,
             )
         )
     session.flush()

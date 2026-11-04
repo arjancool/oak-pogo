@@ -141,7 +141,7 @@ def test_wall_clock_times_follow_the_configured_zone() -> None:
     assert event.starts_at == datetime(2026, 11, 8, 13, tzinfo=UTC)  # 14:00 in Amsterdam, winter time
 
 
-@pytest.mark.parametrize("raw", [{"events": []}, [{"eventID": "x"}], "text"])
+@pytest.mark.parametrize("raw", [{"events": []}, [{"eventID": "x"}], "text", []])
 def test_an_unusable_feed_is_refused(raw: Any) -> None:
     with pytest.raises(EventFeedError):
         parse_events(raw, AMS)
@@ -157,6 +157,18 @@ def test_update_keeps_the_previous_events_when_a_download_is_bad(container: Any)
         assert [e.external_id for e in session.scalars(select(GameEvent))] == ["cd"]
         state = get_setting(session, FEED_KEY)
         assert state["count"] == 1 and state["error"] and len(state["sha256"]) == 64
+
+
+def test_an_empty_calendar_keeps_the_previous_events(owner: Api, container: Any) -> None:
+    assert _publish(container, feed(community_day("cd", "Magikarp", timedelta(days=2))))["status"] == "updated"
+    empty = _publish(container, b"[]")
+    assert empty["status"] == "failed"
+    with container.db.read() as session:
+        assert [e.external_id for e in session.scalars(select(GameEvent))] == ["cd"]
+        error = get_setting(session, FEED_KEY)["error_text"]
+    assert error["code"] == "FEED_NOTHING_USABLE" and error["data"] == {"context": "empty"}
+    status = owner.get("/api/v1/events", account_id=owner.account()).json()
+    assert "leeg" in json.dumps(status), "the message is visible"
 
 
 # --- the rules --------------------------------------------------------------------------------

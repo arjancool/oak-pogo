@@ -2193,6 +2193,7 @@
       "FEED_NOT_A_LIST": "The event calendar is not a list.",
       "FEED_TOO_LARGE": "The event calendar has more than {{max, number}} events.",
       "FEED_NOTHING_USABLE": "None of the events in the calendar can be used.",
+      "FEED_NOTHING_USABLE_empty": "The event calendar is empty.",
       "FEED_UNAVAILABLE": "Event calendar not usable or not reachable: {{error}}",
       "MANUAL_SOURCE": "Your own event"
     },

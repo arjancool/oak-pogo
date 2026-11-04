@@ -57,7 +57,7 @@ Een paar spelregels staan niet in de Game Master en niet bij PvPoke. OAK levert 
 - **Versie:** iedere download krijgt de SHA-256 van het bestand en het moment van ophalen. Een advies dat op een event rust, noemt die versie.
 - **Tijden:** een tijd zonder `Z` is lokale tijd, overal ter wereld hetzelfde. OAK leest die in `OAK_TIMEZONE`.
 - **Betrouwbaarheid:** de gegevens zijn niet officieel en kunnen fouten bevatten of later veranderen. Een advies dat erop rust, heeft daarom hooguit een gemiddelde betrouwbaarheid. Kan OAK de naam van een uitgelichte Pokémon niet aan een soort uit de Game Data koppelen, dan toont de eventpagina dat en levert dat event geen hold op.
-- **Updates:** standaard iedere 12 uur (`OAK_EVENTS_AUTO_UPDATE`, `OAK_EVENTS_UPDATE_INTERVAL_HOURS`). De eigenaar kan ook op **Komende events** bijwerken. Een download wordt eerst gecontroleerd. Een mislukte of ongeldige download laat de vorige events staan en toont de fout op die pagina.
+- **Updates:** standaard iedere 12 uur (`OAK_EVENTS_AUTO_UPDATE`, `OAK_EVENTS_UPDATE_INTERVAL_HOURS`). De eigenaar kan ook op **Komende events** bijwerken. Een download wordt eerst gecontroleerd. Een mislukte of ongeldige download laat de vorige events staan en toont de fout op die pagina. Een lege lijst telt ook als ongeldig, want dan zouden alle regels voor *even bewaren* vervallen.
 
 ## Sprites
 

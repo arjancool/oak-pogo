@@ -2193,6 +2193,7 @@
       "FEED_NOT_A_LIST": "De eventkalender is geen lijst.",
       "FEED_TOO_LARGE": "De eventkalender bevat meer dan {{max}} events.",
       "FEED_NOTHING_USABLE": "Geen enkel event in de kalender is bruikbaar.",
+      "FEED_NOTHING_USABLE_empty": "De eventkalender is leeg.",
       "FEED_UNAVAILABLE": "Eventkalender niet bruikbaar of niet bereikbaar: {{error}}",
       "MANUAL_SOURCE": "Eigen event"
     },

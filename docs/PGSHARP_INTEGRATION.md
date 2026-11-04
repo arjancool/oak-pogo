@@ -135,18 +135,18 @@ Alle velden in deze tabel kwamen voor in de geverifieerde export.
 | `limitedPokemonIdentifier` | Beperkte uitgave, bijvoorbeeld van een event. |
 | `isEgg` | Eieren telt OAK mee in de opslag, maar niet als Pokémon. |
 
-Andere velden zonder privacygevoelige naam bewaart OAK alleen als ze een waarde hebben die afwijkt van nul of leeg. Zo kan een latere versie ze nog interpreteren.
+Een ander veld van een Pokémon bewaart OAK alleen als de naam niet privacygevoelig is en de waarde een getal, een vlag, korte tekst of een object met getallen is, en niet nul of leeg. Zo kan een latere versie het nog interpreteren. Alle andere onbekende velden komen niet in de opgeslagen export.
 
 ### Wat OAK niet bewaart
 
 OAK verwijdert bij ontvangst, nog voor er iets op schijf komt:
 
-- Locaties: `capturedS2CellId` en de coördinaten en ID's van gyms, PokéStops en stations. Van `deployedFortId` bewaart OAK alleen of de Pokémon nu in een gym staat, als `inGym` (ADR-0026).
-- Namen en hashes van andere spelers: `ownerName`, `originalOwnerNickname`, `tradingOriginalOwnerHash`.
+- Locaties: `capturedS2CellId`, coördinaten, en de ID's van gyms, PokéStops, stations, spawnpunten en ontmoetingen. Van `deployedFortId` bewaart OAK alleen of de Pokémon nu in een gym staat, als `inGym` (ADR-0026).
+- Namen, codes en hashes van andere spelers: `ownerName`, `originalOwnerNickname`, `tradingOriginalOwnerHash`, en velden voor vrienden, ruilpartners en trainers.
 - Interne spelers-ID's en accountvelden die OAK niet gebruikt.
-- Velden waarvan de naam op locatie, speler, account, apparaat, sessie of token wijst.
+- Velden waarvan de naam op een locatie, een speler, een account, een apparaat, een sessie of een token wijst.
 
-Dat geldt op ieder niveau en in iedere sectie van de export: account, speler, items en Pokémon, ook binnen geneste objecten en lijsten zoals gevechtsstatistieken en badges. Daar kijkt OAK per woord van de veldnaam, zodat `playerId` en `latitude` verdwijnen, maar `bonusIndividualAttack` blijft. Per sectie bewaart OAK alleen de velden die het leest, en iedere waarde daarvan gaat door hetzelfde filter, wat voor type het ook is.
+Dat geldt op ieder niveau en in iedere sectie van de export: account, speler, items en Pokémon, ook binnen geneste objecten en lijsten zoals gevechtsstatistieken en badges. Daar kijkt OAK per woord van de veldnaam, ook naar woorden met cijfers en twee woorden samen. Zo verdwijnen `playerId`, `s2Id`, `pokeStopId` en `latitude`, maar blijft `bonusIndividualAttack`. `locationCard` blijft ook, want dat is een achtergrond en geen plaats. Per sectie bewaart OAK alleen de velden die het leest, en iedere waarde daarvan gaat door hetzelfde filter, wat voor type het ook is.
 
 Wordt het filter strenger, dan filtert OAK de nog bewaarde exports bij de eerstvolgende start één keer opnieuw. Ze hoeven dus niet eerst de bewaartermijn van `OAK_RAW_IMPORT_RETENTION_DAYS` uit te dienen.
 

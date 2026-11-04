@@ -7,6 +7,8 @@ internal player identifiers are dropped here, at every depth, before anything is
 Every section works the same way: an explicit list of the keys OAK reads, and every value kept
 under those keys goes through :func:`scrub_nested`, whatever its type. A section of an unexpected
 type is scrubbed as a whole. So no value reaches the disk without the nested filter (audit A05).
+A Pokémon record keeps its known keys and the unknown fields the normalizer keeps as extras, and
+nothing else (issue #48).
 
 Invariant (tested): ``normalize_export(sanitize_export(raw)) == normalize_export(raw)``.
 """
@@ -18,16 +20,17 @@ from typing import Any
 
 from app.normalizers.pgsharp import (
     KNOWN_POKEMON_KEYS,
-    SENSITIVE_KEY_PATTERN,
     SENSITIVE_POKEMON_KEYS,
     TRAINER_STAT_KEYS,
+    extra_fields,
     in_gym,
     scrub_nested,
 )
 
 # Raised whenever the filter drops more. Stored exports from an older revision are filtered again.
 # 3: a root that is not an object, and a non-text export time (audit F03 of 25 October).
-SANITIZER_REVISION = 3
+# 4: only known fields in a Pokémon record, and more sensitive words at every depth (issue #48).
+SANITIZER_REVISION = 4
 ACCOUNT_KEYS = ("name", "team", "maxPokemonStorage", "maxItemStorage", "creationTimeMs")
 COMBAT_LOG_KEYS = ("currentSeasonResults", "lifetimeResults")
 PLAYER_EXTRA_KEYS = ("level", "numPokemonCaughtByType")
@@ -92,6 +95,7 @@ def _pick(section: Mapping[str, Any], keys: tuple[str, ...]) -> dict[str, Any]:
 def _sanitize_pokemon(record: Any) -> Any:
     if not isinstance(record, Mapping):
         return scrub_nested(record)
+    extras = extra_fields(record)
     clean: dict[str, Any] = {}
     for key, value in record.items():
         if key in SENSITIVE_POKEMON_KEYS or key in EGG_DROP_KEYS:
@@ -99,9 +103,10 @@ def _sanitize_pokemon(record: Any) -> Any:
         if key == "pokemonDisplay" and isinstance(value, Mapping):
             clean[key] = scrub_nested({k: v for k, v in value.items() if k not in DISPLAY_DROP_KEYS})
             continue
-        # The generic pattern only applies to keys OAK does not map explicitly. It is broad on
-        # purpose ("fromFort" and "individualAttack" match it), so known keys are exempt.
-        if key not in KNOWN_POKEMON_KEYS and SENSITIVE_KEY_PATTERN.search(key):
+        # Only the keys OAK maps, and the unknown fields it keeps as extras: an unknown field is
+        # stored only when its name is not sensitive and its value is a plain number, a flag,
+        # short text or an object of numbers (see extra_fields).
+        if key not in KNOWN_POKEMON_KEYS and key not in extras:
             continue
         # Below the top level, location and identity fields go at every depth (audit A05).
         clean[key] = scrub_nested(value)

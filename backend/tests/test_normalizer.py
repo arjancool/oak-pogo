@@ -219,7 +219,9 @@ def test_sensitive_fields_are_dropped_at_every_depth(export: dict[str, Any]) -> 
     for secret in ("52.123", "synthetic-private-id", "synthetic-fort", "4.567", "synthetic-cell"):
         assert secret not in text, secret
     stored = next(p for p in clean["pokemons"] if p["id"] == record["id"])
-    assert stored["newMetadata"] == {"nested": [{"keep": 1}], "bonusIndividualAttack": 2}
+    # An unknown field is stored only when the normalizer keeps it as an extra (issue #48).
+    assert "newMetadata" not in stored
+    assert stored["counts"] == {"wins": 3}
     assert normalize_export(clean) == normalize_export(export)
     pokemon = next(p for p in normalize_export(export).pokemon if p.source_pokemon_id == str(record["id"]))
     assert pokemon.extra["counts"] == {"wins": 3}

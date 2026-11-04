@@ -14,6 +14,7 @@ import math
 import re
 from collections.abc import Callable, Mapping
 from datetime import UTC, datetime, timedelta, timezone
+from itertools import pairwise
 from typing import Any
 
 from app.domain.pokemon import (
@@ -140,13 +141,49 @@ SENSITIVE_WORDS = frozenset(
         "poi",
         "contest",
         "social",
+        # Places and encounters (issue #48).
+        "location",
+        "geo",
+        "coord",
+        "coordinate",
+        "spawn",
+        "spawnpoint",
+        "pokestop",
+        "encounter",
+        "ipv4",
+        "ipv6",
+        # Other players.
+        "friend",
+        "partner",
+        "trainer",
+        "codename",
+        "nickname",
+        "username",
     }
 )
-_WORD = re.compile(r"[A-Z]+(?![a-z])|[A-Z]?[a-z]+|\d+")
+# Nested keys OAK reads whose words would match: a location card is a background, not a place.
+NESTED_KEY_EXCEPTIONS = frozenset({"locationCard"})
+# camelCase words, with the digits that belong to them: "s2Id" is "s2" and "Id".
+_WORD = re.compile(r"[A-Z]+\d*(?![a-z])|[A-Z]?[a-z]+\d*|\d+")
+
+
+def _key_words(key: str) -> set[str]:
+    """The words of a key, two neighbouring words joined ("pokeStop" also gives "pokestop"), and
+    each of those without trailing digits or a plural s."""
+    words = [w.lower() for w in _WORD.findall(key)]
+    found: set[str] = set()
+    for word in (*words, *(a + b for a, b in pairwise(words))):
+        found.add(word)
+        found.add(word.rstrip("0123456789"))
+        if word.endswith("s"):
+            found.add(word[:-1])
+    return found
 
 
 def is_sensitive_nested_key(key: str) -> bool:
-    return key in SENSITIVE_POKEMON_KEYS or any(w.lower() in SENSITIVE_WORDS for w in _WORD.findall(key))
+    if key in NESTED_KEY_EXCEPTIONS:
+        return False
+    return key in SENSITIVE_POKEMON_KEYS or not SENSITIVE_WORDS.isdisjoint(_key_words(key))
 
 
 def scrub_nested(value: Any) -> Any:
@@ -799,7 +836,7 @@ def _normalize_pokemon(
         purified_exclusive_move=_bool(record.get("move2IsPurifiedExclusive")),
         limited_identifier=_str(record.get("limitedPokemonIdentifier"), 80),
         tag_ids=tag_ids,
-        extra=_extra_fields(record) | _display_extras(display),
+        extra=extra_fields(record) | _display_extras(display),
     )
     if pokemon.cp is None:
         issues.append(Issue(Severity.WARNING, "CP_MISSING", "CP ontbreekt.", f"{path}.cp", source_id))
@@ -833,13 +870,14 @@ def _display_extras(display: Mapping[str, Any]) -> dict[str, Any]:
     return extras
 
 
-def _extra_fields(record: Mapping[str, Any]) -> dict[str, Any]:
-    """Unknown, non-sensitive scalar fields, kept so later versions can interpret them."""
+def extra_fields(record: Mapping[str, Any]) -> dict[str, Any]:
+    """Unknown, non-sensitive scalar fields, kept so later versions can interpret them. The
+    stored copy of an export keeps exactly these unknown fields (app/normalizers/sanitize.py)."""
     extra: dict[str, Any] = {}
     for key, value in record.items():
         if key in KNOWN_POKEMON_KEYS or key in SENSITIVE_POKEMON_KEYS:
             continue
-        if SENSITIVE_KEY_PATTERN.search(key):
+        if SENSITIVE_KEY_PATTERN.search(key) or is_sensitive_nested_key(key):
             continue
         # Unknown fields are kept only when they carry information. A zero or false default is
         # indistinguishable from an absent field for a key OAK does not interpret yet.

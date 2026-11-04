@@ -11,7 +11,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.api.deps import AuthContext, get_auth, get_container, get_session, session_policy
-from app.auth.passwords import hash_password, needs_rehash, verify_password
+from app.auth.passwords import hash_password, needs_rehash, validate_password, verify_password
 from app.auth.sessions import (
     CSRF_COOKIE,
     SESSION_COOKIE,
@@ -393,19 +393,48 @@ def update_preferences(
 @router.post("/change-password", status_code=204)
 def change_password(
     body: ChangePasswordRequest,
+    request: Request,
+    response: Response,
     auth: AuthContext = Depends(get_auth),
     session: Session = Depends(get_session),
     container: Container = Depends(get_container),
 ) -> Response:
-    user = session.get(User, auth.user.id)
-    assert user is not None
-    if not verify_password(user.password_hash, body.current_password):
+    validate_password(body.new_password)
+    user_id, username, stored_hash = auth.user.id, auth.user.username, auth.user.password_hash
+    # A place is taken before the check and given back on success, so only failures count, also
+    # when several attempts arrive at the same time (issue #41).
+    key = f"user:{user_id}"
+    retry = container.password_checks_by_user.hit(key)
+    if retry:
+        raise RateLimitedError(
+            "Te veel mislukte pogingen om je wachtwoord te wijzigen. Probeer het later opnieuw.",
+            retry_after=retry,
+            context="change_password",
+        )
+    # End the transaction the session check started, so Argon2 does not run while it holds the
+    # write lock (issue #40). The next statement starts a new one.
+    session.commit()
+    valid = verify_password(stored_hash, body.current_password)
+    new_hash = hash_password(body.new_password) if valid else None
+    user = session.get(User, user_id)
+    # The password may also have been changed elsewhere while this one was being checked.
+    if new_hash is None or user is None or user.password_hash != stored_hash:
+        audit(session, user_id, "password_change_failed", username, container)
+        # Commit before the error response: the request's rollback would drop the entry.
+        session.commit()
         raise UnauthorizedError(
             "Het huidige wachtwoord klopt niet.", code="INVALID_CREDENTIALS", context="current_password"
         )
+    container.password_checks_by_user.release(key)
     now = container.clock.now()
-    user.password_hash = hash_password(body.new_password)
+    user.password_hash = new_hash
     user.password_changed_at = now
-    revoke_all_for_user(session, user.id, now, except_id=auth.record.id)
-    audit(session, user.id, "password_changed", user.username, container)
-    return Response(status_code=204)
+    # Every session ends, this one too: after a change of credentials a session gets a new token,
+    # so a cookie copied before the change stops working (issue #42). The browser gets the new
+    # session and CSRF cookies with this response.
+    revoke_all_for_user(session, user_id, now)
+    token = create_session(session, user, session_policy(container), now, request.headers.get("user-agent"))
+    _set_cookies(response, container, token)
+    audit(session, user_id, "password_changed", username, container)
+    response.status_code = 204
+    return response

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import threading
+
 from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerificationError, VerifyMismatchError
 
@@ -10,20 +12,26 @@ from app.core.errors import ValidationFailedError
 MIN_PASSWORD_LENGTH = 10
 MAX_PASSWORD_LENGTH = 256
 _hasher = PasswordHasher()  # argon2-cffi defaults to Argon2id with RFC 9106 parameters
+# Every Argon2 hash or check takes 64 MiB. At most this many run at the same time, so a burst of
+# logins cannot use up the memory of a small server. The rest wait their turn (issue #41).
+ARGON2_SLOTS = 4
+_slots = threading.BoundedSemaphore(ARGON2_SLOTS)
 # Verifying against this keeps the response time for an unknown username equal to a known one.
 _DUMMY_HASH = _hasher.hash("oak-timing-equalizer")
 
 
 def hash_password(password: str) -> str:
     validate_password(password)
-    return _hasher.hash(password)
+    with _slots:
+        return _hasher.hash(password)
 
 
 def verify_password(stored_hash: str | None, password: str) -> bool:
-    try:
-        return _hasher.verify(stored_hash or _DUMMY_HASH, password) and stored_hash is not None
-    except (VerifyMismatchError, VerificationError, InvalidHashError):
-        return False
+    with _slots:
+        try:
+            return _hasher.verify(stored_hash or _DUMMY_HASH, password) and stored_hash is not None
+        except (VerifyMismatchError, VerificationError, InvalidHashError):
+            return False
 
 
 def needs_rehash(stored_hash: str) -> bool:

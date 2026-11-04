@@ -15,6 +15,8 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 - De geheime sleutel in `/data/.secret_key` heeft vanaf het begin de rechten 600. Is het bestand leeg of te kort, dan start OAK niet en zegt waarom, in plaats van stil een nieuwe sleutel te maken. De datamap krijgt de rechten 700 en nieuwe bestanden `umask 077`.
 - De opgeslagen kopie van een export bewaart van een Pokémon alleen de velden die OAK leest, en onbekende velden alleen als ze onschuldig zijn. Het privacyfilter herkent meer gevoelige veldnamen, ook met cijfers zoals `s2Id`. Bewaarde exports worden bij de volgende start opnieuw gefilterd.
 
+- Wachtwoord wijzigen heeft een grens op foute pogingen, en iedere foute poging komt in het auditlogboek. Na een wijziging eindigen alle sessies, ook de huidige, en krijgt de browser een nieuwe sessie. Hoogstens vier Argon2-berekeningen draaien tegelijk.
+
 ### Gewijzigd
 
 - Het filter op dubbelen (`dup`) is bij een grote collectie veel sneller. Dezelfde zoekterm twee keer telt als één.

@@ -44,6 +44,7 @@ class Container:
     login_by_ip: SlidingWindowLimiter = field(init=False)
     login_by_user: SlidingWindowLimiter = field(init=False)
     login_slow_by_user: SlidingWindowLimiter = field(init=False)
+    password_checks_by_user: SlidingWindowLimiter = field(init=False)
     webhook_by_token: SlidingWindowLimiter = field(init=False)
     webhook_invalid_by_ip: SlidingWindowLimiter = field(init=False)
     import_slots: threading.BoundedSemaphore = field(init=False)
@@ -57,6 +58,8 @@ class Container:
         # Only slows down a username that fails from many addresses.
         self.login_by_user = SlidingWindowLimiter(attempts * USERNAME_LIMIT_FACTOR, window)
         self.login_slow_by_user = SlidingWindowLimiter(1, SLOW_LOGIN_SECONDS)
+        # Wrong current passwords when changing the password, per user (issue #41).
+        self.password_checks_by_user = SlidingWindowLimiter(attempts, window)
         self.webhook_by_token = SlidingWindowLimiter(self.settings.webhook_rate_limit_per_hour, SECONDS_PER_HOUR)
         self.webhook_invalid_by_ip = SlidingWindowLimiter(INVALID_TOKEN_LIMIT, INVALID_TOKEN_WINDOW_SECONDS)
         self.import_slots = threading.BoundedSemaphore(IMPORT_SLOTS)

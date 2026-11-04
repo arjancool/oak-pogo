@@ -23,6 +23,7 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 
 ### Opgelost
 
+- Het opruimen van bewaarde exports kon een bestand verwijderen dat een nieuwe poging nog nodig had. De bewaartermijn telt nu vanaf de nieuwste import die het bestand gebruikt.
 - Een Pokémon met een vorm die de Game Master als kostuum markeert, zoals een Pikachu met een eventhoed, telt nu als kostuum. Dat gold eerder alleen als PGSharp het kostuumveld vulde, en dat doet PGSharp niet altijd. Zo'n Pokémon krijgt nu de kostuumbescherming, de kostuumpunten in de bewaarscore, het label en de plek in het filter en de telling van kostuums. Migratie 0008 voegt daarvoor een afgeleide kolom toe.
 
 ## [2.0.0] - 2026-10-27

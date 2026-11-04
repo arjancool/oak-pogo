@@ -184,7 +184,7 @@ De inhoud van de export legt OAK in geen van beide gevallen vast. Van de headers
 
 ## Bewaren van exports
 
-Een ontvangen export bewaart OAK opgeschoond en gecomprimeerd in `/data/imports`, zodat een mislukte import opnieuw kan. Na `OAK_RAW_IMPORT_RETENTION_DAYS` (standaard 14) dagen verwijdert OAK het bestand. De resultaten van de import blijven staan.
+Een ontvangen export bewaart OAK opgeschoond en gecomprimeerd in `/data/imports`, zodat een mislukte import opnieuw kan. Na `OAK_RAW_IMPORT_RETENTION_DAYS` (standaard 14) dagen verwijdert OAK het bestand. De resultaten van de import blijven staan. Een nieuwe poging gebruikt het bestand van de import die hij opnieuw probeert. Daarom telt de termijn vanaf de nieuwste import die het bestand gebruikt, en verwijdert OAK nooit een bestand van een import die nog wacht of loopt.
 
 Wordt OAK midden in een import gestopt, bijvoorbeeld door een herstart, dan verwerkt OAK de import bij het starten opnieuw. Na drie onderbroken pogingen stopt OAK ermee en zet de import op mislukt, met de reden. Zo kan een import die OAK steeds laat vastlopen dat niet bij iedere start opnieuw doen.
 

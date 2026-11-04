@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, Query, Request
 from fastapi.concurrency import run_in_threadpool
 from pydantic import Field
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, defer
 
 from app.api.deps import AuthContext, get_auth, get_container, get_session, owned_account
 from app.api.uploads import bounded_form, form_file, form_text
@@ -94,10 +94,12 @@ class IssueOut(ApiModel):
 
 
 def import_out(session: Session, job: ImportJob, *, detail: bool = False) -> ImportOut:
-    out = ImportOut.model_validate(job)
+    # The structure summary is only for the detail view; a list never loads it (issue #46).
+    fields = {name: getattr(job, name) for name in ImportOut.model_fields if name in IMPORT_COLUMNS}
+    if detail:
+        fields["schema_summary"] = job.schema_summary
+    out = ImportOut.model_validate(fields)
     out.payload_available = job.payload_file is not None and job.payload_purged_at is None
-    if not detail:
-        out.schema_summary = None
     if job.sync_run_id:
         run = session.get(SyncRun, job.sync_run_id)
         if run is not None:
@@ -113,6 +115,9 @@ def import_out(session: Session, job: ImportJob, *, detail: bool = False) -> Imp
         warnings = {w["code"] for w in (out.sync_run.warnings if out.sync_run else [])}
         out.confirmable = bool(warnings) and warnings <= CONFIRMABLE_CODES and "UNIDENTIFIABLE_RECORDS" not in codes
     return out
+
+
+IMPORT_COLUMNS = frozenset(ImportJob.__table__.columns.keys()) - {"schema_summary"}
 
 
 def _owned_job(session: Session, auth: AuthContext, import_id: int) -> ImportJob:
@@ -249,6 +254,7 @@ def list_imports(
     )
     jobs = session.scalars(
         select(ImportJob)
+        .options(defer(ImportJob.schema_summary))
         .where(ImportJob.trainer_account_id == account.id)
         .order_by(ImportJob.id.desc())
         .offset((page - 1) * page_size)
@@ -324,7 +330,7 @@ def _requeue(session: Session, container: Container, job: ImportJob, *, confirm_
         payload_file=job.payload_file,
         filename=job.filename,
         request_meta=job.request_meta,
-        schema_summary=job.schema_summary,
+        # Not copied: the summary belongs to the import that received the export (issue #46).
         fingerprint=job.fingerprint,
         confirm_full=confirm_full,
         retry_of_id=job.id,

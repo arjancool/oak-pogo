@@ -176,7 +176,7 @@ Was een gedeeltelijke import toch volledig, bijvoorbeeld na een grote opruimacti
 
 ## Diagnose
 
-Bij iedere import legt OAK vast hoe het verzoek eruitzag: methode, `Content-Type`, compressie, tekenset, user-agent, grootte en de namen van de headers. Daarnaast maakt OAK een samenvatting van de structuur: de veldpaden met hun typen (maximaal 1.500 paden en 6 niveaus diep), de aantallen, en welke velden nieuw zijn of ontbreken ten opzichte van de geverifieerde export. Je ziet dit bij de details van een import.
+Bij iedere import legt OAK vast hoe het verzoek eruitzag: methode, `Content-Type`, compressie, tekenset, user-agent, grootte en de namen van de headers. Daarnaast maakt OAK een samenvatting van de structuur: de veldpaden met hun typen (maximaal 1.500 paden en 6 niveaus diep), de aantallen, en welke velden nieuw zijn of ontbreken ten opzichte van de geverifieerde export. Iedere lijst daarin houdt hoogstens 200 namen, met het volledige aantal erbij. Een sleutel die geen veldnaam is, zoals de naam van een gym, staat er als `*`, zodat er geen gegevens in de samenvatting komen. Een nieuwe poging neemt de samenvatting niet over. Je ziet dit bij de details van een import.
 
 Normaal kijkt OAK voor die samenvatting naar de eerste 200 records van iedere lijst. Met de diagnosemodus, die je onder **Beheer → PGSharp Sync** 24 uur aanzet, bekijkt OAK alle records, tot 20.000 per lijst. Dat helpt als een zeldzaam veld maar bij enkele Pokémon voorkomt.
 

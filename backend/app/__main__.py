@@ -8,15 +8,20 @@ itself, only for the proxies in ``OAK_TRUSTED_PROXY_CIDRS``.
 
 from __future__ import annotations
 
+import os
+
 import uvicorn
 
 from app.core.config import Settings
 
 # Inside the container the app listens on every interface; Docker publishes the port.
 LISTEN_HOST = "0.0.0.0"
+PRIVATE_UMASK = 0o077
 
 
 def main() -> None:
+    # New files, such as the database, back-ups and imports, are for OAK alone (issue #43).
+    os.umask(PRIVATE_UMASK)
     settings = Settings()
     uvicorn.run(
         "app.main:create_app",

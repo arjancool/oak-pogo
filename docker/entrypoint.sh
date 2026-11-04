@@ -4,6 +4,8 @@
 # nothing in the container runs as root. Started as another user (compose 'user:', Kubernetes
 # runAsUser), it runs the command directly.
 set -eu
+# Files OAK makes, such as the database, back-ups and imports, are for OAK alone.
+umask 077
 
 DATA_DIR="${OAK_DATA_DIR:-/data}"
 
@@ -22,6 +24,7 @@ if [ "$(id -u)" = "0" ]; then
   if [ "$(stat -c %u:%g "$DATA_DIR")" != "$PUID:$PGID" ]; then
     chown -R "$PUID:$PGID" "$DATA_DIR"
   fi
+  chmod 700 "$DATA_DIR"
   exec setpriv --reuid="$PUID" --regid="$PGID" --clear-groups --inh-caps=-all env HOME=/tmp "$@"
 fi
 

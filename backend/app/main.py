@@ -149,6 +149,12 @@ def _register_error_handlers(app: FastAPI) -> None:
             error = AppError(str(exc.detail), code="HTTP_ERROR")
         return JSONResponse(error.to_payload(), status_code=exc.status_code)
 
+    @app.exception_handler(OverflowError)
+    async def overflow(_: Request, __: OverflowError) -> JSONResponse:
+        # A number too large for the database, for example an id above 2^63 in a path (issue #53).
+        error = ValidationFailedError("Een getal in het verzoek is te groot.", context="number_too_large")
+        return JSONResponse(error.to_payload(), status_code=422)
+
     @app.exception_handler(Exception)
     async def unhandled(_: Request, exc: Exception) -> JSONResponse:
         log.exception("unhandled error", exc_info=exc)

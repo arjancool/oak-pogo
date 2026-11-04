@@ -6,7 +6,7 @@ from datetime import timedelta
 from typing import Any
 
 from fastapi import APIRouter, Depends, Response
-from pydantic import Field
+from pydantic import ConfigDict, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -25,13 +25,21 @@ DIAGNOSTICS_HOURS = 24
 WEBHOOK_PATH = "/api/v1/ingest/pgsharp/"
 
 
+class CompletenessIn(ApiModel):
+    """Only the two settings the completeness check reads (issue #53)."""
+
+    model_config = ConfigDict(extra="forbid")
+    max_drop_fraction: float | None = None
+    max_drop_absolute: int | None = Field(default=None, le=1_000_000)
+
+
 class AccountIn(ApiModel):
     nickname: str = Field(min_length=1, max_length=64)
 
 
 class AccountPatch(ApiModel):
     nickname: str | None = Field(default=None, min_length=1, max_length=64)
-    completeness: dict[str, float] | None = None
+    completeness: CompletenessIn | None = None
 
 
 class AccountDelete(ApiModel):
@@ -163,8 +171,8 @@ def update_account(
     if body.nickname is not None:
         account.nickname = body.nickname.strip()
     if body.completeness is not None:
-        fraction = body.completeness.get("max_drop_fraction")
-        absolute = body.completeness.get("max_drop_absolute")
+        fraction = body.completeness.max_drop_fraction
+        absolute = body.completeness.max_drop_absolute
         if fraction is not None and not 0 < fraction <= 1:
             raise ValidationFailedError(
                 "max_drop_fraction moet tussen 0 en 1 liggen.",
@@ -175,7 +183,10 @@ def update_account(
             raise ValidationFailedError(
                 "max_drop_absolute moet positief zijn.", context="not_positive", data={"field": "max_drop_absolute"}
             )
-        account.settings = {**(account.settings or {}), "completeness": body.completeness}
+        account.settings = {
+            **(account.settings or {}),
+            "completeness": body.completeness.model_dump(exclude_none=True),
+        }
     return _account_out(session, account, container)
 
 

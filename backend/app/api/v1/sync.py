@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import AuthContext, get_auth, get_session, owned_account
 from app.api.v1.imports import ImportOut, SyncRunOut, import_out
 from app.models import ImportJob, PokemonChangeEvent, SyncRun, WebhookCredential
-from app.schemas.common import ApiModel, UtcDatetime
+from app.schemas.common import MAX_PAGE, ApiModel, UtcDatetime
 
 router = APIRouter(prefix="/sync", tags=["sync"])
 
@@ -102,7 +102,7 @@ def sync_status(
 @router.get("/history", response_model=dict[str, Any])
 def sync_history(
     account_id: int,
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=MAX_PAGE),
     page_size: int = Query(25, ge=1, le=200),
     auth: AuthContext = Depends(get_auth),
     session: Session = Depends(get_session),

@@ -31,6 +31,7 @@ from app.models import (
     TrainerAccount,
 )
 from app.recommendations.rules import ENGINE_VERSION, CleanupRules
+from app.schemas.common import MAX_PAGE
 from app.services.analysis import RULES_KEY, AnalysisService, rules_for
 from app.services.pokemon_view import summarize
 from app.services.transfer_guard import GuardContext, check_transfer, confirmation_item, guard_context
@@ -92,7 +93,7 @@ def recommendations(
         description="best: de beste gymverdediger per soort; in_gym: staat nu in een gym",
     ),
     sort: str = Query(default="priority", pattern="^(priority|cp|-cp|name|iv|battle|-battle|keep|-keep)$"),
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=MAX_PAGE),
     page_size: int = Query(100, ge=1, le=500),
     auth: AuthContext = Depends(get_auth),
     session: Session = Depends(get_session),

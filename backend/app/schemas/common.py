@@ -11,6 +11,12 @@ from pydantic import BaseModel, ConfigDict, PlainSerializer
 UtcDatetime = Annotated[datetime, PlainSerializer(lambda v: v.isoformat(), return_type=str)]
 
 
+# Upper bounds for numbers in a request, so a huge value is a 422 and never an overflow in the
+# database (issue #53).
+MAX_PAGE = 100_000
+MAX_ID = 2**63 - 1
+
+
 class ApiModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

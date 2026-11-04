@@ -53,6 +53,7 @@ from app.repositories.pokemon_query import (
     order_by,
     term_condition,
 )
+from app.schemas.common import MAX_PAGE
 from app.services.analysis import rules_for
 from app.services.pokemon_view import PokemonSummary, detail_extras, summarize
 from app.services.transfer_guard import bulk_vintage_text, check_transfer, confirmation_item, guard_context
@@ -185,7 +186,7 @@ class BoxQuery(BaseModel):
     tag: str | None = None
     planned: str | None = None
     sort: str = "-cp"
-    page: int = Field(default=1, ge=1)
+    page: int = Field(default=1, ge=1, le=MAX_PAGE)
     page_size: int = Field(default=50, ge=1, le=MAX_PAGE_SIZE)
     shiny: str | None = None
     lucky: str | None = None

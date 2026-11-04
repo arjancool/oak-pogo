@@ -31,7 +31,7 @@ from app.core.errors import (
 )
 from app.core.ratelimit import SlidingWindowLimiter, address_key
 from app.models import AuditLog, User
-from app.schemas.common import ApiModel, UtcDatetime
+from app.schemas.common import MAX_ID, ApiModel, UtcDatetime
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 USERNAME_PATTERN = re.compile(r"^[a-zA-Z0-9_.\-]{3,32}$")
@@ -366,8 +366,20 @@ def me(auth: AuthContext = Depends(get_auth)) -> UserOut:
     return UserOut.model_validate(auth.user)
 
 
+class Preferences(ApiModel):
+    """The preferences OAK keeps, each with a type and a bound (issue #53). Other keys are
+    ignored, as before."""
+
+    active_account_id: int | None = Field(default=None, ge=1, le=MAX_ID)
+    box_view: str | None = Field(default=None, max_length=20, pattern="^[a-z_]+$")
+    box_columns: int | None = Field(default=None, ge=1, le=12)
+    page_size: int | None = Field(default=None, ge=1, le=500)
+    theme: str | None = Field(default=None, max_length=20, pattern="^[a-z_]+$")
+    language: object = None
+
+
 class PreferencesRequest(ApiModel):
-    preferences: dict[str, object]
+    preferences: Preferences
 
 
 @router.put("/me/preferences", response_model=UserOut)
@@ -376,17 +388,14 @@ def update_preferences(
     auth: AuthContext = Depends(get_auth),
     session: Session = Depends(get_session),
 ) -> UserOut:
-    allowed = {"active_account_id", "box_view", "box_columns", "page_size", "theme", "language"}
-    language = body.preferences.get("language")
+    chosen = body.preferences.model_dump(exclude_unset=True)
+    language = chosen.get("language")
     # Which languages exist is up to the frontend (ADR-0025); here only the form is checked.
     if language is not None and not (isinstance(language, str) and LANGUAGE.fullmatch(language)):
         raise ValidationFailedError("Taal: een code van twee letters, zoals nl of en.", context="language")
     user = session.get(User, auth.user.id)
     assert user is not None
-    user.preferences = {
-        **(user.preferences or {}),
-        **{k: v for k, v in body.preferences.items() if k in allowed},
-    }
+    user.preferences = {**(user.preferences or {}), **chosen}
     return UserOut.model_validate(user)
 
 

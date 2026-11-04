@@ -29,7 +29,7 @@ from app.ingestion.receive import (
     prepare_import,
 )
 from app.models import BackgroundJob, ImportIssue, ImportJob, SyncRun, TrainerAccount, User
-from app.schemas.common import ApiModel, UtcDatetime
+from app.schemas.common import MAX_PAGE, ApiModel, UtcDatetime
 
 router = APIRouter(prefix="/imports", tags=["imports"])
 MAX_PAGE_SIZE = 200
@@ -242,7 +242,7 @@ def _upload_account(session: Session, user: User, account_id: int | None, prepar
 @router.get("", response_model=dict[str, Any])
 def list_imports(
     account_id: int,
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=MAX_PAGE),
     page_size: int = Query(25, ge=1, le=MAX_PAGE_SIZE),
     auth: AuthContext = Depends(get_auth),
     session: Session = Depends(get_session),

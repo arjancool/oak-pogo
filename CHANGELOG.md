@@ -24,6 +24,7 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 - De structuursamenvatting van een import houdt per lijst hoogstens 200 namen, en een sleutel die geen veldnaam is, staat er als `*`.
 - Geldige maar onverwachte JSON, zoals tekst met een losse surrogate of `NaN`, geeft een geweigerde import in plaats van een fout 500. Een onverwachte structuur in de Game Data of de eventkalender wordt een mislukte versie of update op de pagina.
 - De volledige systeemstatus en de controle op nieuwe Game Data zijn alleen voor de eigenaar. De versie van OAK is pas na het inloggen te zien.
+- Paginanummers, id's, voorkeuren, volledigheidsinstellingen en teamleden hebben een type en een grens. Een te groot getal of een onbekend veld geeft 422 in plaats van een fout 500 of opslag zonder grens.
 
 ### Gewijzigd
 

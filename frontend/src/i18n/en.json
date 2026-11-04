@@ -2063,6 +2063,7 @@
       "VALIDATION_FAILED_disable_self": "You cannot disable yourself.",
       "VALIDATION_FAILED_own_password": "Change your own password under Change password, with your current password.",
       "VALIDATION_FAILED_sprite_template": "A custom sprite source must start with https://, have an ordinary host name and contain {dex}.",
+      "VALIDATION_FAILED_number_too_large": "A number in the request is too large.",
       "VALIDATION_FAILED_account_id": "Invalid trainer account.",
       "VALIDATION_FAILED_team_member": "A team member does not belong to this account.",
       "VALIDATION_FAILED_event_period": "The end must be after the start.",

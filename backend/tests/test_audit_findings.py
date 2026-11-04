@@ -88,7 +88,8 @@ def test_protecting_a_listed_pokemon_excludes_it_from_search(
     owner: Api, container: Any, export: dict[str, Any]
 ) -> None:
     account, pid = load_one(owner, container, export)
-    added = owner.post("/api/v1/cleanup/action-list", {"account_id": account, "ids": [pid]})
+    # The only copy of its species, so it needs a confirmation to go on the list at all.
+    added = owner.post("/api/v1/cleanup/action-list", {"account_id": account, "ids": [pid], "confirmed_ids": [pid]})
     assert added.json()["count"] == 1
     assert owner.patch(f"/api/v1/pokemon/{pid}/metadata", {"protected": True}).status_code == 200
     data = owner.get("/api/v1/cleanup/action-list", account_id=account).json()

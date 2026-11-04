@@ -56,7 +56,13 @@ from app.repositories.pokemon_query import (
 from app.schemas.common import MAX_PAGE
 from app.services.analysis import rules_for
 from app.services.pokemon_view import PokemonSummary, detail_extras, summarize
-from app.services.transfer_guard import bulk_vintage_text, check_transfer, confirmation_item, guard_context
+from app.services.transfer_guard import (
+    bulk_vintage_text,
+    check_transfer,
+    confirmation_item,
+    guard_context,
+    with_list,
+)
 
 router = APIRouter(prefix="/pokemon", tags=["pokemon"])
 MAX_PAGE_SIZE = 500
@@ -835,6 +841,25 @@ def bulk_action(
         body.action == "add_to_list" and (body.value or "cleanup") == "cleanup"
     )
     guard = guard_context(session, account, container.settings.tz)
+    analyses: dict[int, PokemonAnalysis] = {}
+    if transfer_actions:
+        # The list as it will be, so the guard sees when every copy of a species would go.
+        on_list = set(
+            session.scalars(
+                select(PlannedAction.pokemon_id).where(
+                    PlannedAction.trainer_account_id == account.id,
+                    PlannedAction.list_name == "cleanup",
+                    PlannedAction.status == "open",
+                )
+            )
+        )
+        guard = with_list(session, guard, account.id, on_list | {p.id for p in rows})
+        analyses = {
+            a.pokemon_id: a
+            for a in session.scalars(
+                select(PokemonAnalysis).where(PokemonAnalysis.pokemon_id.in_([p.id for p in rows]))
+            )
+        }
     for pokemon in rows:
         metadata = _metadata(session, pokemon, now)
         confirmed_kinds: list[str] = []
@@ -846,7 +871,7 @@ def bulk_action(
                 text = bulk_vintage_text(year)
                 skipped.append({"pokemon_id": pokemon.id, "reason": text["text"], "reason_text": text})
                 continue
-            check = check_transfer(pokemon, metadata, guard)
+            check = check_transfer(pokemon, metadata, guard, analyses.get(pokemon.id))
             if check.blocked:
                 skipped.append({"pokemon_id": pokemon.id, "reason": check.blocked, "reason_text": check.blocked_text})
                 continue

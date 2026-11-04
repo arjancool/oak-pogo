@@ -116,7 +116,9 @@
       "favorite": "Favoriet",
       "vintage": "Vintage, bescherming opgeheven",
       "unknown_date": "Vangstdatum onbekend",
-      "protected": "Beschermd door een regel"
+      "protected": "Beschermd door een regel",
+      "advice": "Volgens het advies bewaren",
+      "last_copy": "Laatste exemplaar van deze soort"
     },
     "readiness": {
       "direct": "Direct inzetbaar",
@@ -1911,7 +1913,11 @@
       "UNKNOWN_DATE": "Vangstdatum onbekend",
       "PROTECTED": "Beschermd: {{protections}}",
       "PROTECTION": "{{protections}}",
-      "UNCONFIRMED": "{{items}}"
+      "UNCONFIRMED": "{{items}}",
+      "ADVICE": "OAK raadt aan deze Pokémon te bewaren",
+      "ADVICE_keep": "OAK raadt aan deze Pokémon te bewaren",
+      "ADVICE_build": "OAK raadt aan in deze Pokémon te investeren",
+      "LAST_COPY": "Laatste {{name}} in je inventaris"
     },
     "rules": {
       "VINTAGE": "Vintage Pokémon (2016–2019) zijn altijd beschermd. Ze worden wel volledig geanalyseerd en vergeleken.",

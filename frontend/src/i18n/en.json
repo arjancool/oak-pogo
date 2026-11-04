@@ -2035,6 +2035,8 @@
       "UNSUPPORTED_MEDIA_TYPE_corrupt": "The compressed content is damaged.",
       "RATE_LIMITED_register": "Too many attempts. Try again later.",
       "RATE_LIMITED_login": "Too many failed login attempts. Try again later.",
+      "RATE_LIMITED_imports": "Too many imports in a short time. Try again later.",
+      "IMPORT_QUEUED": "An import for this trainer account is already waiting. Try again when it is done.",
       "RATE_LIMITED_change_password": "Too many failed attempts to change your password. Try again later.",
       "RATE_LIMITED_webhook_invalid": "Too many invalid requests.",
       "RATE_LIMITED_webhook": "Too many exports in a short time for this webhook.",

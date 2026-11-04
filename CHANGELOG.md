@@ -19,6 +19,8 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 - Een eigen spritebron moet een `https://`-adres met een gewone hostnaam zijn. Alleen de host en de poort komen in de Content-Security-Policy. Een ongeldige `OAK_SPRITE_URL_TEMPLATE` negeert OAK met een melding.
 - Downloads van de Game Data en de eventkalender hebben een maximale grootte, gaan alleen over https en volgen een doorverwijzing alleen naar dezelfde host. Bij een dataset staat het adres waar de inhoud echt vandaan kwam.
 - Een lege eventkalender laat de vorige events staan, met een melding. Eerder verdwenen dan alle events en de regels voor *even bewaren*.
+- Een geldig webhook-token werkt ook vanaf een adres dat eerder veel ongeldige tokens stuurde. Alleen ongeldige tokens worden dan geweigerd.
+- Handmatige uploads en nieuwe pogingen zijn begrensd op 30 per gebruiker per uur, en per traineraccount wacht hoogstens één handmatige import.
 
 ### Gewijzigd
 

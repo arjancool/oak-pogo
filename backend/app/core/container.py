@@ -23,6 +23,9 @@ INVALID_TOKEN_WINDOW_SECONDS = 600
 # locks the user out, so someone else cannot block an account by guessing at it.
 USERNAME_LIMIT_FACTOR = 5
 SLOW_LOGIN_SECONDS = 5
+# Manual uploads, retries and confirmations per user per hour (issue #45). The webhook has its own
+# limit per token (OAK_WEBHOOK_RATE_LIMIT_PER_HOUR).
+USER_IMPORTS_PER_HOUR = 30
 # Exports read and stored at the same time. More wait their turn, so a burst of large exports
 # cannot together use more memory than two do.
 IMPORT_SLOTS = 2
@@ -45,6 +48,7 @@ class Container:
     login_by_user: SlidingWindowLimiter = field(init=False)
     login_slow_by_user: SlidingWindowLimiter = field(init=False)
     password_checks_by_user: SlidingWindowLimiter = field(init=False)
+    imports_by_user: SlidingWindowLimiter = field(init=False)
     webhook_by_token: SlidingWindowLimiter = field(init=False)
     webhook_invalid_by_ip: SlidingWindowLimiter = field(init=False)
     import_slots: threading.BoundedSemaphore = field(init=False)
@@ -60,6 +64,7 @@ class Container:
         self.login_slow_by_user = SlidingWindowLimiter(1, SLOW_LOGIN_SECONDS)
         # Wrong current passwords when changing the password, per user (issue #41).
         self.password_checks_by_user = SlidingWindowLimiter(attempts, window)
+        self.imports_by_user = SlidingWindowLimiter(USER_IMPORTS_PER_HOUR, SECONDS_PER_HOUR)
         self.webhook_by_token = SlidingWindowLimiter(self.settings.webhook_rate_limit_per_hour, SECONDS_PER_HOUR)
         self.webhook_invalid_by_ip = SlidingWindowLimiter(INVALID_TOKEN_LIMIT, INVALID_TOKEN_WINDOW_SECONDS)
         self.import_slots = threading.BoundedSemaphore(IMPORT_SLOTS)

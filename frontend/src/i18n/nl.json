@@ -2035,6 +2035,8 @@
       "UNSUPPORTED_MEDIA_TYPE_corrupt": "De gecomprimeerde inhoud is beschadigd.",
       "RATE_LIMITED_register": "Te veel pogingen. Probeer het later opnieuw.",
       "RATE_LIMITED_login": "Te veel mislukte inlogpogingen. Probeer het later opnieuw.",
+      "RATE_LIMITED_imports": "Te veel imports in korte tijd. Probeer het later opnieuw.",
+      "IMPORT_QUEUED": "Er wacht al een import voor dit traineraccount. Probeer het opnieuw als die klaar is.",
       "RATE_LIMITED_change_password": "Te veel mislukte pogingen om je wachtwoord te wijzigen. Probeer het later opnieuw.",
       "RATE_LIMITED_webhook_invalid": "Te veel ongeldige verzoeken.",
       "RATE_LIMITED_webhook": "Te veel exports in korte tijd voor deze webhook.",

@@ -17,6 +17,7 @@ from app.core.errors import (
     ConflictError,
     NotFoundError,
     PayloadTooLargeError,
+    RateLimitedError,
     ValidationFailedError,
 )
 from app.domain.classification import CONFIRMABLE_CODES
@@ -133,6 +134,7 @@ async def upload(
 ) -> ImportOut:
     """Upload PGSStats.json. The fields are ``file`` and an optional ``account_id``. The body
     is only read after the login check, and never beyond the configured limit (audit A04)."""
+    _count_import(container, auth)
     limit = container.settings.max_import_bytes
     form = await bounded_form(request, limit, max_files=1)
     try:
@@ -173,6 +175,7 @@ def _accept_upload(container: Container, user_id: int, account_id: int | None, i
             user = session.get(User, user_id)
             assert user is not None
             account = _upload_account(session, user, account_id, prepared)
+            require_nothing_queued(session, account.id)
             job = create_import_job(
                 session,
                 account=account,
@@ -280,7 +283,30 @@ def get_import_errors(
     return [IssueOut.model_validate(i) for i in session.scalars(stmt.order_by(ImportIssue.id).limit(1000))]
 
 
+def _count_import(container: Container, auth: AuthContext) -> None:
+    """Uploads, retries and confirmations per user, so one user cannot keep the single worker
+    busy for everyone (issue #45)."""
+    retry = container.imports_by_user.hit(f"user:{auth.user.id}")
+    if retry:
+        raise RateLimitedError(
+            "Te veel imports in korte tijd. Probeer het later opnieuw.", retry_after=retry, context="imports"
+        )
+
+
+def require_nothing_queued(session: Session, account_id: int) -> None:
+    """At most one manual import per trainer account waits in the queue (issue #45)."""
+    waiting = session.scalar(
+        select(ImportJob.id).where(ImportJob.trainer_account_id == account_id, ImportJob.status == "queued").limit(1)
+    )
+    if waiting is not None:
+        raise ConflictError(
+            "Er wacht al een import voor dit traineraccount. Probeer het opnieuw als die klaar is.",
+            code="IMPORT_QUEUED",
+        )
+
+
 def _requeue(session: Session, container: Container, job: ImportJob, *, confirm_full: bool) -> ImportJob:
+    require_nothing_queued(session, job.trainer_account_id)
     if job.payload_file is None or job.payload_purged_at is not None:
         raise ConflictError(
             "De opgeslagen export is niet meer beschikbaar. Upload hem opnieuw.",
@@ -326,6 +352,7 @@ def retry_import(
     container: Container = Depends(get_container),
 ) -> ImportOut:
     job = _owned_job(session, auth, import_id)
+    _count_import(container, auth)
     if job.status not in ("failed", "rejected", "partial"):
         raise ConflictError(
             "Alleen mislukte, geweigerde of gedeeltelijke imports kunnen opnieuw.", context="retry_not_allowed"
@@ -346,6 +373,7 @@ def confirm_full_import(
     """The user confirms that a partial import really was a complete export. Only then are the
     missing Pokémon marked as no longer in inventory (spec §4.7)."""
     job = _owned_job(session, auth, import_id)
+    _count_import(container, auth)
     out = import_out(session, job)
     if not out.confirmable:
         raise ConflictError("Deze import kan niet als volledig bevestigd worden.", code="NOT_CONFIRMABLE")

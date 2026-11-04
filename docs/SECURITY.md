@@ -46,7 +46,7 @@ De eigenaar beheert de installatie: gebruikers, Game Data, sprites, back-ups en 
 
 ## Verdere maatregelen
 
-- **Headers:** iedere respons krijgt een Content-Security-Policy zonder inline scripts, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, een strenge `Permissions-Policy` en `Cross-Origin-Opener-Policy: same-origin`. Achter https komt daar HSTS bij. API-antwoorden krijgen `Cache-Control: no-store`.
+- **Headers:** iedere respons krijgt een Content-Security-Policy zonder inline scripts, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, een strenge `Permissions-Policy` en `Cross-Origin-Opener-Policy: same-origin`. Achter https komt daar HSTS bij. API-antwoorden krijgen `Cache-Control: no-store`. Een eigen spritebron komt alleen in de CSP als het een `https://`-adres is met een gewone hostnaam. OAK zet dan alleen de host en de poort in de header, nooit de tekst zoals hij is ingevoerd.
 - **CORS:** OAK zet geen CORS-headers. Een andere website kan dus niet namens je browser de API gebruiken.
 - **Invoer:** Pydantic controleert iedere invoer. Zoektermen worden met parameters naar SQL vertaald, ook bij `LIKE`. React ontsnapt alle tekst. CSV-exports beschermen tegen formule-injectie in spreadsheets.
 - **Logboek:** OAK schrijft geen request-bodies, wachtwoorden, sessietokens of webhook-tokens weg. Een filter maskeert tokens ook als ze per ongeluk in een melding terechtkomen. Het toegangslog van uvicorn staat uit.

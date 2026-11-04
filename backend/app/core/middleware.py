@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 import time
-from urllib.parse import urlparse
 
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
@@ -14,6 +13,7 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from app.core.errors import PayloadTooLargeError
 from app.core.logging import redact
+from app.core.sprites import sprite_origin
 
 log = logging.getLogger("oak.http")
 HSTS_SECONDS = 31_536_000
@@ -21,10 +21,10 @@ HSTS_SECONDS = 31_536_000
 
 def content_security_policy(sprite_template: str) -> str:
     img_sources = ["'self'", "data:", "blob:"]
-    if sprite_template:
-        parsed = urlparse(sprite_template)
-        if parsed.scheme in ("http", "https") and parsed.netloc:
-            img_sources.append(f"{parsed.scheme}://{parsed.netloc}")
+    # Built from the checked host and port, never from the raw text (issue #51).
+    origin = sprite_origin(sprite_template)
+    if origin:
+        img_sources.append(origin)
     return "; ".join(
         [
             "default-src 'self'",

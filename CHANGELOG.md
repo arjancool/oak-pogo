@@ -16,6 +16,7 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 - De opgeslagen kopie van een export bewaart van een Pokémon alleen de velden die OAK leest, en onbekende velden alleen als ze onschuldig zijn. Het privacyfilter herkent meer gevoelige veldnamen, ook met cijfers zoals `s2Id`. Bewaarde exports worden bij de volgende start opnieuw gefilterd.
 
 - Wachtwoord wijzigen heeft een grens op foute pogingen, en iedere foute poging komt in het auditlogboek. Na een wijziging eindigen alle sessies, ook de huidige, en krijgt de browser een nieuwe sessie. Hoogstens vier Argon2-berekeningen draaien tegelijk.
+- Een eigen spritebron moet een `https://`-adres met een gewone hostnaam zijn. Alleen de host en de poort komen in de Content-Security-Policy. Een ongeldige `OAK_SPRITE_URL_TEMPLATE` negeert OAK met een melding.
 
 ### Gewijzigd
 

@@ -2060,7 +2060,7 @@
       "VALIDATION_FAILED_password_too_long": "Dit wachtwoord is te lang.",
       "VALIDATION_FAILED_disable_self": "Je kunt jezelf niet uitschakelen.",
       "VALIDATION_FAILED_own_password": "Wijzig je eigen wachtwoord via Wachtwoord wijzigen, met je huidige wachtwoord.",
-      "VALIDATION_FAILED_sprite_template": "Een eigen spritebron moet met https:// beginnen en {dex} bevatten.",
+      "VALIDATION_FAILED_sprite_template": "Een eigen spritebron moet met https:// beginnen, een gewone hostnaam hebben en {dex} bevatten.",
       "VALIDATION_FAILED_account_id": "Ongeldig traineraccount.",
       "VALIDATION_FAILED_team_member": "Een teamlid hoort niet bij dit account.",
       "VALIDATION_FAILED_event_period": "Het einde moet na het begin liggen.",

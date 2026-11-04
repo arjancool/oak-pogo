@@ -22,6 +22,7 @@ from app.auth.sessions import revoke_all_for_user
 from app.core.container import Container
 from app.core.errors import ConflictError, NotFoundError, ValidationFailedError
 from app.core.migrations import backup_database
+from app.core.sprites import sprite_origin
 from app.models import AuditLog, BackgroundJob, GameDataVersion, ImportJob, TrainerAccount, User
 from app.repositories.settings import set_setting
 from app.services.settings import POKEAPI_SPRITE_TEMPLATE, SPRITE_KEY
@@ -131,9 +132,10 @@ def put_app_settings(
         template = POKEAPI_SPRITE_TEMPLATE
     else:
         template = (body.sprite_url_template or "").strip()
-        if not template.startswith("https://") or "{dex}" not in template:
+        if sprite_origin(template) is None:
             raise ValidationFailedError(
-                "Een eigen spritebron moet met https:// beginnen en {dex} bevatten.", context="sprite_template"
+                "Een eigen spritebron moet met https:// beginnen, een gewone hostnaam hebben en {dex} bevatten.",
+                context="sprite_template",
             )
     set_setting(session, SPRITE_KEY, template)
     audit(

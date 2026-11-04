@@ -7,6 +7,8 @@ silently: an invalid value fails at startup with a message naming the variable.
 from __future__ import annotations
 
 import ipaddress
+import logging
+import os
 import secrets
 from functools import cached_property
 from pathlib import Path
@@ -18,6 +20,18 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 MIN_SECRET_KEY_LENGTH = 32
 SECRET_KEY_FILENAME = ".secret_key"
+# Only OAK itself reads the data directory and the key (issue #43).
+PRIVATE_DIR_MODE = 0o700
+PRIVATE_FILE_MODE = 0o600
+# POSIX file modes; on Windows they mean something else and OAK leaves them alone.
+POSIX = os.name == "posix"
+log = logging.getLogger("oak.config")
+
+
+class SecretKeyFileError(RuntimeError):
+    """The stored key is unusable. OAK refuses to start rather than make a new one silently."""
+
+
 BYTES_PER_MEGABYTE = 1024 * 1024
 
 
@@ -135,7 +149,10 @@ class Settings(BaseSettings):
 
     def ensure_directories(self) -> None:
         for directory in (self.data_dir, self.imports_dir, self.gamedata_dir, self.backups_dir):
-            directory.mkdir(parents=True, exist_ok=True)
+            directory.mkdir(parents=True, exist_ok=True, mode=PRIVATE_DIR_MODE)
+        # The database, back-ups, imports and the key are for OAK alone. A data directory that
+        # others can read is closed, which also covers the files made before this was in place.
+        _restrict(self.data_dir, PRIVATE_DIR_MODE)
 
     def resolve_secret_key(self) -> tuple[str, bool]:
         """Return the secret key and whether it was generated and stored in the data directory.
@@ -148,13 +165,59 @@ class Settings(BaseSettings):
             return self.secret_key, False
         path = self.data_dir / SECRET_KEY_FILENAME
         if path.exists():
-            stored = path.read_text(encoding="utf-8").strip()
-            if len(stored) >= MIN_SECRET_KEY_LENGTH:
-                return stored, True
+            return _read_secret_file(path), True
         generated = secrets.token_urlsafe(48)
-        path.write_text(generated, encoding="utf-8")
-        path.chmod(0o600)
+        _write_secret_file(path, generated)
         return generated, True
+
+
+def _read_secret_file(path: Path) -> str:
+    """A stored key that is empty or too short is never replaced: a new key would end every
+    session and change which trainer account an export belongs to, without anyone noticing."""
+    stored = path.read_text(encoding="utf-8").strip()
+    if len(stored) < MIN_SECRET_KEY_LENGTH:
+        msg = (
+            f"Het bestand {path} bevat geen geldige geheime sleutel: hij is leeg of korter dan "
+            f"{MIN_SECRET_KEY_LENGTH} tekens. OAK start niet, want een nieuwe sleutel laat alle "
+            "sessies vervallen en verandert de koppeling tussen exports en traineraccounts. Zet de "
+            "juiste sleutel terug uit een back-up, of verwijder het bestand om bewust een nieuwe "
+            "sleutel te laten maken."
+        )
+        raise SecretKeyFileError(msg)
+    _restrict(path, PRIVATE_FILE_MODE)
+    return stored
+
+
+def _write_secret_file(path: Path, value: str) -> None:
+    """Write through a temporary file that has mode 0600 from the moment it exists, then put it
+    in place in one step. The key is never on disk with wider rights, and never half written."""
+    tmp = path.with_name(f"{path.name}.{secrets.token_hex(4)}.tmp")
+    descriptor = os.open(tmp, os.O_CREAT | os.O_EXCL | os.O_WRONLY, PRIVATE_FILE_MODE)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            handle.write(value)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(tmp, path)
+    finally:
+        tmp.unlink(missing_ok=True)
+
+
+def _restrict(path: Path, mode: int) -> None:
+    """Take away the rights of group and others. Logs, but does not stop OAK, when that fails,
+    for example on a directory that belongs to another user."""
+    if not POSIX:
+        return
+    current = path.stat().st_mode & 0o777
+    if current & ~mode == 0:
+        return
+    try:
+        path.chmod(mode)
+    except OSError as exc:
+        details = {"path": str(path), "mode": oct(current), "error": type(exc).__name__}
+        log.warning("could not restrict permissions", extra=details)
+        return
+    log.warning("permissions restricted", extra={"path": str(path), "was": oct(current), "now": oct(mode)})
 
 
 def _split_csv(value: str) -> list[str]:

@@ -11,6 +11,7 @@ OAK is vaak via internet bereikbaar, omdat PGSharp de webhook vanaf je telefoon 
 ## Inloggen en sessies
 
 - **Wachtwoorden** worden gehasht met Argon2id, met de standaardparameters van argon2-cffi volgens RFC 9106. Een wachtwoord heeft minimaal 10 tekens.
+- Hashen en controleren gebeurt buiten iedere schrijftransactie. Een inlogpoging laat andere schrijvers, zoals een webhook-import, dus niet wachten. Verandert het wachtwoord of de status van een gebruiker terwijl OAK een poging controleert, dan telt de nieuwe stand.
 - **Eerste gebruik:** er is geen standaardaccount en geen standaardwachtwoord. De eerste gebruiker maakt zelf het eigenaaraccount aan. Daarna is het setupscherm dicht.
 - **Registratie** staat standaard uit (`OAK_ALLOW_REGISTRATION=false`). De eigenaar maakt gebruikers aan. Staat registratie aan, dan kan dat pas als de eigenaar bestaat. Zolang er geen eigenaar is, blijft het setupscherm beschikbaar.
 - **Sessies** zijn een willekeurig token van 256 bits in een cookie met `HttpOnly` en `SameSite=Lax`. Als `OAK_BASE_URL` met `https://` begint, krijgt het cookie ook `Secure`. De database bewaart alleen de SHA-256-hash van het token. Er staat niets in `localStorage`.
@@ -48,7 +49,7 @@ De eigenaar beheert de installatie: gebruikers, Game Data, sprites, back-ups en 
 - **Invoer:** Pydantic controleert iedere invoer. Zoektermen worden met parameters naar SQL vertaald, ook bij `LIKE`. React ontsnapt alle tekst. CSV-exports beschermen tegen formule-injectie in spreadsheets.
 - **Logboek:** OAK schrijft geen request-bodies, wachtwoorden, sessietokens of webhook-tokens weg. Een filter maskeert tokens ook als ze per ongeluk in een melding terechtkomen. Het toegangslog van uvicorn staat uit.
 - **Opgeslagen exports** zijn opgeschoond (zonder locaties, namen van andere spelers en interne spelers-ID's) en worden na 14 dagen verwijderd. Dat geldt ook voor een bestand dat geen export blijkt te zijn: een lijst of ander onverwacht formaat gaat door hetzelfde filter, en het exporttijdstip wordt alleen als tekst bewaard.
-- **Geheime sleutel:** zonder `OAK_SECRET_KEY` maakt OAK eenmalig een sleutel van 48 willekeurige bytes in `/data/.secret_key`, met rechten 0600. De status meldt welke van de twee in gebruik is.
+- **Geheime sleutel:** zonder `OAK_SECRET_KEY` maakt OAK eenmalig een sleutel van 48 willekeurige bytes in `/data/.secret_key`. Het bestand heeft vanaf het begin de rechten 0600 en komt in één stap op zijn plek. Ruimere rechten zet OAK terug naar 0600. Een leeg of te kort bestand vervangt OAK nooit. OAK start dan niet en zegt waarom. De status meldt welke van de twee sleutels in gebruik is.
 - **Productie:** `OAK_ENV` staat standaard op `production`. Dan zijn de interactieve API-documentatie en het API-schema (`/api/openapi.json`) uit.
 - **Auditlogboek:** inloggen en mislukte inlogpogingen, wachtwoordwijzigingen, het aanmaken en verwijderen van accounts en webhooks, Game Data-wissels, instellingen en back-ups komen in `audit_log`.
 - **Container:** OAK draait als gewone gebruiker, zonder capabilities en met `no-new-privileges`.
@@ -61,7 +62,7 @@ Bij iedere push, iedere pull request en iedere maandagochtend bouwt CI de image,
 - De beveiligingsheaders zijn aanwezig, en API-antwoorden hebben `Cache-Control: no-store`.
 - `/api/docs`, `/api/redoc` en `/api/openapi.json` geven in productie een `404`.
 - Een webhookverzoek staat in het logboek met `[redacted]` in plaats van het token.
-- OAK draait niet als root, en `/data/.secret_key` heeft de rechten 600.
+- OAK draait niet als root. `/data` heeft de rechten 700, en de bestanden daarin, waaronder `/data/.secret_key`, zijn alleen voor OAK leesbaar.
 - De image weigert te starten met `PUID=0` of `PGID=0`.
 
 Daarna scant [Grype](https://github.com/anchore/grype) de image op bekende kwetsbaarheden in de pakketten van het besturingssysteem en in de Python-afhankelijkheden. CI faalt bij een hoog of kritiek lek waarvoor een opgeloste versie bestaat. Grype staat vast op een digest. Trivy is bewust niet gekozen, omdat de toeleveringsketen daarvan in maart 2026 is gehackt (CVE-2026-33634). De scanner krijgt de image als archief en geen toegang tot de Docker-socket.

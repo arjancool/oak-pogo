@@ -190,40 +190,65 @@ def auth_status(
     )
 
 
+# Argon2 takes a while and a lot of memory. Setup, registration and login therefore check what
+# they can in a read transaction, hash or verify the password outside any transaction, and only
+# then write, briefly. A write transaction would hold the database write lock during the hash, and
+# every other writer, such as a webhook import, would have to wait (issue #40).
+
+
+def _require_no_owner(session: Session) -> None:
+    if (session.scalar(select(func.count()).select_from(User).where(User.role == "owner")) or 0) > 0:
+        raise ConflictError("De eigenaar is al aangemaakt.", code="SETUP_DONE")
+
+
+def _require_owner(session: Session) -> None:
+    if not session.scalar(select(User.id).where(User.role == "owner").limit(1)):
+        raise ConflictError("Registreren kan pas als de eigenaar is aangemaakt.", code="SETUP_REQUIRED")
+
+
+def _require_free_username(session: Session, username: str) -> None:
+    if session.scalar(select(User.id).where(User.username == username)):
+        raise ConflictError("Deze gebruikersnaam bestaat al.", context="username_taken")
+
+
 @router.post("/setup", response_model=AuthStatus, status_code=201)
 def setup_owner(
     body: SetupRequest,
     request: Request,
     response: Response,
-    session: Session = Depends(get_session),
     container: Container = Depends(get_container),
 ) -> AuthStatus:
     """Create the owner. Only possible while no owner exists, also when a user registered
     earlier while registration was open before the owner existed (audit A09)."""
-    if (session.scalar(select(func.count()).select_from(User).where(User.role == "owner")) or 0) > 0:
-        raise ConflictError("De eigenaar is al aangemaakt.", code="SETUP_DONE")
-    now = container.clock.now()
-    user = User(
-        username=validate_username(body.username),
-        email=body.email,
-        password_hash=hash_password(body.password),
-        role="owner",
-        status="active",
-        preferences={},
-        created_at=now,
-        password_changed_at=now,
-    )
-    session.add(user)
-    session.flush()
-    token = create_session(session, user, session_policy(container), now, request.headers.get("user-agent"))
-    csrf = _set_cookies(response, container, token)
-    audit(session, user.id, "owner_created", user.username, container)
+    with container.db.read() as session:
+        _require_no_owner(session)
+    username = validate_username(body.username)
+    password_hash = hash_password(body.password)
+    with container.db.transaction() as session:
+        # Again in the write transaction, which serializes it with a registration (audit A09).
+        _require_no_owner(session)
+        now = container.clock.now()
+        user = User(
+            username=username,
+            email=body.email,
+            password_hash=password_hash,
+            role="owner",
+            status="active",
+            preferences={},
+            created_at=now,
+            password_changed_at=now,
+        )
+        session.add(user)
+        session.flush()
+        token = create_session(session, user, session_policy(container), now, request.headers.get("user-agent"))
+        audit(session, user.id, "owner_created", user.username, container)
+        user_out = UserOut.model_validate(user)
     return AuthStatus(
         setup_required=False,
         registration_open=container.settings.allow_registration,
         authenticated=True,
-        user=UserOut.model_validate(user),
-        csrf_token=csrf,
+        user=user_out,
+        csrf_token=_set_cookies(response, container, token),
     )
 
 
@@ -232,42 +257,46 @@ def register(
     body: SetupRequest,
     request: Request,
     response: Response,
-    session: Session = Depends(get_session),
     container: Container = Depends(get_container),
 ) -> AuthStatus:
     if not container.settings.allow_registration:
         raise ForbiddenError("Registratie staat uit.", code="REGISTRATION_CLOSED")
-    # The write transaction serializes this check with the owner setup (audit A09).
-    if not session.scalar(select(User.id).where(User.role == "owner").limit(1)):
-        raise ConflictError("Registreren kan pas als de eigenaar is aangemaakt.", code="SETUP_REQUIRED")
+    with container.db.read() as session:
+        _require_owner(session)
     blocked = container.login_by_ip.hit(f"register:{address_key(_client_ip(request))}")
     if blocked:
         raise RateLimitedError("Te veel pogingen. Probeer het later opnieuw.", retry_after=blocked, context="register")
     username = validate_username(body.username)
-    if session.scalar(select(User.id).where(User.username == username)):
-        raise ConflictError("Deze gebruikersnaam bestaat al.", context="username_taken")
-    now = container.clock.now()
-    user = User(
-        username=username,
-        email=body.email,
-        password_hash=hash_password(body.password),
-        role="user",
-        status="active",
-        preferences={},
-        created_at=now,
-        password_changed_at=now,
-    )
-    session.add(user)
-    session.flush()
-    token = create_session(session, user, session_policy(container), now, request.headers.get("user-agent"))
-    csrf = _set_cookies(response, container, token)
-    audit(session, user.id, "user_registered", user.username, container)
+    with container.db.read() as session:
+        _require_free_username(session, username)
+    password_hash = hash_password(body.password)
+    with container.db.transaction() as session:
+        # Again in the write transaction, which serializes these checks with the owner setup and
+        # with another registration (audit A09).
+        _require_owner(session)
+        _require_free_username(session, username)
+        now = container.clock.now()
+        user = User(
+            username=username,
+            email=body.email,
+            password_hash=password_hash,
+            role="user",
+            status="active",
+            preferences={},
+            created_at=now,
+            password_changed_at=now,
+        )
+        session.add(user)
+        session.flush()
+        token = create_session(session, user, session_policy(container), now, request.headers.get("user-agent"))
+        audit(session, user.id, "user_registered", user.username, container)
+        user_out = UserOut.model_validate(user)
     return AuthStatus(
         setup_required=False,
         registration_open=True,
         authenticated=True,
-        user=UserOut.model_validate(user),
-        csrf_token=csrf,
+        user=user_out,
+        csrf_token=_set_cookies(response, container, token),
     )
 
 
@@ -276,38 +305,45 @@ def login(
     body: LoginRequest,
     request: Request,
     response: Response,
-    session: Session = Depends(get_session),
     container: Container = Depends(get_container),
 ) -> AuthStatus:
     username = body.username.strip().lower()
     address = address_key(_client_ip(request))
     taken = _reserve_login(container, address, username)
-    user = session.scalars(select(User).where(User.username == username)).first()
-    if (
-        not verify_password(user.password_hash if user else None, body.password)
-        or user is None
-        or user.status != "active"
-    ):
-        # The places taken stay: they count this failure.
-        audit(session, user.id if user else None, "login_failed", username, container)
-        # Commit before the error response: the request's rollback would drop the entry (audit A08).
-        session.commit()
+    with container.db.read() as session:
+        found = session.scalars(select(User).where(User.username == username)).first()
+        user_id = found.id if found else None
+        stored_hash = found.password_hash if found else None
+        active = found is not None and found.status == "active"
+    # Always verified, also for an unknown or disabled user, so the time it takes says nothing.
+    valid = verify_password(stored_hash, body.password) and active
+    new_hash = hash_password(body.password) if valid and stored_hash and needs_rehash(stored_hash) else None
+    logged_in: tuple[str, UserOut] | None = None
+    with container.db.transaction() as session:
+        user = session.get(User, user_id) if valid and user_id is not None else None
+        # The user may have been disabled, or the password changed, while it was being checked.
+        if user is None or user.status != "active" or user.password_hash != stored_hash:
+            # The places taken stay: they count this failure.
+            audit(session, user_id, "login_failed", username, container)
+        else:
+            if new_hash:
+                user.password_hash = new_hash
+            now = container.clock.now()
+            token = create_session(session, user, session_policy(container), now, request.headers.get("user-agent"))
+            audit(session, user.id, "login", username, container)
+            logged_in = token, UserOut.model_validate(user)
+    if logged_in is None:
         raise UnauthorizedError("Onjuiste gebruikersnaam of wachtwoord.", code="INVALID_CREDENTIALS", context="login")
+    token, user_out = logged_in
     for limiter, key in taken:
         limiter.release(key)
     container.login_by_pair.reset(f"pair:{address}|{username}")
-    if needs_rehash(user.password_hash):
-        user.password_hash = hash_password(body.password)
-    now = container.clock.now()
-    token = create_session(session, user, session_policy(container), now, request.headers.get("user-agent"))
-    csrf = _set_cookies(response, container, token)
-    audit(session, user.id, "login", username, container)
     return AuthStatus(
         setup_required=False,
         registration_open=container.settings.allow_registration,
         authenticated=True,
-        user=UserOut.model_validate(user),
-        csrf_token=csrf,
+        user=user_out,
+        csrf_token=_set_cookies(response, container, token),
     )
 
 

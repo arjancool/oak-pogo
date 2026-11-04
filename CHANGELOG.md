@@ -11,6 +11,9 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 - Een import bewaart per ernst hoogstens 500 meldingen. Een taak die drie keer is onderbroken, start niet opnieuw.
 - De blokkade na mislukte inlogpogingen geldt per gebruikersnaam en adres. Vanaf een ander adres kan een gebruiker gewoon inloggen. Veel mislukte pogingen voor één naam vanaf verschillende adressen vertragen alleen. Pogingen die tegelijk binnenkomen, kunnen een grens niet meer passeren, en een IPv6-adres telt per /64-blok.
 - `docs/DEPLOYMENT.md` raadt aan om in `OAK_TRUSTED_PROXY_CIDRS` alleen het adres van de proxy te zetten, niet de hele Docker-range.
+- Inloggen, de setup en registreren hashen of controleren het wachtwoord buiten de schrijftransactie. Andere schrijvers hoeven daar niet meer op te wachten.
+- De geheime sleutel in `/data/.secret_key` heeft vanaf het begin de rechten 600. Is het bestand leeg of te kort, dan start OAK niet en zegt waarom, in plaats van stil een nieuwe sleutel te maken. De datamap krijgt de rechten 700 en nieuwe bestanden `umask 077`.
+- De opgeslagen kopie van een export bewaart van een Pokémon alleen de velden die OAK leest, en onbekende velden alleen als ze onschuldig zijn. Het privacyfilter herkent meer gevoelige veldnamen, ook met cijfers zoals `s2Id`. Bewaarde exports worden bij de volgende start opnieuw gefilterd.
 
 ### Gewijzigd
 

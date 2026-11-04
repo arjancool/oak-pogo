@@ -52,6 +52,9 @@ echo "Webhook-token blijft uit het logboek."
 # OAK runs as an ordinary user and keeps its generated secret key to itself.
 [ "$(docker exec "$container" stat -c %u /proc/1)" != "0" ] || fail "OAK draait als root"
 [ "$(docker exec "$container" stat -c %a /data/.secret_key)" = "600" ] || fail "/data/.secret_key heeft niet de rechten 600"
+# The data directory and the files in it are for OAK alone (issue #43).
+[ "$(docker exec "$container" stat -c %a /data)" = "700" ] || fail "/data heeft niet de rechten 700"
+[ "$(docker exec "$container" stat -c %a /data/oak.db)" = "600" ] || fail "/data/oak.db heeft niet de rechten 600"
 echo "OAK draait niet als root en de geheime sleutel heeft de rechten 600."
 
 # The image refuses to run OAK as root, also when asked to.

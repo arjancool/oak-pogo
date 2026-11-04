@@ -64,6 +64,10 @@ Bijwerken gaat met `docker compose pull && docker compose up -d`. Voor iedere da
 
 De container start als root, maakt de datamap eigendom van `PUID:PGID` en laat daarna alle rechten vallen. OAK zelf draait nooit als root. `PUID` of `PGID` 0 weigert de container. Wie de container liever direct als vaste gebruiker start (`user: "1000:1000"` in compose of `runAsUser` in Kubernetes), moet zelf zorgen dat die gebruiker in de datamap kan schrijven.
 
+De datamap is alleen voor OAK zelf. De container zet `/data` op rechten 700 en maakt nieuwe bestanden met `umask 077`, zodat de database, de back-ups, de imports en de Game Data alleen leesbaar zijn voor `PUID`. Start je OAK zonder container, dan doet OAK hetzelfde bij het starten. Wil je de map vanaf de host lezen, bijvoorbeeld voor een back-up, doe dat dan als die gebruiker of als root.
+
+Zonder `OAK_SECRET_KEY` maakt OAK eenmalig `/data/.secret_key`, meteen met rechten 600. Heeft een bestaand bestand ruimere rechten, dan zet OAK die terug naar 600. Is het bestand leeg of korter dan 32 tekens, dan start OAK niet en zegt in het logboek waarom. Een nieuwe sleutel zou alle sessies laten vervallen en de koppeling tussen exports en traineraccounts veranderen. Zet de juiste sleutel terug uit een back-up, of verwijder het bestand als je bewust een nieuwe sleutel wilt.
+
 ## Instellingen
 
 Alle instellingen zijn omgevingsvariabelen. Waarden met een standaard hoef je niet op te geven.

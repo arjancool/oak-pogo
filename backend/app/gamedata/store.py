@@ -275,7 +275,7 @@ class GameDataStore:
         except Exception as exc:  # report, do not raise: the page must still render
             # The error is a server text: {code, text, data} (ADR-0025).
             return {"available": None, "error": _unreachable(exc)}
-        with self.db.transaction() as session:
+        with self.db.read() as session:
             version = session.scalars(select(GameDataVersion).where(GameDataVersion.status == "active")).first()
             known = {s["id"]: s.get("etag") for s in version.sources} if version else {}
         changed = [sid for sid, tag in etags.items() if tag is None or known.get(sid) != tag]

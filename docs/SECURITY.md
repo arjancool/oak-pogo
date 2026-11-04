@@ -45,6 +45,8 @@ Iedere gebruiker ziet alleen de eigen traineraccounts (ADR-0016). Iedere query o
 
 De eigenaar beheert de installatie: gebruikers, Game Data, sprites, back-ups en het auditlogboek. De gegevens van andere gebruikers kan ook de eigenaar niet via de interface inzien.
 
+De volledige systeemstatus, met paden, schijfruimte, de bron van de geheime sleutel en de taken van iedereen, is alleen voor de eigenaar. Een andere gebruiker ziet daar alleen zijn eigen mislukte imports, zijn laatste synchronisatie en de actieve Game Data. Ook de controle op nieuwe Game Data, die bij iedere aanroep de bronnen buiten vraagt, is alleen voor de eigenaar. De versie van OAK is pas na het inloggen te zien.
+
 ## Verdere maatregelen
 
 - **Headers:** iedere respons krijgt een Content-Security-Policy zonder inline scripts, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, een strenge `Permissions-Policy` en `Cross-Origin-Opener-Policy: same-origin`. Achter https komt daar HSTS bij. API-antwoorden krijgen `Cache-Control: no-store`. Een eigen spritebron komt alleen in de CSP als het een `https://`-adres is met een gewone hostnaam. OAK zet dan alleen de host en de poort in de header, nooit de tekst zoals hij is ingevoerd.

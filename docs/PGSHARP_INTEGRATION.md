@@ -80,7 +80,7 @@ Naast de grootte in bytes controleert OAK de opbouw van een export. Zo kost het 
 | Velden in één object | 1.000 |
 | Cijfers in één getal | 4.300 |
 
-Het aantal objecten, lijsten en waarden telt OAK voordat het de JSON leest. Een export die over een grens gaat, weigert OAK met de code `STRUCTURE_TOO_LARGE` en de grens die overschreden is.
+Ook tekst met een ongeldig teken (een losse surrogate) en getallen die niet eindig zijn, zoals `NaN`, `Infinity` en `1e999`, weigert OAK met een eigen code. Het aantal objecten, lijsten en waarden telt OAK voordat het de JSON leest. Een export die over een grens gaat, weigert OAK met de code `STRUCTURE_TOO_LARGE` en de grens die overschreden is.
 
 OAK leest, filtert en bewaart een export voordat het de database op slot zet voor de import. Een grote export houdt andere schrijvers dus niet op. Hoogstens twee exports worden tegelijk gelezen. De rest wacht even.
 

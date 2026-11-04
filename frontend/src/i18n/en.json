@@ -2131,6 +2131,8 @@
       "PROCESSING_FAILED": "Processing failed because of an internal error. Nothing was changed.",
       "MULTIPART_WITHOUT_FILE": "The multipart request has no file.",
       "ENCODING_INVALID": "The content is not valid {{charset}} text.",
+      "ENCODING_INVALID_character": "The export contains text with an invalid character.",
+      "NUMBER_INVALID": "The export contains a number that is not finite, such as NaN or Infinity.",
       "EMPTY_BODY": "The request has no content.",
       "INVALID_JSON": "Invalid JSON at line {{line}}, column {{column}}.",
       "STRUCTURE_TOO_LARGE_pokemons": "The export has more than {{max, number}} Pokémon records.",

@@ -16,7 +16,6 @@ from datetime import datetime
 from typing import Any
 from zoneinfo import ZoneInfo
 
-import httpx
 from sqlalchemy import delete, or_, select
 from sqlalchemy.orm import Session
 
@@ -66,7 +65,8 @@ def update_events(settings: Settings, db: Database, now: datetime, content: byte
         if sha == previous.get("sha256"):
             return _record(db, {**previous, "etag": etag or previous.get("etag")}, now, status="unchanged")
         events, skipped = parse_events(json.loads(content), ZoneInfo(settings.timezone))
-    except (httpx.HTTPError, ValueError) as exc:
+    # Any unexpected content is a failed update that leaves the events as they are (issue #47).
+    except Exception as exc:
         if isinstance(exc, EventFeedError):
             text = {"code": exc.code, "text": str(exc), "data": exc.data}
         else:

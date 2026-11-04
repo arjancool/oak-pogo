@@ -2131,6 +2131,8 @@
       "PROCESSING_FAILED": "Verwerking mislukt door een interne fout. Er is niets gewijzigd.",
       "MULTIPART_WITHOUT_FILE": "Het multipart-verzoek bevat geen bestand.",
       "ENCODING_INVALID": "De inhoud is geen geldige {{charset}}-tekst.",
+      "ENCODING_INVALID_character": "De export bevat tekst met een ongeldig teken.",
+      "NUMBER_INVALID": "De export bevat een getal dat niet eindig is, zoals NaN of Infinity.",
       "EMPTY_BODY": "Het verzoek bevat geen inhoud.",
       "INVALID_JSON": "Ongeldige JSON op regel {{line}}, kolom {{column}}.",
       "STRUCTURE_TOO_LARGE_pokemons": "De export bevat meer dan {{max, number}} Pokémon-records.",

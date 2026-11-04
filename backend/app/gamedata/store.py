@@ -145,9 +145,10 @@ class GameDataStore:
                     generated_at=now.isoformat(),
                 )
                 warnings = validate_dataset(dataset, self.limits)
-            except (DatasetInvalidError, ValueError, KeyError, TypeError) as exc:
+            # Any unexpected structure is a failed version on the page, never an error 500 (issue #47).
+            except Exception as exc:
                 errors = exc.errors if isinstance(exc, DatasetInvalidError) else []
-                message = "; ".join(e["text"] for e in errors) if errors else str(exc)
+                message = "; ".join(e["text"] for e in errors) if errors else (str(exc) or type(exc).__name__)
                 with self.db.transaction() as session:
                     session.add(
                         GameDataVersion(

@@ -34,7 +34,9 @@ services:
     container_name: oak
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
+    networks:
+      - proxy
     volumes:
       - /pad/naar/oak/data:/data
     environment:
@@ -42,8 +44,19 @@ services:
       - PUID=1000
       - PGID=1000
       - OAK_BASE_URL=https://oak.example.org
-      - OAK_TRUSTED_PROXY_CIDRS=172.16.0.0/12
+      - OAK_TRUSTED_PROXY_CIDRS=172.30.0.2/32
+
+networks:
+  proxy:
+    name: proxy
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+          gateway: 172.30.0.1
+          ip_range: 172.30.0.128/25
 ```
+
+De reverse proxy zit hier in hetzelfde netwerk `proxy`, met het vaste adres `172.30.0.2`. Containers zonder vast adres krijgen er een uit `ip_range`, zodat ze dat adres nooit eerder pakken. Zie [Alleen de proxy vertrouwen](#alleen-de-proxy-vertrouwen).
 
 Bijwerken gaat met `docker compose pull && docker compose up -d`. Voor iedere databasemigratie maakt OAK zelf een back-up in `/data/backups`.
 
@@ -68,7 +81,7 @@ docker exec oak env | grep OAK_
 |---|---|---|
 | `OAK_BASE_URL` | `http://localhost:8080` | Het adres waarop je OAK opent. Bepaalt de webhook-URL en of cookies alleen via https gaan. Met `https://` stuurt OAK ook een HSTS-header. |
 | `OAK_SECRET_KEY` | leeg | Sleutel voor sessies en vingerafdrukken, minimaal 32 tekens. Leeg betekent dat OAK eenmalig een sleutel maakt in `/data/.secret_key`. |
-| `OAK_TRUSTED_PROXY_CIDRS` | leeg | Netwerken van reverse proxies, komma-gescheiden. Alleen hun `X-Forwarded-*`-headers worden vertrouwd. |
+| `OAK_TRUSTED_PROXY_CIDRS` | leeg | Adressen of netwerken van reverse proxies, komma-gescheiden. Alleen hun `X-Forwarded-*`-headers worden vertrouwd. Zet hier alleen de proxy zelf. |
 | `OAK_ALLOW_REGISTRATION` | `false` | Of nieuwe gebruikers zichzelf mogen registreren. De eigenaar kan altijd gebruikers toevoegen. |
 | `OAK_TIMEZONE` | `Europe/Amsterdam` | Tijdzone voor vangstjaren en weergave. |
 | `OAK_LOG_LEVEL` | `INFO` | `DEBUG`, `INFO`, `WARNING` of `ERROR`. |
@@ -76,7 +89,7 @@ docker exec oak env | grep OAK_
 | `OAK_MAX_IMPORT_MB` | `64` | Maximale grootte van een export. |
 | `OAK_SESSION_IDLE_HOURS` | `168` | Een sessie verloopt na zoveel uur zonder gebruik. |
 | `OAK_SESSION_MAX_DAYS` | `30` | Een sessie verloopt na zoveel dagen, ook bij gebruik. |
-| `OAK_LOGIN_MAX_ATTEMPTS` | `10` | Mislukte inlogpogingen per venster voordat OAK tijdelijk blokkeert. |
+| `OAK_LOGIN_MAX_ATTEMPTS` | `10` | Mislukte inlogpogingen voor één gebruikersnaam vanaf één adres per venster, voordat OAK dat adres voor die naam tijdelijk blokkeert. Zie `docs/SECURITY.md` voor de andere grenzen. |
 | `OAK_LOGIN_WINDOW_MINUTES` | `15` | Lengte van dat venster. |
 | `OAK_WEBHOOK_RATE_LIMIT_PER_HOUR` | `60` | Maximaal aantal webhookverzoeken per token per uur. |
 | `OAK_GAMEDATA_AUTO_UPDATE` | `true` | Game Data automatisch bijwerken vanaf PokeMiners en PvPoke. |
@@ -91,7 +104,32 @@ docker exec oak env | grep OAK_
 
 ## Reverse proxy
 
-Zet OAK achter een reverse proxy met https. Stel `OAK_BASE_URL` in op het publieke adres en `OAK_TRUSTED_PROXY_CIDRS` op het netwerk waar de proxy vandaan komt. Zonder die laatste instelling ziet OAK ieder verzoek als afkomstig van de proxy, en delen alle gebruikers dan één limiet voor inlogpogingen.
+Zet OAK achter een reverse proxy met https. Stel `OAK_BASE_URL` in op het publieke adres en `OAK_TRUSTED_PROXY_CIDRS` op het adres van de proxy. Zonder die laatste instelling ziet OAK ieder verzoek als afkomstig van de proxy, en delen alle gebruikers dan één limiet voor inlogpogingen.
+
+### Alleen de proxy vertrouwen
+
+OAK neemt het adres van de bezoeker uit `X-Forwarded-For` alleen over als de verbinding komt van een adres in `OAK_TRUSTED_PROXY_CIDRS`. Wie OAK vanaf zo'n adres rechtstreeks bereikt, kan dus ieder adres opgeven en zo de limiet voor inlogpogingen ontlopen. Vertrouw daarom alleen de proxy zelf.
+
+- Laat de proxy en OAK een eigen Docker-netwerk delen. Geef de proxy daarin een vast adres en zet alleen dat adres in `OAK_TRUSTED_PROXY_CIDRS`.
+- Vertrouw niet de hele Docker-range `172.16.0.0/12`. Daar valt iedere container op de host onder.
+- Gebruik je OAK alleen via de proxy, laat `ports` dan weg of bind de poort aan `127.0.0.1`. Wil je OAK ook rechtstreeks in je eigen netwerk openen, dan kan de poort blijven. Een bezoeker die zo binnenkomt, heeft geen vertrouwd adres.
+
+Met het netwerk `proxy` uit het voorbeeld hierboven krijgt de proxy in zijn eigen compose-bestand:
+
+```yaml
+services:
+  proxy:
+    # je reverse proxy, bijvoorbeeld Nginx Proxy Manager, Caddy of Traefik
+    networks:
+      proxy:
+        ipv4_address: 172.30.0.2
+
+networks:
+  proxy:
+    external: true
+```
+
+De proxy bereikt OAK dan op `http://oak:8080`, en `OAK_TRUSTED_PROXY_CIDRS=172.30.0.2/32`.
 
 De webhook-URL bevat een geheim token. OAK schrijft dat token nooit in zijn eigen logboek, maar de toegangslogs van je proxy doen dat standaard wel. Zet die logs uit voor `/api/v1/ingest/` of maskeer het pad.
 
@@ -100,7 +138,7 @@ Exports kunnen enkele megabytes groot zijn. Alleen de webhook en de twee uploads
 ### Nginx Proxy Manager
 
 1. Maak een Proxy Host met als domein het adres uit `OAK_BASE_URL`.
-2. Forward naar het IP-adres van de Docker-host en de gepubliceerde poort, bijvoorbeeld `8093`.
+2. Forward naar `oak` op poort `8080`. Nginx Proxy Manager zit daarvoor in het netwerk `proxy`, met een vast adres, zoals [hierboven](#alleen-de-proxy-vertrouwen).
 3. Zet onder SSL een certificaat aan, met **Force SSL** en **HTTP/2**.
 4. Voeg onder **Advanced** toe:
 
@@ -109,21 +147,21 @@ client_max_body_size 2m;
 location /api/v1/ingest/ {
     access_log off;
     client_max_body_size 64m;
-    proxy_pass http://<docker-host>:8093;
+    proxy_pass http://oak:8080;
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
 }
 location ~ ^/api/v1/(imports|gamedata)/upload$ {
     client_max_body_size 64m;
-    proxy_pass http://<docker-host>:8093;
+    proxy_pass http://oak:8080;
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
 }
 ```
 
-Nginx Proxy Manager draait zelf in Docker. `OAK_TRUSTED_PROXY_CIDRS=172.16.0.0/12` dekt de standaard Docker-netwerken.
+Vertrouw in OAK alleen het adres van Nginx Proxy Manager: `OAK_TRUSTED_PROXY_CIDRS=172.30.0.2/32`.
 
 ### Nginx
 
@@ -161,7 +199,7 @@ server {
 }
 ```
 
-Hier draait nginx op de host zelf: `OAK_TRUSTED_PROXY_CIDRS=127.0.0.1/32` en in compose `ports: ["127.0.0.1:8080:8080"]`.
+Hier draait nginx op de host zelf en gebruikt de poort `127.0.0.1:8080`. Docker geeft zo'n verbinding aan OAK door vanaf de gateway van het Docker-netwerk van OAK, niet vanaf `127.0.0.1`. Met het netwerk `proxy` uit het voorbeeld is dat `OAK_TRUSTED_PROXY_CIDRS=172.30.0.1/32`. Bind de poort aan `127.0.0.1`, zodat alleen de host zelf dat adres heeft.
 
 ### Caddy
 
@@ -200,7 +238,9 @@ services:
     image: ghcr.io/arjancool/oak-pogo:latest
     environment:
       - OAK_BASE_URL=https://oak.example.org
-      - OAK_TRUSTED_PROXY_CIDRS=172.16.0.0/12
+      - OAK_TRUSTED_PROXY_CIDRS=172.30.0.2/32  # het vaste adres van Traefik in het netwerk proxy
+    networks:
+      - proxy
     labels:
       - traefik.enable=true
       - traefik.http.routers.oak.rule=Host(`oak.example.org`)

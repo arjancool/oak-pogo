@@ -4,6 +4,18 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 
 ## [Nog niet uitgebracht]
 
+### Beveiliging
+
+- Ieder verzoek mag hoogstens 1 MB groot zijn. Alleen de webhook en de twee uploads houden hun grens van `OAK_MAX_IMPORT_MB`. Pas de grens in je reverse proxy aan zoals in `docs/DEPLOYMENT.md`.
+- Een export heeft grenzen aan zijn opbouw: hoogstens 25.000 Pokémon-records, 500.000 objecten en lijsten, 4 miljoen waarden, 32 niveaus en 1.000 velden per object. OAK leest, filtert en bewaart een export voordat het de database op slot zet, en hoogstens twee tegelijk.
+- Een import bewaart per ernst hoogstens 500 meldingen. Een taak die drie keer is onderbroken, start niet opnieuw.
+- De blokkade na mislukte inlogpogingen geldt per gebruikersnaam en adres. Vanaf een ander adres kan een gebruiker gewoon inloggen. Veel mislukte pogingen voor één naam vanaf verschillende adressen vertragen alleen. Pogingen die tegelijk binnenkomen, kunnen een grens niet meer passeren, en een IPv6-adres telt per /64-blok.
+- `docs/DEPLOYMENT.md` raadt aan om in `OAK_TRUSTED_PROXY_CIDRS` alleen het adres van de proxy te zetten, niet de hele Docker-range.
+
+### Gewijzigd
+
+- Het filter op dubbelen (`dup`) is bij een grote collectie veel sneller. Dezelfde zoekterm twee keer telt als één.
+
 ### Opgelost
 
 - Een Pokémon met een vorm die de Game Master als kostuum markeert, zoals een Pikachu met een eventhoed, telt nu als kostuum. Dat gold eerder alleen als PGSharp het kostuumveld vulde, en dat doet PGSharp niet altijd. Zo'n Pokémon krijgt nu de kostuumbescherming, de kostuumpunten in de bewaarscore, het label en de plek in het filter en de telling van kostuums. Migratie 0008 voegt daarvoor een afgeleide kolom toe.

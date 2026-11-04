@@ -13,12 +13,15 @@ Memory stays bounded (audit F02 of 25 October):
 
 from __future__ import annotations
 
+import ipaddress
 import threading
 import time
 from collections import deque
 from collections.abc import Callable
 
 MAX_KEYS = 10_000
+# Whoever has one IPv6 address usually has the whole /64 block around it.
+IPV6_PREFIX = 64
 # After evicting, keep this share of max_keys, so the next hits do not evict again right away.
 EVICT_TO = 0.9
 
@@ -87,6 +90,15 @@ class SlidingWindowLimiter:
             now = self._clock()
             return self._retry_after(self._prune(hits, now), now)
 
+    def release(self, key: str) -> None:
+        """Give back the most recent hit, for a place that was taken but not used up."""
+        with self._lock:
+            hits = self._hits.get(key)
+            if hits:
+                hits.pop()
+                if not hits:
+                    del self._hits[key]
+
     def reset(self, key: str) -> None:
         with self._lock:
             self._hits.pop(key, None)
@@ -94,3 +106,17 @@ class SlidingWindowLimiter:
     def __len__(self) -> int:
         with self._lock:
             return len(self._hits)
+
+
+def address_key(host: str) -> str:
+    """The part of a client address a limit counts: an IPv4 address, or the /64 block of an IPv6
+    address. Anything that is not an IP address stays as it is."""
+    try:
+        address = ipaddress.ip_address(host)
+    except ValueError:
+        return host
+    if isinstance(address, ipaddress.IPv6Address):
+        if address.ipv4_mapped is not None:
+            return str(address.ipv4_mapped)
+        return str(ipaddress.IPv6Network((address, IPV6_PREFIX), strict=False))
+    return str(address)

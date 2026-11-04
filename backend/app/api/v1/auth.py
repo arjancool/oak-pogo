@@ -29,6 +29,7 @@ from app.core.errors import (
     UnauthorizedError,
     ValidationFailedError,
 )
+from app.core.ratelimit import SlidingWindowLimiter, address_key
 from app.models import AuditLog, User
 from app.schemas.common import ApiModel, UtcDatetime
 
@@ -74,6 +75,43 @@ class AuthStatus(ApiModel):
 
 def _client_ip(request: Request) -> str:
     return request.client.host if request.client else "unknown"
+
+
+def _reserve_login(container: Container, address: str, username: str) -> list[tuple[SlidingWindowLimiter, str]]:
+    """Take a place in every limit before the password is checked, so attempts sent at the same
+    time cannot all pass a limit that only one of them would fit in. Returns the places taken,
+    to give back after a successful login.
+
+    Ten failures block a username from one address, and thirty block an address for every
+    username. The address comes first: a blocked address is refused before anything about the
+    username is stored (audit F02 of 25 October). Many failures for one username from different
+    addresses only slow it down, so nobody can lock another user out by guessing at the account.
+    """
+    taken: list[tuple[SlidingWindowLimiter, str]] = []
+
+    def refuse(retry: int) -> RateLimitedError:
+        for limiter, key in taken:
+            limiter.release(key)
+        return RateLimitedError(
+            "Te veel mislukte inlogpogingen. Probeer het later opnieuw.", retry_after=retry, context="login"
+        )
+
+    for limiter, key in (
+        (container.login_by_ip, f"ip:{address}"),
+        (container.login_by_pair, f"pair:{address}|{username}"),
+    ):
+        retry = limiter.hit(key)
+        if retry:
+            raise refuse(retry)
+        taken.append((limiter, key))
+    user_key = f"user:{username}"
+    if container.login_by_user.hit(user_key) is None:
+        taken.append((container.login_by_user, user_key))
+    else:
+        retry = container.login_slow_by_user.hit(user_key)
+        if retry:
+            raise refuse(retry)
+    return taken
 
 
 def _set_cookies(response: Response, container: Container, token: str) -> str:
@@ -202,7 +240,7 @@ def register(
     # The write transaction serializes this check with the owner setup (audit A09).
     if not session.scalar(select(User.id).where(User.role == "owner").limit(1)):
         raise ConflictError("Registreren kan pas als de eigenaar is aangemaakt.", code="SETUP_REQUIRED")
-    blocked = container.login_by_ip.hit(f"register:{_client_ip(request)}")
+    blocked = container.login_by_ip.hit(f"register:{address_key(_client_ip(request))}")
     if blocked:
         raise RateLimitedError("Te veel pogingen. Probeer het later opnieuw.", retry_after=blocked, context="register")
     username = validate_username(body.username)
@@ -242,31 +280,22 @@ def login(
     container: Container = Depends(get_container),
 ) -> AuthStatus:
     username = body.username.strip().lower()
-    ip = _client_ip(request)
-    # The address first: a blocked address is refused before anything about the username is
-    # looked at or stored (audit F02 of 25 October).
-    for limiter, key in (
-        (container.login_by_ip, f"ip:{ip}"),
-        (container.login_by_user, f"user:{username}"),
-    ):
-        retry = limiter.blocked(key)
-        if retry:
-            raise RateLimitedError(
-                "Te veel mislukte inlogpogingen. Probeer het later opnieuw.", retry_after=retry, context="login"
-            )
+    address = address_key(_client_ip(request))
+    taken = _reserve_login(container, address, username)
     user = session.scalars(select(User).where(User.username == username)).first()
     if (
         not verify_password(user.password_hash if user else None, body.password)
         or user is None
         or user.status != "active"
     ):
-        container.login_by_user.hit(f"user:{username}")
-        container.login_by_ip.hit(f"ip:{ip}")
+        # The places taken stay: they count this failure.
         audit(session, user.id if user else None, "login_failed", username, container)
         # Commit before the error response: the request's rollback would drop the entry (audit A08).
         session.commit()
         raise UnauthorizedError("Onjuiste gebruikersnaam of wachtwoord.", code="INVALID_CREDENTIALS", context="login")
-    container.login_by_user.reset(f"user:{username}")
+    for limiter, key in taken:
+        limiter.release(key)
+    container.login_by_pair.reset(f"pair:{address}|{username}")
     if needs_rehash(user.password_hash):
         user.password_hash = hash_password(body.password)
     now = container.clock.now()

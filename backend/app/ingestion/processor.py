@@ -16,7 +16,7 @@ from app.domain.pokemon import MAX_ISSUES_PER_SEVERITY, Issue, Severity
 from app.gamedata.store import GameDataStore
 from app.ingestion.receive import APPLIED_STATUSES, load_payload
 from app.ingestion.sync import apply_export, in_inventory_count
-from app.models import BackgroundJob, ImportIssue, ImportJob, SyncRun, TrainerAccount
+from app.models import BackgroundJob, ImportIssue, ImportJob, SyncRun, TrainerAccount, User
 from app.normalizers.pgsharp import normalize_export
 
 log = logging.getLogger("oak.ingest")
@@ -45,6 +45,16 @@ class ImportProcessor:
             job.started_at = now
             job.attempts += 1
             payload_file = job.payload_file
+            account = session.get(TrainerAccount, job.trainer_account_id)
+            owner = session.get(User, account.user_id) if account is not None else None
+            disabled = owner is None or owner.status != "active"
+        # A user disabled after the export arrived gets nothing processed any more (issue #55).
+        if disabled:
+            return self._fail(
+                import_job_id,
+                "USER_DISABLED",
+                "De gebruiker van dit traineraccount is uitgeschakeld. De import is niet verwerkt.",
+            )
         if not payload_file:
             return self._fail(import_job_id, "PAYLOAD_MISSING", "De opgeslagen export ontbreekt.")
         try:

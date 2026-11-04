@@ -6,6 +6,7 @@ import gzip
 import hashlib
 import json
 import logging
+import re
 import threading
 from collections.abc import Mapping
 from dataclasses import dataclass, field
@@ -54,6 +55,9 @@ def _unreachable(exc: Exception) -> dict[str, Any]:
     return {"code": "SOURCE_UNREACHABLE", "text": f"Bron niet bereikbaar: {name}", "data": {"error": name}}
 
 
+GAMEDATA_FILE = re.compile(r"oak-gamedata-\d+\.json\.gz")
+
+
 class GameDataStore:
     def __init__(self, settings: Settings, db: Database) -> None:
         self.settings = settings
@@ -87,6 +91,11 @@ class GameDataStore:
         return self._active
 
     def _path(self, file_name: str) -> Path:
+        # Only names OAK gives itself, so a changed database row cannot point outside the
+        # Game Data directory (issue #55).
+        if not GAMEDATA_FILE.fullmatch(file_name):
+            msg = f"Ongeldige bestandsnaam voor Game Data: {file_name!r}"
+            raise ValueError(msg)
         return self.settings.gamedata_dir / file_name
 
     def _read(self, file_name: str) -> dict[str, Any]:
@@ -182,7 +191,7 @@ class GameDataStore:
                 version.file_name = f"oak-gamedata-{version.id}.json.gz"
                 version_id = version.id
                 file_name = str(version.file_name)
-            tmp = self._path(file_name + ".tmp")
+            tmp = self._path(file_name).with_name(file_name + ".tmp")
             with gzip.open(tmp, "wb") as handle:
                 handle.write(content)
             tmp.replace(self._path(file_name))

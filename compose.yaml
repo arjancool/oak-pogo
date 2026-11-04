@@ -19,6 +19,10 @@ services:
     image: ${OAK_IMAGE:-oak-pogo:local}
     container_name: ${OAK_CONTAINER_NAME:-oak}
     restart: unless-stopped
+    # The entrypoint only needs these to give /data to PUID:PGID and drop root; OAK itself
+    # runs without any capability (docs/DEPLOYMENT.md).
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_READ_SEARCH, FOWNER, SETGID, SETPCAP, SETUID]
     ports:
       - "${OAK_HOST_PORT:-8080}:8080"
     env_file:

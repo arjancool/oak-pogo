@@ -49,19 +49,24 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         response = await call_next(request)
-        headers = response.headers
-        headers.setdefault("X-Content-Type-Options", "nosniff")
-        headers.setdefault("X-Frame-Options", "DENY")
-        # no-referrer keeps the webhook URL, which contains a secret, out of Referer headers.
-        headers.setdefault("Referrer-Policy", "no-referrer")
-        headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=()")
-        headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
-        headers.setdefault("Content-Security-Policy", self.csp_provider())  # type: ignore[operator]
-        if self.https:
-            headers.setdefault("Strict-Transport-Security", f"max-age={HSTS_SECONDS}")
-        if request.url.path.startswith("/api/"):
-            headers.setdefault("Cache-Control", "no-store")
+        add_security_headers(response, request.url.path, https=self.https, csp=self.csp_provider())  # type: ignore[operator]
         return response
+
+
+def add_security_headers(response: Response, path: str, *, https: bool, csp: str) -> None:
+    """Also used for an error 500, which the error handler builds outside this middleware."""
+    headers = response.headers
+    headers.setdefault("X-Content-Type-Options", "nosniff")
+    headers.setdefault("X-Frame-Options", "DENY")
+    # no-referrer keeps the webhook URL, which contains a secret, out of Referer headers.
+    headers.setdefault("Referrer-Policy", "no-referrer")
+    headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=()")
+    headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
+    headers.setdefault("Content-Security-Policy", csp)
+    if https:
+        headers.setdefault("Strict-Transport-Security", f"max-age={HSTS_SECONDS}")
+    if path.startswith("/api/"):
+        headers.setdefault("Cache-Control", "no-store")
 
 
 class RequestLogMiddleware(BaseHTTPMiddleware):

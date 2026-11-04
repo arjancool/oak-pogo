@@ -14,13 +14,14 @@ from app.api.deps import AuthContext, get_auth, get_container, get_session, sess
 from app.auth.passwords import hash_password, needs_rehash, validate_password, verify_password
 from app.auth.sessions import (
     CSRF_COOKIE,
+    CSRF_HEADER,
     SESSION_COOKIE,
     create_session,
     resolve_session,
     revoke_all_for_user,
     revoke_session,
 )
-from app.auth.tokens import csrf_token_for
+from app.auth.tokens import constant_time_equal, csrf_token_for
 from app.core.container import Container
 from app.core.errors import (
     ConflictError,
@@ -329,6 +330,10 @@ def login(
             if new_hash:
                 user.password_hash = new_hash
             now = container.clock.now()
+            # A session this browser still had ends now, so one browser never holds two (issue #55).
+            previous = request.cookies.get(SESSION_COOKIE)
+            if previous:
+                revoke_session(session, previous, now)
             token = create_session(session, user, session_policy(container), now, request.headers.get("user-agent"))
             audit(session, user.id, "login", username, container)
             logged_in = token, UserOut.model_validate(user)
@@ -349,12 +354,21 @@ def login(
 
 @router.post("/logout", status_code=204)
 def logout(
+    request: Request,
     response: Response,
-    auth: AuthContext = Depends(get_auth),
-    session: Session = Depends(get_session),
     container: Container = Depends(get_container),
 ) -> Response:
-    revoke_session(session, auth.token, container.clock.now())
+    """Ends the session and always clears the cookies, also when the session already expired
+    (issue #55). A live session needs the CSRF token, so another site cannot log someone out."""
+    token = request.cookies.get(SESSION_COOKIE)
+    if token:
+        now = container.clock.now()
+        with container.db.transaction() as session:
+            if resolve_session(session, token, session_policy(container), now) is not None:
+                provided = request.headers.get(CSRF_HEADER, "")
+                if not provided or not constant_time_equal(provided, csrf_token_for(container.secret, token)):
+                    raise ForbiddenError("Ongeldige of ontbrekende CSRF-token.", code="CSRF_FAILED")
+                revoke_session(session, token, now)
     response.delete_cookie(SESSION_COOKIE, path="/")
     response.delete_cookie(CSRF_COOKIE, path="/")
     response.status_code = 204

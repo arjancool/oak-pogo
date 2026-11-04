@@ -2127,6 +2127,7 @@
       "ISSUES_TRUNCATED_one": "{{count, number}} message not stored.",
       "ISSUES_TRUNCATED_other": "{{count, number}} messages not stored.",
       "PAYLOAD_MISSING": "The stored export is missing.",
+      "USER_DISABLED": "The user of this trainer account is disabled. The import was not processed.",
       "PAYLOAD_UNREADABLE": "The stored export cannot be read. Upload it again.",
       "NORMALIZATION_FAILED": "The export could not be read because of an internal error. Nothing was changed.",
       "PROCESSING_FAILED": "Processing failed because of an internal error. Nothing was changed.",

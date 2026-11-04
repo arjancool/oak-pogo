@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import os
+import re
 import shutil
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, Depends, Request, Response
@@ -27,6 +29,7 @@ from app.models import AuditLog, BackgroundJob, GameDataVersion, ImportJob, Trai
 from app.repositories.settings import set_setting
 from app.services.settings import POKEAPI_SPRITE_TEMPLATE, SPRITE_KEY
 
+BACKUP_NAME = re.compile(r"oak-[A-Za-z0-9_-]{1,100}\.db")
 router = APIRouter(tags=["system"])
 BUILD_INFO_KEYS = ("OAK_BUILD_SHA", "OAK_BUILD_DATE", "OAK_BUILD_REF")
 
@@ -300,11 +303,7 @@ def download_backup(
     auth: AuthContext = Depends(require_owner),
     container: Container = Depends(get_container),
 ) -> Response:
-    if "/" in name or "\\" in name or not name.startswith("oak-") or not name.endswith(".db"):
-        raise NotFoundError("Back-up niet gevonden.", context="backup")
-    path = container.settings.backups_dir / name
-    if not path.is_file():
-        raise NotFoundError("Back-up niet gevonden.", context="backup")
+    path = _backup_path(container, name)
     with container.db.transaction() as session:
         audit(session, auth.user.id, "backup_downloaded", name, container)
     return FileResponse(path, media_type="application/vnd.sqlite3", filename=name)
@@ -316,7 +315,19 @@ def delete_backup(
     auth: AuthContext = Depends(require_owner),
     container: Container = Depends(get_container),
 ) -> Response:
-    if "/" in name or "\\" in name or not name.startswith("oak-") or not name.endswith(".db"):
-        raise NotFoundError("Back-up niet gevonden.", context="backup")
-    (container.settings.backups_dir / name).unlink(missing_ok=True)
+    path = _backup_path(container, name)
+    path.unlink(missing_ok=True)
+    with container.db.transaction() as session:
+        audit(session, auth.user.id, "backup_deleted", name, container)
     return Response(status_code=204)
+
+
+def _backup_path(container: Container, name: str) -> Path:
+    """A back-up OAK made itself, by its exact name pattern. Anything else is a 404, never an
+    error 500 for an odd character (issue #55)."""
+    if not BACKUP_NAME.fullmatch(name):
+        raise NotFoundError("Back-up niet gevonden.", context="backup")
+    path = container.settings.backups_dir / name
+    if not path.is_file():
+        raise NotFoundError("Back-up niet gevonden.", context="backup")
+    return path

@@ -27,6 +27,7 @@ from app.core.middleware import (
     RequestLogMiddleware,
     RequestSizeLimitMiddleware,
     SecurityHeadersMiddleware,
+    add_security_headers,
     content_security_policy,
     request_too_large,
 )
@@ -112,6 +113,7 @@ def create_app(settings: Settings | None = None, clock: Clock | None = None) -> 
     if settings.trusted_proxies:
         app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=settings.trusted_proxies)
 
+    app.state.settings = settings
     _register_error_handlers(app)
     _register_routes(app)
     _register_frontend(app, settings.frontend_dir or DEFAULT_FRONTEND_DIR)
@@ -156,10 +158,18 @@ def _register_error_handlers(app: FastAPI) -> None:
         return JSONResponse(error.to_payload(), status_code=422)
 
     @app.exception_handler(Exception)
-    async def unhandled(_: Request, exc: Exception) -> JSONResponse:
+    async def unhandled(request: Request, exc: Exception) -> JSONResponse:
         log.exception("unhandled error", exc_info=exc)
         error = AppError("Er ging iets mis aan de serverkant.", code="INTERNAL_ERROR")
-        return JSONResponse(error.to_payload(), status_code=500)
+        response = JSONResponse(error.to_payload(), status_code=500)
+        # Starlette sends this response outside the middleware, so the headers are added here.
+        container = getattr(request.app.state, "container", None)
+        settings: Settings = request.app.state.settings
+        template = container.sprite_template if container is not None else settings.sprite_url_template
+        add_security_headers(
+            response, request.url.path, https=settings.secure_cookies, csp=content_security_policy(template)
+        )
+        return response
 
 
 def _register_routes(app: FastAPI) -> None:

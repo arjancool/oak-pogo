@@ -198,7 +198,7 @@ def build_cups(pvpoke: Mapping[str, Any] | None) -> tuple[list[dict[str, Any]], 
                 "party_size": cup.get("partySize"),
                 "rules": [str(r) for r in fmt.get("rules", []) if isinstance(r, str)],
                 "conditions": conditions(cup, cp),
-                "link": cup.get("link") if isinstance(cup.get("link"), str) else None,
+                "link": _https_link(cup.get("link")),
                 "eligible": eligible,
             }
         )
@@ -210,3 +210,8 @@ def build_cups(pvpoke: Mapping[str, Any] | None) -> tuple[list[dict[str, Any]], 
 def ranking_downloads(cups: Iterable[Mapping[str, Any]]) -> dict[str, tuple[str, int]]:
     """Source ID per cup ranking file: ``pvpoke-rankings-<cup id>`` → (cup, cp)."""
     return {f"pvpoke-rankings-{c['id']}": (str(c["cup"]), int(c["max_cp"] or NO_CAP)) for c in cups}
+
+
+def _https_link(value: object) -> str | None:
+    """Only an https link goes to the interface (issue #55)."""
+    return value if isinstance(value, str) and value.startswith("https://") else None

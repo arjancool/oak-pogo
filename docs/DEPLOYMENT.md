@@ -33,6 +33,8 @@ services:
     image: ghcr.io/arjancool/oak-pogo:latest
     container_name: oak
     restart: unless-stopped
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_READ_SEARCH, FOWNER, SETGID, SETPCAP, SETUID]
     ports:
       - "127.0.0.1:8080:8080"
     networks:
@@ -62,7 +64,7 @@ Bijwerken gaat met `docker compose pull && docker compose up -d`. Voor iedere da
 
 ## Gebruiker en rechten
 
-De container start als root, maakt de datamap eigendom van `PUID:PGID` en laat daarna alle rechten vallen. OAK zelf draait nooit als root. `PUID` of `PGID` 0 weigert de container. Wie de container liever direct als vaste gebruiker start (`user: "1000:1000"` in compose of `runAsUser` in Kubernetes), moet zelf zorgen dat die gebruiker in de datamap kan schrijven.
+De container start als root, maakt de datamap eigendom van `PUID:PGID` en laat daarna alle rechten vallen. OAK zelf draait nooit als root, zonder enige capability en met `no_new_privs`. `PUID` en `PGID` moeten getallen zijn, en 0 weigert de container in iedere schrijfwijze, ook als `00`. De entrypoint heeft alleen `CHOWN`, `DAC_READ_SEARCH`, `FOWNER`, `SETGID`, `SETPCAP` en `SETUID` nodig. Met `cap_drop: [ALL]` en die `cap_add`, zoals in de voorbeelden, krijgt de container verder niets. Wie de container liever direct als vaste gebruiker start (`user: "1000:1000"` in compose of `runAsUser` in Kubernetes), moet zelf zorgen dat die gebruiker in de datamap kan schrijven.
 
 De datamap is alleen voor OAK zelf. De container zet `/data` op rechten 700 en maakt nieuwe bestanden met `umask 077`, zodat de database, de back-ups, de imports en de Game Data alleen leesbaar zijn voor `PUID`. Start je OAK zonder container, dan doet OAK hetzelfde bij het starten. Wil je de map vanaf de host lezen, bijvoorbeeld voor een back-up, doe dat dan als die gebruiker of als root.
 

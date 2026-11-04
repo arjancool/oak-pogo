@@ -2127,6 +2127,7 @@
       "ISSUES_TRUNCATED_one": "{{count}} melding niet opgeslagen.",
       "ISSUES_TRUNCATED_other": "{{count}} meldingen niet opgeslagen.",
       "PAYLOAD_MISSING": "De opgeslagen export ontbreekt.",
+      "USER_DISABLED": "De gebruiker van dit traineraccount is uitgeschakeld. De import is niet verwerkt.",
       "PAYLOAD_UNREADABLE": "De opgeslagen export kan niet gelezen worden. Upload hem opnieuw.",
       "NORMALIZATION_FAILED": "De export kon niet gelezen worden door een interne fout. Er is niets gewijzigd.",
       "PROCESSING_FAILED": "Verwerking mislukt door een interne fout. Er is niets gewijzigd.",

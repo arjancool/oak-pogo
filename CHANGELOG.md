@@ -26,6 +26,7 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 - De volledige systeemstatus en de controle op nieuwe Game Data zijn alleen voor de eigenaar. De versie van OAK is pas na het inloggen te zien.
 - Paginanummers, id's, voorkeuren, volledigheidsinstellingen en teamleden hebben een type en een grens. Een te groot getal of een onbekend veld geeft 422 in plaats van een fout 500 of opslag zonder grens.
 - De images van BuildKit en QEMU in CI staan op een digest. Dependabot stelt een nieuwe versie pas een week na verschijnen voor.
+- Kleine verbeteringen uit de audit: beveiligingsheaders ook bij een fout 500, uitloggen wist altijd de cookies, inloggen beëindigt een oude sessie van dezelfde browser, het verwijderen van een back-up komt in het auditlogboek, alleen https-links bij cups, een vaste controle op bestandsnamen van Game Data en back-ups, geen waarden van databasefouten in het logboek, geen verwerking meer voor een uitgeschakelde gebruiker, en een entrypoint die alleen numerieke PUID en PGID accepteert en zonder enige capability start.
 
 ### Gewijzigd
 

@@ -78,9 +78,10 @@ export function Summary({ version }: { version: GameDataVersion }) {
 }
 
 /** The result of the last check, kept by the server, so it stays on the page (issue #28). */
-export function LatestVersion({ check, active }: { check: RemoteCheck | null; active: GameDataVersion | null }) {
+export function LatestVersion({ check, active, owner }: { check: RemoteCheck | null; active: GameDataVersion | null; owner: boolean }) {
   const { t } = useTranslation();
-  if (!check) return <p className="text-sm text-muted">{t("admin.gamedata.latest.never")}</p>;
+  // Only the owner has the button to check.
+  if (!check) return <p className="text-sm text-muted">{t(owner ? "admin.gamedata.latest.neverOwner" : "admin.gamedata.latest.never")}</p>;
   const latest = dataDate(check.latest.date, check.latest.reason, t("common.unknown"));
   // A version activated after the check, such as an upload, makes the result out of date.
   const stale = active?.activated_at != null && new Date(active.activated_at) > new Date(check.checked_at);
@@ -212,7 +213,7 @@ export function GameDataPage() {
           </p>
         </Card>
         <Card title={t("admin.gamedata.latest.title")}>
-          <LatestVersion check={s.remote_check} active={s.active} />
+          <LatestVersion check={s.remote_check} active={s.active} owner={owner} />
         </Card>
         <Card title={t("admin.gamedata.dependentTitle")}>
           <ul className="list-disc space-y-1 pl-5 text-sm">

@@ -45,27 +45,29 @@ describe("the date of the Game Data", () => {
   });
 
   it("keeps the result of the last check on the page", () => {
-    const { rerender } = render(<LatestVersion check={check({})} active={version} />);
+    const { rerender } = render(<LatestVersion check={check({})} active={version} owner />);
     expect(screen.getByText(/Nieuwste bij PokeMiners: Game Master van 28 aug 2026/)).toBeInTheDocument();
     expect(screen.getByText("Je hebt de nieuwste versie.")).toBeInTheDocument();
-    rerender(<LatestVersion check={check({ available: true, changed_sources: ["pokeminers"] })} active={version} />);
+    rerender(<LatestVersion check={check({ available: true, changed_sources: ["pokeminers"] })} active={version} owner />);
     expect(screen.getByText("Er is een nieuwere versie (pokeminers).")).toBeInTheDocument();
   });
 
   it("says when the newest date is unknown, and why", () => {
     const reason = { code: "DATE_INVALID", text: "De bron gaf geen datum die OAK kan lezen.", data: {} };
-    render(<LatestVersion check={check({ latest: { date: null, reason } })} active={version} />);
+    render(<LatestVersion check={check({ latest: { date: null, reason } })} active={version} owner />);
     expect(screen.getByText(/Game Master van onbekend \(De bron gaf geen datum die OAK kan lezen\.\)/)).toBeInTheDocument();
   });
 
   it("does not call an older check current after a newer version became active", () => {
-    render(<LatestVersion check={check({ checked_at: "2026-10-27T09:00:00+00:00", available: true })} active={version} />);
+    render(<LatestVersion check={check({ checked_at: "2026-10-27T09:00:00+00:00", available: true })} active={version} owner />);
     expect(screen.queryByText(/Er is een nieuwere versie/)).not.toBeInTheDocument();
     expect(screen.getByText(/Controleer opnieuw/)).toBeInTheDocument();
   });
 
   it("tells the owner to check when there is no result yet", () => {
-    render(<LatestVersion check={null} active={version} />);
-    expect(screen.getByText(/Nog niet gecontroleerd/)).toBeInTheDocument();
+    const { rerender } = render(<LatestVersion check={null} active={version} owner />);
+    expect(screen.getByText("Nog niet gecontroleerd. Kies Controleren op updates.")).toBeInTheDocument();
+    rerender(<LatestVersion check={null} active={version} owner={false} />);
+    expect(screen.getByText("Nog niet gecontroleerd.")).toBeInTheDocument();
   });
 });

@@ -903,7 +903,8 @@
       "activeTitle": "Actieve versie",
       "latest": {
         "title": "Nieuwste versie",
-        "never": "Nog niet gecontroleerd. Kies Controleren op updates.",
+        "never": "Nog niet gecontroleerd.",
+        "neverOwner": "Nog niet gecontroleerd. Kies Controleren op updates.",
         "gameMaster": "Nieuwste bij PokeMiners: Game Master van {{date}}, gecontroleerd op {{checked}}.",
         "failed": "De controle is mislukt: {{error}}",
         "stale": "De actieve versie is nieuwer dan deze controle. Controleer opnieuw om te zien of er een nieuwere versie is."

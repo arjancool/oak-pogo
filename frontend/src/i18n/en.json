@@ -903,7 +903,8 @@
       "activeTitle": "Active version",
       "latest": {
         "title": "Newest version",
-        "never": "Not checked yet. Choose Check for updates.",
+        "never": "Not checked yet.",
+        "neverOwner": "Not checked yet. Choose Check for updates.",
         "gameMaster": "Newest at PokeMiners: Game Master from {{date}}, checked on {{checked}}.",
         "failed": "The check failed: {{error}}",
         "stale": "The active version is newer than this check. Check again to see whether there is a newer version."

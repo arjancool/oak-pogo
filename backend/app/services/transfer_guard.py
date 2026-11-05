@@ -6,6 +6,10 @@
   It is never added in bulk.
 * A favorite, a Pokémon with an unknown catch date and a Pokémon protected by a rule need
   the user's confirmation for that Pokémon.
+* So does a Pokémon the current advice says to keep or build, and the best copy of a species
+  when the list holds every copy of it in the inventory. Without that a list could empty a
+  species without anyone noticing, for example after a manual bulk action or when the advice
+  changed after the Pokémon was added.
 
 The confirmation is per Pokémon: the request lists the ids the user ticked one by one. The
 concrete reasons confirmed are stored with the action: ``favorite``, ``unknown_date``,
@@ -21,8 +25,9 @@ can never lift the vintage protection (audit F01 of 25 October).
 
 from __future__ import annotations
 
+from collections import defaultdict
 from collections.abc import Iterable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -30,10 +35,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.domain.pokemon import catch_date_known, vintage_year
-from app.models import Pokemon, PokemonUserMetadata, TagLabel, TrainerAccount
+from app.models import Pokemon, PokemonAnalysis, PokemonUserMetadata, TagLabel, TrainerAccount
 from app.recommendations.cleanup import protection_reasons
 from app.recommendations.rules import CleanupRules
-from app.services.analysis import pokemon_view, rules_for
+from app.services.analysis import group_key, pokemon_view, rules_for
 
 # Hard protections handled on their own above: manual blocks, vintage needs an override. Tags
 # are confirmed by their stable id, not by the shared TAG code.
@@ -45,6 +50,8 @@ class GuardContext:
     rules: CleanupRules
     protecting_tags: dict[str, str]
     tz: ZoneInfo
+    # The best copy of every species whose copies would all be gone with the list (see last_copies).
+    last_copies: frozenset[int] = frozenset()
 
 
 def guard_context(session: Session, account: TrainerAccount, tz: ZoneInfo) -> GuardContext:
@@ -53,6 +60,44 @@ def guard_context(session: Session, account: TrainerAccount, tz: ZoneInfo) -> Gu
         for t in session.scalars(select(TagLabel).where(TagLabel.trainer_account_id == account.id, TagLabel.protects))
     }
     return GuardContext(rules_for(account), protecting, tz)
+
+
+# Advice that says the Pokémon should stay. PROTECT is covered by the protection checks.
+ADVICE_TO_KEEP = {"KEEP": "keep", "BUILD": "build"}
+ADVICE_TEXTS = {
+    "keep": "OAK raadt aan deze Pokémon te bewaren",
+    "build": "OAK raadt aan in deze Pokémon te investeren",
+}
+
+
+def with_list(session: Session, context: GuardContext, account_id: int, listed: Iterable[int]) -> GuardContext:
+    """The context for a list that holds ``listed``, the open transfer actions."""
+    return replace(context, last_copies=last_copies(session, account_id, set(listed)))
+
+
+def last_copies(session: Session, account_id: int, listed: set[int]) -> frozenset[int]:
+    """For every species group whose copies in the inventory are all on the list, the copy the
+    advice values most: one confirmation for it keeps the species from disappearing."""
+    rows = session.execute(
+        select(Pokemon, PokemonAnalysis)
+        .outerjoin(PokemonAnalysis, PokemonAnalysis.pokemon_id == Pokemon.id)
+        .where(Pokemon.trainer_account_id == account_id, Pokemon.inventory_status == "in_inventory")
+    ).all()
+    groups: dict[str, list[tuple[Pokemon, PokemonAnalysis | None]]] = defaultdict(list)
+    for pokemon, analysis in rows:
+        groups[group_key(pokemon)].append((pokemon, analysis))
+    best: set[int] = set()
+    for members in groups.values():
+        if all(pokemon.id in listed for pokemon, _ in members):
+            best.add(min(members, key=_keep_order)[0].id)
+    return frozenset(best)
+
+
+def _keep_order(member: tuple[Pokemon, PokemonAnalysis | None]) -> tuple[Any, ...]:
+    pokemon, analysis = member
+    kept = analysis is not None and analysis.status in ("PROTECT", *ADVICE_TO_KEEP)
+    battle = analysis.battle_score if analysis is not None and analysis.battle_score is not None else -1
+    return (not kept, -battle, -(pokemon.iv_percent or 0), -(pokemon.cp or 0), pokemon.id)
 
 
 def _catch_years(pokemon: Pokemon, tz: ZoneInfo) -> tuple[int | None, int | None]:
@@ -103,7 +148,12 @@ def bulk_vintage_text(year: int) -> dict[str, Any]:
     return _text("VINTAGE_BULK", f"Vintage {year}: nooit via een bulkactie", year=year)
 
 
-def check_transfer(pokemon: Pokemon, metadata: PokemonUserMetadata | None, context: GuardContext) -> TransferCheck:
+def check_transfer(
+    pokemon: Pokemon,
+    metadata: PokemonUserMetadata | None,
+    context: GuardContext,
+    analysis: PokemonAnalysis | None = None,
+) -> TransferCheck:
     check = TransferCheck()
     if metadata is not None and metadata.protected:
         check.block(_text("BLOCKED_MANUAL", "Handmatig beschermd"))
@@ -143,6 +193,15 @@ def check_transfer(pokemon: Pokemon, metadata: PokemonUserMetadata | None, conte
                 _text("PROTECTED", "Beschermd: " + ", ".join(r["text"] for r in items), protections=items),
                 {key: _text("PROTECTION", r["text"], protections=r) for key, r in protected.items()},
             )
+    advice = ADVICE_TO_KEEP.get(analysis.status) if analysis is not None else None
+    if advice is not None:
+        # Keyed by the advice, so a later change of advice asks again.
+        text = _text("ADVICE", ADVICE_TEXTS[advice], context=advice)
+        check.need("advice", text, {f"advice:{advice}": text})
+    if pokemon.id in context.last_copies:
+        name = pokemon.species_name or f"#{pokemon.species_id}"
+        last = _text("LAST_COPY", f"Laatste {name} in je inventaris", name=name)
+        check.need("last_copy", last, {"last_copy": last})
     return check
 
 

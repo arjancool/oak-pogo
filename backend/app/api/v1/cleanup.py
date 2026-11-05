@@ -34,7 +34,7 @@ from app.recommendations.rules import ENGINE_VERSION, CleanupRules
 from app.schemas.common import MAX_PAGE
 from app.services.analysis import RULES_KEY, AnalysisService, rules_for
 from app.services.pokemon_view import summarize
-from app.services.transfer_guard import GuardContext, check_transfer, confirmation_item, guard_context
+from app.services.transfer_guard import GuardContext, check_transfer, confirmation_item, guard_context, with_list
 
 router = APIRouter(prefix="/cleanup", tags=["cleanup"])
 STATUSES = ("PROTECT", "KEEP", "BUILD", "REVIEW", "TRANSFER_CANDIDATE", "UNKNOWN")
@@ -376,12 +376,17 @@ def update_action_list(
         for action in current.values():
             session.delete(action)
         current = {}
+    # The list as it will be: what is open on it now, and what this request adds.
+    listed = {pid for pid, action in current.items() if action.status == "open"}
+    if body.mode in ("add", "replace"):
+        listed |= set(body.ids)
+    guard = with_list(session, guard, account.id, listed)
     if body.mode in ("add", "replace"):
         for pid in body.ids:
             if pid not in found:
                 continue
-            pokemon, metadata, _analysis = found[pid]
-            check = check_transfer(pokemon, metadata, guard)
+            pokemon, metadata, analysis = found[pid]
+            check = check_transfer(pokemon, metadata, guard, analysis)
             if check.blocked:
                 skipped.append({"pokemon_id": pid, "reason": check.blocked, "reason_text": check.blocked_text})
                 continue
@@ -414,8 +419,8 @@ def update_action_list(
             if pid not in current:
                 continue
             if pid in found:
-                pokemon, metadata, _analysis = found[pid]
-                check = check_transfer(pokemon, metadata, guard)
+                pokemon, metadata, analysis = found[pid]
+                check = check_transfer(pokemon, metadata, guard, analysis)
                 if check.blocked or check.unconfirmed(current[pid].confirmed):
                     reason = check.blocked or "; ".join(check.messages)
                     text = check.blocked_text or {
@@ -447,7 +452,8 @@ def _action_list(
         .order_by(Pokemon.cp.desc() if sort == "-cp" else Pokemon.cp.asc(), Pokemon.id)
     ).all()
     gd = container.gamedata.active()
-    guard = _guard_for(session, account_id, container.settings.tz)
+    open_ids = {action.pokemon_id for action, *_ in rows if action.status == "open"}
+    guard = with_list(session, _guard_for(session, account_id, container.settings.tz), account_id, open_ids)
     items = []
     for action, pokemon, meta, analysis in rows:
         summary = summarize(pokemon, meta, analysis, gd)
@@ -455,7 +461,7 @@ def _action_list(
         protection = [r["text"] for r in (analysis.protection_reasons if analysis else [])]
         # The protection is checked again on every read: what was fine when the Pokémon was
         # added may be protected now (audit A03).
-        check = check_transfer(pokemon, meta, guard)
+        check = check_transfer(pokemon, meta, guard, analysis)
         unconfirmed = check.unconfirmed(action.confirmed)
         still_in_inventory = pokemon.inventory_status == "in_inventory"
         items.append(

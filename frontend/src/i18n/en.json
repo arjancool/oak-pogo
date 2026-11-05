@@ -116,7 +116,9 @@
       "favorite": "Favorite",
       "vintage": "Vintage, protection lifted",
       "unknown_date": "Catch date unknown",
-      "protected": "Protected by a rule"
+      "protected": "Protected by a rule",
+      "advice": "Keep, according to the advice",
+      "last_copy": "Last copy of this species"
     },
     "readiness": {
       "direct": "Ready now",
@@ -1911,7 +1913,11 @@
       "UNKNOWN_DATE": "Catch date unknown",
       "PROTECTED": "Protected: {{protections}}",
       "PROTECTION": "{{protections}}",
-      "UNCONFIRMED": "{{items}}"
+      "UNCONFIRMED": "{{items}}",
+      "ADVICE": "OAK advises keeping this Pokémon",
+      "ADVICE_keep": "OAK advises keeping this Pokémon",
+      "ADVICE_build": "OAK advises investing in this Pokémon",
+      "LAST_COPY": "Last {{name}} in your inventory"
     },
     "rules": {
       "VINTAGE": "Vintage Pokémon (2016–2019) are always protected. They are still fully analyzed and compared.",

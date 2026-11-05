@@ -30,6 +30,7 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 
 ### Gewijzigd
 
+- De actielijst vraagt een bevestiging voor een Pokémon die volgens het advies bewaard moet worden, en voor het beste exemplaar van een soort als alle exemplaren op de lijst staan. Zonder bevestiging staat hij niet in de zoekteksten.
 - Het filter op dubbelen (`dup`) is bij een grote collectie veel sneller. Dezelfde zoekterm twee keer telt als één.
 
 ### Opgelost

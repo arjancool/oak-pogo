@@ -280,7 +280,12 @@ def test_confirmations_from_before_concrete_reasons_ask_again_for_rules_only(
     owner: Any, container: Any, gamedata: Any, export: dict[str, Any]
 ) -> None:
     account = _imported(owner, container, export)
-    favorite = _all(owner, account, favorite="true", vintage="false")[0]["pokemon"]["id"]
+    # A favorite the advice does not say to keep: that would be a reason of its own.
+    favorite = next(
+        i["pokemon"]["id"]
+        for i in _all(owner, account, favorite="true", vintage="false")
+        if i["status"] not in ("KEEP", "BUILD")
+    )
     shiny = next(
         i["pokemon"]["id"]
         for i in _all(owner, account, vintage="false", favorite="false")

@@ -268,10 +268,15 @@ class AnalysisService:
         return AnalysisOutcome(run_id, counts)
 
 
+def group_key(pokemon: Pokemon) -> str:
+    """The copies the cleanup advice compares: the same form, Shadow or not."""
+    shadow = pokemon.alignment == Alignment.SHADOW
+    return f"{pokemon.form_key or pokemon.species_id}|{'shadow' if shadow else 'regular'}"
+
+
 def pokemon_view(pokemon: Pokemon, meta: PokemonUserMetadata | None, protecting: dict[str, str]) -> PokemonView:
     """The engine's view of one Pokémon, also used by the transfer guard."""
-    shadow = pokemon.alignment == Alignment.SHADOW
-    group = f"{pokemon.form_key or pokemon.species_id}|{'shadow' if shadow else 'regular'}"
+    group = group_key(pokemon)
     name = pokemon.species_name or f"#{pokemon.species_id}"
     return PokemonView(
         id=pokemon.id,
@@ -288,7 +293,7 @@ def pokemon_view(pokemon: Pokemon, meta: PokemonUserMetadata | None, protecting:
         favorite=bool(pokemon.favorite),
         shiny=bool(pokemon.shiny),
         lucky=bool(pokemon.lucky),
-        shadow=shadow,
+        shadow=pokemon.alignment == Alignment.SHADOW,
         purified=pokemon.alignment == Alignment.PURIFIED,
         costume=bool(has_costume(pokemon.costume_id, pokemon.costume_form)),
         location_card=pokemon.location_card is not None,

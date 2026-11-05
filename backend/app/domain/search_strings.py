@@ -43,8 +43,8 @@ class BoxPokemon:
 class Bundle:
     excluded: tuple[str, ...]
     members: list[BoxPokemon] = field(default_factory=list)
-    # Pokémon the search finds that are not among the members (only for a bundle of one, when
-    # a Pokémon with the same species and CP passes the safety terms too).
+    # Pokémon the search finds that are not among the members (only for a bundle of one species
+    # and one CP, when another Pokémon with that species and CP passes the safety terms too).
     other_matches: int = 0
 
     @property
@@ -105,7 +105,10 @@ def bundle(listed: Sequence[BoxPokemon], box: Iterable[BoxPokemon], limit: int =
             members = {p.id for p in current.members} | {pokemon.id}
             species = {p.species_id for p in current.members} | {pokemon.species_id}
             cps = {p.cp for p in current.members} | {pokemon.cp}
-            if everything.found(species, cps, excluded) == members:
+            # The same string, so it finds nothing new: a twin with the same species and CP
+            # joins the bundle that already finds it, instead of a second identical string.
+            same_search = species == set(current.species_ids) and cps == set(current.cps)
+            if same_search or everything.found(species, cps, excluded) == members:
                 current.members.append(pokemon)
                 break
         else:

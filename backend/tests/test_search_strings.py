@@ -71,6 +71,10 @@ def test_the_same_species_and_cp_cannot_be_separated() -> None:
     # Both twins on the list: one string, and it finds exactly them.
     both = bundle([listed, twin], [listed, twin])
     assert len(both) == 1 and both[0].other_matches == 0
+    # Two twins on the list and a third in the box: still one string, which finds one more.
+    third = BoxPokemon(id=5, species_id=453, cp=530)
+    shared = bundle([listed, twin], [listed, twin, third])
+    assert len(shared) == 1 and len(shared[0].members) == 2 and shared[0].other_matches == 1
 
 
 def test_a_confirmed_favorite_is_found_by_its_string() -> None:
@@ -106,7 +110,8 @@ def test_random_boxes_give_exact_bundles() -> None:
             assert len(members) <= MAX_BUNDLE and members <= hits
             assert len(hits - members) == each.other_matches
             if each.other_matches:
-                assert len(each.members) == 1, "only a Pokémon on its own can find more"
+                assert len(each.species_ids) == 1 and len(each.cps) == 1, "only twins on their own can find more"
+        assert len({b.search for b in bundles}) == len(bundles), "no string twice"
 
 
 def _imported(owner: Api, container: Any, export: dict[str, Any]) -> int:

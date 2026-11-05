@@ -121,7 +121,7 @@ In Pokémon GO betekent een komma "of" en `&` "en". Haakjes bestaan niet. Deze z
 
 Een zoektekst bevat hoogstens 10 Pokémon, ook van verschillende soorten. Omdat de soorten en de CP's los van elkaar staan, kan een bundel ook een Pokémon vinden die niet op de lijst staat. Een tweede Fennekin met toevallig CP 592 bijvoorbeeld. OAK kent de hele collectie en rekent iedere bundel na. Zou hij een Pokémon vinden die niet op de lijst staat, dan gaat de Pokémon die dat veroorzaakt naar een andere bundel. Zo vindt iedere bundel volgens de laatste synchronisatie precies de Pokémon die erboven staan.
 
-Twee Pokémon van dezelfde soort met dezelfde CP zijn met een zoektekst niet uit elkaar te halen. Staat er maar één op de lijst, dan krijgt die een eigen zoektekst met een melding hoeveel Pokémon hij nog meer vindt. Bij het narekenen telt OAK een Pokémon alleen als uitgesloten als zeker is dat een uitsluiting, zoals `!shiny`, voor hem geldt. Een onbekende waarde sluit niets uit.
+Twee Pokémon van dezelfde soort met dezelfde CP zijn met een zoektekst niet uit elkaar te halen. Staan ze niet allemaal op de lijst, dan krijgen de Pokémon van de lijst samen een eigen zoektekst, met een melding hoeveel Pokémon hij nog meer vindt. Bij het narekenen telt OAK een Pokémon alleen als uitgesloten als zeker is dat een uitsluiting, zoals `!shiny`, voor hem geldt. Een onbekende waarde sluit niets uit.
 
 Een uitsluiting die een Pokémon van de bundel zelf zou verbergen, laat OAK in die zoektekst weg. Een bevestigde favoriet krijgt zo een zoektekst zonder `!favorite`, en een Shadow-Pokémon een zonder `!shadow`. OAK zet zulke Pokémon alleen bij elkaar in een bundel als ze dezelfde uitsluitingen hebben.
 

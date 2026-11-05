@@ -236,9 +236,9 @@ Onder **Regels** stel je in welke kenmerken hard beschermen, hoeveel punten iede
 
 ### De actielijst
 
-Zet transfer-kandidaten op de actielijst en werk die daarna zelf in het spel af. In het tabblad **Dubbelen** zet je met de knop *Transfer-kandidaat* alle transfer-kandidaten van een soort in één keer op de lijst. Vintage Pokémon slaat die knop over, en favorieten vragen eerst je bevestiging per Pokémon. Ook een Pokémon die volgens het advies bewaard moet worden, of het laatste exemplaar van een soort, komt pas na je bevestiging op de lijst. Het tabblad **Actielijst** geeft per soort een zoektekst met het Pokédex-nummer en de exacte CP, zodat je de Pokémon in het spel terugvindt. Boven iedere zoektekst staat welke Pokémon het zijn. Je kunt de lijst ook als CSV downloaden of als checklist printen.
+Zet transfer-kandidaten op de actielijst en werk die daarna zelf in het spel af. In het tabblad **Dubbelen** zet je met de knop *Transfer-kandidaat* alle transfer-kandidaten van een soort in één keer op de lijst. Vintage Pokémon slaat die knop over, en favorieten vragen eerst je bevestiging per Pokémon. Ook een Pokémon die volgens het advies bewaard moet worden, of het laatste exemplaar van een soort, komt pas na je bevestiging op de lijst. Het tabblad **Actielijst** geeft zoekteksten met Pokédex-nummers en exacte CP's, zodat je de Pokémon in het spel terugvindt. Een zoektekst bundelt hoogstens 10 Pokémon, ook van verschillende soorten. OAK rekent iedere bundel na tegen je hele collectie, zodat hij volgens de laatste synchronisatie geen Pokémon vindt die niet op de lijst staat. Boven iedere zoektekst staat welke Pokémon het zijn. Je kunt de lijst ook als CSV downloaden of als checklist printen.
 
-Pokémon GO kan niet zoeken op ID. Controleer iedere Pokémon daarom in het spel voordat je hem overzet. Voor de zekerheid sluiten de zoekteksten favorieten, shiny's, lucky's, hundo's, Legendary, Mythical, Shadow en kostuums uit.
+Pokémon GO kan niet zoeken op ID, en Pokémon die je na de laatste synchronisatie hebt gevangen kent OAK niet. Controleer iedere Pokémon daarom in het spel voordat je hem overzet. Voor de zekerheid sluiten de zoekteksten favorieten, shiny's, lucky's, hundo's, Legendary, Mythical, Shadow en kostuums uit, behalve als een Pokémon op de lijst zelf zo'n eigenschap heeft. Hoe de bundels werken staat in [docs/QUERY_SYNTAX.md](docs/QUERY_SYNTAX.md#zoekteksten-voor-in-het-spel).
 
 ## Analyses lezen
 
@@ -309,7 +309,7 @@ Bij het starten voert OAK database-migraties zelf uit, na een automatische back-
 |---|---|
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Installatie, instellingen en reverse proxies |
 | [docs/PGSHARP_INTEGRATION.md](docs/PGSHARP_INTEGRATION.md) | De PGSharp-koppeling en de geverifieerde velden |
-| [docs/QUERY_SYNTAX.md](docs/QUERY_SYNTAX.md) | Alle zoektermen van de Pokémon Box |
+| [docs/QUERY_SYNTAX.md](docs/QUERY_SYNTAX.md) | Alle zoektermen van de Pokémon Box, en de zoekteksten voor in het spel |
 | [docs/ANALYSIS_ENGINE.md](docs/ANALYSIS_ENGINE.md) | Formules, scores en het cleanup-advies |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Opbouw van de applicatie |
 | [docs/DATA_MODEL.md](docs/DATA_MODEL.md) | Database en bestanden |

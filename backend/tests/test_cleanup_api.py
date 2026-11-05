@@ -191,7 +191,10 @@ def test_action_list_checks_protection_again_on_every_read(
     for query in queries:
         for listed_id in query["pokemon_ids"]:
             pokemon = items[listed_id]["pokemon"]
-            assert pokemon["species_id"] == query["species_id"] and f"cp{pokemon['cp']}" in query["query"]
+            assert pokemon["species_id"] in query["species_ids"] and f"cp{pokemon['cp']}" in query["query"]
+    # The confirmed favorite is found: its search string leaves out "!favorite".
+    favorite_search = next(q["search"] for q in queries if fid in q["pokemon_ids"])
+    assert "!favorite" not in favorite_search
 
     # Protection that appears after the Pokémon was listed takes it out of everything executable.
     assert owner.patch(f"/api/v1/pokemon/{pid}/metadata", {"protected": True}).status_code == 200

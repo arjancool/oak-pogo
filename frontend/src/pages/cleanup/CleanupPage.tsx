@@ -530,14 +530,13 @@ function ActionListTab({ accountId }: { accountId: number }) {
         <p className="mb-2 text-xs text-muted">{serverText("actionList", data.search_hint.note_text ?? data.search_hint.note)}</p>
         <div className="space-y-2">
           {data.search_hint.queries.map((q) => {
-            const search = q.query + data.search_hint.safety_suffix;
+            const search = q.search;
             const found = q.pokemon_ids.flatMap((id) => byId.get(id) ?? []);
+            const fallback = q.species_ids.map((dex) => `#${dex}`).join(" · ");
             return (
-              <div key={q.query} className="rounded-lg border border-line px-3 py-2">
+              <div key={search} className="rounded-lg border border-line px-3 py-2">
                 <div className="flex items-center gap-2">
-                  <p className="min-w-0 flex-1 text-sm">
-                    {found.length ? found.map(searchLabel).join(" · ") : `#${q.species_id}`}
-                  </p>
+                  <p className="min-w-0 flex-1 text-sm">{found.length ? found.map(searchLabel).join(" · ") : fallback}</p>
                   <Button size="sm" variant="ghost" icon={<Copy className="h-3.5 w-3.5" />} onClick={() => copy(search)}>
                     {copied === search ? t("cleanup.list.copied") : t("cleanup.list.copy")}
                   </Button>
@@ -545,6 +544,9 @@ function ActionListTab({ accountId }: { accountId: number }) {
                 <code className="mt-1 block truncate rounded bg-surface-3 px-2 py-1 text-xs text-muted" title={search}>
                   {search}
                 </code>
+                {q.other_matches > 0 && (
+                  <p className="mt-1 text-xs text-amber-300">{t("cleanup.list.otherMatches", { count: q.other_matches })}</p>
+                )}
               </div>
             );
           })}

@@ -1492,6 +1492,8 @@
       "searches": "Zoekopdrachten voor Pokémon GO",
       "copied": "Gekopieerd",
       "copy": "Kopiëren",
+      "otherMatches_one": "Volgens de laatste synchronisatie vindt deze zoektekst ook {{count}} Pokémon die er niet boven staat, met dezelfde soort en CP. Een zoektekst kan ze niet uit elkaar halen. Kijk in het spel goed welke je selecteert.",
+      "otherMatches_other": "Volgens de laatste synchronisatie vindt deze zoektekst ook {{count}} Pokémon die er niet boven staan, met dezelfde soort en CP. Een zoektekst kan ze niet uit elkaar halen. Kijk in het spel goed welke je selecteert.",
       "columns": {
         "reason": "Reden",
         "protection": "Bescherming",
@@ -1925,7 +1927,7 @@
       "FAVORITE": "Favorieten krijgen extra bewaarpunten en worden nooit direct als transfer voorgesteld."
     },
     "actionList": {
-      "SEARCH_NOTE": "Pokémon GO kan niet op Pokémon-ID zoeken. Gebruik per soort het Pokédex-nummer met de exacte CP, en controleer de Pokémon in het spel voordat je hem overzet. '&!favorite&!shiny&!lucky' sluit extra veilig uit."
+      "SEARCH_NOTE": "Pokémon GO kan niet op Pokémon-ID zoeken. Iedere zoektekst zoekt tot {{max}} Pokémon op Pokédex-nummer en exacte CP. OAK heeft nagerekend dat hij volgens de laatste synchronisatie alleen de Pokémon vindt die erboven staan. Pokémon die je daarna hebt gevangen kent OAK niet, dus controleer in het spel wat je selecteert voordat je iets overzet."
     },
     "battles": {
       "LEAGUE_METHOD": "Per Pokémon de meest competitieve soort die hij kan worden (PvPoke-rang), met zijn IV-rang voor die soort.",

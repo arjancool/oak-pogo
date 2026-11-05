@@ -1492,6 +1492,8 @@
       "searches": "Searches for Pokémon GO",
       "copied": "Copied",
       "copy": "Copy",
+      "otherMatches_one": "According to the last sync, this search also finds {{count}} Pokémon that is not listed above it, with the same species and CP. A search cannot tell them apart. Check carefully in the game which one you select.",
+      "otherMatches_other": "According to the last sync, this search also finds {{count}} Pokémon that are not listed above it, with the same species and CP. A search cannot tell them apart. Check carefully in the game which ones you select.",
       "columns": {
         "reason": "Reason",
         "protection": "Protection",
@@ -1925,7 +1927,7 @@
       "FAVORITE": "Favorites get extra keep points and are never suggested as a transfer directly."
     },
     "actionList": {
-      "SEARCH_NOTE": "Pokémon GO cannot search by Pokémon ID. Use the Pokédex number with the exact CP per species, and check the Pokémon in the game before you transfer it. '&!favorite&!shiny&!lucky' excludes even more to be safe."
+      "SEARCH_NOTE": "Pokémon GO cannot search by Pokémon ID. Each search finds up to {{max}} Pokémon by Pokédex number and exact CP. OAK has checked that, according to the last sync, it only finds the Pokémon listed above it. OAK does not know Pokémon you caught after that, so check in the game what you select before you transfer anything."
     },
     "battles": {
       "LEAGUE_METHOD": "For each Pokémon, the most competitive species it can become (PvPoke rank), with its IV rank for that species.",

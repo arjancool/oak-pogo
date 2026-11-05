@@ -109,12 +109,24 @@ Een losse tekst zonder veld zoekt in de soortnaam, de bijnaam en de naam van de 
 
 ## Zoekteksten voor in het spel
 
-De actielijst van de Cleanup Manager maakt aparte zoekteksten in de syntax van Pokémon GO. Het spel kan niet op ID zoeken. Daarom gebruikt OAK per soort het Pokédex-nummer met de exacte CP van ieder exemplaar op de lijst, en sluit voor de zekerheid bijzondere Pokémon uit.
+De actielijst van de Cleanup Manager maakt aparte zoekteksten in de syntax van Pokémon GO. Deze teksten werken niet in het zoekveld van OAK. Het spel kan niet op ID zoeken. Daarom zoekt OAK op Pokédex-nummer en de exacte CP, en sluit voor de zekerheid bijzondere Pokémon uit.
 
 ```
-129&cp45,cp112&!favorite&!shiny&!lucky&!4*&!legendary&!mythical&!shadow&!costume
+653,659,661&cp384,cp569,cp592&!favorite&!shiny&!lucky&!4*&!legendary&!mythical&!shadow&!costume
 ```
 
-Boven iedere zoektekst staat welke Pokémon hij vindt, met naam en CP en de bijnaam als hij er een heeft. Bijvoorbeeld *Magikarp CP 45 · Magikarp CP 112*. De knop *Kopiëren* kopieert alleen de zoektekst.
+In Pokémon GO betekent een komma "of" en `&` "en". Haakjes bestaan niet. Deze zoektekst vindt dus iedere Pokémon van een van die drie soorten met een van die drie CP's.
 
-Twee Pokémon van dezelfde soort met dezelfde CP zijn zo niet van elkaar te onderscheiden. Controleer daarom iedere Pokémon in het spel voordat je hem overzet. Deze teksten werken niet in het zoekveld van OAK.
+### Bundels van hoogstens 10 Pokémon
+
+Een zoektekst bevat hoogstens 10 Pokémon, ook van verschillende soorten. Omdat de soorten en de CP's los van elkaar staan, kan een bundel ook een Pokémon vinden die niet op de lijst staat. Een tweede Fennekin met toevallig CP 592 bijvoorbeeld. OAK kent de hele collectie en rekent iedere bundel na. Zou hij een Pokémon vinden die niet op de lijst staat, dan gaat de Pokémon die dat veroorzaakt naar een andere bundel. Zo vindt iedere bundel volgens de laatste synchronisatie precies de Pokémon die erboven staan.
+
+Twee Pokémon van dezelfde soort met dezelfde CP zijn met een zoektekst niet uit elkaar te halen. Staat er maar één op de lijst, dan krijgt die een eigen zoektekst met een melding hoeveel Pokémon hij nog meer vindt. Bij het narekenen telt OAK een Pokémon alleen als uitgesloten als zeker is dat een uitsluiting, zoals `!shiny`, voor hem geldt. Een onbekende waarde sluit niets uit.
+
+Een uitsluiting die een Pokémon van de bundel zelf zou verbergen, laat OAK in die zoektekst weg. Een bevestigde favoriet krijgt zo een zoektekst zonder `!favorite`, en een Shadow-Pokémon een zonder `!shadow`. OAK zet zulke Pokémon alleen bij elkaar in een bundel als ze dezelfde uitsluitingen hebben.
+
+Boven iedere zoektekst staat welke Pokémon hij vindt, met naam en CP en de bijnaam als hij er een heeft. Bijvoorbeeld *Fennekin CP 569 · Bunnelby CP 384 · Fletchling CP 592*. De knop *Kopiëren* kopieert de hele zoektekst.
+
+### Wat OAK niet weet
+
+Pokémon die je na de laatste synchronisatie hebt gevangen, kent OAK niet. Een bundel kan die dus wel vinden. Kijk daarom in het spel goed wat je selecteert, en controleer iedere Pokémon voordat je hem overzet. Of Pokémon GO een maximale lengte voor een zoektekst heeft, is niet vastgesteld.

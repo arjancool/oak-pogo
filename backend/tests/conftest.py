@@ -13,7 +13,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.core.config import Settings
-from app.gamedata.fetch import Downloaded
+from app.gamedata.fetch import Downloaded, UpstreamDate
 from app.gamedata.validate import ValidationLimits
 from app.main import create_app
 
@@ -47,6 +47,14 @@ def downloads(files: dict[str, bytes] | None = None) -> dict[str, Downloaded]:
         )
         for sid, content in (files or gamedata_files()).items()
     }
+
+
+@pytest.fixture(autouse=True)
+def no_upstream_date(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Tests never ask PokeMiners for its date; a test that needs one sets it itself."""
+    monkeypatch.setattr(
+        "app.gamedata.store.remote_timestamp", lambda _settings: UpstreamDate(None, "unreachable", "ConnectError")
+    )
 
 
 @pytest.fixture(scope="session")

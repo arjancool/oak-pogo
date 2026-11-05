@@ -45,7 +45,7 @@ Iedere gebruiker ziet alleen de eigen traineraccounts (ADR-0016). Iedere query o
 
 De eigenaar beheert de installatie: gebruikers, Game Data, sprites, back-ups en het auditlogboek. De gegevens van andere gebruikers kan ook de eigenaar niet via de interface inzien.
 
-De volledige systeemstatus, met paden, schijfruimte, de bron van de geheime sleutel en de taken van iedereen, is alleen voor de eigenaar. Een andere gebruiker ziet daar alleen zijn eigen mislukte imports, zijn laatste synchronisatie en de actieve Game Data. Ook de controle op nieuwe Game Data, die bij iedere aanroep de bronnen buiten vraagt, is alleen voor de eigenaar. De versie van OAK is pas na het inloggen te zien.
+De volledige systeemstatus, met paden, schijfruimte, de bron van de geheime sleutel en de taken van iedereen, is alleen voor de eigenaar. Een andere gebruiker ziet daar alleen zijn eigen mislukte imports, zijn laatste synchronisatie en de actieve Game Data. Ook de controle op nieuwe Game Data, die bij iedere aanroep de bronnen buiten vraagt, is alleen voor de eigenaar. Het is een POST, omdat OAK het resultaat bewaart. De verzoeken naar buiten lopen buiten iedere transactie, en pas daarna schrijft OAK het resultaat weg. De versie van OAK is pas na het inloggen te zien.
 
 ## Verdere maatregelen
 

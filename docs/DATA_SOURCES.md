@@ -28,6 +28,7 @@ De licenties zijn op 23 oktober 2026 gecontroleerd in de repositories zelf.
 - **Doel:** de primaire bron voor spelmechanica: basisstatistieken, typen, vormen, evoluties met hun eisen, aanvallen met kracht, energie en duur voor PvP en PvE, CP-multipliers, power-upkosten, Shadow- en Purified-regels, mega-evoluties, Max Battles en league-regels.
 - **Licentie:** de repository vermeldt geen licentie. Het gaat om gegevens die uit het spel zijn gehaald. OAK neemt ze daarom niet op in de broncode of de Docker-image, maar downloadt ze tijdens gebruik naar de eigen installatie.
 - **Versie:** iedere download krijgt een eigen Game Data-versie in OAK, met de SHA-256 van het bestand, de ETag en het moment van ophalen.
+- **Datum:** PokeMiners publiceert naast de Game Master het bestand `latest/timestamp.txt`, met het moment van de Game Master in milliseconden sinds 1970. OAK leest het bij iedere download en bij iedere controle, en toont op **Beheer → Game Data** van wanneer de actieve Game Master is en van wanneer de nieuwste. Is het bestand er niet, niet bereikbaar of geen geldig tijdstip, dan staat er `onbekend` met de reden. Een update gaat dan gewoon door. Een geüpload bestand heeft geen datum van PokeMiners.
 - **Revisie van de omzetting:** iedere dataset noemt de revisie van de omzetting waarmee OAK hem bouwde. Voegt een nieuwe OAK-versie gegevens toe, zoals de G-Max-aanvallen (revisie 2), welke Pokémon in een gym mogen (revisie 3), de regels voor purify (revisie 4) of de cups (revisie 5), dan bouwt OAK de actieve versie bij de eerstvolgende update opnieuw op uit dezelfde bronnen. Met automatische updates aan gebeurt dat binnen een uur na het starten.
 - **Betrouwbaarheid:** de Game Master is de bron die het spel zelf gebruikt. Sommige velden zijn onvolledig of dubbelzinnig, bijvoorbeeld vormen zonder eigen statistieken. OAK valt dan zichtbaar terug op de standaardvorm en verlaagt de betrouwbaarheid van het advies.
 
@@ -36,6 +37,7 @@ De licenties zijn op 23 oktober 2026 gecontroleerd in de repositories zelf.
 - **URL:** <https://github.com/pvpoke/pvpoke>, bestanden `src/data/gamemaster.json` en `src/data/rankings/all/overall/rankings-1500.json`, `-2500.json` en `-10000.json`. Per cup die PvPoke toont ook `src/data/rankings/<cup>/overall/rankings-<CP-limiet>.json`.
 - **Doel:** leesbare namen, de lijst met legacy-aanvallen, de soortrang per league en per cup, de aanbevolen movesets en de regels van de cups (ADR-0027).
 - **Licentie:** MIT, Copyright (c) 2019 pvpoke.
+- **Datum:** `gamemaster.json` vermeldt zelf zijn datum in het veld `timestamp`. OAK toont die bij de actieve versie.
 - **Betrouwbaarheid:** de rankings komen uit simulaties van PvPoke. Ze zeggen hoe sterk een soort is, niet hoe goed jouw exemplaar is. OAK houdt die twee gescheiden.
 
 ## Aanvullende spelregels van OAK
@@ -99,6 +101,7 @@ Deze projecten zijn bekeken als functionele referentie. OAK neemt er geen code, 
 ## Updates en onbereikbaarheid
 
 - OAK controleert standaard iedere 24 uur of er nieuwe Game Data is (`OAK_GAMEDATA_AUTO_UPDATE`, `OAK_GAMEDATA_UPDATE_INTERVAL_HOURS`). De controle vergelijkt eerst alleen de ETags. Een download volgt alleen als er iets veranderd is.
+- Met **Controleren op updates** vraagt de eigenaar de ETags en de datum van de nieuwste Game Master op, zonder download. OAK bewaart het resultaat, zodat de pagina blijft tonen wanneer er is gecontroleerd, van wanneer de nieuwste Game Master is en of je die al hebt. Ook een geslaagde update werkt dat resultaat bij.
 - Iedere nieuwe dataset wordt gecontroleerd voordat hij actief wordt. Er moeten minstens 800 soorten, 1.000 vormen, 200 aanvallen en 80 CP-multipliers in staan. Een dataset die daar niet aan voldoet, wordt opgeslagen als mislukt. De actieve versie blijft dan in gebruik.
 - Is een bron niet bereikbaar, dan werkt OAK door met de actieve versie en toont de fout op **Beheer → Game Data**.
 - De drie nieuwste bruikbare versies blijven bewaard. Je kunt er op **Beheer → Game Data** naar terug.

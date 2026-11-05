@@ -262,15 +262,34 @@ export interface GameDataVersion {
   activated_at: string | null;
   summary: Record<string, unknown> | null;
   sources: { id: string; url: string; sha256?: string; retrieved_at?: string; upstream_timestamp?: string | null; bytes?: number }[];
+  /** The date of the data per source, or why it is unknown (issue #28). */
+  dates?: SourceDate[];
   error: string | null;
   /** The errors in "error" one by one; null for versions from before OAK kept them. */
   errors?: ServerText[] | null;
+}
+
+export interface SourceDate {
+  source: string;
+  date: string | null;
+  reason: ServerText | null;
+}
+
+/** The last check for a newer version, kept by the server (issue #28). */
+export interface RemoteCheck {
+  checked_at: string;
+  available: boolean | null;
+  changed_sources?: string[];
+  repair_needed?: boolean;
+  error: ServerText | null;
+  latest: { date: string | null; reason: ServerText | null };
 }
 
 export interface GameDataStatus {
   active: GameDataVersion | null;
   versions: GameDataVersion[];
   last_check: { at: string; error: string | null } | null;
+  remote_check: RemoteCheck | null;
   last_error: string | null;
   last_errors?: ServerText[] | null;
   update_pending: boolean;

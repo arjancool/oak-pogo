@@ -8,6 +8,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from tests.conftest import PASSWORD, Api
+from tests.test_password_lock import _write_lock_free
 
 
 def test_status_per_role(owner: Api, app: Any) -> None:
@@ -19,7 +20,7 @@ def test_status_per_role(owner: Api, app: Any) -> None:
         assert user.login("gebruiker").status_code == 200
         own = user.get("/api/v1/system/status").json()
         assert set(own) == {"failed_imports", "last_successful_sync", "game_data"}
-        assert user.get("/api/v1/gamedata/check").status_code == 403
+        assert user.post("/api/v1/gamedata/check").status_code == 403
         assert user.get("/api/v1/system/version").status_code == 200
 
 
@@ -29,14 +30,21 @@ def test_version_needs_a_login(client: TestClient, owner: Api) -> None:
     assert owner.get("/api/v1/system/version").status_code == 200
 
 
-def test_the_check_reads_without_a_write_transaction(
+def test_the_check_asks_outside_without_the_write_lock(
     owner: Api, container: Any, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr("app.gamedata.store.remote_etags", lambda _settings: {"pokeminers": "a", "pvpoke": "b"})
+    """The requests to the sources run outside any transaction; only the result is written,
+    afterwards, so the page can keep showing it (issues #52 and #28)."""
+    database = container.settings.data_dir / "oak.db"
+    seen: list[bool] = []
 
-    def no_writes() -> Any:
-        raise AssertionError("the check only reads")
+    def etags(_settings: Any) -> dict[str, str]:
+        seen.append(_write_lock_free(database))
+        return {"pokeminers": "a", "pvpoke": "b"}
 
-    monkeypatch.setattr(container.db, "transaction", no_writes)
-    response = owner.get("/api/v1/gamedata/check")
+    monkeypatch.setattr("app.gamedata.store.remote_etags", etags)
+    assert owner.get("/api/v1/gamedata/check").status_code in (404, 405), "no GET that writes"
+    response = owner.post("/api/v1/gamedata/check")
     assert response.status_code == 200 and response.json()["available"] is True
+    assert seen == [True]
+    assert owner.get("/api/v1/gamedata/status").json()["remote_check"]["available"] is True

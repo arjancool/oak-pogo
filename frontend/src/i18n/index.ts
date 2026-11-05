@@ -7,10 +7,9 @@ import { setLocale } from "../lib/format";
 import en from "./en.json";
 import nl from "./nl.json";
 
-// "beta" until every page is translated (ADR-0025).
-export const LANGUAGES = { nl: "Nederlands", en: "English (beta)" } as const;
+export const LANGUAGES = { nl: "Nederlands", en: "English" } as const;
 export type Language = keyof typeof LANGUAGES;
-// Dutch stays the default until every page is translated; then OAK follows the browser.
+// For a browser that prefers neither language.
 export const DEFAULT_LANGUAGE: Language = "nl";
 
 const STORAGE_KEY = "oak.language";
@@ -33,6 +32,21 @@ export function localeFor(language: Language, preferred: readonly string[] = nav
   return preferred.find((tag) => tag.toLowerCase().split("-")[0] === language) ?? LOCALES[language];
 }
 
+/** The first language of the browser that OAK has, or Dutch (ADR-0025). */
+export function browserLanguage(preferred: readonly string[] = navigator.languages ?? []): Language {
+  for (const tag of preferred) {
+    const base = tag.toLowerCase().split("-")[0];
+    if (isLanguage(base)) return base;
+  }
+  return DEFAULT_LANGUAGE;
+}
+
+/** A language chosen on this device wins; on a first visit OAK follows the browser. The choice
+ * saved with the user wins over both once the user is known (lib/auth.tsx). */
+export function initialLanguage(stored: Language | null, preferred?: readonly string[]): Language {
+  return stored ?? browserLanguage(preferred);
+}
+
 function storedLanguage(): Language | null {
   try {
     const value = localStorage.getItem(STORAGE_KEY);
@@ -49,7 +63,7 @@ function apply(language: Language): void {
 
 void i18n.use(initReactI18next).init({
   resources: { nl: { translation: nl }, en: { translation: en } },
-  lng: storedLanguage() ?? DEFAULT_LANGUAGE,
+  lng: initialLanguage(storedLanguage()),
   fallbackLng: DEFAULT_LANGUAGE,
   supportedLngs: Object.keys(LANGUAGES),
   // React escapes text itself.

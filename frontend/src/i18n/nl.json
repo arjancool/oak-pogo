@@ -1007,6 +1007,14 @@
       "system": {
         "title": "Systeem",
         "version": "Versie",
+        "release": {
+          "label": "Nieuwste release",
+          "off": "niet opgevraagd (OAK_RELEASE_CHECK=false)",
+          "unknown": "onbekend ({{reason}})",
+          "newer": "Versie {{version}} is beschikbaar, van {{date}}",
+          "same": "Je hebt de nieuwste versie ({{version}}, {{date}})",
+          "ahead": "Je draait een nieuwere versie dan de nieuwste release ({{version}}, {{date}})"
+        },
         "started": "Gestart",
         "timezone": "Tijdzone",
         "baseUrl": "Basis-URL",
@@ -2242,6 +2250,12 @@
       "ITEM_GROUP_max": "Max Battles",
       "ITEM_GROUP_event": "Eventpunten",
       "ITEM_GROUP_other": "Overig"
+    },
+    "system": {
+      "RELEASE_UNREACHABLE": "GitHub was niet bereikbaar: {{error}}",
+      "RELEASE_NONE": "Er staat nog geen release van OAK op GitHub.",
+      "RELEASE_INVALID": "GitHub gaf een antwoord dat OAK niet kan lezen.",
+      "VERSION_UNREADABLE": "De draaiende versie {{version}} is niet te vergelijken met een release."
     }
   }
 }

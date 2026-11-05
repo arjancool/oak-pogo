@@ -77,6 +77,7 @@ def settings(tmp_path: Path) -> Settings:
         secret_key="test-secret-key-that-is-long-enough-123456",
         gamedata_auto_update=False,
         events_auto_update=False,
+        release_check=False,
     )
 
 

@@ -45,6 +45,15 @@ def version(auth: AuthContext = Depends(get_auth)) -> dict[str, Any]:
     return {"version": __version__, "build": _build_info()}
 
 
+@router.get("/system/release", response_model=dict[str, Any])
+async def release(
+    auth: AuthContext = Depends(require_owner), container: Container = Depends(get_container)
+) -> dict[str, Any]:
+    """Only for the owner: the newest release on GitHub next to the running version. OAK keeps
+    the answer for a while and asks nothing when OAK_RELEASE_CHECK is off (issue #29)."""
+    return await run_in_threadpool(container.releases.status)
+
+
 @router.get("/system/status", response_model=dict[str, Any])
 def system_status(
     auth: AuthContext = Depends(get_auth),

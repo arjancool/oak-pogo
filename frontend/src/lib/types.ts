@@ -285,6 +285,18 @@ export interface RemoteCheck {
   latest: { date: string | null; reason: ServerText | null };
 }
 
+/** The newest OAK release next to the running version, for the owner (issue #29). */
+export type ReleaseStatus =
+  | { enabled: false; current: string }
+  | {
+      enabled: true;
+      current: string;
+      checked_at: string;
+      status: "newer" | "same" | "ahead" | "unknown";
+      latest: { version: string | null; published_at: string | null; url: string | null } | null;
+      reason: ServerText | null;
+    };
+
 export interface GameDataStatus {
   active: GameDataVersion | null;
   versions: GameDataVersion[];

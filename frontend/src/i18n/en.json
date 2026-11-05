@@ -1007,6 +1007,14 @@
       "system": {
         "title": "System",
         "version": "Version",
+        "release": {
+          "label": "Newest release",
+          "off": "not requested (OAK_RELEASE_CHECK=false)",
+          "unknown": "unknown ({{reason}})",
+          "newer": "Version {{version}} is available, from {{date}}",
+          "same": "You have the newest version ({{version}}, {{date}})",
+          "ahead": "You run a newer version than the newest release ({{version}}, {{date}})"
+        },
         "started": "Started",
         "timezone": "Time zone",
         "baseUrl": "Base URL",
@@ -2242,6 +2250,12 @@
       "ITEM_GROUP_max": "Max Battles",
       "ITEM_GROUP_event": "Event points",
       "ITEM_GROUP_other": "Other"
+    },
+    "system": {
+      "RELEASE_UNREACHABLE": "GitHub was not reachable: {{error}}",
+      "RELEASE_NONE": "There is no OAK release on GitHub yet.",
+      "RELEASE_INVALID": "GitHub gave an answer OAK cannot read.",
+      "VERSION_UNREADABLE": "The running version {{version}} cannot be compared with a release."
     }
   }
 }

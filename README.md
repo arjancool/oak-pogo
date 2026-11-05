@@ -48,7 +48,7 @@ De interface is Nederlands of Engels. Bij je eerste bezoek volgt OAK de taal van
 - **PvE**: raidcounters, Team GO Rocket-counters, Max Battles en je beste gymverdedigers.
 - **Evolutieplanner** voor evoluties en power-ups, met kosten in Stardust, Candy en XL Candy.
 - **Account**: trainerstatistieken, item bag, Stardust en Candy, en de historie.
-- **Beheer**: traineraccounts, webhooks, Game Data met versiebeheer en de datum van de gegevens, gebruikers, instellingen en back-ups.
+- **Beheer**: traineraccounts, webhooks, Game Data met versiebeheer en de datum van de gegevens, gebruikers, instellingen met de draaiende en de nieuwste versie van OAK, en back-ups.
 
 ## Wat je nodig hebt
 

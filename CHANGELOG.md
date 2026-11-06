@@ -4,6 +4,11 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 
 ## [Nog niet uitgebracht]
 
+### Toegevoegd
+
+- De pagina Game Data toont van wanneer de gegevens zijn: de Game Master en PvPoke van de actieve versie, en de nieuwste Game Master bij PokeMiners. OAK leest daarvoor `timestamp.txt` van PokeMiners. Het resultaat van de laatste controle blijft op de pagina staan, met *Je hebt de nieuwste versie* of *Er is een nieuwere versie*. Een onbekende datum staat er als `onbekend`, met de reden.
+- De eigenaar ziet onder Instellingen, bij Systeem, naast de draaiende versie de nieuwste release van OAK op GitHub, met de datum en een link als er een nieuwere is. OAK bewaart het antwoord 12 uur. Met `OAK_RELEASE_CHECK=false` vraagt OAK niets aan GitHub. Is GitHub niet bereikbaar, dan staat er `onbekend` met de reden.
+
 ### Beveiliging
 
 - Ieder verzoek mag hoogstens 1 MB groot zijn. Alleen de webhook en de twee uploads houden hun grens van `OAK_MAX_IMPORT_MB`. Pas de grens in je reverse proxy aan zoals in `docs/DEPLOYMENT.md`.
@@ -30,11 +35,15 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 
 ### Gewijzigd
 
+- *Controleren op updates* op de pagina Game Data is een POST geworden, omdat OAK het resultaat nu bewaart. De verzoeken naar buiten lopen buiten iedere transactie.
+- Engels heet in de taalkeuze gewoon *English*, zonder *(beta)*. Bij een eerste bezoek zonder gekozen taal volgt OAK de taal van de browser.
 - De actielijst vraagt een bevestiging voor een Pokémon die volgens het advies bewaard moet worden, en voor het beste exemplaar van een soort als alle exemplaren op de lijst staan. Zonder bevestiging staat hij niet in de zoekteksten.
 - Het filter op dubbelen (`dup`) is bij een grote collectie veel sneller. Dezelfde zoekterm twee keer telt als één.
+- De actielijst bundelt de zoekteksten voor Pokémon GO tot hoogstens 10 Pokémon per zoektekst, ook van verschillende soorten. OAK rekent iedere bundel na tegen de hele collectie. Zou een bundel ook een Pokémon vinden die niet op de lijst staat, dan krijgt de Pokémon die dat veroorzaakt een andere zoektekst.
 
 ### Opgelost
 
+- Een bevestigde favoriet op de actielijst was met de zoektekst niet te vinden, omdat die altijd `!favorite` bevatte. Een zoektekst laat nu de veiligheidstermen weg die een Pokémon van de bundel zelf zouden verbergen, zoals `!favorite` of `!shadow`.
 - Het opruimen van bewaarde exports kon een bestand verwijderen dat een nieuwe poging nog nodig had. De bewaartermijn telt nu vanaf de nieuwste import die het bestand gebruikt.
 - Een Pokémon met een vorm die de Game Master als kostuum markeert, zoals een Pikachu met een eventhoed, telt nu als kostuum. Dat gold eerder alleen als PGSharp het kostuumveld vulde, en dat doet PGSharp niet altijd. Zo'n Pokémon krijgt nu de kostuumbescherming, de kostuumpunten in de bewaarscore, het label en de plek in het filter en de telling van kostuums. Migratie 0008 voegt daarvoor een afgeleide kolom toe.
 

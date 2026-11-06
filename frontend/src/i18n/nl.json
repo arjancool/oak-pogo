@@ -891,9 +891,9 @@
       "check": "Controleren op updates",
       "updateNow": "Nu bijwerken",
       "repairNeeded": "Het bestand van de actieve versie ontbreekt. Kies Nu bijwerken om het opnieuw op te bouwen.",
-      "available": "Er is nieuwe data beschikbaar ({{sources}}).",
+      "available": "Er is een nieuwere versie ({{sources}}).",
       "noActiveVersion": "nog geen actieve versie",
-      "upToDate": "De actieve versie is actueel.",
+      "upToDate": "Je hebt de nieuwste versie.",
       "updateStarted": "Update gestart. OAK downloadt, controleert en activeert de nieuwe versie op de achtergrond.",
       "versionActivated": "Versie geactiveerd. Analyses worden opnieuw berekend.",
       "noActiveTitle": "Geen actieve Game Data",
@@ -901,6 +901,14 @@
       "lastErrorTitle": "Laatste update mislukt",
       "lastErrorText": "{{error}} De actieve versie is niet aangeraakt.",
       "activeTitle": "Actieve versie",
+      "latest": {
+        "title": "Nieuwste versie",
+        "never": "Nog niet gecontroleerd.",
+        "neverOwner": "Nog niet gecontroleerd. Kies Controleren op updates.",
+        "gameMaster": "Nieuwste bij PokeMiners: Game Master van {{date}}, gecontroleerd op {{checked}}.",
+        "failed": "De controle is mislukt: {{error}}",
+        "stale": "De actieve versie is nieuwer dan deze controle. Controleer opnieuw om te zien of er een nieuwere versie is."
+      },
       "noActive": "Geen.",
       "autoUpdate": "Automatisch bijwerken: {{state}}. Laatste controle: {{checked}}.",
       "autoUpdateOn_one": "aan, ieder uur",
@@ -928,6 +936,8 @@
         "version": "Versie",
         "originUpload": "handmatige upload",
         "originDownload": "download",
+        "gameMasterDate": "Game Master van",
+        "pvpokeDate": "PvPoke van",
         "activated": "Geactiveerd",
         "species": "Soorten",
         "forms": "Vormen",
@@ -998,6 +1008,14 @@
       "system": {
         "title": "Systeem",
         "version": "Versie",
+        "release": {
+          "label": "Nieuwste release",
+          "off": "niet opgevraagd (OAK_RELEASE_CHECK=false)",
+          "unknown": "onbekend ({{reason}})",
+          "newer": "Versie {{version}} is beschikbaar, van {{date}}",
+          "same": "Je hebt de nieuwste versie ({{version}}, {{date}})",
+          "ahead": "Je draait een nieuwere versie dan de nieuwste release ({{version}}, {{date}})"
+        },
         "started": "Gestart",
         "timezone": "Tijdzone",
         "baseUrl": "Basis-URL",
@@ -1492,6 +1510,8 @@
       "searches": "Zoekopdrachten voor Pokémon GO",
       "copied": "Gekopieerd",
       "copy": "Kopiëren",
+      "otherMatches_one": "Volgens de laatste synchronisatie vindt deze zoektekst ook {{count}} Pokémon die er niet boven staat, met dezelfde soort en CP. Een zoektekst kan ze niet uit elkaar halen. Kijk in het spel goed welke je selecteert.",
+      "otherMatches_other": "Volgens de laatste synchronisatie vindt deze zoektekst ook {{count}} Pokémon die er niet boven staan, met dezelfde soort en CP. Een zoektekst kan ze niet uit elkaar halen. Kijk in het spel goed welke je selecteert.",
       "columns": {
         "reason": "Reden",
         "protection": "Bescherming",
@@ -1925,7 +1945,7 @@
       "FAVORITE": "Favorieten krijgen extra bewaarpunten en worden nooit direct als transfer voorgesteld."
     },
     "actionList": {
-      "SEARCH_NOTE": "Pokémon GO kan niet op Pokémon-ID zoeken. Gebruik per soort het Pokédex-nummer met de exacte CP, en controleer de Pokémon in het spel voordat je hem overzet. '&!favorite&!shiny&!lucky' sluit extra veilig uit."
+      "SEARCH_NOTE": "Pokémon GO kan niet op Pokémon-ID zoeken. Iedere zoektekst zoekt tot {{max}} Pokémon op Pokédex-nummer en exacte CP. OAK heeft nagerekend dat hij volgens de laatste synchronisatie alleen de Pokémon vindt die erboven staan. Pokémon die je daarna hebt gevangen kent OAK niet, dus controleer in het spel wat je selecteert voordat je iets overzet."
     },
     "battles": {
       "LEAGUE_METHOD": "Per Pokémon de meest competitieve soort die hij kan worden (PvPoke-rang), met zijn IV-rang voor die soort.",
@@ -2164,6 +2184,11 @@
       "SOURCES_UNCHANGED": "De bronnen zijn niet gewijzigd sinds de actieve versie.",
       "VERSION_ACTIVATED": "Nieuwe Game Data-versie geactiveerd.",
       "SOURCE_UNREACHABLE": "Bron niet bereikbaar: {{error}}",
+      "DATE_UNREACHABLE": "De datum van de bron was niet bereikbaar: {{error}}",
+      "DATE_INVALID": "De bron gaf geen datum die OAK kan lezen.",
+      "DATE_NOT_PUBLISHED": "De bron vermeldt geen datum bij deze gegevens.",
+      "DATE_UPLOAD": "Een geüpload bestand heeft geen datum van de bron.",
+      "DATE_NOT_RECORDED": "Deze versie is gedownload voordat OAK de datum van PokeMiners bewaarde.",
       "GAME_MASTER_NOT_A_LIST": "PokeMiners-bestand is geen lijst met templates",
       "SCHEMA_UNSUPPORTED": "schema_version {{version}} wordt niet ondersteund",
       "CPM_NOT_ASCENDING": "CP-multipliers zijn niet oplopend",
@@ -2226,6 +2251,12 @@
       "ITEM_GROUP_max": "Max Battles",
       "ITEM_GROUP_event": "Eventpunten",
       "ITEM_GROUP_other": "Overig"
+    },
+    "system": {
+      "RELEASE_UNREACHABLE": "GitHub was niet bereikbaar: {{error}}",
+      "RELEASE_NONE": "Er staat nog geen release van OAK op GitHub.",
+      "RELEASE_INVALID": "GitHub gaf een antwoord dat OAK niet kan lezen.",
+      "VERSION_UNREADABLE": "De draaiende versie {{version}} is niet te vergelijken met een release."
     }
   }
 }

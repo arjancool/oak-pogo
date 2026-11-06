@@ -64,6 +64,9 @@ class Settings(BaseSettings):
     events_update_interval_hours: int = Field(default=12, ge=1)
     events_url: str = "https://raw.githubusercontent.com/bigfoott/ScrapedDuck/data/events.json"
     sprite_url_template: str = ""
+    # The newest OAK release on GitHub, for the owner on the settings page (issue #29).
+    release_check: bool = True
+    release_check_hours: int = Field(default=12, ge=1)
     start_worker: bool = True
     frontend_dir: Path | None = None
 

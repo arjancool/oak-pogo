@@ -33,6 +33,7 @@ MODULES = {
     "gamedata": ("gamedata/validate.py", "gamedata/store.py", "api/v1/gamedata.py", "api/v1/system.py"),
     "events": ("normalizers/events.py", "services/events.py", "api/v1/events.py"),
     "account": ("api/v1/account_data.py",),
+    "system": ("services/releases.py",),
 }
 CODE = r'"([A-Z][A-Z0-9_]+)"'
 PATTERNS = (

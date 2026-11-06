@@ -19,7 +19,8 @@ from app.api.deps import AuthContext, get_auth, get_container, get_session, owne
 from app.api.v1.pokemon import sync_bounds, tag_label_map
 from app.core.container import Container
 from app.core.errors import NotFoundError
-from app.domain.pokemon import FIRST_GAME_YEAR, VINTAGE_FIRST_YEAR, VINTAGE_LAST_YEAR
+from app.domain.pokemon import FIRST_GAME_YEAR, IV_MAX, VINTAGE_FIRST_YEAR, VINTAGE_LAST_YEAR, Alignment
+from app.domain.search_strings import MAX_BUNDLE, SAFETY_TERMS, BoxPokemon, bundle
 from app.jobs.tasks import enqueue
 from app.models import (
     AnalysisRun,
@@ -489,7 +490,7 @@ def _action_list(
         "list_name": list_name,
         "count": len(items),
         "items": items,
-        "search_hint": search_hint(items),
+        "search_hint": search_hint(session, account_id, items),
     }
 
 
@@ -500,38 +501,89 @@ def _guard_for(session: Session, account_id: int, tz: ZoneInfo) -> GuardContext:
     return guard_context(session, account, tz)
 
 
-def search_hint(items: list[dict[str, Any]]) -> dict[str, Any]:
-    """Pokémon GO search strings that narrow the in-game box down to the listed species and CP.
+def _known_terms(pokemon: Pokemon) -> tuple[frozenset[str], frozenset[str]]:
+    """The safety terms of the search string this Pokémon certainly matches, and the ones it may
+    match because a value is unknown."""
+    has: set[str] = set()
+    maybe: set[str] = set()
 
-    The game cannot search for OAK's or PGSharp's internal IDs. The string uses the Pokédex
-    number and an exact CP per Pokémon, which is precise enough to find each one by hand.
-    "pokemon_ids" says which listed Pokémon a string finds, so the interface can name them.
+    def note(term: str, value: bool | None) -> None:
+        if value:
+            has.add(term)
+        if value is not False:
+            maybe.add(term)
+
+    note("favorite", pokemon.favorite)
+    note("shiny", pokemon.shiny)
+    note("lucky", pokemon.lucky)
+    ivs = (pokemon.iv_attack, pokemon.iv_defense, pokemon.iv_stamina)
+    note("4*", None if None in ivs else all(iv == IV_MAX for iv in ivs))
+    # Without Game Data the class is unknown.
+    known_class = pokemon.derived_version_id is not None
+    note("legendary", pokemon.pokemon_class == "legendary" if known_class else None)
+    note("mythical", pokemon.pokemon_class == "mythical" if known_class else None)
+    note("shadow", None if pokemon.alignment is None else pokemon.alignment == Alignment.SHADOW)
+    costume: bool | None = bool(pokemon.costume_id) or pokemon.costume_form is True
+    if not costume and (pokemon.costume_id is None or pokemon.costume_form is None):
+        costume = None
+    note("costume", costume)
+    return frozenset(has), frozenset(maybe)
+
+
+def _box_pokemon(pokemon: Pokemon) -> BoxPokemon | None:
+    if pokemon.cp is None:
+        return None
+    has, maybe = _known_terms(pokemon)
+    return BoxPokemon(id=pokemon.id, species_id=pokemon.species_id, cp=pokemon.cp, has=has, maybe=maybe)
+
+
+def search_hint(session: Session, account_id: int, items: list[dict[str, Any]]) -> dict[str, Any]:
+    """Pokémon GO search strings that find the listed Pokémon, at most ten per string.
+
+    The game cannot search for OAK's or PGSharp's internal IDs. A string combines Pokédex
+    numbers and exact CPs, and OAK checks it against every Pokémon in the inventory of the
+    account (search_strings.py). "pokemon_ids" says which listed Pokémon a string finds, so the
+    interface can name them, and "other_matches" counts the Pokémon it also finds.
     """
-    open_items = [i for i in items if i["executable"]]
-    by_species: dict[int, list[dict[str, Any]]] = defaultdict(list)
-    for item in open_items:
-        if item["pokemon"]["cp"] is not None:
-            by_species[item["pokemon"]["species_id"]].append(item["pokemon"])
-    queries = []
-    for dex, pokemon in sorted(by_species.items()):
-        pokemon.sort(key=lambda p: (p["cp"], p["id"]))
-        cps = sorted({p["cp"] for p in pokemon})
-        queries.append(
-            {
-                "species_id": dex,
-                "query": f"{dex}&" + ",".join(f"cp{cp}" for cp in cps),
-                "pokemon_ids": [p["id"] for p in pokemon],
-            }
-        )
+    listed_ids = {i["pokemon"]["id"] for i in items if i["executable"]}
+    listed: list[BoxPokemon] = []
+    box: list[BoxPokemon] = []
+    if listed_ids:
+        species = select(Pokemon.species_id).where(Pokemon.id.in_(listed_ids))
+        rows = session.scalars(
+            select(Pokemon).where(
+                Pokemon.trainer_account_id == account_id,
+                Pokemon.inventory_status == "in_inventory",
+                Pokemon.species_id.in_(species),
+            )
+        ).all()
+        for row in rows:
+            searchable = _box_pokemon(row)
+            if searchable is None:
+                continue
+            box.append(searchable)
+            if row.id in listed_ids:
+                listed.append(searchable)
+    queries = [
+        {
+            "species_ids": found.species_ids,
+            "query": found.query,
+            "search": found.search,
+            "pokemon_ids": [p.id for p in sorted(found.members, key=lambda p: (p.species_id, p.cp, p.id))],
+            "other_matches": found.other_matches,
+        }
+        for found in bundle(listed, box)
+    ]
     note = (
-        "Pokémon GO kan niet op Pokémon-ID zoeken. Gebruik per soort het Pokédex-nummer met de exacte CP, "
-        "en controleer de Pokémon in het spel voordat je hem overzet. '&!favorite&!shiny&!lucky' sluit "
-        "extra veilig uit."
+        f"Pokémon GO kan niet op Pokémon-ID zoeken. Iedere zoektekst zoekt tot {MAX_BUNDLE} Pokémon op "
+        "Pokédex-nummer en exacte CP. OAK heeft nagerekend dat hij volgens de laatste synchronisatie alleen "
+        "de Pokémon vindt die erboven staan. Pokémon die je daarna hebt gevangen kent OAK niet, dus controleer "
+        "in het spel wat je selecteert voordat je iets overzet."
     )
     return {
         "note": note,
-        "note_text": {"code": "SEARCH_NOTE", "text": note},
-        "safety_suffix": "&!favorite&!shiny&!lucky&!4*&!legendary&!mythical&!shadow&!costume",
+        "note_text": {"code": "SEARCH_NOTE", "text": note, "data": {"max": MAX_BUNDLE}},
+        "safety_suffix": "".join(f"&!{term}" for term in SAFETY_TERMS),
         "queries": queries,
     }
 

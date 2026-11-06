@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { useTranslation } from "react-i18next";
 
-import i18n, { changeLanguage, LANGUAGES, localeFor } from "../../src/i18n";
+import i18n, { browserLanguage, changeLanguage, initialLanguage, LANGUAGES, localeFor } from "../../src/i18n";
 import en from "../../src/i18n/en.json";
 import nl from "../../src/i18n/nl.json";
 import { dateTime, num, relative } from "../../src/lib/format";
@@ -97,5 +97,31 @@ describe("tags inside a translated sentence", () => {
         for (const name of voids) expect(text, text).not.toContain(`<${name}>`);
       }
     }
+  });
+});
+
+describe("the language on a first visit", () => {
+  it("follows an English browser when nothing was chosen", () => {
+    expect(initialLanguage(null, ["en-US", "en"])).toBe("en");
+    expect(initialLanguage(null, ["en-GB"])).toBe("en");
+  });
+
+  it("keeps Dutch for a Dutch browser or one OAK has no language for", () => {
+    expect(initialLanguage(null, ["nl-NL", "en"])).toBe("nl");
+    expect(initialLanguage(null, ["fr-FR"])).toBe("nl");
+    expect(initialLanguage(null, [])).toBe("nl");
+  });
+
+  it("takes the first language OAK has from the browser's list", () => {
+    expect(browserLanguage(["de-DE", "en-US", "nl"])).toBe("en");
+  });
+
+  it("lets a language chosen on the device win over the browser", () => {
+    expect(initialLanguage("nl", ["en-US"])).toBe("nl");
+    expect(initialLanguage("en", ["nl-NL"])).toBe("en");
+  });
+
+  it("offers English without a beta label", () => {
+    expect(LANGUAGES.en).toBe("English");
   });
 });

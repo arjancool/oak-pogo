@@ -13,6 +13,7 @@ export OAK_SECRET_KEY="e2e-only-secret-key-not-used-anywhere-else-0123456789"
 export OAK_BASE_URL="http://127.0.0.1:$PORT"
 export OAK_GAMEDATA_AUTO_UPDATE=false
 export OAK_EVENTS_AUTO_UPDATE=false
+export OAK_RELEASE_CHECK=false
 export OAK_FRONTEND_DIR="$ROOT/frontend/dist"
 export OAK_LOG_LEVEL=WARNING
 

@@ -15,6 +15,7 @@ from app.api.v1.auth import audit
 from app.core.container import Container
 from app.core.errors import PayloadTooLargeError, ValidationFailedError
 from app.gamedata.fetch import source_urls
+from app.gamedata.store import REMOTE_CHECK_KEY, source_dates
 from app.jobs.tasks import enqueue, enqueue_rederive
 from app.models import BackgroundJob, GameDataVersion
 from app.repositories.settings import get_setting
@@ -50,6 +51,8 @@ def _version_out(v: GameDataVersion) -> dict[str, Any]:
         "activated_at": v.activated_at.isoformat() if v.activated_at else None,
         "summary": v.summary,
         "sources": v.sources,
+        # The date of the data per source, or why it is unknown (issue #28).
+        "dates": source_dates(v.sources, v.origin),
         "error": v.error,
         # The same errors one by one, as server texts; None for versions from before OAK kept them.
         "errors": v.errors,
@@ -77,6 +80,8 @@ def status(
         "active": _version_out(active) if active else None,
         "versions": [_version_out(v) for v in versions],
         "last_check": get_setting(session, "gamedata.last_check"),
+        # The last check for a newer version, with the date of the newest Game Master.
+        "remote_check": get_setting(session, REMOTE_CHECK_KEY),
         "last_error": last_failed.error if last_failed else None,
         "last_errors": last_failed.errors if last_failed else None,
         "update_pending": pending is not None,
@@ -113,11 +118,12 @@ def sources(
     ]
 
 
-@router.get("/check", response_model=dict[str, Any])
+@router.post("/check", response_model=dict[str, Any])
 async def check(
     auth: AuthContext = Depends(require_owner), container: Container = Depends(get_container)
 ) -> dict[str, Any]:
-    """Only for the owner: every call asks the sources outside for their version (issue #52)."""
+    """Only for the owner: every call asks the sources outside for their version (issue #52).
+    A POST, because OAK keeps the result for the page (issue #28)."""
     return await run_in_threadpool(container.gamedata.check_remote)
 
 

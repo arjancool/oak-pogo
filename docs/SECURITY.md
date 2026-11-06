@@ -6,7 +6,8 @@ OAK is vaak via internet bereikbaar, omdat PGSharp de webhook vanaf je telefoon 
 
 - OAK vraagt nooit om Pokémon GO-inloggegevens en logt nergens in.
 - OAK stuurt niets naar het spel, automatiseert geen gameplay en zet nooit zelf een Pokémon over.
-- OAK stuurt je collectie niet naar een externe dienst. Uitgaand verkeer is alleen het ophalen van openbare Game Data en de eventkalender, en de spritebron als de eigenaar die aanzet.
+- OAK stuurt je collectie niet naar een externe dienst. Uitgaand verkeer is alleen het ophalen van openbare Game Data en de eventkalender, de spritebron als de eigenaar die aanzet, en de vraag aan GitHub naar de nieuwste release van OAK.
+- Die vraag aan GitHub (`api.github.com`) gaat pas uit als de eigenaar de pagina Instellingen opent. OAK bewaart het antwoord 12 uur (`OAK_RELEASE_CHECK_HOURS`), dus vaker gaat hij niet uit. GitHub ziet daarbij alleen het IP-adres van de server en de user-agent van OAK. Met `OAK_RELEASE_CHECK=false` vraagt OAK niets.
 
 ## Inloggen en sessies
 
@@ -45,7 +46,7 @@ Iedere gebruiker ziet alleen de eigen traineraccounts (ADR-0016). Iedere query o
 
 De eigenaar beheert de installatie: gebruikers, Game Data, sprites, back-ups en het auditlogboek. De gegevens van andere gebruikers kan ook de eigenaar niet via de interface inzien.
 
-De volledige systeemstatus, met paden, schijfruimte, de bron van de geheime sleutel en de taken van iedereen, is alleen voor de eigenaar. Een andere gebruiker ziet daar alleen zijn eigen mislukte imports, zijn laatste synchronisatie en de actieve Game Data. Ook de controle op nieuwe Game Data, die bij iedere aanroep de bronnen buiten vraagt, is alleen voor de eigenaar. De versie van OAK is pas na het inloggen te zien.
+De volledige systeemstatus, met paden, schijfruimte, de bron van de geheime sleutel en de taken van iedereen, is alleen voor de eigenaar. Een andere gebruiker ziet daar alleen zijn eigen mislukte imports, zijn laatste synchronisatie en de actieve Game Data. Ook de controle op nieuwe Game Data, die bij iedere aanroep de bronnen buiten vraagt, is alleen voor de eigenaar. Het is een POST, omdat OAK het resultaat bewaart. De verzoeken naar buiten lopen buiten iedere transactie, en pas daarna schrijft OAK het resultaat weg. De versie van OAK is pas na het inloggen te zien.
 
 ## Verdere maatregelen
 

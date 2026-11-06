@@ -6,9 +6,9 @@ import { useTranslation } from "react-i18next";
 import { Alert, Badge, Button, Card, KeyValue, PageHeader, Spinner } from "../../components/ui";
 import { useAuth } from "../../lib/auth";
 import { api, errorMessage } from "../../lib/api";
-import { bytes, dateTime, num } from "../../lib/format";
+import { bytes, date, dateTime, num } from "../../lib/format";
 import { serverText, type ServerText } from "../../lib/serverText";
-import type { GameDataStatus, GameDataVersion } from "../../lib/types";
+import type { GameDataStatus, GameDataVersion, RemoteCheck } from "../../lib/types";
 
 const POLL_MS = 3000;
 const UPLOAD_FIELDS = [
@@ -41,14 +41,30 @@ function errorsText(errors: ServerText[] | null | undefined, fallback: string): 
   return errors?.length ? errors.map((e) => serverText("gamedata", e)).join("; ") : fallback;
 }
 
-function Summary({ version }: { version: GameDataVersion }) {
+const dateLabel: Record<string, ParseKeys> = {
+  pokeminers: "admin.gamedata.summary.gameMasterDate",
+  pvpoke: "admin.gamedata.summary.pvpokeDate",
+};
+
+/** A date of the data, or "onbekend" with the reason the server gives. */
+function dataDate(value: string | null, reason: ServerText | null, unknown: string): string {
+  if (value) return date(value);
+  return reason ? `${unknown} (${serverText("gamedata", reason)})` : unknown;
+}
+
+export function Summary({ version }: { version: GameDataVersion }) {
   const { t } = useTranslation();
   const s = version.summary ?? {};
   const rankings = (s.rankings ?? {}) as Record<string, number | null>;
+  const dates = (version.dates ?? []).flatMap((d): [string, string][] => {
+    const label = dateLabel[d.source];
+    return label ? [[t(label), dataDate(d.date, d.reason, t("common.unknown"))]] : [];
+  });
   return (
     <KeyValue
       items={[
         [t("admin.gamedata.summary.version"), `#${version.id} (${version.origin === "upload" ? t("admin.gamedata.summary.originUpload") : t("admin.gamedata.summary.originDownload")})`],
+        ...dates,
         [t("admin.gamedata.summary.activated"), dateTime(version.activated_at)],
         [t("admin.gamedata.summary.species"), num(s.species as number)],
         [t("admin.gamedata.summary.forms"), num(s.forms as number)],
@@ -58,6 +74,31 @@ function Summary({ version }: { version: GameDataVersion }) {
         [t("admin.gamedata.summary.maxLevel"), String(s.max_normal_level ?? t("common.unknown"))],
       ]}
     />
+  );
+}
+
+/** The result of the last check, kept by the server, so it stays on the page (issue #28). */
+export function LatestVersion({ check, active, owner }: { check: RemoteCheck | null; active: GameDataVersion | null; owner: boolean }) {
+  const { t } = useTranslation();
+  // Only the owner has the button to check.
+  if (!check) return <p className="text-sm text-muted">{t(owner ? "admin.gamedata.latest.neverOwner" : "admin.gamedata.latest.never")}</p>;
+  const latest = dataDate(check.latest.date, check.latest.reason, t("common.unknown"));
+  // A version activated after the check, such as an upload, makes the result out of date.
+  const stale = active?.activated_at != null && new Date(active.activated_at) > new Date(check.checked_at);
+  const verdict = check.error
+    ? { tone: "error" as const, text: t("admin.gamedata.latest.failed", { error: serverText("gamedata", check.error) }) }
+    : stale
+      ? { tone: "info" as const, text: t("admin.gamedata.latest.stale") }
+      : check.repair_needed
+        ? { tone: "warning" as const, text: t("admin.gamedata.repairNeeded") }
+        : check.available
+          ? { tone: "info" as const, text: t("admin.gamedata.available", { sources: (check.changed_sources ?? []).join(", ") || t("admin.gamedata.noActiveVersion") }) }
+          : { tone: "success" as const, text: t("admin.gamedata.upToDate") };
+  return (
+    <div className="space-y-3 text-sm">
+      <p>{t("admin.gamedata.latest.gameMaster", { date: latest, checked: dateTime(check.checked_at) })}</p>
+      <Alert tone={verdict.tone}>{verdict.text}</Alert>
+    </div>
   );
 }
 
@@ -77,19 +118,13 @@ export function GameDataPage() {
     queryFn: () => api.get<Source[]>("/api/v1/gamedata/sources"),
   });
   const refresh = () => void client.invalidateQueries({ queryKey: ["gamedata"] });
+  // The server keeps the result; the page shows it under "Nieuwste versie" (issue #28).
   const check = useMutation({
-    mutationFn: () =>
-      api.get<{ available: boolean | null; changed_sources?: string[]; repair_needed?: boolean; error: ServerText | null }>("/api/v1/gamedata/check"),
-    onSuccess: (r) =>
-      setMessage(
-        r.error
-          ? { tone: "error", text: serverText("gamedata", r.error) }
-          : r.repair_needed
-            ? { tone: "warning", text: t("admin.gamedata.repairNeeded") }
-            : r.available
-            ? { tone: "info", text: t("admin.gamedata.available", { sources: (r.changed_sources ?? []).join(", ") || t("admin.gamedata.noActiveVersion") }) }
-            : { tone: "success", text: t("admin.gamedata.upToDate") },
-      ),
+    mutationFn: () => api.post<RemoteCheck>("/api/v1/gamedata/check"),
+    onSuccess: () => {
+      setMessage(null);
+      refresh();
+    },
     onError: (err) => setMessage({ tone: "error", text: errorMessage(err) }),
   });
   const update = useMutation({
@@ -176,6 +211,9 @@ export function GameDataPage() {
               checked: dateTime(s.last_check?.at),
             })}
           </p>
+        </Card>
+        <Card title={t("admin.gamedata.latest.title")}>
+          <LatestVersion check={s.remote_check} active={s.active} owner={owner} />
         </Card>
         <Card title={t("admin.gamedata.dependentTitle")}>
           <ul className="list-disc space-y-1 pl-5 text-sm">

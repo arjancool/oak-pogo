@@ -891,9 +891,9 @@
       "check": "Check for updates",
       "updateNow": "Update now",
       "repairNeeded": "The file of the active version is missing. Choose Update now to rebuild it.",
-      "available": "New data is available ({{sources}}).",
+      "available": "There is a newer version ({{sources}}).",
       "noActiveVersion": "no active version yet",
-      "upToDate": "The active version is up to date.",
+      "upToDate": "You have the newest version.",
       "updateStarted": "Update started. OAK downloads, checks and activates the new version in the background.",
       "versionActivated": "Version activated. Analyses are being recalculated.",
       "noActiveTitle": "No active Game Data",
@@ -901,6 +901,14 @@
       "lastErrorTitle": "Last update failed",
       "lastErrorText": "{{error}} The active version was not touched.",
       "activeTitle": "Active version",
+      "latest": {
+        "title": "Newest version",
+        "never": "Not checked yet.",
+        "neverOwner": "Not checked yet. Choose Check for updates.",
+        "gameMaster": "Newest at PokeMiners: Game Master from {{date}}, checked on {{checked}}.",
+        "failed": "The check failed: {{error}}",
+        "stale": "The active version is newer than this check. Check again to see whether there is a newer version."
+      },
       "noActive": "None.",
       "autoUpdate": "Automatic updates: {{state}}. Last check: {{checked}}.",
       "autoUpdateOn_one": "on, every hour",
@@ -928,6 +936,8 @@
         "version": "Version",
         "originUpload": "manual upload",
         "originDownload": "download",
+        "gameMasterDate": "Game Master from",
+        "pvpokeDate": "PvPoke from",
         "activated": "Activated",
         "species": "Species",
         "forms": "Forms",
@@ -998,6 +1008,14 @@
       "system": {
         "title": "System",
         "version": "Version",
+        "release": {
+          "label": "Newest release",
+          "off": "not requested (OAK_RELEASE_CHECK=false)",
+          "unknown": "unknown ({{reason}})",
+          "newer": "Version {{version}} is available, from {{date}}",
+          "same": "You have the newest version ({{version}}, {{date}})",
+          "ahead": "You run a newer version than the newest release ({{version}}, {{date}})"
+        },
         "started": "Started",
         "timezone": "Time zone",
         "baseUrl": "Base URL",
@@ -1492,6 +1510,8 @@
       "searches": "Searches for Pokémon GO",
       "copied": "Copied",
       "copy": "Copy",
+      "otherMatches_one": "According to the last sync, this search also finds {{count}} Pokémon that is not listed above it, with the same species and CP. A search cannot tell them apart. Check carefully in the game which one you select.",
+      "otherMatches_other": "According to the last sync, this search also finds {{count}} Pokémon that are not listed above it, with the same species and CP. A search cannot tell them apart. Check carefully in the game which ones you select.",
       "columns": {
         "reason": "Reason",
         "protection": "Protection",
@@ -1925,7 +1945,7 @@
       "FAVORITE": "Favorites get extra keep points and are never suggested as a transfer directly."
     },
     "actionList": {
-      "SEARCH_NOTE": "Pokémon GO cannot search by Pokémon ID. Use the Pokédex number with the exact CP per species, and check the Pokémon in the game before you transfer it. '&!favorite&!shiny&!lucky' excludes even more to be safe."
+      "SEARCH_NOTE": "Pokémon GO cannot search by Pokémon ID. Each search finds up to {{max}} Pokémon by Pokédex number and exact CP. OAK has checked that, according to the last sync, it only finds the Pokémon listed above it. OAK does not know Pokémon you caught after that, so check in the game what you select before you transfer anything."
     },
     "battles": {
       "LEAGUE_METHOD": "For each Pokémon, the most competitive species it can become (PvPoke rank), with its IV rank for that species.",
@@ -2164,6 +2184,11 @@
       "SOURCES_UNCHANGED": "The sources have not changed since the active version.",
       "VERSION_ACTIVATED": "New Game Data version activated.",
       "SOURCE_UNREACHABLE": "Source not reachable: {{error}}",
+      "DATE_UNREACHABLE": "The date of the source was not reachable: {{error}}",
+      "DATE_INVALID": "The source gave a date OAK cannot read.",
+      "DATE_NOT_PUBLISHED": "The source gives no date for this data.",
+      "DATE_UPLOAD": "An uploaded file has no date from the source.",
+      "DATE_NOT_RECORDED": "This version was downloaded before OAK kept the PokeMiners date.",
       "GAME_MASTER_NOT_A_LIST": "PokeMiners file is not a list of templates",
       "SCHEMA_UNSUPPORTED": "schema_version {{version}} is not supported",
       "CPM_NOT_ASCENDING": "CP multipliers are not ascending",
@@ -2226,6 +2251,12 @@
       "ITEM_GROUP_max": "Max Battles",
       "ITEM_GROUP_event": "Event points",
       "ITEM_GROUP_other": "Other"
+    },
+    "system": {
+      "RELEASE_UNREACHABLE": "GitHub was not reachable: {{error}}",
+      "RELEASE_NONE": "There is no OAK release on GitHub yet.",
+      "RELEASE_INVALID": "GitHub gave an answer OAK cannot read.",
+      "VERSION_UNREADABLE": "The running version {{version}} cannot be compared with a release."
     }
   }
 }

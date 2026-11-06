@@ -239,9 +239,18 @@ export const actionList = z.object({
     note: z.string(),
     note_text: reason.optional(),
     safety_suffix: z.string(),
+    // Bundles of at most ten Pokémon, checked against the whole collection (issue #27).
     // pokemon_ids: the listed Pokémon a search string finds, so the page can name them.
-    // pokemon_ids: the listed Pokémon a search string finds, so the page can name them.
-    queries: z.array(z.object({ species_id: z.number(), query: z.string(), pokemon_ids: z.array(z.number()).default([]) })),
+    // other_matches: Pokémon it also finds, with the same species and CP as one on the list.
+    queries: z.array(
+      z.object({
+        species_ids: z.array(z.number()),
+        query: z.string(),
+        search: z.string(),
+        pokemon_ids: z.array(z.number()).default([]),
+        other_matches: z.number().default(0),
+      }),
+    ),
   }),
 });
 export type ActionList = z.infer<typeof actionList>;

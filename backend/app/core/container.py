@@ -13,6 +13,7 @@ from app.core.ratelimit import SlidingWindowLimiter
 from app.gamedata.store import GameDataStore
 from app.ingestion.processor import ImportProcessor
 from app.jobs.runner import JobRunner
+from app.services.releases import ReleaseCheck
 
 SECONDS_PER_MINUTE = 60
 SECONDS_PER_HOUR = 3600
@@ -52,6 +53,7 @@ class Container:
     webhook_by_token: SlidingWindowLimiter = field(init=False)
     webhook_invalid_by_ip: SlidingWindowLimiter = field(init=False)
     import_slots: threading.BoundedSemaphore = field(init=False)
+    releases: ReleaseCheck = field(init=False)
 
     def __post_init__(self) -> None:
         window = self.settings.login_window_minutes * SECONDS_PER_MINUTE
@@ -68,3 +70,4 @@ class Container:
         self.webhook_by_token = SlidingWindowLimiter(self.settings.webhook_rate_limit_per_hour, SECONDS_PER_HOUR)
         self.webhook_invalid_by_ip = SlidingWindowLimiter(INVALID_TOKEN_LIMIT, INVALID_TOKEN_WINDOW_SECONDS)
         self.import_slots = threading.BoundedSemaphore(IMPORT_SLOTS)
+        self.releases = ReleaseCheck(self.settings)

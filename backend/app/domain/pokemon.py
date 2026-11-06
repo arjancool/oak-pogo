@@ -68,9 +68,9 @@ def origin_kind(case: int | None) -> str | None:
 class PokemonSize(IntEnum):
     """PGSharp ``size``: the size class the game shows, from XXS to XXL.
 
-    Verified in a real export: a Pokémon with 1 is the one the game called XXS, and most
-    Pokémon have 3. The order of the other values follows the community protocol definitions.
-    0 means the export did not say.
+    Verified in a real export: a Pokémon with 1 is the one the game called XXS, a Jynx with 5 is
+    the one the game called XXL (issue #33), and most Pokémon have 3. The values 2 and 4 follow
+    the community protocol definitions. 0 means the export did not say.
     """
 
     UNSET = 0

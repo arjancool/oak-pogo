@@ -1277,7 +1277,8 @@
       "origins": {
         "egg": "Uitgebroed uit een ei",
         "raid": "Gevangen in een raid",
-        "rocket": "Gevangen na een gevecht met Team GO Rocket"
+        "rocket": "Gevangen na een gevecht met Team GO Rocket",
+        "max_battle": "Gevangen in een Max Battle"
       },
       "originCode": "onbekend (code {{code}})",
       "originMissing": "onbekend (niet in de export)",

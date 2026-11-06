@@ -57,6 +57,8 @@ VERIFIED_ORIGINS: dict[int, str] = {
     3: "raid",
     # Every Pokémon with 6 is Shadow or Purified and was caught with a Premier Ball.
     6: "rocket",
+    # Every Pokémon with 13 is Dynamax and was caught with a Premier Ball: a Max Battle.
+    13: "max_battle",
 }
 
 

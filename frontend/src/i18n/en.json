@@ -1277,7 +1277,8 @@
       "origins": {
         "egg": "Hatched from an egg",
         "raid": "Caught in a raid",
-        "rocket": "Caught after a battle with Team GO Rocket"
+        "rocket": "Caught after a battle with Team GO Rocket",
+        "max_battle": "Caught in a Max Battle"
       },
       "originCode": "unknown (code {{code}})",
       "originMissing": "unknown (not in the export)",

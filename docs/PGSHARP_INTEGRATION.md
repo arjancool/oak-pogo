@@ -149,7 +149,7 @@ De controle gebeurde met een echte export. Daarbij is per waarde gekeken naar ve
 | 3 | Raid | Gecontroleerd. Iedere Pokémon met 3 was gevangen met een Premier Ball, en een deel was Shadow of Purified, zoals bij een Shadow-raid. |
 | 6 | Team GO Rocket | Gecontroleerd. Iedere Pokémon met 6 was Shadow of Purified en gevangen met een Premier Ball. |
 | 1, 4, 5 | Volgens de communityprotocollen wild, onderzoek en GO Battle League | Niet gecontroleerd. Geen ander veld onderscheidt ze. OAK toont `onbekend`. |
-| 13 | Onbekend | Iedere Pokémon met 13 was gevangen met een Premier Ball, zonder Shadow-stand. Max Battle ligt voor de hand, maar is niet vastgesteld. OAK toont `onbekend`. |
+| 13 | Max Battle | Gecontroleerd. Iedere Pokémon met 13 was Dynamax en gevangen met een Premier Ball. Een Dynamax-Pokémon vang je in een Max Battle. |
 | 0, 9 | Onbekend | Niet gecontroleerd. OAK toont `onbekend`. |
 
 Een nieuwe gecontroleerde waarde voeg je toe aan `VERIFIED_ORIGINS` in `backend/app/domain/pokemon.py`, met de manier waarop hij is gecontroleerd.

@@ -107,6 +107,7 @@ export const pokemonPage = z.object({
 export type PokemonPage = z.infer<typeof pokemonPage>;
 
 const reason = z.object({ code: z.string(), text: z.string(), data: z.record(z.string(), z.unknown()).optional() });
+const itemNames = z.object({ nl: z.string(), en: z.string() });
 export type Reason = z.infer<typeof reason>;
 
 /** One part of a battle or keep score. Battle parts are values from 0 to 100, keep parts points. */
@@ -269,10 +270,13 @@ const pokedexStep = z.object({
   candy_purified: z.number().nullable(),
   item: z.string().nullable(),
   item_name: z.string().nullable(),
+  // The names in Dutch and English (issue #31); item_name is the Dutch one.
+  item_names: itemNames.nullable().default(null),
   item_cost: z.number().nullable(),
   item_have: z.number().nullable().optional(),
   lure: z.string().nullable(),
   lure_name: z.string().nullable(),
+  lure_names: itemNames.nullable().default(null),
   buddy_km: z.number().nullable(),
   conditions: z.array(z.string()),
   quest: z.string().nullable(),

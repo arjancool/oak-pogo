@@ -977,9 +977,83 @@ def _csv_safe(value: Any) -> Any:
     return value
 
 
+# Column names of the Box CSV per language (issue #31). The values are data: names from the Game
+# Data, numbers, True/False and the status codes, the same in every language.
+BOX_CSV_COLUMNS = {
+    "nl": [
+        "oak_id",
+        "pokemon_id",
+        "soort",
+        "vorm",
+        "bijnaam",
+        "cp",
+        "level",
+        "atk",
+        "def",
+        "sta",
+        "iv_pct",
+        "snelle_aanval",
+        "geladen_aanval_1",
+        "geladen_aanval_2",
+        "shiny",
+        "lucky",
+        "shadow",
+        "purified",
+        "favoriet",
+        "dynamax",
+        "gevangen",
+        "cleanup_status",
+        "great_rang",
+        "ultra_rang",
+        "beschermd",
+        "notities",
+        "oak_tags",
+    ],
+    "en": [
+        "oak_id",
+        "pokemon_id",
+        "species",
+        "form",
+        "nickname",
+        "cp",
+        "level",
+        "atk",
+        "def",
+        "sta",
+        "iv_pct",
+        "fast_move",
+        "charged_move_1",
+        "charged_move_2",
+        "shiny",
+        "lucky",
+        "shadow",
+        "purified",
+        "favorite",
+        "dynamax",
+        "caught",
+        "cleanup_status",
+        "great_rank",
+        "ultra_rank",
+        "protected",
+        "notes",
+        "oak_tags",
+    ],
+}
+
+
+def _export_language(lang: str | None, auth: AuthContext) -> str:
+    """The language the interface asks for, else the one the user chose, else Dutch."""
+    chosen = (auth.user.preferences or {}).get("language")
+    for candidate in (lang, chosen):
+        if candidate in BOX_CSV_COLUMNS:
+            return str(candidate)
+    return "nl"
+
+
 @router.get("/export/csv")
 def export_csv(
     query: BoxQuery = Depends(),
+    lang: str | None = Query(default=None, pattern="^(nl|en)$"),
     auth: AuthContext = Depends(get_auth),
     session: Session = Depends(get_session),
     container: Container = Depends(get_container),
@@ -992,37 +1066,7 @@ def export_csv(
     gd = container.gamedata.active()
     buffer = io.StringIO()
     writer = csv.writer(buffer, delimiter=";")
-    writer.writerow(
-        [
-            "oak_id",
-            "pokemon_id",
-            "soort",
-            "vorm",
-            "bijnaam",
-            "cp",
-            "level",
-            "atk",
-            "def",
-            "sta",
-            "iv_pct",
-            "snelle_aanval",
-            "geladen_aanval_1",
-            "geladen_aanval_2",
-            "shiny",
-            "lucky",
-            "shadow",
-            "purified",
-            "favoriet",
-            "dynamax",
-            "gevangen",
-            "cleanup_status",
-            "great_rang",
-            "ultra_rang",
-            "beschermd",
-            "notities",
-            "oak_tags",
-        ]
-    )
+    writer.writerow(BOX_CSV_COLUMNS[_export_language(lang, auth)])
     for pokemon, meta, analysis in rows:
         s = summarize(pokemon, meta, analysis, gd, latest_sync_id=latest, first_sync_id=first)
         writer.writerow(

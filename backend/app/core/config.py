@@ -48,6 +48,8 @@ class Settings(BaseSettings):
     allow_registration: bool = False
     trusted_proxy_cidrs: str = ""
     raw_import_retention_days: int = Field(default=14, ge=0, le=3650)
+    # How long the audit log keeps an entry (issue #55).
+    audit_retention_days: int = Field(default=365, ge=1, le=3650)
     max_import_mb: int = Field(default=64, ge=1, le=1024)
     session_idle_hours: int = Field(default=168, ge=1)
     session_max_days: int = Field(default=30, ge=1)

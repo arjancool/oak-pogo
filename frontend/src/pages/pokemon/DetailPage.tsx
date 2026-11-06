@@ -9,6 +9,7 @@ import { CleanupBadge, IvBars, IvPercent, PokemonSprite, ReadinessBadge, ScoreMe
 import { Alert, Badge, Button, Card, EmptyState, Field, Input, KeyValue, Select, Spinner, Switch, Tabs, Textarea } from "../../components/ui";
 import { api, errorMessage } from "../../lib/api";
 import { date, dateTime, level, num, pct } from "../../lib/format";
+import { originText } from "../../lib/origin";
 import {
   availabilityLabels,
   changeLabels,
@@ -716,6 +717,7 @@ export function DetailPage() {
                   [t("detail.values.powerUps"), num(details.num_upgrades as number | null)],
                   [t("detail.values.buddyKm"), num(details.buddy_km_walked as number | null)],
                   [t("detail.values.fromEgg"), p.hatched_from_egg === null ? t("common.unknown") : p.hatched_from_egg ? t("detail.yes") : t("detail.no")],
+                  [t("detail.values.origin"), originText(details.origin, details.origin_case)],
                   [t("detail.values.firstSeen"), dateTime(p.first_seen_at)],
                   [t("detail.values.lastChanged"), dateTime(p.last_changed_at)],
                 ]}

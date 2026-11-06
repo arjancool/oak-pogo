@@ -1273,6 +1273,14 @@
       "powerUps": "Power-ups done",
       "buddyKm": "Buddy km",
       "fromEgg": "From egg",
+      "origin": "Origin",
+      "origins": {
+        "egg": "Hatched from an egg",
+        "raid": "Caught in a raid",
+        "rocket": "Caught after a battle with Team GO Rocket"
+      },
+      "originCode": "unknown (code {{code}})",
+      "originMissing": "unknown (not in the export)",
       "firstSeen": "First seen in OAK",
       "lastChanged": "Last changed",
       "event": "Event: {{events}}",
@@ -1525,7 +1533,36 @@
       "done": "Done",
       "remove": "Remove",
       "searchPokemon": "{{name}} CP {{cp}}",
-      "searchPokemonNickname": "{{name}} “{{nickname}}” CP {{cp}}"
+      "searchPokemonNickname": "{{name}} “{{nickname}}” CP {{cp}}",
+      "csv": {
+        "pokemon": "pokemon",
+        "form": "form",
+        "cp": "cp",
+        "atk": "atk",
+        "def": "def",
+        "sta": "sta",
+        "ivPercent": "iv_pct",
+        "reason": "reason",
+        "protection": "protection",
+        "sourceId": "source_pokemon_id",
+        "status": "status",
+        "executable": "executable",
+        "heldBack": "held_back",
+        "yes": "yes",
+        "no": "no"
+      }
+    },
+    "checklist": {
+      "title": "Cleanup checklist",
+      "print": "Print",
+      "introAsc": "Sorted by CP, from low to high. OAK does nothing itself. Check each Pokémon in the game before you transfer it.",
+      "introDesc": "Sorted by CP, from high to low. OAK does nothing itself. Check each Pokémon in the game before you transfer it.",
+      "heldBack_one": "{{count}} Pokémon from the list is not on it, because it is protected, needs a new confirmation or is no longer in your inventory. Look at it in OAK.",
+      "heldBack_other": "{{count}} Pokémon from the list are not on it, because they are protected, need a new confirmation or are no longer in your inventory. Look at them in OAK.",
+      "columns": {
+        "pokemon": "Pokémon",
+        "form": "Form"
+      }
     },
     "rules": {
       "saved": "Rules saved. The analysis is being recalculated.",

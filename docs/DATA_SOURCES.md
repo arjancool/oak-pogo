@@ -13,6 +13,7 @@ De licenties zijn op 23 oktober 2026 gecontroleerd in de repositories zelf.
 | PvPoke gamemaster en rankings | Namen, legacy-aanvallen, league-rankings en aanbevolen movesets | MIT | Wordt tijdens gebruik gedownload, niet meegeleverd |
 | PokéAPI-sprites | Afbeeldingen van Pokémon | Zie hieronder | Standaard uit. Alleen als de eigenaar het aanzet, en dan laadt de browser ze rechtstreeks |
 | LeekDuck.com via ScrapedDuck | Komende events voor het cleanupadvies | Gebruiksvoorwaarden van ScrapedDuck, zie hieronder | Wordt tijdens gebruik gedownload, niet meegeleverd |
+| Engelse spelteksten via PokeMiners `pogo_assets` | De officiële Engelse namen van items | Geen licentie vermeld | Alleen de itemnamen staan in de code, met de bron. Het tekstbestand zelf zit er niet in |
 
 ## PGSharp-export
 
@@ -39,6 +40,14 @@ De licenties zijn op 23 oktober 2026 gecontroleerd in de repositories zelf.
 - **Licentie:** MIT, Copyright (c) 2019 pvpoke.
 - **Datum:** `gamemaster.json` vermeldt zelf zijn datum in het veld `timestamp`. OAK toont die bij de actieve versie.
 - **Betrouwbaarheid:** de rankings komen uit simulaties van PvPoke. Ze zeggen hoe sterk een soort is, niet hoe goed jouw exemplaar is. OAK houdt die twee gescheiden.
+
+## Itemnamen
+
+De Engelse namen van items komen uit de teksten van het spel zelf. De app van Pokémon GO heeft een bestand met de Engelse teksten, `i18n_english`. PokeMiners publiceert dat in de repository [`pogo_assets`](https://github.com/PokeMiners/pogo_assets), onder `Texts/Latest APK/JSON`. Een item heet daar `item_<naam>_name`, met de `itemName` uit de PGSharp-export in kleine letters met underscores: `KingsRock` is `item_kings_rock_name`. De namen zijn op 6 november 2026 overgenomen in `backend/app/services/item_names.py`.
+
+Pokémon GO bestaat niet in het Nederlands. Nederlandse spelers zien in het spel dus de Engelse namen, en OAK gebruikt die ook in het Nederlands. Alleen voor een paar items heeft OAK een Nederlandse vertaling, zoals voor de broedmachines.
+
+Een item dat niet in de spelteksten staat, houdt de naam uit de PGSharp-export, in losse woorden. OAK verzint geen naam. Dat geldt nu voor `IncubatorSpecial` en `SoftSfida`. *Sfida* is in de spelteksten de interne naam van Pokémon GO Plus.
 
 ## Aanvullende spelregels van OAK
 

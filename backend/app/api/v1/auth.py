@@ -13,9 +13,9 @@ from sqlalchemy.orm import Session
 from app.api.deps import AuthContext, get_auth, get_container, get_session, session_policy
 from app.auth.passwords import hash_password, needs_rehash, validate_password, verify_password
 from app.auth.sessions import (
-    CSRF_COOKIE,
     CSRF_HEADER,
-    SESSION_COOKIE,
+    HOST_PREFIX,
+    cookie_names,
     create_session,
     resolve_session,
     revoke_all_for_user,
@@ -119,8 +119,9 @@ def _set_cookies(response: Response, container: Container, token: str) -> str:
     settings = container.settings
     csrf = csrf_token_for(container.secret, token)
     max_age = int(timedelta(days=settings.session_max_days).total_seconds())
+    session_cookie, csrf_cookie = cookie_names(settings.secure_cookies)
     response.set_cookie(
-        SESSION_COOKIE,
+        session_cookie,
         token,
         max_age=max_age,
         httponly=True,
@@ -129,7 +130,7 @@ def _set_cookies(response: Response, container: Container, token: str) -> str:
         path="/",
     )
     response.set_cookie(
-        CSRF_COOKIE,
+        csrf_cookie,
         csrf,
         max_age=max_age,
         httponly=False,
@@ -146,6 +147,11 @@ def validate_username(username: str) -> str:
             "Gebruikersnaam: 3–32 tekens, letters, cijfers, punt, streepje of underscore.", context="username"
         )
     return username.lower()
+
+
+def masked(username: str) -> str:
+    """The first two characters of a name that belongs to no user, and how long it was."""
+    return f"{username[:2]}… ({len(username)})"
 
 
 def audit(
@@ -176,7 +182,7 @@ def auth_status(
     owners = session.scalar(select(func.count()).select_from(User).where(User.role == "owner")) or 0
     user = None
     csrf = None
-    token = request.cookies.get(SESSION_COOKIE)
+    token = request.cookies.get(cookie_names(container.settings.secure_cookies)[0])
     if token:
         resolved = resolve_session(session, token, session_policy(container), container.clock.now())
         if resolved:
@@ -324,14 +330,15 @@ def login(
         user = session.get(User, user_id) if valid and user_id is not None else None
         # The user may have been disabled, or the password changed, while it was being checked.
         if user is None or user.status != "active" or user.password_hash != stored_hash:
-            # The places taken stay: they count this failure.
-            audit(session, user_id, "login_failed", username, container)
+            # The places taken stay: they count this failure. An unknown name is kept only in
+            # part: it may be a password typed in the wrong field (issue #55).
+            audit(session, user_id, "login_failed", username if user_id is not None else masked(username), container)
         else:
             if new_hash:
                 user.password_hash = new_hash
             now = container.clock.now()
             # A session this browser still had ends now, so one browser never holds two (issue #55).
-            previous = request.cookies.get(SESSION_COOKIE)
+            previous = request.cookies.get(cookie_names(container.settings.secure_cookies)[0])
             if previous:
                 revoke_session(session, previous, now)
             token = create_session(session, user, session_policy(container), now, request.headers.get("user-agent"))
@@ -360,7 +367,7 @@ def logout(
 ) -> Response:
     """Ends the session and always clears the cookies, also when the session already expired
     (issue #55). A live session needs the CSRF token, so another site cannot log someone out."""
-    token = request.cookies.get(SESSION_COOKIE)
+    token = request.cookies.get(cookie_names(container.settings.secure_cookies)[0])
     if token:
         now = container.clock.now()
         with container.db.transaction() as session:
@@ -369,8 +376,10 @@ def logout(
                 if not provided or not constant_time_equal(provided, csrf_token_for(container.secret, token)):
                     raise ForbiddenError("Ongeldige of ontbrekende CSRF-token.", code="CSRF_FAILED")
                 revoke_session(session, token, now)
-    response.delete_cookie(SESSION_COOKIE, path="/")
-    response.delete_cookie(CSRF_COOKIE, path="/")
+    # Both forms of the names: a browser may still hold the plain ones from before the prefix.
+    secure = container.settings.secure_cookies
+    for name in {*cookie_names(secure), *cookie_names(False)}:
+        response.delete_cookie(name, path="/", secure=secure or name.startswith(HOST_PREFIX))
     response.status_code = 204
     return response
 

@@ -6,12 +6,12 @@ import logging
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
-from sqlalchemy import case, func, select, update
+from sqlalchemy import case, delete, func, or_, select, update
 from sqlalchemy.exc import OperationalError
 
 from app.ingestion.derive import DERIVE_REVISION, apply_derived
 from app.ingestion.receive import load_payload, write_payload
-from app.models import AnalysisRun, BackgroundJob, ImportJob, Pokemon, TrainerAccount
+from app.models import AnalysisRun, AuditLog, BackgroundJob, ImportJob, Pokemon, TrainerAccount, UserSession
 from app.normalizers.sanitize import SANITIZER_REVISION, sanitize_export
 from app.recommendations.rules import ENGINE_VERSION
 from app.repositories.settings import get_setting, set_setting
@@ -67,6 +67,7 @@ def register_tasks(container: Container) -> None:
     runner.maintenance.append(lambda: resanitize_payloads(container))
     runner.maintenance.append(lambda: refresh_derived(container))
     runner.maintenance.append(lambda: purge_payloads(container))
+    runner.maintenance.append(lambda: purge_audit_and_sessions(container))
     runner.maintenance.append(lambda: schedule_gamedata_check(container))
     runner.maintenance.append(lambda: schedule_events_check(container))
     # Holds start when an event comes within reach and end with the event (ADR-0021).
@@ -241,6 +242,41 @@ def purge_payloads(container: Container) -> None:
             )
     if expired:
         log.info("purged stored exports", extra={"count": len(expired), "retention_days": days})
+
+
+# An ended session stays this long before it is deleted, so a recent logout can still be traced.
+ENDED_SESSION_DAYS = 30
+
+
+def _deleted(result: object) -> int:
+    """How many rows a DELETE removed."""
+    return int(getattr(result, "rowcount", 0) or 0)
+
+
+def purge_audit_and_sessions(container: Container) -> None:
+    """Delete audit entries older than OAK_AUDIT_RETENTION_DAYS, and sessions that ended more than
+    ENDED_SESSION_DAYS ago: revoked, past their absolute end, or idle for longer than allowed
+    (issue #55)."""
+    settings = container.settings
+    now = container.clock.now()
+    audit_cutoff = now - timedelta(days=settings.audit_retention_days)
+    ended = now - timedelta(days=ENDED_SESSION_DAYS)
+    idle_ended = ended - timedelta(hours=settings.session_idle_hours)
+    with container.db.transaction() as session:
+        audits = _deleted(session.execute(delete(AuditLog).where(AuditLog.created_at < audit_cutoff)))
+        sessions = _deleted(
+            session.execute(
+                delete(UserSession).where(
+                    or_(
+                        UserSession.revoked_at < ended,
+                        UserSession.expires_at < ended,
+                        UserSession.last_seen_at < idle_ended,
+                    )
+                )
+            )
+        )
+    if audits or sessions:
+        log.info("purged audit entries and sessions", extra={"audit": audits, "sessions": sessions})
 
 
 def schedule_gamedata_check(container: Container) -> None:

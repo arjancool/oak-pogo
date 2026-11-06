@@ -6,12 +6,14 @@ import { RequireAccount } from "../../components/layout/RequireAccount";
 import { Card, EmptyState, Input, PageHeader, Spinner } from "../../components/ui";
 import { api } from "../../lib/api";
 import { num } from "../../lib/format";
+import { itemName, type ItemNames } from "../../lib/itemName";
 import { serverText, type ServerText } from "../../lib/serverText";
 
 interface Item {
   item_id: number;
   source_name: string | null;
   name: string;
+  names?: ItemNames;
   group: string;
   group_label: ServerText;
   count: number;
@@ -25,7 +27,7 @@ function Items({ accountId }: { accountId: number }) {
     queryFn: () => api.get<{ items: Item[]; total: number; max_item_storage: number | null; note: ServerText }>("/api/v1/inventory/items", { account_id: accountId }),
   });
   if (query.isLoading || !query.data) return <Spinner />;
-  const items = query.data.items.filter((i) => i.name.toLowerCase().includes(filter.toLowerCase()));
+  const items = query.data.items.filter((i) => itemName(i.names, i.name).toLowerCase().includes(filter.toLowerCase()));
   const groups = new Map<string, Item[]>();
   for (const item of items) groups.set(item.group, [...(groups.get(item.group) ?? []), item]);
   return (
@@ -44,7 +46,7 @@ function Items({ accountId }: { accountId: number }) {
               <ul className="space-y-1 text-sm">
                 {list.map((item) => (
                   <li key={item.item_id} className="flex justify-between gap-3">
-                    <span title={item.source_name ?? undefined}>{item.name}</span>
+                    <span title={item.source_name ?? undefined}>{itemName(item.names, item.name)}</span>
                     <span className="font-semibold tabular-nums">{num(item.count)}</span>
                   </li>
                 ))}

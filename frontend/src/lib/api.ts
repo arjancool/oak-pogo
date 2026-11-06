@@ -26,7 +26,8 @@ export class ApiError extends Error {
   }
 }
 
-const CSRF_COOKIE = "oak_csrf";
+// Over https the server uses the __Host- name; that one wins when both are there (issue #55).
+const CSRF_COOKIES = ["__Host-oak_csrf", "oak_csrf"] as const;
 const UPLOAD_TIMEOUT_MS = 10 * 60 * 1000;
 
 /** What to tell the user when a response carries no OAK error, for example a proxy's HTML page. */
@@ -83,8 +84,12 @@ export function readResponse<T>(status: number, text: string): T {
 }
 
 export function csrfToken(): string | null {
-  const match = document.cookie.split("; ").find((part) => part.startsWith(`${CSRF_COOKIE}=`));
-  return match ? decodeURIComponent(match.slice(CSRF_COOKIE.length + 1)) : null;
+  const parts = document.cookie.split("; ");
+  for (const name of CSRF_COOKIES) {
+    const match = parts.find((part) => part.startsWith(`${name}=`));
+    if (match) return decodeURIComponent(match.slice(name.length + 1));
+  }
+  return null;
 }
 
 type Params = Record<string, string | number | boolean | null | undefined | string[]>;

@@ -10,6 +10,7 @@ import { Alert, Badge, Card, EmptyState, Input, KeyValue, PageHeader, Select, Sp
 import { errorMessage, getParsed } from "../../lib/api";
 import { useAccount } from "../../lib/account";
 import { level, num, pct } from "../../lib/format";
+import { itemName } from "../../lib/itemName";
 import { conditionLabels, label } from "../../lib/i18n";
 import { type PokedexSpecies, type PokedexStep, pokedexSearch, pokedexSpecies } from "../../lib/schemas";
 import { serverText } from "../../lib/serverText";
@@ -39,7 +40,7 @@ function condition(t: TFunction, value: string): string {
 function stepNeeds(t: TFunction, step: PokedexStep): string[] {
   const needs = [step.candy !== null ? `${num(step.candy)} candy` : t("pokedex.needs.candyUnknown")];
   if (step.item_name) {
-    const item = `${step.item_cost && step.item_cost > 1 ? `${step.item_cost}× ` : ""}${step.item_name}`;
+    const item = `${step.item_cost && step.item_cost > 1 ? `${step.item_cost}× ` : ""}${itemName(step.item_names, step.item_name)}`;
     needs.push(
       step.item_have === undefined
         ? item
@@ -48,7 +49,7 @@ function stepNeeds(t: TFunction, step: PokedexStep): string[] {
           : t("pokedex.needs.itemHave", { item, have: num(step.item_have) }),
     );
   }
-  if (step.lure_name) needs.push(t("pokedex.needs.lure", { lure: step.lure_name }));
+  if (step.lure_name) needs.push(t("pokedex.needs.lure", { lure: itemName(step.lure_names, step.lure_name) }));
   if (step.buddy_km) needs.push(t("pokedex.needs.buddyKm", { km: num(step.buddy_km) }));
   if (step.quest) needs.push(t("pokedex.needs.quest"));
   if (step.no_candy_cost_via_trade) needs.push(t("pokedex.needs.freeAfterTrade"));
@@ -252,7 +253,7 @@ function Collection({ data }: { data: PokedexSpecies }) {
   );
 }
 
-function Evolution({ data, onPick }: { data: PokedexSpecies; onPick: (dex: number, form?: string) => void }) {
+export function Evolution({ data, onPick }: { data: PokedexSpecies; onPick: (dex: number, form?: string) => void }) {
   const { t } = useTranslation();
   if (data.evolves_from.length === 0 && data.evolves_to.length === 0) return null;
   return (
@@ -285,7 +286,9 @@ function Evolution({ data, onPick }: { data: PokedexSpecies; onPick: (dex: numbe
               <Trans
                 i18nKey="pokedex.evolution.to"
                 values={{ name: step.to_name }}
+                // Escaped for the markup, then shown as text again, as in AccountsPage (issue #55).
                 tOptions={{ interpolation: { escapeValue: true } }}
+                shouldUnescape
                 components={{ target: <button className="text-oak-400 underline" onClick={() => onPick(step.dex, step.to_key)} /> }}
               />
               <span className="text-muted">: {stepNeeds(t, step).join(", ")}</span>

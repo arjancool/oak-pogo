@@ -8,16 +8,18 @@ import { Link } from "react-router";
 import { z } from "zod";
 
 import { RequireAccount } from "../../components/layout/RequireAccount";
-import { ConfirmTransferDialog, newReasons } from "../../components/cleanup/ConfirmTransferDialog";
+import { ConfirmTransferDialog } from "../../components/cleanup/ConfirmTransferDialog";
 import { CleanupBadge, IvPercent, PokemonSprite, ScoreMeter, StatusBadges, pokemonName } from "../../components/pokemon";
 import { Alert, Badge, Button, Card, Checkbox, EmptyState, Input, PageHeader, Pagination, Select, Spinner, Switch, Tabs } from "../../components/ui";
-import { api, buildUrl, errorMessage } from "../../lib/api";
+import { api, errorMessage } from "../../lib/api";
 import { dateTime, ivs, num, pct } from "../../lib/format";
 import { confidenceLabels, label, statusDescriptions, statusLabels } from "../../lib/i18n";
 import { actionList, actionListUpdate, cleanupPage, pokemonSummary, type CleanupItem, type ConfirmationItem } from "../../lib/schemas";
 import { serverText } from "../../lib/serverText";
 import type { Rules } from "../../lib/types";
 import { useUrlState } from "../../lib/useUrlState";
+import { downloadCsv } from "../../lib/csv";
+import { actionListCsv, confirmationText, protectionText, reasonText } from "./actionListText";
 
 type Tab = "recommendations" | "duplicates" | "list" | "rules";
 const STATUS_ORDER = ["TRANSFER_CANDIDATE", "REVIEW", "BUILD", "KEEP", "PROTECT", "UNKNOWN"];
@@ -507,12 +509,11 @@ function ActionListTab({ accountId }: { accountId: number }) {
           <option value="cp">{t("cleanup.sort.cpAsc")}</option>
           <option value="-cp">{t("cleanup.sort.cpDesc")}</option>
         </Select>
-        <a href={buildUrl("/api/v1/cleanup/export", { account_id: accountId, sort })}>
-          <Button variant="outline" icon={<Download className="h-4 w-4" />}>
-            CSV
-          </Button>
-        </a>
-        <a href={buildUrl("/api/v1/cleanup/export", { account_id: accountId, sort, format: "html" })} target="_blank" rel="noreferrer">
+        {/* Built here, so the reasons follow the chosen language (issue #31). */}
+        <Button variant="outline" icon={<Download className="h-4 w-4" />} onClick={() => downloadCsv("oak-cleanup.csv", actionListCsv(data))}>
+          CSV
+        </Button>
+        <a href={`/cleanup/checklist?account=${accountId}&sort=${encodeURIComponent(sort)}`} target="_blank" rel="noreferrer">
           <Button variant="outline" icon={<Printer className="h-4 w-4" />}>
             {t("cleanup.list.printable")}
           </Button>
@@ -580,28 +581,14 @@ function ActionListTab({ accountId }: { accountId: number }) {
                   )}
                   {item.needs_confirmation && (
                     <Badge className="ml-2" color="#fbbf24">
-                      {t("cleanup.list.reconfirm", {
-                        reason: item.needs_confirmation.new_reasons.length
-                          ? t("cleanup.list.newReasons", { reasons: newReasons(item.needs_confirmation) })
-                          : item.needs_confirmation.message_texts.length
-                            ? item.needs_confirmation.message_texts.map((m) => serverText("guard", m)).join("; ")
-                            : item.needs_confirmation.message,
-                      })}
+                      {t("cleanup.list.reconfirm", { reason: confirmationText(item) })}
                     </Badge>
                   )}
                 </td>
                 <td className="tabular-nums">{num(item.pokemon.cp, "?")}</td>
                 <td className="font-mono text-xs">{ivs(item.pokemon.iv_attack, item.pokemon.iv_defense, item.pokemon.iv_stamina)}</td>
-                <td className="max-w-xs text-xs text-muted">{item.reason_texts.length ? item.reason_texts.map((r) => serverText("reasons", r)).join("; ") : item.reason}</td>
-                <td className="text-xs">
-                  {item.protection.length ? (
-                    <span className="text-amber-300">
-                      {item.protection_texts.length ? item.protection_texts.map((r) => serverText("protections", r)).join(", ") : item.protection.join(", ")}
-                    </span>
-                  ) : (
-                    "–"
-                  )}
-                </td>
+                <td className="max-w-xs text-xs text-muted">{reasonText(item)}</td>
+                <td className="text-xs">{item.protection.length ? <span className="text-amber-300">{protectionText(item)}</span> : "–"}</td>
                 <td className="font-mono text-[10px] text-muted">{item.pokemon.source_pokemon_id}</td>
                 <td className="no-print whitespace-nowrap pr-3 text-right">
                   {item.needs_confirmation && (

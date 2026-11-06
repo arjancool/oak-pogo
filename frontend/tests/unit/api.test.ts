@@ -33,6 +33,16 @@ describe("csrf", () => {
     expect(csrfToken()).toBe("abc+123");
   });
 
+  it("prefers the __Host- cookie that the server sets over https", () => {
+    // jsdom runs on http and refuses a __Host- cookie, so the cookie string is given directly.
+    const spy = vi.spyOn(document, "cookie", "get").mockReturnValue("oak_csrf=old; __Host-oak_csrf=new%2B1");
+    try {
+      expect(csrfToken()).toBe("new+1");
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
   it("sends the CSRF header on writes but not on reads", async () => {
     document.cookie = "oak_csrf=token-1; path=/";
     const fetchMock = vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 }));

@@ -23,6 +23,7 @@ import { MaxBattlePage } from "./pages/battles/MaxBattlePage";
 import { RaidPage } from "./pages/battles/RaidPage";
 import { RocketPage } from "./pages/battles/RocketPage";
 import { TeamBuilderPage } from "./pages/battles/TeamBuilderPage";
+import { ChecklistPage } from "./pages/cleanup/ChecklistPage";
 import { CleanupPage } from "./pages/cleanup/CleanupPage";
 import { DashboardPage } from "./pages/dashboard/DashboardPage";
 import { EventsPage } from "./pages/events/EventsPage";
@@ -51,6 +52,17 @@ export function App() {
     <Routes>
       <Route path="/login" element={<LoginPage mode="login" />} />
       <Route path="/setup" element={<LoginPage mode="setup" />} />
+      {/* Without the menu, for printing (issue #31). */}
+      <Route
+        path="/cleanup/checklist"
+        element={
+          <RequireAuth>
+            <AccountProvider>
+              <ChecklistPage />
+            </AccountProvider>
+          </RequireAuth>
+        }
+      />
       <Route
         element={
           <RequireAuth>

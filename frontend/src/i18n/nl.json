@@ -1273,6 +1273,14 @@
       "powerUps": "Power-ups gedaan",
       "buddyKm": "Buddy-km",
       "fromEgg": "Uit ei",
+      "origin": "Herkomst",
+      "origins": {
+        "egg": "Uitgebroed uit een ei",
+        "raid": "Gevangen in een raid",
+        "rocket": "Gevangen na een gevecht met Team GO Rocket"
+      },
+      "originCode": "onbekend (code {{code}})",
+      "originMissing": "onbekend (niet in de export)",
       "firstSeen": "Eerst gezien in OAK",
       "lastChanged": "Laatst gewijzigd",
       "event": "Event: {{events}}",
@@ -1525,7 +1533,36 @@
       "done": "Afgerond",
       "remove": "Verwijderen",
       "searchPokemon": "{{name}} CP {{cp}}",
-      "searchPokemonNickname": "{{name}} “{{nickname}}” CP {{cp}}"
+      "searchPokemonNickname": "{{name}} “{{nickname}}” CP {{cp}}",
+      "csv": {
+        "pokemon": "pokemon",
+        "form": "vorm",
+        "cp": "cp",
+        "atk": "atk",
+        "def": "def",
+        "sta": "sta",
+        "ivPercent": "iv_pct",
+        "reason": "reden",
+        "protection": "bescherming",
+        "sourceId": "bron_pokemon_id",
+        "status": "status",
+        "executable": "uitvoerbaar",
+        "heldBack": "geblokkeerd",
+        "yes": "ja",
+        "no": "nee"
+      }
+    },
+    "checklist": {
+      "title": "Cleanup-checklist",
+      "print": "Afdrukken",
+      "introAsc": "Gesorteerd op CP, van laag naar hoog. OAK voert zelf niets uit. Controleer iedere Pokémon in het spel voordat je hem overzet.",
+      "introDesc": "Gesorteerd op CP, van hoog naar laag. OAK voert zelf niets uit. Controleer iedere Pokémon in het spel voordat je hem overzet.",
+      "heldBack_one": "{{count}} Pokémon van de lijst staat hier niet op, omdat hij beschermd is, opnieuw bevestigd moet worden of niet meer in je inventaris staat. Bekijk hem in OAK.",
+      "heldBack_other": "{{count}} Pokémon van de lijst staan hier niet op, omdat ze beschermd zijn, opnieuw bevestigd moeten worden of niet meer in je inventaris staan. Bekijk ze in OAK.",
+      "columns": {
+        "pokemon": "Pokémon",
+        "form": "Vorm"
+      }
     },
     "rules": {
       "saved": "Regels opgeslagen. De analyse wordt opnieuw berekend.",

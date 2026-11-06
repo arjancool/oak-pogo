@@ -47,12 +47,30 @@ class BreadMode(IntEnum):
     GIGANTAMAX = 2
 
 
+# Where a Pokémon came from, read from PGSharp ``originDetail.originDetailCase`` (issue #32). Only
+# values checked against a real export get a name; any other value is shown as unknown, with its
+# number, and never guessed. See docs/PGSHARP_INTEGRATION.md for how each one was checked.
+VERIFIED_ORIGINS: dict[int, str] = {
+    # Every Pokémon with 2 had hatchedFromEgg.
+    2: "egg",
+    # Every Pokémon with 3 was caught with a Premier Ball, some of them Shadow: a (shadow) raid.
+    3: "raid",
+    # Every Pokémon with 6 is Shadow or Purified and was caught with a Premier Ball.
+    6: "rocket",
+}
+
+
+def origin_kind(case: int | None) -> str | None:
+    """The checked origin of a Pokémon, or None when the number is missing or not checked."""
+    return None if case is None else VERIFIED_ORIGINS.get(case)
+
+
 class PokemonSize(IntEnum):
     """PGSharp ``size``: the size class the game shows, from XXS to XXL.
 
-    Verified in a real export: a Pokémon with 1 is the one the game called XXS, and most
-    Pokémon have 3. The order of the other values follows the community protocol definitions.
-    0 means the export did not say.
+    Verified in a real export: a Pokémon with 1 is the one the game called XXS, a Jynx with 5 is
+    the one the game called XXL (issue #33), and most Pokémon have 3. The values 2 and 4 follow
+    the community protocol definitions. 0 means the export did not say.
     """
 
     UNSET = 0

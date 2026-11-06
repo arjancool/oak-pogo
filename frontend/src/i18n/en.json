@@ -1273,6 +1273,14 @@
       "powerUps": "Power-ups done",
       "buddyKm": "Buddy km",
       "fromEgg": "From egg",
+      "origin": "Origin",
+      "origins": {
+        "egg": "Hatched from an egg",
+        "raid": "Caught in a raid",
+        "rocket": "Caught after a battle with Team GO Rocket"
+      },
+      "originCode": "unknown (code {{code}})",
+      "originMissing": "unknown (not in the export)",
       "firstSeen": "First seen in OAK",
       "lastChanged": "Last changed",
       "event": "Event: {{events}}",

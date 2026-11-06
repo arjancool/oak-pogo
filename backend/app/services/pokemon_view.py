@@ -8,7 +8,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
-from app.domain.pokemon import Alignment, BreadMode, catch_date_known, has_costume, vintage_year
+from app.domain.pokemon import Alignment, BreadMode, catch_date_known, has_costume, origin_kind, vintage_year
 from app.gamedata.model import GameData
 from app.models import Pokemon, PokemonAnalysis, PokemonUserMetadata
 from app.schemas.common import UtcDatetime
@@ -250,6 +250,9 @@ def detail_extras(pokemon: Pokemon) -> dict[str, Any]:
         "size_class": pokemon.size_class,
         "pokeball": pokemon.pokeball,
         "origin_case": pokemon.origin_case,
+        # The checked meaning of origin_case, or None: the interface then shows "onbekend" with the
+        # number (issue #32).
+        "origin": origin_kind(pokemon.origin_case),
         "origin_events": pokemon.origin_events,
         "limited_identifier": pokemon.limited_identifier,
         "traded_at": _iso(pokemon.traded_at),

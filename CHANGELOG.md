@@ -6,6 +6,7 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 
 ### Toegevoegd
 
+- De detailpagina toont de herkomst van een Pokémon: uitgebroed uit een ei, gevangen in een raid of na een gevecht met Team GO Rocket. Alleen die drie zijn met een echte export gecontroleerd. Een andere waarde staat er als `onbekend`, met de code. `docs/PGSHARP_INTEGRATION.md` legt uit hoe iedere waarde is gecontroleerd.
 - De pagina Game Data toont van wanneer de gegevens zijn: de Game Master en PvPoke van de actieve versie, en de nieuwste Game Master bij PokeMiners. OAK leest daarvoor `timestamp.txt` van PokeMiners. Het resultaat van de laatste controle blijft op de pagina staan, met *Je hebt de nieuwste versie* of *Er is een nieuwere versie*. Een onbekende datum staat er als `onbekend`, met de reden.
 - De eigenaar ziet onder Instellingen, bij Systeem, naast de draaiende versie de nieuwste release van OAK op GitHub, met de datum en een link als er een nieuwere is. OAK bewaart het antwoord 12 uur. Met `OAK_RELEASE_CHECK=false` vraagt OAK niets aan GitHub. Is GitHub niet bereikbaar, dan staat er `onbekend` met de reden.
 

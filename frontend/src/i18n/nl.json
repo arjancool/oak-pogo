@@ -1273,6 +1273,14 @@
       "powerUps": "Power-ups gedaan",
       "buddyKm": "Buddy-km",
       "fromEgg": "Uit ei",
+      "origin": "Herkomst",
+      "origins": {
+        "egg": "Uitgebroed uit een ei",
+        "raid": "Gevangen in een raid",
+        "rocket": "Gevangen na een gevecht met Team GO Rocket"
+      },
+      "originCode": "onbekend (code {{code}})",
+      "originMissing": "onbekend (niet in de export)",
       "firstSeen": "Eerst gezien in OAK",
       "lastChanged": "Laatst gewijzigd",
       "event": "Event: {{events}}",

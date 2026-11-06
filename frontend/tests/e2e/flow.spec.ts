@@ -143,6 +143,7 @@ test("every page renders without errors", async ({ page }) => {
     ["/pokedex/149", "Pokédex"],
     ["/compare", "Vergelijken"],
     ["/cleanup", "Cleanup Manager"],
+    ["/cleanup/checklist", "Cleanup-checklist"],
     ["/planner", "investeringsplanner"],
     ["/events", "Komende events"],
     ["/battles/great", "Great League"],

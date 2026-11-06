@@ -32,72 +32,13 @@ from app.models import (
     SyncRun,
     TagLabel,
 )
+from app.services.item_names import ITEMS, ItemName, item_name
 from app.services.pokemon_view import summarize
 
 router = APIRouter(tags=["account"])
 DASHBOARD_LIST = 12
 HISTORY_LIMIT = 500
 
-# Dutch names and groups for PGSharp ``itemName`` values. Unknown names fall back to the
-# CamelCase name split into words, and the group from the Game Data item category.
-ITEM_NAMES: dict[str, tuple[str, str]] = {
-    "PokeBall": ("Poké Ball", "balls"),
-    "GreatBall": ("Great Ball", "balls"),
-    "UltraBall": ("Ultra Ball", "balls"),
-    "MasterBall": ("Master Ball", "balls"),
-    "PremierBall": ("Premier Ball", "balls"),
-    "Potion": ("Potion", "healing"),
-    "SuperPotion": ("Super Potion", "healing"),
-    "HyperPotion": ("Hyper Potion", "healing"),
-    "MaxPotion": ("Max Potion", "healing"),
-    "Revive": ("Revive", "healing"),
-    "MaxRevive": ("Max Revive", "healing"),
-    "RazzBerry": ("Razz Berry", "berries"),
-    "NanabBerry": ("Nanab Berry", "berries"),
-    "PinapBerry": ("Pinap Berry", "berries"),
-    "GoldenRazzBerry": ("Golden Razz Berry", "berries"),
-    "GoldenPinapBerry": ("Silver Pinap Berry", "berries"),
-    "RareCandy": ("Rare Candy", "candy"),
-    "XlRareCandy": ("Rare Candy XL", "candy"),
-    "MoveRerollFastAttack": ("Fast TM", "tm"),
-    "MoveRerollSpecialAttack": ("Charged TM", "tm"),
-    "MoveRerollEliteFastAttack": ("Elite Fast TM", "tm"),
-    "MoveRerollEliteSpecialAttack": ("Elite Charged TM", "tm"),
-    "FreeRaidTicket": ("Raid Pass", "raid"),
-    "PaidRaidTicket": ("Premium Battle Pass", "raid"),
-    "RemoteRaidTicket": ("Remote Raid Pass", "raid"),
-    "LegendaryRaidTicket": ("Legendary Raid Pass", "raid"),
-    "SunStone": ("Sun Stone", "evolution"),
-    "KingsRock": ("King's Rock", "evolution"),
-    "MetalCoat": ("Metal Coat", "evolution"),
-    "DragonScale": ("Dragon Scale", "evolution"),
-    "UpGrade": ("Up-Grade", "evolution"),
-    "Gen4EvolutionStone": ("Sinnoh Stone", "evolution"),
-    "Gen5EvolutionStone": ("Unova Stone", "evolution"),
-    "OtherEvolutionStoneA": ("Magnetisch lokmiddel-steen (A)", "evolution"),
-    "IncenseOrdinary": ("Incense", "incense"),
-    "IncenseDailyAdventure": ("Daily Adventure Incense", "incense"),
-    "TroyDisk": ("Lure Module", "incense"),
-    "TroyDiskMossy": ("Mossy Lure Module", "incense"),
-    "TroyDiskGlacial": ("Glacial Lure Module", "incense"),
-    "TroyDiskMagnetic": ("Magnetic Lure Module", "incense"),
-    "TroyDiskRainy": ("Rainy Lure Module", "incense"),
-    "LuckyEgg": ("Lucky Egg", "boosts"),
-    "StarPiece": ("Star Piece", "boosts"),
-    "IncubatorBasicUnlimited": ("Onbeperkte broedmachine", "incubators"),
-    "IncubatorBasic": ("Broedmachine", "incubators"),
-    "IncubatorSuper": ("Super-broedmachine", "incubators"),
-    "IncubatorSpecial": ("Speciale broedmachine", "incubators"),
-    "LeaderMapFragment": ("Mysterieus onderdeel", "rocket"),
-    "LeaderMap": ("Rocket Radar", "rocket"),
-    "GiovanniMap": ("Super Rocket Radar", "rocket"),
-    "ShadowGemFragment": ("Shadow-scherf", "rocket"),
-    "ShadowGem": ("Shadow-kristal", "rocket"),
-    "Mp": ("Max Particles", "max"),
-    "SpecialCamera": ("Camera", "other"),
-    "Breakfast": ("Poffin", "other"),
-    "SoftSfida": ("Vervalste spullen (onbekend)", "other"),
-}
 ITEM_GROUP_LABELS = {
     "balls": "Poké Balls",
     "healing": "Potions en Revives",
@@ -116,18 +57,18 @@ ITEM_GROUP_LABELS = {
 }
 
 
-def _item_label(gd: Any, name: str | None, item_id: int) -> tuple[str, str]:
-    if name and name in ITEM_NAMES:
-        return ITEM_NAMES[name]
-    if name and name.startswith("EventPassPoint"):
-        return re.sub(r"(?<=[a-z])(?=[A-Z0-9])", " ", name), "event"
+def _item_label(gd: Any, name: str | None, item_id: int) -> tuple[ItemName, str]:
+    """The names of an item in both languages (services/item_names.py) and its group. An unknown
+    item takes its group from the Game Data item category."""
+    names = item_name(name, item_id)
+    if name in ITEMS or names.group == "event":
+        return names, names.group
     group = "other"
     if gd is not None and name:
         info = gd.item(name)
         if info and info.get("category") == "evolution_requirement":
             group = "evolution"
-    label = re.sub(r"(?<=[a-z])(?=[A-Z0-9])", " ", name) if name else f"Item #{item_id}"
-    return label, group
+    return names, group
 
 
 @router.get("/inventory/items", response_model=dict[str, Any])
@@ -142,12 +83,14 @@ def items(
     rows = session.scalars(select(ItemInventory).where(ItemInventory.trainer_account_id == account.id)).all()
     entries = []
     for row in rows:
-        label, group = _item_label(gd, row.item_name, row.item_id)
+        names, group = _item_label(gd, row.item_name, row.item_id)
         entries.append(
             {
                 "item_id": row.item_id,
                 "source_name": row.item_name,
-                "name": label,
+                "name": names.nl,
+                # The interface shows the name in the chosen language (issue #31).
+                "names": {"nl": names.nl, "en": names.en},
                 "group": group,
                 "group_label": {
                     "code": "ITEM_GROUP",

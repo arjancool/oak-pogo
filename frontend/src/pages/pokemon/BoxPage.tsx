@@ -341,7 +341,7 @@ function SyntaxHelp({ open, onClose }: { open: boolean; onClose: () => void }) {
 }
 
 function Box({ accountId }: { accountId: number }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [state, update] = useUrlState();
   const navigate = useNavigate();
   const client = useQueryClient();
@@ -530,7 +530,8 @@ function Box({ accountId }: { accountId: number }) {
   });
 
   const activeFilters = FILTER_KEYS.filter((k) => state[k]);
-  const exportUrl = buildUrl("/api/v1/pokemon/export/csv", { ...params, page: undefined, page_size: undefined });
+  // The column names follow the chosen language (issue #31).
+  const exportUrl = buildUrl("/api/v1/pokemon/export/csv", { ...params, page: undefined, page_size: undefined, lang: i18n.resolvedLanguage ?? i18n.language });
 
   return (
     <>

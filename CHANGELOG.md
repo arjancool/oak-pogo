@@ -6,6 +6,7 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 
 ### Toegevoegd
 
+- De CSV-exports, de printbare checklist en de namen van items volgen de gekozen taal. De interface maakt de CSV en de checklist van de actielijst zelf, zodat ook de redenen vertaald zijn. De CSV van de Pokémon Box krijgt kolomnamen in de taal van de interface, of anders in de taal die de gebruiker koos. De Engelse itemnamen komen uit de spelteksten van Pokémon GO, zie `docs/DATA_SOURCES.md`.
 - De detailpagina toont de herkomst van een Pokémon: uitgebroed uit een ei, gevangen in een raid of na een gevecht met Team GO Rocket. Alleen die drie zijn met een echte export gecontroleerd. Een andere waarde staat er als `onbekend`, met de code. `docs/PGSHARP_INTEGRATION.md` legt uit hoe iedere waarde is gecontroleerd.
 - De pagina Game Data toont van wanneer de gegevens zijn: de Game Master en PvPoke van de actieve versie, en de nieuwste Game Master bij PokeMiners. OAK leest daarvoor `timestamp.txt` van PokeMiners. Het resultaat van de laatste controle blijft op de pagina staan, met *Je hebt de nieuwste versie* of *Er is een nieuwere versie*. Een onbekende datum staat er als `onbekend`, met de reden.
 - De eigenaar ziet onder Instellingen, bij Systeem, naast de draaiende versie de nieuwste release van OAK op GitHub, met de datum en een link als er een nieuwere is. OAK bewaart het antwoord 12 uur. Met `OAK_RELEASE_CHECK=false` vraagt OAK niets aan GitHub. Is GitHub niet bereikbaar, dan staat er `onbekend` met de reden.
@@ -44,6 +45,7 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 
 ### Opgelost
 
+- Een paar itemnamen waren fout. `LegendaryRaidTicket` heet nu EX Raid Pass, `OtherEvolutionStoneA` Gimmighoul Coins, `ShadowGem` Purified Gem en `Breakfast` Zygarde Cube, zoals in het spel. De verzonnen naam voor `SoftSfida` is weg, dat item heet nu naar de export.
 - Een bevestigde favoriet op de actielijst was met de zoektekst niet te vinden, omdat die altijd `!favorite` bevatte. Een zoektekst laat nu de veiligheidstermen weg die een Pokémon van de bundel zelf zouden verbergen, zoals `!favorite` of `!shadow`.
 - Het opruimen van bewaarde exports kon een bestand verwijderen dat een nieuwe poging nog nodig had. De bewaartermijn telt nu vanaf de nieuwste import die het bestand gebruikt.
 - Een Pokémon met een vorm die de Game Master als kostuum markeert, zoals een Pikachu met een eventhoed, telt nu als kostuum. Dat gold eerder alleen als PGSharp het kostuumveld vulde, en dat doet PGSharp niet altijd. Zo'n Pokémon krijgt nu de kostuumbescherming, de kostuumpunten in de bewaarscore, het label en de plek in het filter en de telling van kostuums. Migratie 0008 voegt daarvoor een afgeleide kolom toe.

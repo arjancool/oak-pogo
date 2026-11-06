@@ -158,6 +158,7 @@ export function StatusBadges({ pokemon, compact }: { pokemon: PokemonSummary; co
   if (pokemon.pokemon_class === "mythical") badges.push({ key: "myth", text: t("badges.mythical"), color: "#ec4899" });
   if (pokemon.pokemon_class === "ultra_beast") badges.push({ key: "ub", text: t("badges.ultraBeast"), color: "#06b6d4" });
   if (pokemon.costume) badges.push({ key: "costume", text: t("badges.costume"), color: "#14b8a6" });
+  else if (pokemon.event_form) badges.push({ key: "eventForm", text: t("badges.eventForm"), color: "#14b8a6" });
   if (pokemon.location_card) badges.push({ key: "bg", text: t("badges.background"), color: "#22d3ee" });
   if (pokemon.traded) badges.push({ key: "traded", text: t("badges.traded") });
   if (pokemon.in_gym) badges.push({ key: "in_gym", text: t("badges.inGym"), color: "#38bdf8" });

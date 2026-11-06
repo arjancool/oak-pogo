@@ -72,6 +72,14 @@ describe("StatusBadges", () => {
     expect(screen.queryByText(/transfer/i)).toBeNull();
   });
 
+  it("marks an event form, such as the goggles of 2026, and counts a costume once", () => {
+    const { rerender } = render(<StatusBadges pokemon={pokemonFixture({ event_form: true, hundo: false })} />);
+    expect(screen.getByText("Eventvorm")).toBeInTheDocument();
+    rerender(<StatusBadges pokemon={pokemonFixture({ event_form: true, costume: true, hundo: false })} />);
+    expect(screen.getByText("Kostuum")).toBeInTheDocument();
+    expect(screen.queryByText("Eventvorm")).toBeNull();
+  });
+
   it("shows shundo instead of separate shiny and hundo badges", () => {
     render(<StatusBadges pokemon={pokemonFixture({ shiny: true, hundo: true, shundo: true })} />);
     expect(screen.getByText("Shundo")).toBeInTheDocument();

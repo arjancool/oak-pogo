@@ -202,6 +202,8 @@ def _traits(view: PokemonView, rules: CleanupRules) -> list[tuple[str, str, int,
         traits.append(("RARITY", label, rules.keep_points_rarity, {"context": view.species_class}))
     if view.costume:
         traits.append(("COSTUME", "Kostuum", rules.keep_points_costume, {}))
+    elif view.event_form:
+        traits.append(("EVENT_FORM", "Eventvorm", rules.keep_points_costume, {}))
     if view.location_card:
         traits.append(("LOCATION_CARD", "Speciale achtergrond", rules.keep_points_location_card, {}))
     if view.event:

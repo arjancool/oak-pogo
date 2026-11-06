@@ -99,7 +99,8 @@ docker exec oak env | grep OAK_
 | `OAK_LOGIN_MAX_ATTEMPTS` | `10` | Mislukte inlogpogingen voor één gebruikersnaam vanaf één adres per venster, voordat OAK dat adres voor die naam tijdelijk blokkeert. Zie `docs/SECURITY.md` voor de andere grenzen. |
 | `OAK_LOGIN_WINDOW_MINUTES` | `15` | Lengte van dat venster. |
 | `OAK_WEBHOOK_RATE_LIMIT_PER_HOUR` | `60` | Maximaal aantal webhookverzoeken per token per uur. |
-| `OAK_GAMEDATA_AUTO_UPDATE` | `true` | Game Data automatisch bijwerken vanaf PokeMiners en PvPoke. |
+| `OAK_GAMEDATA_AUTO_UPDATE` | `true` | Game Data automatisch bijwerken vanaf de Game Master en PvPoke. |
+| `OAK_GAMEDATA_POKEMINERS_URL` | Game Master van alexelgt | Adres van de Game Master (ADR-0028). De naam is ouder dan de bron. `https://raw.githubusercontent.com/PokeMiners/game_masters/master/latest/latest.json` gebruikt weer die van PokeMiners. Moet met `https://` beginnen. |
 | `OAK_GAMEDATA_UPDATE_INTERVAL_HOURS` | `24` | Hoe vaak OAK op nieuwe Game Data controleert. |
 | `OAK_EVENTS_AUTO_UPDATE` | `true` | De eventkalender automatisch bijwerken vanaf LeekDuck.com via ScrapedDuck (ADR-0021). |
 | `OAK_EVENTS_UPDATE_INTERVAL_HOURS` | `12` | Hoe vaak OAK de eventkalender ophaalt. |

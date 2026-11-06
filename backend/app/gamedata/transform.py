@@ -1,4 +1,4 @@
-"""Build OAK's reference dataset from PokeMiners' Game Master and PvPoke (ADR-0017).
+"""Build OAK's reference dataset from the Game Master and PvPoke (ADR-0028).
 
 The output is a plain, JSON-serializable dictionary (schema ``SCHEMA_VERSION``). Analyses only
 ever read that format, so a change upstream touches this module and nothing else.

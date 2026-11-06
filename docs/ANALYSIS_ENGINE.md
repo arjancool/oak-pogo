@@ -1,6 +1,6 @@
 # Analyse-engine
 
-Dit document beschrijft hoe OAK rekent. Alles is deterministisch: dezelfde export, dezelfde Game Data en dezelfde instellingen geven altijd hetzelfde advies. Spelmechanica komt uit de actieve Game Data-versie (ADR-0017). Elk advies vermeldt de engineversie en de Game Data-versie waarmee het is berekend.
+Dit document beschrijft hoe OAK rekent. Alles is deterministisch: dezelfde export, dezelfde Game Data en dezelfde instellingen geven altijd hetzelfde advies. Spelmechanica komt uit de actieve Game Data-versie (ADR-0028). Elk advies vermeldt de engineversie en de Game Data-versie waarmee het is berekend.
 
 De code staat in `backend/app/analysis` (berekeningen) en `backend/app/recommendations` (cleanup). Beide mappen bevatten pure Python zonder database of webframework.
 

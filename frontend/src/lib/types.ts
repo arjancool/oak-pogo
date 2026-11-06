@@ -282,7 +282,8 @@ export interface RemoteCheck {
   changed_sources?: string[];
   repair_needed?: boolean;
   error: ServerText | null;
-  latest: { date: string | null; reason: ServerText | null };
+  // source: who publishes the Game Master, such as alexelgt (ADR-0028); missing in older checks.
+  latest: { date: string | null; reason: ServerText | null; source?: string };
 }
 
 /** The newest OAK release next to the running version, for the owner (issue #29). */

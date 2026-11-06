@@ -58,7 +58,9 @@ class Settings(BaseSettings):
     webhook_rate_limit_per_hour: int = Field(default=60, ge=1)
     gamedata_auto_update: bool = True
     gamedata_update_interval_hours: int = Field(default=24, ge=1)
-    gamedata_pokeminers_url: str = "https://raw.githubusercontent.com/PokeMiners/game_masters/master/latest/latest.json"
+    # The Game Master. The name is older than the source: alexelgt is the default (ADR-0028), and
+    # PokeMiners' latest/latest.json works too.
+    gamedata_pokeminers_url: str = "https://raw.githubusercontent.com/alexelgt/game_masters/master/GAME_MASTER.json"
     gamedata_pvpoke_base_url: str = "https://raw.githubusercontent.com/pvpoke/pvpoke/master/src/data"
     gamedata_timeout_seconds: int = Field(default=120, ge=5)
     # Event calendar of LeekDuck.com, published as JSON by ScrapedDuck (ADR-0021).

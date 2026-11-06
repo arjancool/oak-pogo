@@ -41,6 +41,7 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 
 ### Gewijzigd
 
+- De Game Master komt standaard van alexelgt/game_masters in plaats van PokeMiners (ADR-0028, vervangt ADR-0017). De Game Master van PokeMiners is sinds 28 augustus 2026 niet bijgewerkt en kende nieuwe vormen niet, zoals de bril van 2026. Met `OAK_GAMEDATA_POKEMINERS_URL` kies je nog steeds zelf de bron. Zonder `timestamp.txt` komt de datum van de laatste wijziging op GitHub. De pagina Game Data noemt de bron.
 - *Controleren op updates* op de pagina Game Data is een POST geworden, omdat OAK het resultaat nu bewaart. De verzoeken naar buiten lopen buiten iedere transactie.
 - Engels heet in de taalkeuze gewoon *English*, zonder *(beta)*. Bij een eerste bezoek zonder gekozen taal volgt OAK de taal van de browser.
 - De actielijst vraagt een bevestiging voor een Pokémon die volgens het advies bewaard moet worden, en voor het beste exemplaar van een soort als alle exemplaren op de lijst staan. Zonder bevestiging staat hij niet in de zoekteksten.

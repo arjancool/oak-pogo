@@ -906,9 +906,10 @@
         "title": "Newest version",
         "never": "Not checked yet.",
         "neverOwner": "Not checked yet. Choose Check for updates.",
-        "gameMaster": "Newest at PokeMiners: Game Master from {{date}}, checked on {{checked}}.",
+        "gameMaster": "Newest at {{source}}: Game Master from {{date}}, checked on {{checked}}.",
         "failed": "The check failed: {{error}}",
-        "stale": "The active version is newer than this check. Check again to see whether there is a newer version."
+        "stale": "The active version is newer than this check. Check again to see whether there is a newer version.",
+        "theSource": "the source"
       },
       "noActive": "None.",
       "autoUpdate": "Automatic updates: {{state}}. Last check: {{checked}}.",
@@ -2089,7 +2090,7 @@
       "CONFIRMATION_MISMATCH": "Type the name of the trainer account exactly to confirm.",
       "NO_GAME_DATA": "No active Game Data. Update the Game Data under Admin.",
       "UNKNOWN_SORT": "Unknown sort order '{{sort}}'.",
-      "FILE_REQUIRED_game_master": "The Game Master file from PokeMiners is required.",
+      "FILE_REQUIRED_game_master": "The Game Master file is required.",
       "FILE_REQUIRED_import": "Choose a file to upload.",
       "PAYLOAD_TOO_LARGE_file": "The file is larger than the configured limit.",
       "PAYLOAD_TOO_LARGE_game_data_file": "File too large.",
@@ -2135,7 +2136,7 @@
       "VALIDATION_FAILED_team_member": "A team member does not belong to this account.",
       "VALIDATION_FAILED_event_period": "The end must be after the start.",
       "VALIDATION_FAILED_event_species": "One of the chosen Pokémon is not in the Game Data.",
-      "VALIDATION_FAILED_game_master_required": "A PokeMiners Game Master file (latest.json) is required.",
+      "VALIDATION_FAILED_game_master_required": "A Game Master file (GAME_MASTER.json or latest.json) is required.",
       "VALIDATION_FAILED_purify_not_shadow": "Only a Shadow Pokémon can be purified.",
       "VALIDATION_FAILED_purify_rules_missing": "The rules for purifying are missing from this Game Data version.",
       "VALIDATION_FAILED_purify_stats_unknown": "IVs or level unknown.",
@@ -2229,8 +2230,8 @@
       "DATE_INVALID": "The source gave a date OAK cannot read.",
       "DATE_NOT_PUBLISHED": "The source gives no date for this data.",
       "DATE_UPLOAD": "An uploaded file has no date from the source.",
-      "DATE_NOT_RECORDED": "This version was downloaded before OAK kept the PokeMiners date.",
-      "GAME_MASTER_NOT_A_LIST": "PokeMiners file is not a list of templates",
+      "DATE_NOT_RECORDED": "This version was downloaded before OAK kept the date of the Game Master.",
+      "GAME_MASTER_NOT_A_LIST": "The Game Master file is not a list of templates",
       "SCHEMA_UNSUPPORTED": "schema_version {{version}} is not supported",
       "CPM_NOT_ASCENDING": "CP multipliers are not ascending",
       "CPM_NOT_POSITIVE": "CP multiplier table has values that are not positive",
@@ -2265,7 +2266,8 @@
       "SOURCE_PVPOKE": "PvPoke gamemaster and rankings",
       "SPRITE_NOTICE": "Pokémon images are protected by copyright (The Pokémon Company). OAK does not include them. If you turn on an external source, your browser loads the images directly from there. That is your own choice and responsibility (ADR-0020).",
       "CPM_TOO_SHORT_one": "CP multiplier table has {{count, number}} row, at least {{min, number}} expected",
-      "CPM_TOO_SHORT_other": "CP multiplier table has {{count, number}} rows, at least {{min, number}} expected"
+      "CPM_TOO_SHORT_other": "CP multiplier table has {{count, number}} rows, at least {{min, number}} expected",
+      "SOURCE_GAME_MASTER": "Game Master from {{source}}"
     },
     "events": {
       "FEED_NOT_A_LIST": "The event calendar is not a list.",

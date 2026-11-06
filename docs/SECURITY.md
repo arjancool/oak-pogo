@@ -6,7 +6,8 @@ OAK is vaak via internet bereikbaar, omdat PGSharp de webhook vanaf je telefoon 
 
 - OAK vraagt nooit om Pokémon GO-inloggegevens en logt nergens in.
 - OAK stuurt niets naar het spel, automatiseert geen gameplay en zet nooit zelf een Pokémon over.
-- OAK stuurt je collectie niet naar een externe dienst. Uitgaand verkeer is alleen het ophalen van openbare Game Data en de eventkalender, de spritebron als de eigenaar die aanzet, en de vraag aan GitHub naar de nieuwste release van OAK.
+- OAK stuurt je collectie niet naar een externe dienst. Uitgaand verkeer is alleen het ophalen van openbare Game Data en de eventkalender, de spritebron als de eigenaar die aanzet, en twee vragen aan de GitHub API: naar de datum van de Game Master en naar de nieuwste release van OAK.
+- De vraag naar de datum van de Game Master gaat alleen uit bij een update of een controle, en alleen als de bron geen `timestamp.txt` heeft. Hij vraagt de laatste commit van één bestand, zonder inloggegevens.
 - Die vraag aan GitHub (`api.github.com`) gaat pas uit als de eigenaar de pagina Instellingen opent. OAK bewaart het antwoord 12 uur (`OAK_RELEASE_CHECK_HOURS`), dus vaker gaat hij niet uit. GitHub ziet daarbij alleen het IP-adres van de server en de user-agent van OAK. Met `OAK_RELEASE_CHECK=false` vraagt OAK niets.
 
 ## Inloggen en sessies

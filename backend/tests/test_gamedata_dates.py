@@ -1,4 +1,5 @@
-"""The date of the Game Data per source, and the newest Game Master at PokeMiners (issue #28)."""
+"""The date of the Game Data per source, and the newest Game Master at its source (issue #28,
+ADR-0028)."""
 
 from __future__ import annotations
 
@@ -26,15 +27,24 @@ def test_upstream_dates_are_read_carefully() -> None:
         assert upstream_time(wrong, now) is None, wrong
 
 
-def _network(monkeypatch: pytest.MonkeyPatch, timestamp: httpx.Response) -> None:
-    """The sources outside, served from the fixtures."""
+NOVEMBER_COMMIT = "2026-11-05T09:30:00Z"
+
+
+def _network(
+    monkeypatch: pytest.MonkeyPatch, timestamp: httpx.Response, commits: httpx.Response | None = None
+) -> list[str]:
+    """The sources outside, served from the fixtures. Returns the URLs asked for."""
     base = FIXTURES / "gamedata"
+    asked: list[str] = []
 
     def handler(request: httpx.Request) -> httpx.Response:
+        asked.append(str(request.url))
         path = request.url.path
-        if path.endswith("/latest/timestamp.txt"):
+        if request.url.host == "api.github.com" and path.endswith("/commits"):
+            return commits or httpx.Response(404)
+        if path.endswith("/timestamp.txt"):
             return timestamp
-        if path.endswith("/latest/latest.json"):
+        if path.endswith(("/latest/latest.json", "/GAME_MASTER.json")):
             content = (base / "pokeminers-subset.json").read_bytes()
             return httpx.Response(200, content=content, headers={"etag": '"pokeminers"'})
         if path.endswith("/src/data/gamemaster.json"):
@@ -51,6 +61,7 @@ def _network(monkeypatch: pytest.MonkeyPatch, timestamp: httpx.Response) -> None
         return httpx.Client(transport=httpx.MockTransport(handler), follow_redirects=False)
 
     monkeypatch.setattr("app.gamedata.fetch._client", client)
+    return asked
 
 
 def _dates(owner: Api) -> dict[str, dict[str, Any]]:
@@ -67,7 +78,7 @@ def test_a_download_keeps_the_date_of_each_source(owner: Api, container: Any, mo
     assert dates["pvpoke"]["date"] == "2026-10-21T03:50:13+00:00"
     # After an update the active version is the newest, so the page says so.
     check = owner.get("/api/v1/gamedata/status").json()["remote_check"]
-    assert check["available"] is False and check["latest"] == {"date": AUGUST_ISO, "reason": None}
+    assert check["available"] is False and check["latest"] == {"date": AUGUST_ISO, "reason": None, "source": "alexelgt"}
 
 
 def test_an_unreachable_date_is_unknown_with_the_reason(
@@ -148,3 +159,48 @@ def test_a_check_without_the_date_says_why(owner: Api, gamedata: Any, monkeypatc
     failed = owner.post("/api/v1/gamedata/check").json()
     assert failed["available"] is None and failed["error"]["code"] == "SOURCE_UNREACHABLE"
     assert owner.get("/api/v1/gamedata/status").json()["remote_check"]["error"]["code"] == "SOURCE_UNREACHABLE"
+
+
+def test_without_a_timestamp_the_last_change_on_github_counts(
+    owner: Api, container: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The Game Master of alexelgt, the default source, has no timestamp.txt (ADR-0028)."""
+    container.gamedata.limits = TEST_LIMITS
+    commit = [{"sha": "abc", "commit": {"committer": {"date": NOVEMBER_COMMIT}}}]
+    asked = _network(monkeypatch, httpx.Response(404), httpx.Response(200, json=commit))
+    assert container.gamedata.update_from_network().status == "activated"
+    assert _dates(owner)["pokeminers"]["date"] == "2026-11-05T09:30:00+00:00"
+    api = next(url for url in asked if "api.github.com" in url)
+    assert api.startswith("https://api.github.com/repos/alexelgt/game_masters/commits?")
+    assert "path=GAME_MASTER.json" in api and "sha=master" in api
+
+
+def test_a_broken_timestamp_server_does_not_ask_github(
+    owner: Api, container: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    container.gamedata.limits = TEST_LIMITS
+    asked = _network(monkeypatch, httpx.Response(500))
+    container.gamedata.update_from_network()
+    assert _dates(owner)["pokeminers"]["reason"]["code"] == "DATE_UNREACHABLE"
+    assert not any("api.github.com" in url for url in asked)
+
+
+def test_a_source_outside_github_without_a_date_says_so(
+    owner: Api, container: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    container.gamedata.limits = TEST_LIMITS
+    container.settings.gamedata_pokeminers_url = "https://mirror.example/GAME_MASTER.json"
+    _network(monkeypatch, httpx.Response(404))
+    container.gamedata.update_from_network()
+    assert _dates(owner)["pokeminers"]["reason"]["code"] == "DATE_NOT_PUBLISHED"
+
+
+def test_the_check_names_the_source(owner: Api, gamedata: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("app.gamedata.store.remote_etags", lambda _settings: {"pokeminers": "x", "pvpoke": "y"})
+    assert owner.post("/api/v1/gamedata/check").json()["latest"]["source"] == "alexelgt"
+    sources = owner.get("/api/v1/gamedata/sources").json()
+    assert sources[0]["name"] == {
+        "code": "SOURCE_GAME_MASTER",
+        "text": "Game Master van alexelgt",
+        "data": {"source": "alexelgt"},
+    }

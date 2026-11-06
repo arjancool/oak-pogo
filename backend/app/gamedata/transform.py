@@ -69,9 +69,10 @@ MAX_RANKING_MOVES = 6
 HALF_LEVEL_STEP = 0.5
 
 
-def norm_key(value: str | None) -> str:
-    """Comparison key that matches PGSharp's ``SmolivNormal`` to the Game Master's ``SMOLIV_NORMAL``."""
-    return re.sub(r"[^A-Z0-9]", "", (value or "").upper())
+def norm_key(value: str | int | None) -> str:
+    """Comparison key that matches PGSharp's ``SmolivNormal`` to the Game Master's ``SMOLIV_NORMAL``.
+    A newer Game Master names some forms only by number, such as 3362; that number is the key."""
+    return re.sub(r"[^A-Z0-9]", "", str(value if value is not None else "").upper())
 
 
 def form_key(dex: int, form: str | None) -> str:

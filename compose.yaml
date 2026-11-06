@@ -41,6 +41,7 @@ services:
       OAK_EVENTS_AUTO_UPDATE: ${OAK_EVENTS_AUTO_UPDATE:-true}
       OAK_RELEASE_CHECK: ${OAK_RELEASE_CHECK:-true}
       OAK_RAW_IMPORT_RETENTION_DAYS: ${OAK_RAW_IMPORT_RETENTION_DAYS:-14}
+      OAK_AUDIT_RETENTION_DAYS: ${OAK_AUDIT_RETENTION_DAYS:-365}
       OAK_LOG_LEVEL: ${OAK_LOG_LEVEL:-INFO}
       # Fixed: the volume below and the port mapping above assume these values.
       OAK_DATA_DIR: /data

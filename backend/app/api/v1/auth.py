@@ -149,6 +149,11 @@ def validate_username(username: str) -> str:
     return username.lower()
 
 
+def masked(username: str) -> str:
+    """The first two characters of a name that belongs to no user, and how long it was."""
+    return f"{username[:2]}… ({len(username)})"
+
+
 def audit(
     session: Session,
     user_id: int | None,
@@ -325,8 +330,9 @@ def login(
         user = session.get(User, user_id) if valid and user_id is not None else None
         # The user may have been disabled, or the password changed, while it was being checked.
         if user is None or user.status != "active" or user.password_hash != stored_hash:
-            # The places taken stay: they count this failure.
-            audit(session, user_id, "login_failed", username, container)
+            # The places taken stay: they count this failure. An unknown name is kept only in
+            # part: it may be a password typed in the wrong field (issue #55).
+            audit(session, user_id, "login_failed", username if user_id is not None else masked(username), container)
         else:
             if new_hash:
                 user.password_hash = new_hash

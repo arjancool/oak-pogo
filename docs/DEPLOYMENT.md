@@ -92,6 +92,7 @@ docker exec oak env | grep OAK_
 | `OAK_TIMEZONE` | `Europe/Amsterdam` | Tijdzone voor vangstjaren en weergave. |
 | `OAK_LOG_LEVEL` | `INFO` | `DEBUG`, `INFO`, `WARNING` of `ERROR`. |
 | `OAK_RAW_IMPORT_RETENTION_DAYS` | `14` | Dagen dat een ontvangen export bewaard blijft voor diagnose en opnieuw verwerken. 0 bewaart niets. |
+| `OAK_AUDIT_RETENTION_DAYS` | `365` | Dagen dat een regel in het auditlogboek bewaard blijft. |
 | `OAK_MAX_IMPORT_MB` | `64` | Maximale grootte van een export. |
 | `OAK_SESSION_IDLE_HOURS` | `168` | Een sessie verloopt na zoveel uur zonder gebruik. |
 | `OAK_SESSION_MAX_DAYS` | `30` | Een sessie verloopt na zoveel dagen, ook bij gebruik. |

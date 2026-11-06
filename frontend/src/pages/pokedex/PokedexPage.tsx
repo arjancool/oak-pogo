@@ -253,7 +253,7 @@ function Collection({ data }: { data: PokedexSpecies }) {
   );
 }
 
-function Evolution({ data, onPick }: { data: PokedexSpecies; onPick: (dex: number, form?: string) => void }) {
+export function Evolution({ data, onPick }: { data: PokedexSpecies; onPick: (dex: number, form?: string) => void }) {
   const { t } = useTranslation();
   if (data.evolves_from.length === 0 && data.evolves_to.length === 0) return null;
   return (
@@ -286,7 +286,9 @@ function Evolution({ data, onPick }: { data: PokedexSpecies; onPick: (dex: numbe
               <Trans
                 i18nKey="pokedex.evolution.to"
                 values={{ name: step.to_name }}
+                // Escaped for the markup, then shown as text again, as in AccountsPage (issue #55).
                 tOptions={{ interpolation: { escapeValue: true } }}
+                shouldUnescape
                 components={{ target: <button className="text-oak-400 underline" onClick={() => onPick(step.dex, step.to_key)} /> }}
               />
               <span className="text-muted">: {stepNeeds(t, step).join(", ")}</span>

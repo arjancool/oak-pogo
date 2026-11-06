@@ -45,6 +45,7 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 
 ### Opgelost
 
+- In de Pokédex stond een naam met een apostrof, zoals Sirfetch'd, bij een evolutie als `Sirfetch&#39;d`.
 - Een paar itemnamen waren fout. `LegendaryRaidTicket` heet nu EX Raid Pass, `OtherEvolutionStoneA` Gimmighoul Coins, `ShadowGem` Purified Gem en `Breakfast` Zygarde Cube, zoals in het spel. De verzonnen naam voor `SoftSfida` is weg, dat item heet nu naar de export.
 - Een bevestigde favoriet op de actielijst was met de zoektekst niet te vinden, omdat die altijd `!favorite` bevatte. Een zoektekst laat nu de veiligheidstermen weg die een Pokémon van de bundel zelf zouden verbergen, zoals `!favorite` of `!shadow`.
 - Het opruimen van bewaarde exports kon een bestand verwijderen dat een nieuwe poging nog nodig had. De bewaartermijn telt nu vanaf de nieuwste import die het bestand gebruikt.

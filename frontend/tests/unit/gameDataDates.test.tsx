@@ -46,10 +46,15 @@ describe("the date of the Game Data", () => {
 
   it("keeps the result of the last check on the page", () => {
     const { rerender } = render(<LatestVersion check={check({})} active={version} owner />);
-    expect(screen.getByText(/Nieuwste bij PokeMiners: Game Master van 28 aug 2026/)).toBeInTheDocument();
+    expect(screen.getByText(/Nieuwste bij de bron: Game Master van 28 aug 2026/)).toBeInTheDocument();
     expect(screen.getByText("Je hebt de nieuwste versie.")).toBeInTheDocument();
     rerender(<LatestVersion check={check({ available: true, changed_sources: ["pokeminers"] })} active={version} owner />);
     expect(screen.getByText("Er is een nieuwere versie (pokeminers).")).toBeInTheDocument();
+  });
+
+  it("names the source of the Game Master", () => {
+    render(<LatestVersion check={check({ latest: { date: "2026-11-05T12:00:00+00:00", reason: null, source: "alexelgt" } })} active={version} owner />);
+    expect(screen.getByText(/Nieuwste bij alexelgt: Game Master van 5 nov 2026/)).toBeInTheDocument();
   });
 
   it("says when the newest date is unknown, and why", () => {

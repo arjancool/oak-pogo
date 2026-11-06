@@ -39,7 +39,7 @@ class DatasetInvalidError(ValueError):
 
 
 def dataset_not_a_list() -> DatasetInvalidError:
-    return DatasetInvalidError([_text("GAME_MASTER_NOT_A_LIST", "PokeMiners-bestand is geen lijst met templates")])
+    return DatasetInvalidError([_text("GAME_MASTER_NOT_A_LIST", "Het Game Master-bestand is geen lijst met templates")])
 
 
 def _count(count: int, one: str, other: str) -> str:

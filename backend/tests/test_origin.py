@@ -12,12 +12,12 @@ from app.models import Pokemon
 from tests.conftest import Api
 
 
-@pytest.mark.parametrize(("case", "kind"), [(2, "egg"), (3, "raid"), (6, "rocket")])
+@pytest.mark.parametrize(("case", "kind"), [(2, "egg"), (3, "raid"), (6, "rocket"), (13, "max_battle")])
 def test_checked_values_have_a_name(case: int, kind: str) -> None:
     assert origin_kind(case) == kind
 
 
-@pytest.mark.parametrize("case", [None, 0, 1, 4, 5, 9, 13, 99, -1])
+@pytest.mark.parametrize("case", [None, 0, 1, 4, 5, 9, 99, -1])
 def test_other_values_are_never_guessed(case: int | None) -> None:
     assert origin_kind(case) is None
 
@@ -25,7 +25,7 @@ def test_other_values_are_never_guessed(case: int | None) -> None:
 def test_only_checked_values_are_named() -> None:
     # Wild (1), research (4) and GO Battle League (5) follow the community order, but nothing in
     # the export confirms them; see docs/PGSHARP_INTEGRATION.md before adding one here.
-    assert set(VERIFIED_ORIGINS) == {2, 3, 6}
+    assert set(VERIFIED_ORIGINS) == {2, 3, 6, 13}
 
 
 def test_the_detail_page_gets_the_origin(owner: Api, container: Any, export: dict[str, Any]) -> None:

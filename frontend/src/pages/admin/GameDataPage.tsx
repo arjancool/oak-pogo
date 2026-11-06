@@ -12,7 +12,7 @@ import type { GameDataStatus, GameDataVersion, RemoteCheck } from "../../lib/typ
 
 const POLL_MS = 3000;
 const UPLOAD_FIELDS = [
-  { name: "pokeminers", label: "PokeMiners GAME_MASTER.json", required: true },
+  { name: "pokeminers", label: "Game Master (GAME_MASTER.json of latest.json)", required: true },
   { name: "pvpoke", label: "PvPoke gamemaster.json", required: false },
   { name: "rankings_great", label: "PvPoke rankings Great League", required: false },
   { name: "rankings_ultra", label: "PvPoke rankings Ultra League", required: false },
@@ -96,7 +96,7 @@ export function LatestVersion({ check, active, owner }: { check: RemoteCheck | n
           : { tone: "success" as const, text: t("admin.gamedata.upToDate") };
   return (
     <div className="space-y-3 text-sm">
-      <p>{t("admin.gamedata.latest.gameMaster", { date: latest, checked: dateTime(check.checked_at) })}</p>
+      <p>{t("admin.gamedata.latest.gameMaster", { source: check.latest.source ?? t("admin.gamedata.latest.theSource"), date: latest, checked: dateTime(check.checked_at) })}</p>
       <Alert tone={verdict.tone}>{verdict.text}</Alert>
     </div>
   );

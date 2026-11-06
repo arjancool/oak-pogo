@@ -59,7 +59,7 @@ Een Pokémon zonder waarde voor het gekozen veld valt buiten iedere vergelijking
 | `ultrabeast` | `ub` | Ultra Beast |
 | `dynamax` | `dmax` | Dynamax of Gigantamax |
 | `gigantamax` | `gmax` | Gigantamax. De waarde in de export is nog niet geverifieerd. |
-| `costume` | `kostuum` | Met kostuum |
+| `costume` | `kostuum` | Met kostuum. Een eventvorm zonder kostuummarkering, zoals de bril van 2026, valt hier niet onder. |
 | `background` | `achtergrond`, `locationcard` | Met een achtergrond |
 | `hundo` | `4*` | IV's 15/15/15 |
 | `shundo` | | Shiny met IV's 15/15/15 |

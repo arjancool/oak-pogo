@@ -6,8 +6,9 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 
 ### Toegevoegd
 
+- Een eventvorm, zoals Charmander, Charmeleon en Charizard met de bril van 2026, telt als kostuum: beschermd en met de kostuumpunten in de bewaarscore, met de reden *Eventvorm* en een eigen label. Het gaat om een vorm met een jaartal in de naam. Die staat in de export, dus het werkt ook als de Game Data de vorm nog niet kent. De analyses worden opnieuw berekend (engine cleanup-2.7).
 - De CSV-exports, de printbare checklist en de namen van items volgen de gekozen taal. De interface maakt de CSV en de checklist van de actielijst zelf, zodat ook de redenen vertaald zijn. De CSV van de Pokémon Box krijgt kolomnamen in de taal van de interface, of anders in de taal die de gebruiker koos. De Engelse itemnamen komen uit de spelteksten van Pokémon GO, zie `docs/DATA_SOURCES.md`.
-- De detailpagina toont de herkomst van een Pokémon: uitgebroed uit een ei, gevangen in een raid of na een gevecht met Team GO Rocket. Alleen die drie zijn met een echte export gecontroleerd. Een andere waarde staat er als `onbekend`, met de code. `docs/PGSHARP_INTEGRATION.md` legt uit hoe iedere waarde is gecontroleerd.
+- De detailpagina toont de herkomst van een Pokémon: uitgebroed uit een ei, gevangen in een raid, in een Max Battle of na een gevecht met Team GO Rocket. Alleen die vier zijn met een echte export gecontroleerd. Een andere waarde staat er als `onbekend`, met de code. `docs/PGSHARP_INTEGRATION.md` legt uit hoe iedere waarde is gecontroleerd.
 - De pagina Game Data toont van wanneer de gegevens zijn: de Game Master en PvPoke van de actieve versie, en de nieuwste Game Master bij PokeMiners. OAK leest daarvoor `timestamp.txt` van PokeMiners. Het resultaat van de laatste controle blijft op de pagina staan, met *Je hebt de nieuwste versie* of *Er is een nieuwere versie*. Een onbekende datum staat er als `onbekend`, met de reden.
 - De eigenaar ziet onder Instellingen, bij Systeem, naast de draaiende versie de nieuwste release van OAK op GitHub, met de datum en een link als er een nieuwere is. OAK bewaart het antwoord 12 uur. Met `OAK_RELEASE_CHECK=false` vraagt OAK niets aan GitHub. Is GitHub niet bereikbaar, dan staat er `onbekend` met de reden.
 
@@ -40,6 +41,7 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 
 ### Gewijzigd
 
+- De Game Master komt standaard van alexelgt/game_masters in plaats van PokeMiners (ADR-0028, vervangt ADR-0017). De Game Master van PokeMiners is sinds 28 augustus 2026 niet bijgewerkt en kende nieuwe vormen niet, zoals de bril van 2026. Met `OAK_GAMEDATA_POKEMINERS_URL` kies je nog steeds zelf de bron. Zonder `timestamp.txt` komt de datum van de laatste wijziging op GitHub. De pagina Game Data noemt de bron.
 - *Controleren op updates* op de pagina Game Data is een POST geworden, omdat OAK het resultaat nu bewaart. De verzoeken naar buiten lopen buiten iedere transactie.
 - Engels heet in de taalkeuze gewoon *English*, zonder *(beta)*. Bij een eerste bezoek zonder gekozen taal volgt OAK de taal van de browser.
 - De actielijst vraagt een bevestiging voor een Pokémon die volgens het advies bewaard moet worden, en voor het beste exemplaar van een soort als alle exemplaren op de lijst staan. Zonder bevestiging staat hij niet in de zoekteksten.
@@ -48,6 +50,7 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 
 ### Opgelost
 
+- Een nieuwere Game Master noemt een paar vormen alleen met een nummer, zoals 3362. Daarop liep het bouwen van de Game Data vast, zodat de hele update mislukte. OAK leest zo'n nummer nu als de naam van de vorm.
 - In de Pokédex stond een naam met een apostrof, zoals Sirfetch'd, bij een evolutie als `Sirfetch&#39;d`.
 - Een paar itemnamen waren fout. `LegendaryRaidTicket` heet nu EX Raid Pass, `OtherEvolutionStoneA` Gimmighoul Coins, `ShadowGem` Purified Gem en `Breakfast` Zygarde Cube, zoals in het spel. De verzonnen naam voor `SoftSfida` is weg, dat item heet nu naar de export.
 - Een bevestigde favoriet op de actielijst was met de zoektekst niet te vinden, omdat die altijd `!favorite` bevatte. Een zoektekst laat nu de veiligheidstermen weg die een Pokémon van de bundel zelf zouden verbergen, zoals `!favorite` of `!shadow`.

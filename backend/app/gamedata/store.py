@@ -19,7 +19,15 @@ from sqlalchemy import select
 from app.core.config import Settings
 from app.core.db import Database
 from app.core.errors import ConflictError, NotFoundError, ValidationFailedError
-from app.gamedata.fetch import Downloaded, UpstreamDate, download_all, remote_etags, remote_timestamp, upstream_time
+from app.gamedata.fetch import (
+    Downloaded,
+    UpstreamDate,
+    download_all,
+    remote_etags,
+    remote_timestamp,
+    source_name,
+    upstream_time,
+)
 from app.gamedata.model import GameData
 from app.gamedata.transform import SCHEMA_VERSION, build_dataset
 from app.gamedata.validate import (
@@ -90,7 +98,7 @@ def source_dates(sources: list[dict[str, Any]], origin: str) -> list[dict[str, A
                 text = "Een geüpload bestand heeft geen datum van de bron."
                 reason = {"code": "DATE_UPLOAD", "text": text, "data": {}}
             elif source_id == "pokeminers" and "upstream_problem" not in source:
-                text = "Deze versie is gedownload voordat OAK de datum van PokeMiners bewaarde."
+                text = "Deze versie is gedownload voordat OAK de datum van de Game Master bewaarde."
                 reason = {"code": "DATE_NOT_RECORDED", "text": text, "data": {}}
             else:
                 reason = _date_problem(source.get("upstream_problem"))
@@ -98,9 +106,9 @@ def source_dates(sources: list[dict[str, Any]], origin: str) -> list[dict[str, A
     return dates
 
 
-def _latest(upstream: UpstreamDate) -> dict[str, Any]:
+def _latest(upstream: UpstreamDate, source: str) -> dict[str, Any]:
     reason = None if upstream.at else _date_problem({"problem": upstream.problem, "detail": upstream.detail})
-    return {"date": upstream.at, "reason": reason}
+    return {"date": upstream.at, "reason": reason, "source": source}
 
 
 class GameDataStore:
@@ -273,7 +281,8 @@ class GameDataStore:
     def update_from_upload(self, files: Mapping[str, bytes]) -> UpdateResult:
         if "pokeminers" not in files:
             raise ValidationFailedError(
-                "Een PokeMiners Game Master-bestand (latest.json) is verplicht.", context="game_master_required"
+                "Een Game Master-bestand (GAME_MASTER.json of latest.json) is verplicht.",
+                context="game_master_required",
             )
         now = datetime.now(UTC).isoformat()
         downloads = {
@@ -324,7 +333,7 @@ class GameDataStore:
             return {s["id"]: s["sha256"] for s in version.sources if "id" in s and "sha256" in s}
 
     def _add_missing_date(self, downloads: Mapping[str, Downloaded]) -> None:
-        """An active version from before OAK kept the PokeMiners date gets it from a download
+        """An active version from before OAK kept the date of the Game Master gets it from a download
         with the same content: the date belongs to that content."""
         upstream = downloads["pokeminers"].upstream if "pokeminers" in downloads else None
         if upstream is None or upstream.at is None:
@@ -345,7 +354,8 @@ class GameDataStore:
                     version.sources = sources
 
     def _save_remote_check(self, result: Mapping[str, Any], upstream: UpstreamDate) -> dict[str, Any]:
-        record = {**result, "checked_at": datetime.now(UTC).isoformat(), "latest": _latest(upstream)}
+        source = source_name(self.settings.gamedata_pokeminers_url)
+        record = {**result, "checked_at": datetime.now(UTC).isoformat(), "latest": _latest(upstream, source)}
         with self.db.transaction() as session:
             set_setting(session, REMOTE_CHECK_KEY, record)
         return record
@@ -373,7 +383,7 @@ class GameDataStore:
             sources = list(version.sources) if version else []
         known = {s["id"]: s.get("etag") for s in sources}
         changed = [sid for sid, tag in etags.items() if tag is None or known.get(sid) != tag]
-        # A newer date at PokeMiners counts too, also when the ETags say nothing new.
+        # A newer date at the source counts too, also when the ETags say nothing new.
         active_date = next(
             (upstream_time(s.get("upstream_timestamp")) for s in sources if s.get("id") == "pokeminers"), None
         )

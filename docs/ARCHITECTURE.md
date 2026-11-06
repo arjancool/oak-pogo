@@ -12,7 +12,7 @@ browser ──https────▶ │   ├─ /api/v1/…   REST-API, sessies,
                      │  SQLite  /data/oak.db   ·   Game Data  /data/gamedata                 │
                      └──────────────────────────────────────────────────────────────────────┘
                                          ▲
-    PokeMiners, PvPoke, ScrapedDuck ─────┘  (Game Data en events, alleen ophalen)
+    alexelgt, PvPoke, ScrapedDuck ───────┘  (Game Data en events, alleen ophalen)
 ```
 
 ## Uitgangspunten
@@ -22,7 +22,7 @@ browser ──https────▶ │   ├─ /api/v1/…   REST-API, sessies,
 - **Huidige stand plus wijzigingshistorie** (ADR-0015). Iedere Pokémon heeft één rij met de actuele stand. Iedere wijziging bij een synchronisatie komt als onveranderbare gebeurtenis in `pokemon_change_events`. Een trigger in de database weigert wijzigingen aan die gebeurtenissen.
 - **Afgeleide gegevens zijn projecties.** Soortnamen, levels, PvP-rangen en cleanup-adviezen kunnen altijd opnieuw berekend worden uit de export, de Game Data en de regels.
 - **Gebruikers bezitten traineraccounts** (ADR-0016). Iedere query op accountgegevens filtert op traineraccount en gebruiker. Een object van een ander account geeft 404, niet 403.
-- **Game Data heeft versiebeheer** (ADR-0017). Een nieuwe dataset wordt eerst gecontroleerd en pas daarna actief. De vorige versies blijven bewaard om terug te kunnen.
+- **Game Data heeft versiebeheer** (ADR-0028). Een nieuwe dataset wordt eerst gecontroleerd en pas daarna actief. De vorige versies blijven bewaard om terug te kunnen.
 - **Geen meegeleverde artwork** (ADR-0020) en **geen afhankelijkheid van Hermes** (ADR-0010).
 
 ## Backend

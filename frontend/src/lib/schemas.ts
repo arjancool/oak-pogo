@@ -58,6 +58,8 @@ export const pokemonSummary = z.object({
   dynamax: z.boolean().nullable(),
   gigantamax: z.boolean().nullable(),
   costume: z.boolean().nullable(),
+  // A form of an event that the Game Master does not mark as a costume, such as the goggles of 2026.
+  event_form: z.boolean().default(false),
   location_card: z.number().nullable(),
   traded: z.boolean(),
   hatched_from_egg: z.boolean().nullable(),

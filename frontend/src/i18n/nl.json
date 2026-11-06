@@ -244,6 +244,7 @@
     "mythical": "Mythical",
     "ultraBeast": "Ultra Beast",
     "costume": "Kostuum",
+    "eventForm": "Eventvorm",
     "background": "Achtergrond",
     "traded": "Geruild",
     "inGym": "In gym",
@@ -905,9 +906,10 @@
         "title": "Nieuwste versie",
         "never": "Nog niet gecontroleerd.",
         "neverOwner": "Nog niet gecontroleerd. Kies Controleren op updates.",
-        "gameMaster": "Nieuwste bij PokeMiners: Game Master van {{date}}, gecontroleerd op {{checked}}.",
+        "gameMaster": "Nieuwste bij {{source}}: Game Master van {{date}}, gecontroleerd op {{checked}}.",
         "failed": "De controle is mislukt: {{error}}",
-        "stale": "De actieve versie is nieuwer dan deze controle. Controleer opnieuw om te zien of er een nieuwere versie is."
+        "stale": "De actieve versie is nieuwer dan deze controle. Controleer opnieuw om te zien of er een nieuwere versie is.",
+        "theSource": "de bron"
       },
       "noActive": "Geen.",
       "autoUpdate": "Automatisch bijwerken: {{state}}. Laatste controle: {{checked}}.",
@@ -1277,7 +1279,8 @@
       "origins": {
         "egg": "Uitgebroed uit een ei",
         "raid": "Gevangen in een raid",
-        "rocket": "Gevangen na een gevecht met Team GO Rocket"
+        "rocket": "Gevangen na een gevecht met Team GO Rocket",
+        "max_battle": "Gevangen in een Max Battle"
       },
       "originCode": "onbekend (code {{code}})",
       "originMissing": "onbekend (niet in de export)",
@@ -1899,6 +1902,7 @@
       "HUNDO": "Hundo (15/15/15)",
       "LOCATION_CARD": "Speciale achtergrond",
       "COSTUME": "Kostuum",
+      "EVENT_FORM": "Eventvorm",
       "MYTHICAL": "Mythical",
       "LEGENDARY": "Legendary",
       "ULTRA_BEAST": "Ultra Beast",
@@ -1952,6 +1956,7 @@
       "RARITY_mythical": "Mythical",
       "RARITY_ultra_beast": "Ultra Beast",
       "COSTUME": "Kostuum",
+      "EVENT_FORM": "Eventvorm",
       "LOCATION_CARD": "Speciale achtergrond",
       "EVENT": "Event-Pokémon",
       "MAX_gigantamax": "Gigantamax",
@@ -2085,7 +2090,7 @@
       "CONFIRMATION_MISMATCH": "Typ de naam van het traineraccount exact over om te bevestigen.",
       "NO_GAME_DATA": "Geen actieve Game Data. Werk de Game Data bij onder Beheer.",
       "UNKNOWN_SORT": "Onbekende sortering '{{sort}}'.",
-      "FILE_REQUIRED_game_master": "Het Game Master-bestand van PokeMiners is verplicht.",
+      "FILE_REQUIRED_game_master": "Het Game Master-bestand is verplicht.",
       "FILE_REQUIRED_import": "Kies een bestand om te uploaden.",
       "PAYLOAD_TOO_LARGE_file": "Het bestand is groter dan de ingestelde limiet.",
       "PAYLOAD_TOO_LARGE_game_data_file": "Bestand te groot.",
@@ -2131,7 +2136,7 @@
       "VALIDATION_FAILED_team_member": "Een teamlid hoort niet bij dit account.",
       "VALIDATION_FAILED_event_period": "Het einde moet na het begin liggen.",
       "VALIDATION_FAILED_event_species": "Een van de gekozen Pokémon staat niet in de Game Data.",
-      "VALIDATION_FAILED_game_master_required": "Een PokeMiners Game Master-bestand (latest.json) is verplicht.",
+      "VALIDATION_FAILED_game_master_required": "Een Game Master-bestand (GAME_MASTER.json of latest.json) is verplicht.",
       "VALIDATION_FAILED_purify_not_shadow": "Alleen een Shadow Pokémon kan worden gepurifyd.",
       "VALIDATION_FAILED_purify_rules_missing": "De regels voor purify ontbreken in deze Game Data-versie.",
       "VALIDATION_FAILED_purify_stats_unknown": "IV's of level onbekend.",
@@ -2225,8 +2230,8 @@
       "DATE_INVALID": "De bron gaf geen datum die OAK kan lezen.",
       "DATE_NOT_PUBLISHED": "De bron vermeldt geen datum bij deze gegevens.",
       "DATE_UPLOAD": "Een geüpload bestand heeft geen datum van de bron.",
-      "DATE_NOT_RECORDED": "Deze versie is gedownload voordat OAK de datum van PokeMiners bewaarde.",
-      "GAME_MASTER_NOT_A_LIST": "PokeMiners-bestand is geen lijst met templates",
+      "DATE_NOT_RECORDED": "Deze versie is gedownload voordat OAK de datum van de Game Master bewaarde.",
+      "GAME_MASTER_NOT_A_LIST": "Het Game Master-bestand is geen lijst met templates",
       "SCHEMA_UNSUPPORTED": "schema_version {{version}} wordt niet ondersteund",
       "CPM_NOT_ASCENDING": "CP-multipliers zijn niet oplopend",
       "CPM_NOT_POSITIVE": "CP-multipliertabel bevat niet-positieve waarden",
@@ -2261,7 +2266,8 @@
       "SOURCE_PVPOKE": "PvPoke gamemaster en rankings",
       "SPRITE_NOTICE": "Pokémon-afbeeldingen zijn auteursrechtelijk beschermd (The Pokémon Company). OAK levert ze niet mee. Als je een externe bron inschakelt, laadt je browser de afbeeldingen daar direct. Dat is je eigen keuze en verantwoordelijkheid (ADR-0020).",
       "CPM_TOO_SHORT_one": "CP-multipliertabel heeft {{count}} regel, minimaal {{min}} verwacht",
-      "CPM_TOO_SHORT_other": "CP-multipliertabel heeft {{count}} regels, minimaal {{min}} verwacht"
+      "CPM_TOO_SHORT_other": "CP-multipliertabel heeft {{count}} regels, minimaal {{min}} verwacht",
+      "SOURCE_GAME_MASTER": "Game Master van {{source}}"
     },
     "events": {
       "FEED_NOT_A_LIST": "De eventkalender is geen lijst.",

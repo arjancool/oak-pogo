@@ -23,6 +23,8 @@ log = logging.getLogger("oak.gamedata")
 USER_AGENT = "OAK-PokemonGO-Manager/2.0 (+https://github.com/arjancool/oak-pogo)"
 # timestamp.txt holds one number; anything larger is not that file.
 TIMESTAMP_MAX_BYTES = 64
+# One commit from the GitHub API is a few kilobytes.
+COMMITS_MAX_BYTES = 256 * 1024
 # Pokémon GO came out in July 2016; an upstream date before that, or far in the future, is wrong.
 FIRST_UPSTREAM_DATE = datetime(2016, 7, 1, tzinfo=UTC)
 MILLISECONDS_FROM = 10**11
@@ -108,9 +110,35 @@ def source_urls(settings: Settings) -> dict[str, str]:
 
 
 def timestamp_url(settings: Settings) -> str:
-    """PokeMiners publishes timestamp.txt next to latest.json (issue #28). A mirror with the same
-    layout works too; a mirror without it gives an unknown date."""
+    """PokeMiners publishes timestamp.txt next to latest.json (issue #28)."""
     return settings.gamedata_pokeminers_url.rsplit("/", 1)[0] + "/timestamp.txt"
+
+
+def github_commits_url(url: str) -> str | None:
+    """For a file on raw.githubusercontent.com, the GitHub API address of its last commit. The
+    Game Master of alexelgt has no timestamp.txt, so the date of its last change is the date of
+    the data (ADR-0028). None for a file elsewhere."""
+    parsed = httpx.URL(url)
+    if parsed.scheme != "https" or parsed.host != "raw.githubusercontent.com":
+        return None
+    parts = [part for part in parsed.path.split("/") if part]
+    if len(parts) >= 6 and parts[2:4] == ["refs", "heads"]:  # owner/repo/refs/heads/ref/file
+        owner, repo, ref, path = parts[0], parts[1], parts[4], parts[5:]
+    elif len(parts) >= 4:  # owner/repo/ref/file
+        owner, repo, ref, path = parts[0], parts[1], parts[2], parts[3:]
+    else:
+        return None
+    query = httpx.QueryParams({"path": "/".join(path), "sha": ref, "per_page": "1"})
+    return f"https://api.github.com/repos/{owner}/{repo}/commits?{query}"
+
+
+def source_name(url: str) -> str:
+    """Who publishes a source, for the page: the owner on GitHub, otherwise the host."""
+    parsed = httpx.URL(url)
+    if parsed.host == "raw.githubusercontent.com":
+        owner = next((part for part in parsed.path.split("/") if part), "")
+        return owner or parsed.host
+    return parsed.host or url
 
 
 def _client(settings: Settings) -> httpx.Client:
@@ -130,13 +158,36 @@ def _download(http: httpx.Client, source_id: str, url: str) -> Downloaded:
 
 
 def _timestamp(http: httpx.Client, settings: Settings) -> UpstreamDate:
-    """The date of the newest Game Master at PokeMiners. Never raises: an unknown date does not
-    stop an update or a check."""
+    """The date of the newest Game Master at its source. Never raises: an unknown date does not
+    stop an update or a check.
+
+    timestamp.txt next to the file comes first, as PokeMiners publishes it. Without it, for a file
+    on GitHub, the date of the last commit that changed the file counts (ADR-0028)."""
     try:
         response = fetch(http, timestamp_url(settings), max_bytes=TIMESTAMP_MAX_BYTES)
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code != httpx.codes.NOT_FOUND:
+            return UpstreamDate(None, "unreachable", type(exc).__name__)
+        return _commit_date(http, settings.gamedata_pokeminers_url)
     except httpx.HTTPError as exc:
         return UpstreamDate(None, "unreachable", type(exc).__name__)
     moment = upstream_time(response.content.decode("ascii", "replace").strip())
+    return UpstreamDate(moment.isoformat()) if moment else UpstreamDate(None, "invalid")
+
+
+def _commit_date(http: httpx.Client, url: str) -> UpstreamDate:
+    api = github_commits_url(url)
+    if api is None:
+        return UpstreamDate(None, "not_published")
+    try:
+        response = fetch(http, api, max_bytes=COMMITS_MAX_BYTES, headers={"Accept": "application/vnd.github+json"})
+        commits = json.loads(response.content)
+        stamp = commits[0]["commit"]["committer"]["date"]
+    except httpx.HTTPError as exc:
+        return UpstreamDate(None, "unreachable", type(exc).__name__)
+    except (ValueError, LookupError, TypeError):
+        return UpstreamDate(None, "invalid")
+    moment = upstream_time(stamp)
     return UpstreamDate(moment.isoformat()) if moment else UpstreamDate(None, "invalid")
 
 
@@ -160,7 +211,7 @@ def download_all(settings: Settings) -> dict[str, Downloaded]:
 
 
 def remote_timestamp(settings: Settings) -> UpstreamDate:
-    """The date of the newest Game Master at PokeMiners, for the check without download."""
+    """The date of the newest Game Master at its source, for the check without download."""
     with _client(settings) as http:
         return _timestamp(http, settings)
 

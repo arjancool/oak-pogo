@@ -1,6 +1,6 @@
 import i18n from "../i18n";
 
-const CHECKED = ["egg", "raid", "rocket"] as const;
+const CHECKED = ["egg", "raid", "rocket", "max_battle"] as const;
 type Origin = (typeof CHECKED)[number];
 
 function isChecked(value: unknown): value is Origin {

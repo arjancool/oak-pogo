@@ -14,7 +14,7 @@ from app.api.uploads import bounded_form, form_file
 from app.api.v1.auth import audit
 from app.core.container import Container
 from app.core.errors import PayloadTooLargeError, ValidationFailedError
-from app.gamedata.fetch import source_urls
+from app.gamedata.fetch import source_name, source_urls
 from app.gamedata.store import REMOTE_CHECK_KEY, source_dates
 from app.jobs.tasks import enqueue, enqueue_rederive
 from app.models import BackgroundJob, GameDataVersion
@@ -99,7 +99,11 @@ def sources(
     return [
         {
             "id": "pokeminers",
-            "name": {"text": "PokeMiners Game Master"},
+            "name": {
+                "code": "SOURCE_GAME_MASTER",
+                "text": f"Game Master van {source_name(urls['pokeminers'])}",
+                "data": {"source": source_name(urls["pokeminers"])},
+            },
             "url": urls["pokeminers"],
             "license": {
                 "code": "LICENSE_NONE",
@@ -163,7 +167,7 @@ async def upload(
         await form.close()
     if "pokeminers" not in files:
         raise ValidationFailedError(
-            "Het Game Master-bestand van PokeMiners is verplicht.", code="FILE_REQUIRED", context="game_master"
+            "Het Game Master-bestand is verplicht.", code="FILE_REQUIRED", context="game_master"
         )
     result = await run_in_threadpool(container.gamedata.update_from_upload, files)
     if result.status == "activated":

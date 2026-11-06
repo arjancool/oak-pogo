@@ -21,7 +21,7 @@ from app.analysis.stats import IVs
 from app.core.clock import Clock
 from app.core.config import Settings
 from app.core.db import Database
-from app.domain.pokemon import Alignment, BreadMode, extreme_size, has_costume
+from app.domain.pokemon import Alignment, BreadMode, extreme_size, has_costume, is_event_form
 from app.gamedata.store import GameDataStore
 from app.models import (
     AnalysisRun,
@@ -296,6 +296,7 @@ def pokemon_view(pokemon: Pokemon, meta: PokemonUserMetadata | None, protecting:
         shadow=pokemon.alignment == Alignment.SHADOW,
         purified=pokemon.alignment == Alignment.PURIFIED,
         costume=bool(has_costume(pokemon.costume_id, pokemon.costume_form)),
+        event_form=is_event_form(pokemon.form_name),
         location_card=pokemon.location_card is not None,
         dynamax=pokemon.bread_mode == BreadMode.DYNAMAX,
         gigantamax=pokemon.bread_mode == BreadMode.GIGANTAMAX,

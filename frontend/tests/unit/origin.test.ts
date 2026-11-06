@@ -13,6 +13,7 @@ describe("the origin of a Pokémon", () => {
     expect(originText("egg", 2)).toBe("Uitgebroed uit een ei");
     expect(originText("raid", 3)).toBe("Gevangen in een raid");
     expect(originText("rocket", 6)).toBe("Gevangen na een gevecht met Team GO Rocket");
+    expect(originText("max_battle", 13)).toBe("Gevangen in een Max Battle");
   });
 
   it("shows an unchecked number as onbekend with the code, never a guess", () => {

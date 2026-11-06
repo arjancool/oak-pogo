@@ -14,7 +14,6 @@ Iedere ADR beschrijft één besluit, met de context en de gevolgen. Een geaccept
 | [0014](ADR-0014-sqlite-single-container.md) | SQLite in één container |
 | [0015](ADR-0015-state-with-change-history.md) | Actuele staat met wijzigingshistorie |
 | [0016](ADR-0016-user-owned-trainer-accounts.md) | Traineraccounts per gebruiker |
-| [0017](ADR-0017-game-data-sources.md) | Game Data van PokeMiners en PvPoke, met versiebeheer |
 | [0019](ADR-0019-cleanup-protection-and-scores.md) | Bescherming en twee scores in het cleanupadvies |
 | [0020](ADR-0020-artwork-and-sprite-licences.md) | Geen meegeleverde afbeeldingen, en de licentie van sprites |
 | [0021](ADR-0021-event-data.md) | Eventgegevens van LeekDuck via ScrapedDuck |
@@ -23,5 +22,6 @@ Iedere ADR beschrijft één besluit, met de context en de gevolgen. Een geaccept
 | [0025](ADR-0025-languages.md) | Meertaligheid |
 | [0026](ADR-0026-gym-value.md) | Gymverdedigers in het cleanupadvies |
 | [0027](ADR-0027-pvp-cups.md) | PvP-cups uit PvPoke |
+| [0028](ADR-0028-game-master-source.md) | Game Data uit de Game Master van alexelgt en uit PvPoke, met versiebeheer |
 
-De nummers 0002, 0004, 0005, 0006, 0008, 0011, 0018 en 0023 hoorden bij ADR's die later zijn vervangen. Een vervangen ADR staat niet in de repository (ADR-0024).
+De nummers 0002, 0004, 0005, 0006, 0008, 0011, 0017, 0018 en 0023 hoorden bij ADR's die later zijn vervangen. Een vervangen ADR staat niet in de repository (ADR-0024).

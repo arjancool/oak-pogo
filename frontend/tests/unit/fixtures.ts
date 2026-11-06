@@ -33,6 +33,7 @@ export function pokemonFixture(overrides: Partial<PokemonSummary> = {}): Pokemon
     dynamax: false,
     gigantamax: false,
     costume: false,
+    event_form: false,
     location_card: null,
     traded: false,
     hatched_from_egg: false,

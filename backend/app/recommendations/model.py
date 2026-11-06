@@ -31,6 +31,9 @@ class PokemonView:
     shadow: bool = False
     purified: bool = False
     costume: bool = False
+    # A form of an event, such as the goggles of 2026, that the Game Master does not mark as a
+    # costume. It counts like a costume, once (domain/pokemon.py).
+    event_form: bool = False
     location_card: bool = False
     dynamax: bool = False
     gigantamax: bool = False

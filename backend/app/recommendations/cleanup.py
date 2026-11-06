@@ -135,6 +135,8 @@ def protection_reasons(view: PokemonView, rules: CleanupRules) -> list[dict[str,
         reasons.append(_reason("LOCATION_CARD", "Speciale achtergrond"))
     if rules.protect_costume and view.costume:
         reasons.append(_reason("COSTUME", "Kostuum"))
+    elif rules.protect_costume and view.event_form:
+        reasons.append(_reason("EVENT_FORM", "Eventvorm"))
     if rules.protect_mythical and view.species_class == "mythical":
         reasons.append(_reason("MYTHICAL", "Mythical"))
     if rules.protect_legendary and view.species_class == "legendary":

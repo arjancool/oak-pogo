@@ -6,6 +6,7 @@ carry this value*; it never stands in for ``False`` or ``0``.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -57,6 +58,8 @@ VERIFIED_ORIGINS: dict[int, str] = {
     3: "raid",
     # Every Pokémon with 6 is Shadow or Purified and was caught with a Premier Ball.
     6: "rocket",
+    # Every Pokémon with 13 is Dynamax and was caught with a Premier Ball: a Max Battle.
+    13: "max_battle",
 }
 
 
@@ -264,6 +267,19 @@ def has_costume(costume_id: int | None, costume_form: bool | None) -> bool | Non
     if costume_id is None and costume_form is None:
         return None
     return False
+
+
+# A year in the name of a form marks a form of an event, such as CHARMANDER_GOGGLES_2026 in the
+# Game Master or CharmanderGoggles2026 in the export. In the Game Master of November 2026 each of
+# the 91 forms with a year was a costume or an event form; 8 of them have no costume mark, such as
+# the goggles of 2026 and the clones of 2019. The year is in the export as well, so this also works
+# while the Game Master does not know the form yet. A name that is only a number is no year.
+_EVENT_YEAR = re.compile(r"[A-Za-z_](?:19|20)\d{2}(?!\d)")
+
+
+def is_event_form(form_name: str | None) -> bool:
+    """Whether the form belongs to an event: its name carries a year."""
+    return bool(form_name) and _EVENT_YEAR.search(str(form_name)) is not None
 
 
 def extreme_size(size_class: int | None) -> str | None:

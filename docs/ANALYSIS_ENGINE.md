@@ -1,6 +1,6 @@
 # Analyse-engine
 
-Dit document beschrijft hoe OAK rekent. Alles is deterministisch: dezelfde export, dezelfde Game Data en dezelfde instellingen geven altijd hetzelfde advies. Spelmechanica komt uit de actieve Game Data-versie (ADR-0017). Elk advies vermeldt de engineversie en de Game Data-versie waarmee het is berekend.
+Dit document beschrijft hoe OAK rekent. Alles is deterministisch: dezelfde export, dezelfde Game Data en dezelfde instellingen geven altijd hetzelfde advies. Spelmechanica komt uit de actieve Game Data-versie (ADR-0028). Elk advies vermeldt de engineversie en de Game Data-versie waarmee het is berekend.
 
 De code staat in `backend/app/analysis` (berekeningen) en `backend/app/recommendations` (cleanup). Beide mappen bevatten pure Python zonder database of webframework.
 
@@ -171,7 +171,7 @@ De bewaarscore zegt hoeveel reden er is om dit exemplaar te bewaren. OAK telt pu
 | Shiny | 15 | `keep_points_shiny` |
 | Lucky | 10 | `keep_points_lucky` |
 | Legendary, Mythical of Ultra Beast | 10 | `keep_points_rarity` |
-| Kostuum | 10 | `keep_points_costume` |
+| Kostuum of eventvorm | 10 | `keep_points_costume` |
 | Speciale achtergrond | 10 | `keep_points_location_card` |
 | Event-Pokémon | 10 | `keep_points_event` |
 | Dynamax of Gigantamax | 10 | `keep_points_max` |
@@ -198,6 +198,10 @@ Harde bescherming staat los van beide scores. Een Pokémon met een harde reden k
 Zet je zo'n regel uit, dan telt het kenmerk alleen nog als punten in de bewaarscore.
 
 Een kostuum herkent OAK op twee manieren. PGSharp vult het kostuumveld van de Pokémon, of de Game Master markeert de vorm als kostuum (`isCostume`). Het tweede geldt bijvoorbeeld voor een Pikachu met een eventhoed, waarbij PGSharp het kostuumveld niet altijd vult. Staat een nieuwe vorm nog niet in de Game Data, dan rekent OAK met de standaardvorm en zet hij de Pokémon op Beoordelen, nooit op transfer-kandidaat.
+
+Een eventvorm telt als een kostuum, met de reden *Eventvorm*. Het is een vorm met een jaartal in de naam, zoals `CHARMANDER_GOGGLES_2026` in de Game Master of `CharmanderGoggles2026` in de export. In de Game Master van november 2026 hebben 91 vormen een jaartal in de naam. Daarvan zijn er 83 als kostuum gemarkeerd. De andere 8 zijn allemaal eventvormen zonder kostuummarkering: Charmander, Charmeleon en Charizard met de bril van 2026, de klonen van 2019 en Psyduck met de zwemband van 2025. Het jaartal staat ook in de export, dus de regel werkt al voordat de Game Data de vorm kent. Een vorm die zowel kostuum als eventvorm is, telt één keer. De regel *Kostuums beschermen* geldt voor beide.
+
+In de zoekteksten voor het spel telt een eventvorm niet als zeker kostuum. Of de zoekterm `costume` in het spel zo'n Pokémon vindt, is niet vastgesteld. Een zoektekst laat `!costume` daarom weg als er een eventvorm in zit, en bij het narekenen sluit `!costume` geen eventvorm uit.
 
 ### Van scores naar status
 

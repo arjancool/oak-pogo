@@ -19,7 +19,14 @@ from app.api.deps import AuthContext, get_auth, get_container, get_session, owne
 from app.api.v1.pokemon import sync_bounds, tag_label_map
 from app.core.container import Container
 from app.core.errors import NotFoundError
-from app.domain.pokemon import FIRST_GAME_YEAR, IV_MAX, VINTAGE_FIRST_YEAR, VINTAGE_LAST_YEAR, Alignment
+from app.domain.pokemon import (
+    FIRST_GAME_YEAR,
+    IV_MAX,
+    VINTAGE_FIRST_YEAR,
+    VINTAGE_LAST_YEAR,
+    Alignment,
+    is_event_form,
+)
 from app.domain.search_strings import MAX_BUNDLE, SAFETY_TERMS, BoxPokemon, bundle
 from app.jobs.tasks import enqueue
 from app.models import (
@@ -524,7 +531,9 @@ def _known_terms(pokemon: Pokemon) -> tuple[frozenset[str], frozenset[str]]:
     note("mythical", pokemon.pokemon_class == "mythical" if known_class else None)
     note("shadow", None if pokemon.alignment is None else pokemon.alignment == Alignment.SHADOW)
     costume: bool | None = bool(pokemon.costume_id) or pokemon.costume_form is True
-    if not costume and (pokemon.costume_id is None or pokemon.costume_form is None):
+    # Whether the game's "costume" search finds an event form the Game Master does not mark as a
+    # costume, such as the goggles of 2026, is not known.
+    if not costume and (pokemon.costume_id is None or pokemon.costume_form is None or is_event_form(pokemon.form_name)):
         costume = None
     note("costume", costume)
     return frozenset(has), frozenset(maybe)

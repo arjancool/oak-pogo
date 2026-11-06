@@ -13,7 +13,7 @@ import httpx
 
 MAX_REDIRECTS = 5
 MEGABYTE = 1024 * 1024
-# The PokeMiners Game Master is the largest source, some tens of megabytes.
+# The Game Master is the largest source, some tens of megabytes.
 GAMEDATA_MAX_BYTES = 150 * MEGABYTE
 EVENTS_MAX_BYTES = 5 * MEGABYTE
 CHUNK_BYTES = 64 * 1024

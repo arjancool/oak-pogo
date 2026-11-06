@@ -22,7 +22,7 @@ Grote identificaties (Pokémon-ID's, tag-ID's) zijn overal tekst, ook in de data
 
 | Tabel | Inhoud |
 |---|---|
-| `trainer_accounts` | Eén Pokémon GO-account van een gebruiker. Naam in OAK, naam in het spel, level, XP, Stardust, PokéCoins, team, opslag, trainerstatistieken, syncstatus en instellingen (volledigheidsgrenzen en cleanup-regels). `source_fingerprint` is de HMAC-vingerafdruk van het Pokémon GO-account. |
+| `trainer_accounts` | Eén Pokémon GO-account van een gebruiker. Naam in OAK, naam in het spel, level, XP, Stardust, PokéCoins, team, opslag, trainerstatistieken, syncstatus en instellingen (volledigheidsgrenzen en cleanup-regels). `source_fingerprint` is de HMAC-vingerafdruk van het Pokémon GO-account. De ID heeft `AUTOINCREMENT` (migratie 0009), zodat de ID van een verwijderd account nooit terugkomt. |
 | `webhook_credentials` | Webhook-tokens: een openbaar deel om het record te vinden en de SHA-256-hash van het geheel. Status actief of ingetrokken. |
 | `item_inventory` | De huidige item bag. |
 | `inventory_snapshots` | Items en trainerstand per synchronisatie, voor de historie. |

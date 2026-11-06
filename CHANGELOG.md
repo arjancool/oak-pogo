@@ -13,6 +13,7 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 
 ### Beveiliging
 
+- De ID van een verwijderd traineraccount komt nooit meer terug (migratie 0009). Migraties draaien voortaan met foreign keys uit en worden daarna gecontroleerd, zodat het herbouwen van een tabel geen rijen van andere tabellen meeneemt.
 - Ieder verzoek mag hoogstens 1 MB groot zijn. Alleen de webhook en de twee uploads houden hun grens van `OAK_MAX_IMPORT_MB`. Pas de grens in je reverse proxy aan zoals in `docs/DEPLOYMENT.md`.
 - Een export heeft grenzen aan zijn opbouw: hoogstens 25.000 Pokémon-records, 500.000 objecten en lijsten, 4 miljoen waarden, 32 niveaus en 1.000 velden per object. OAK leest, filtert en bewaart een export voordat het de database op slot zet, en hoogstens twee tegelijk.
 - Een import bewaart per ernst hoogstens 500 meldingen. Een taak die drie keer is onderbroken, start niet opnieuw.

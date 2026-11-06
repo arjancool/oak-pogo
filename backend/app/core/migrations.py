@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import sqlite3
+from collections.abc import Callable
 from contextlib import closing
 from datetime import UTC, datetime
 from pathlib import Path
@@ -12,7 +13,7 @@ from alembic import command
 from alembic.config import Config
 from alembic.runtime.migration import MigrationContext
 from alembic.script import ScriptDirectory
-from sqlalchemy import Engine
+from sqlalchemy import Connection, Engine
 
 from app.core.config import Settings
 
@@ -59,7 +60,30 @@ def migrate(settings: Settings, engine: Engine) -> None:
             "database backup before migration",
             extra={"backup": str(backup), "from": current, "to": head},
         )
-    with engine.begin() as connection:
-        cfg.attributes["connection"] = connection
-        command.upgrade(cfg, "head")
+    with engine.connect() as connection:
+        run_without_foreign_keys(connection, lambda: command.upgrade(cfg, "head"), cfg)
     log.info("database migrated", extra={"from": current, "to": head})
+
+
+def run_without_foreign_keys(connection: Connection, upgrade: Callable[[], None], cfg: Config) -> None:
+    """Run migrations with foreign keys off, and check every one of them before committing.
+
+    Rebuilding a table in batch mode drops the old table. With foreign keys on, SQLite would then
+    delete or empty every row that points to it, such as all Pokémon of a trainer account. SQLite
+    only switches foreign keys outside a transaction, so this happens on the driver connection
+    before the migration transaction starts, and they are switched on again in any case."""
+    raw = connection.connection.driver_connection
+    if raw is None:  # pragma: no cover - a pooled SQLite connection always has one
+        msg = "no driver connection for the migration"
+        raise RuntimeError(msg)
+    raw.execute("PRAGMA foreign_keys=OFF")
+    try:
+        with connection.begin():
+            cfg.attributes["connection"] = connection
+            upgrade()
+            broken = connection.exec_driver_sql("PRAGMA foreign_key_check").fetchall()
+            if broken:
+                msg = f"foreign keys broken after the migration: {len(broken)} rows"
+                raise RuntimeError(msg)
+    finally:
+        raw.execute("PRAGMA foreign_keys=ON")

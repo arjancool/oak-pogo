@@ -12,7 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
-from app.auth.sessions import CSRF_HEADER, SESSION_COOKIE, SessionPolicy, check_session, store_session_check
+from app.auth.sessions import CSRF_HEADER, SessionPolicy, check_session, cookie_names, store_session_check
 from app.auth.tokens import constant_time_equal, csrf_token_for
 from app.core.container import Container
 from app.core.errors import ForbiddenError, NotFoundError, UnauthorizedError
@@ -57,7 +57,7 @@ def get_auth(
     session: Session = Depends(get_session),
     container: Container = Depends(get_container),
 ) -> AuthContext:
-    token = request.cookies.get(SESSION_COOKIE)
+    token = request.cookies.get(cookie_names(container.settings.secure_cookies)[0])
     if not token:
         raise UnauthorizedError("Je bent niet ingelogd.", context="not_logged_in")
     now = container.clock.now()

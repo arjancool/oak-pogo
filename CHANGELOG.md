@@ -50,6 +50,7 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 
 ### Opgelost
 
+- De hint bij *Minimaal aantal exemplaren per soort* zei dat het beste exemplaar altijd blijft. Bij 0 klopt dat niet: dan kan ook het enige exemplaar transfer-kandidaat worden. De hint en `docs/ANALYSIS_ENGINE.md` zeggen dat nu.
 - Een nieuwere Game Master noemt een paar vormen alleen met een nummer, zoals 3362. Daarop liep het bouwen van de Game Data vast, zodat de hele update mislukte. OAK leest zo'n nummer nu als de naam van de vorm.
 - In de Pokédex stond een naam met een apostrof, zoals Sirfetch'd, bij een evolutie als `Sirfetch&#39;d`.
 - Een paar itemnamen waren fout. `LegendaryRaidTicket` heet nu EX Raid Pass, `OtherEvolutionStoneA` Gimmighoul Coins, `ShadowGem` Purified Gem en `Breakfast` Zygarde Cube, zoals in het spel. De verzonnen naam voor `SoftSfida` is weg, dat item heet nu naar de export.

@@ -1729,7 +1729,7 @@
         },
         "keepMinPerSpecies": {
           "label": "Minimaal aantal exemplaren per soort",
-          "hint": "0–10. Het beste exemplaar blijft altijd"
+          "hint": "0–10. Bij 1 of meer blijft het beste exemplaar van iedere soort altijd staan. Bij 0 kan ook het enige exemplaar transfer-kandidaat worden."
         },
         "metaRankThreshold": {
           "label": "Soort telt mee tot PvPoke-rang",

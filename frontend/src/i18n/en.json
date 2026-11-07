@@ -1729,7 +1729,7 @@
         },
         "keepMinPerSpecies": {
           "label": "Minimum number per species",
-          "hint": "0–10. The best one always stays"
+          "hint": "0–10. At 1 or more the best one of each species always stays. At 0 even the only one can become a transfer candidate."
         },
         "metaRankThreshold": {
           "label": "Species counts up to PvPoke rank",

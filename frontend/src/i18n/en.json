@@ -1729,7 +1729,7 @@
         },
         "keepMinPerSpecies": {
           "label": "Minimum number per species",
-          "hint": "0–10. The best one always stays"
+          "hint": "0–10. At 1 or more the best one of each species always stays. At 0 even the only one can become a transfer candidate."
         },
         "metaRankThreshold": {
           "label": "Species counts up to PvPoke rank",
@@ -1871,6 +1871,7 @@
       "INVESTMENT": "{{target}} {{leagueName}}: {{stardust, number}} Stardust, {{candy}} Candy, {{xl_candy}} XL Candy",
       "BEST_COPY_one": "The only one of its kind in your collection",
       "BEST_COPY_other": "The best of its kind in your collection",
+      "ONLY_COPY_NO_USE": "The only one of its kind in your collection, but without value in battle",
       "PARTIAL_IMPORT": "The last import was incomplete; no transfer advice",
       "FAVORITE_REVIEW": "Favorite: OAK never suggests a favorite as a transfer directly. Decide for yourself.",
       "UNKNOWN_DATE": "Catch date unknown: this may be a vintage Pokémon",

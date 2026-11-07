@@ -41,6 +41,7 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 
 ### Gewijzigd
 
+- Het enige exemplaar van een soort met bruikbaarheid 0, zoals een zwakke Shelmet, krijgt *Beoordelen* in plaats van *Bewaren*. Zo zie je het terug in de Cleanup Manager. Het wordt nooit vanzelf transfer-kandidaat, en de actielijst vraagt nog steeds een bevestiging voor het laatste exemplaar (engine cleanup-2.8).
 - De Game Master komt standaard van alexelgt/game_masters in plaats van PokeMiners (ADR-0028, vervangt ADR-0017). De Game Master van PokeMiners is sinds 28 augustus 2026 niet bijgewerkt en kende nieuwe vormen niet, zoals de bril van 2026. Met `OAK_GAMEDATA_POKEMINERS_URL` kies je nog steeds zelf de bron. Zonder `timestamp.txt` komt de datum van de laatste wijziging op GitHub. De pagina Game Data noemt de bron.
 - *Controleren op updates* op de pagina Game Data is een POST geworden, omdat OAK het resultaat nu bewaart. De verzoeken naar buiten lopen buiten iedere transactie.
 - Engels heet in de taalkeuze gewoon *English*, zonder *(beta)*. Bij een eerste bezoek zonder gekozen taal volgt OAK de taal van de browser.
@@ -50,6 +51,7 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 
 ### Opgelost
 
+- De hint bij *Minimaal aantal exemplaren per soort* zei dat het beste exemplaar altijd blijft. Bij 0 klopt dat niet: dan kan ook het enige exemplaar transfer-kandidaat worden. De hint en `docs/ANALYSIS_ENGINE.md` zeggen dat nu.
 - Een nieuwere Game Master noemt een paar vormen alleen met een nummer, zoals 3362. Daarop liep het bouwen van de Game Data vast, zodat de hele update mislukte. OAK leest zo'n nummer nu als de naam van de vorm.
 - In de Pokédex stond een naam met een apostrof, zoals Sirfetch'd, bij een evolutie als `Sirfetch&#39;d`.
 - Een paar itemnamen waren fout. `LegendaryRaidTicket` heet nu EX Raid Pass, `OtherEvolutionStoneA` Gimmighoul Coins, `ShadowGem` Purified Gem en `Breakfast` Zygarde Cube, zoals in het spel. De verzonnen naam voor `SoftSfida` is weg, dat item heet nu naar de export.

@@ -219,6 +219,7 @@ OAK beslist in deze volgorde:
 Daarna volgen drie correcties:
 
 - Bij `keep_min_per_species` van 1 of meer blijft het beste exemplaar van iedere groep bewaard, en er blijven minstens zoveel exemplaren. Zo heeft iedere transfer-kandidaat een beter of gelijkwaardig exemplaar dat blijft.
+- Is het beste exemplaar het enige van zijn groep en is de bruikbaarheid 0, dan krijgt het *Beoordelen* in plaats van *Bewaren*, met de reden *Enige exemplaar van deze soort in je collectie, maar zonder waarde in gevechten*. Het is dan geen transfer-kandidaat, maar je ziet het terug in de Cleanup Manager. Zet je het zelf op de actielijst, dan vraagt OAK eerst een bevestiging, omdat het het laatste exemplaar is. Een onbekende bruikbaarheid telt niet als 0.
 - Bij `keep_min_per_species` van 0 vervalt dit allemaal. Dan kan ook het beste of enige exemplaar transfer-kandidaat worden.
 - Een transfer-kandidaat wordt `REVIEW` als hij favoriet is, als zijn vangstdatum onbekend is, als hij nu in een gym staat, of als de laatste import niet volledig was.
 - Bij iedere transfer-kandidaat en ieder te beoordelen exemplaar noemt OAK het betere exemplaar dat bewaard blijft en waarin het beter is. Bij een vintage Pokémon noemt OAK ter vergelijking het nieuwere exemplaar dat beter is voor gevechten.

@@ -342,6 +342,22 @@ def test_minimum_per_species() -> None:
     assert status_of(results, 1) is Status.TRANSFER_CANDIDATE
 
 
+def test_only_copy_without_battle_value_goes_to_review() -> None:
+    """A weak only copy, like a Shelmet at level 2, is shown for review instead of kept silently.
+    It never becomes a transfer candidate by itself."""
+    result = evaluate([view(1, ivs=(11, 0, 7), level=2.0, cp=32)], CleanupRules(), CTX)[0]
+    assert result.battle_score == 0
+    assert result.status is Status.REVIEW
+    assert codes(result.reasons) == {"ONLY_COPY_NO_USE"}
+    # Two copies: the best one is still kept, the other may go.
+    results = evaluate([view(1, ivs=(11, 0, 7)), view(2, ivs=(1, 1, 1))], CleanupRules(), CTX)
+    assert status_of(results, 1) is Status.KEEP and result_of(results, 1).reasons[0]["code"] == "BEST_COPY"
+    assert status_of(results, 2) is Status.TRANSFER_CANDIDATE
+    # At 0 nothing is kept for being the only copy.
+    alone = evaluate([view(1, ivs=(11, 0, 7))], CleanupRules(keep_min_per_species=0), CTX)[0]
+    assert alone.status is Status.TRANSFER_CANDIDATE
+
+
 def test_override_and_review_request() -> None:
     rules = CleanupRules(keep_min_per_species=0)
     assert evaluate([view(1, override_status="KEEP")], rules, CTX)[0].status is Status.KEEP

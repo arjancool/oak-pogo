@@ -1871,6 +1871,7 @@
       "INVESTMENT": "{{target}} {{leagueName}}: {{stardust, number}} Stardust, {{candy}} Candy, {{xl_candy}} XL Candy",
       "BEST_COPY_one": "The only one of its kind in your collection",
       "BEST_COPY_other": "The best of its kind in your collection",
+      "ONLY_COPY_NO_USE": "The only one of its kind in your collection, but without value in battle",
       "PARTIAL_IMPORT": "The last import was incomplete; no transfer advice",
       "FAVORITE_REVIEW": "Favorite: OAK never suggests a favorite as a transfer directly. Decide for yourself.",
       "UNKNOWN_DATE": "Catch date unknown: this may be a vintage Pokémon",

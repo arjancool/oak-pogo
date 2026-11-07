@@ -1871,6 +1871,7 @@
       "INVESTMENT": "{{target}} {{leagueName}}: {{stardust, number}} stardust, {{candy}} candy, {{xl_candy}} XL candy",
       "BEST_COPY_one": "Enige exemplaar van deze soort in je collectie",
       "BEST_COPY_other": "Beste exemplaar van deze soort in je collectie",
+      "ONLY_COPY_NO_USE": "Enige exemplaar van deze soort in je collectie, maar zonder waarde in gevechten",
       "PARTIAL_IMPORT": "De laatste import was niet volledig; geen transferadvies",
       "FAVORITE_REVIEW": "Favoriet: OAK stelt een favoriet nooit direct voor als transfer. Beoordeel hem zelf.",
       "UNKNOWN_DATE": "Vangstdatum onbekend: dit kan een vintage Pokémon zijn",

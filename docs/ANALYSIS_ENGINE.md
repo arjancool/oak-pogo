@@ -26,6 +26,10 @@ OAK houdt drie dingen uit elkaar:
 
 Inzetbaarheid heeft vijf waarden. *Direct inzetbaar* betekent dat de huidige CP minstens 95 procent is van de beste CP binnen de limiet (instelbaar). *Na power-up* en *na evolutie* spreken voor zich. *Niet geschikt* betekent boven de limiet of al boven het optimale level. *Onbekend* betekent dat het level ontbreekt.
 
+De Master League heeft geen CP-limiet. Het beste level is daar het hoogste level dat je kunt halen, en de levels boven 40 kosten XL Candy. *Direct inzetbaar* telt daarom vanaf het level waarvoor geen XL Candy nodig is (`xlCandyMinPokemonLevel` in de Game Master, nu 40). Een Pokémon op level 40 heeft ongeveer 88 procent van zijn CP op level 50 en is dus direct inzetbaar. De beste CP en de kosten tot het beste level blijven op level 50.
+
+De Team Builder maakt drie varianten. *Direct inzetbaar* gebruikt alleen Pokémon die nu al bruikbaar zijn. *Beperkte upgrades* neemt ook Pokémon die binnen het Stardust-budget per Pokémon bruikbaar worden. Zonder CP-limiet rekent die variant met de kosten tot het level zonder XL Candy, niet tot level 50. *Beste toekomstige team* kijkt niet naar kosten. Bij ieder teamlid staat de CP en het level waar de kosten naartoe gaan. Een team heeft drie Pokémon nodig, elk met een andere doelvorm. Vindt een variant er minder, dan noemt de melding het aantal.
+
 Voor evoluties rekent OAK met dezelfde IV's op de geëvolueerde vorm, en vermeldt het de candy- en itemkosten uit de Game Data.
 
 ## Cups

@@ -51,6 +51,7 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 
 ### Opgelost
 
+- In de Master League was een Pokémon op level 40 nooit *Direct inzetbaar*, omdat OAK de CP vergeleek met de CP op level 50. Die laatste levels kosten XL Candy. De Team Builder vond daardoor geen direct inzetbaar team en, binnen een normaal budget, ook geen team met beperkte upgrades. Zonder CP-limiet rekent OAK nu vanaf het level waarvoor geen XL Candy nodig is, volgens de Game Master level 40. Beperkte upgrades gaan tot dat level, en de Team Builder toont bij ieder teamlid de CP en het level waar de kosten naartoe gaan. Het beste toekomstige team blijft level 50 als doel houden. Vindt een variant te weinig Pokémon, dan zegt de melding hoeveel er gevonden zijn en hoeveel er nodig zijn (engine cleanup-2.9).
 - De hint bij *Minimaal aantal exemplaren per soort* zei dat het beste exemplaar altijd blijft. Bij 0 klopt dat niet: dan kan ook het enige exemplaar transfer-kandidaat worden. De hint en `docs/ANALYSIS_ENGINE.md` zeggen dat nu.
 - Een nieuwere Game Master noemt een paar vormen alleen met een nummer, zoals 3362. Daarop liep het bouwen van de Game Data vast, zodat de hele update mislukte. OAK leest zo'n nummer nu als de naam van de vorm.
 - In de Pokédex stond een naam met een apostrof, zoals Sirfetch'd, bij een evolutie als `Sirfetch&#39;d`.

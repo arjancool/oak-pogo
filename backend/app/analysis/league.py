@@ -18,7 +18,7 @@ from app.analysis.evolution import evolution_paths
 from app.analysis.moves import Availability, availability
 from app.analysis.powerup import Cost, power_up_cost, reachable_max_level
 from app.analysis.pvp import RANK_TABLES
-from app.analysis.stats import IVs, base_stats_of, combat_power
+from app.analysis.stats import BaseStats, IVs, base_stats_of, combat_power
 from app.gamedata.model import GameData
 
 LEAGUES = ("great", "ultra", "master")
@@ -160,8 +160,9 @@ def analyze_leagues(
             current_cpm = gd.cpm(subject.level) if subject.level is not None else None
             if current_cpm is not None:
                 cp_now = combat_power(base, subject.ivs, current_cpm)
+            _ready, ready_cp = ready_point(gd, cap, base, subject.ivs, entry.level, entry.cp)
             readiness, reason = _readiness(
-                cap, entry.cp, entry.level, cp_now, subject.level, is_evolution, ready_cp_fraction
+                cap, ready_cp, entry.level, cp_now, subject.level, is_evolution, ready_cp_fraction
             )
             cost = None
             if subject.level is not None and entry.level > subject.level and readiness != "not_suitable":
@@ -205,6 +206,29 @@ def analyze_leagues(
     return result
 
 
+def ready_level(gd: GameData, cap: int | None, best_level: float) -> float:
+    """The level at which a Pokémon counts as usable in a league.
+
+    With a CP cap that is the best level under the cap. Without one, such as the Master League,
+    the best level is the highest there is, and the last levels take XL Candy. Usable then means
+    the level reachable without XL Candy (``xlCandyMinPokemonLevel`` in the Game Master, 40),
+    when that is lower. The best level stays the goal for the future team."""
+    xl_from = gd.mechanics.get("upgrade", {}).get("xl_min_pokemon_level")
+    if cap is None and isinstance(xl_from, int | float) and not isinstance(xl_from, bool):
+        return min(float(xl_from), best_level)
+    return best_level
+
+
+def ready_point(
+    gd: GameData, cap: int | None, base: BaseStats, ivs: IVs, best_level: float, best_cp: int
+) -> tuple[float, int]:
+    """The level from ``ready_level`` and the CP there. Without the multiplier for that level in
+    the dataset it stays the best level and its CP."""
+    level = ready_level(gd, cap, best_level)
+    cpm = gd.cpm(level) if level < best_level else None
+    return (level, combat_power(base, ivs, cpm)) if cpm is not None else (best_level, best_cp)
+
+
 def _display_name(form: Mapping[str, Any]) -> str:
     label = form.get("label")
     return f"{form['name']} ({label})" if label else str(form["name"])
@@ -217,7 +241,7 @@ def _reason(code: str, text: str) -> dict[str, Any]:
 
 def _readiness(
     cap: int | None,
-    best_cp: int,
+    ready_cp: int,
     best_level: float,
     cp_now: int | None,
     level: float | None,
@@ -232,7 +256,7 @@ def _readiness(
         return "not_suitable", _reason("OVER_CAP", "Boven de CP-limiet")
     if level > best_level:
         return "not_suitable", _reason("ABOVE_BEST_LEVEL", "Al boven het optimale level")
-    usable = cp_now >= best_cp * ready_fraction
+    usable = cp_now >= ready_cp * ready_fraction
     if is_evolution:
         if usable:
             return "evolution", _reason("READY_AFTER_EVOLUTION", "Inzetbaar na evolutie")

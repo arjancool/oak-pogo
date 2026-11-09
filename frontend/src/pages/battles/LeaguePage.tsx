@@ -28,6 +28,7 @@ interface LeagueItem {
   is_evolution: boolean;
   iv_rank: number;
   percent: number;
+  percent_now: number | null;
   best_cp: number;
   best_level: number;
   readiness: string;
@@ -37,6 +38,7 @@ interface LeagueItem {
   moveset_quality: string;
   recommended_moveset: string[];
   suitability: number;
+  suitability_now: number | null;
 }
 
 const qualityLabels: Record<string, [ParseKeys, string]> = {
@@ -49,6 +51,7 @@ const qualityLabels: Record<string, [ParseKeys, string]> = {
 
 const LIMIT = 200;
 const DEFAULT_SORT = "-suitability";
+const NOW_SORT = "-now";
 
 function League({ accountId, league }: { accountId: number; league: string }) {
   const { t } = useTranslation();
@@ -82,6 +85,11 @@ function League({ accountId, league }: { accountId: number; league: string }) {
             {sort !== DEFAULT_SORT && (
               <Button variant="ghost" onClick={() => update({ sort: null })}>
                 {t("battles.league.sortSuitable")}
+              </Button>
+            )}
+            {sort !== NOW_SORT && (
+              <Button variant="ghost" onClick={() => update({ sort: NOW_SORT })}>
+                {t("battles.league.sortNow")}
               </Button>
             )}
             <Select value={readiness} onChange={(e) => update({ readiness: e.target.value })} aria-label={t("battles.league.readiness.label")}>
@@ -123,6 +131,7 @@ function League({ accountId, league }: { accountId: number; league: string }) {
                   <th>{header(t("battles.league.columns.speciesRank"), "species_rank", true)}</th>
                   <th>{header(t("battles.league.columns.ivRank"), "iv_rank", true)}</th>
                   <th>{header("%", "percent")}</th>
+                  <th>{header(t("battles.league.columns.now"), "percent_now")}</th>
                   <th>
                     {header(t("battles.league.columns.cpNow"), "cp")} → {header(t("battles.league.columns.best"), "best_cp")}
                   </th>
@@ -162,6 +171,7 @@ function League({ accountId, league }: { accountId: number; league: string }) {
                       <td className="pr-3 tabular-nums">{item.species_rank ?? "–"}</td>
                       <td className="pr-3 tabular-nums">{item.iv_rank}</td>
                       <td className="pr-3 tabular-nums">{pct(item.percent)}</td>
+                      <td className="pr-3 tabular-nums">{pct(item.percent_now)}</td>
                       <td className="pr-3 tabular-nums">
                         {num(item.cp, "?")} → {num(item.best_cp)} <span className="text-xs text-muted">L{level(item.best_level)}</span>
                       </td>

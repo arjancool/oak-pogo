@@ -41,6 +41,7 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 
 ### Gewijzigd
 
+- De eerste variant van de Team Builder is *Sterkste team zoals je Pokémon nu zijn*, in plaats van *Beste direct inzetbare team*. Hij kiest uit iedere Pokémon die nu mee mag en rekent met het statproduct op het huidige level. Zo krijg je ook in de Master League een team met wat je nu hebt. Daar haalt bijna geen Pokémon 95 procent van zijn CP op level 40, zodat die variant leeg bleef, ook bij een collectie met een Gyarados van 3054 CP op level 34. De leaguepagina heeft een kolom *Nu* en de sortering *Sterkst nu eerst* (engine cleanup-2.10, migratie 0010).
 - Het enige exemplaar van een soort met bruikbaarheid 0, zoals een zwakke Shelmet, krijgt *Beoordelen* in plaats van *Bewaren*. Zo zie je het terug in de Cleanup Manager. Het wordt nooit vanzelf transfer-kandidaat, en de actielijst vraagt nog steeds een bevestiging voor het laatste exemplaar (engine cleanup-2.8).
 - De Game Master komt standaard van alexelgt/game_masters in plaats van PokeMiners (ADR-0028, vervangt ADR-0017). De Game Master van PokeMiners is sinds 28 augustus 2026 niet bijgewerkt en kende nieuwe vormen niet, zoals de bril van 2026. Met `OAK_GAMEDATA_POKEMINERS_URL` kies je nog steeds zelf de bron. Zonder `timestamp.txt` komt de datum van de laatste wijziging op GitHub. De pagina Game Data noemt de bron.
 - *Controleren op updates* op de pagina Game Data is een POST geworden, omdat OAK het resultaat nu bewaart. De verzoeken naar buiten lopen buiten iedere transactie.

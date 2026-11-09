@@ -117,9 +117,8 @@ def _reserve_login(container: Container, address: str, username: str) -> list[tu
 
 def _set_cookies(response: Response, container: Container, token: str) -> str:
     settings = container.settings
-    csrf = csrf_token_for(container.secret, token)
     max_age = int(timedelta(days=settings.session_max_days).total_seconds())
-    session_cookie, csrf_cookie = cookie_names(settings.secure_cookies)
+    session_cookie, _csrf_cookie = cookie_names(settings.secure_cookies)
     response.set_cookie(
         session_cookie,
         token,
@@ -129,10 +128,16 @@ def _set_cookies(response: Response, container: Container, token: str) -> str:
         samesite="lax",
         path="/",
     )
+    return _set_csrf_cookie(response, container, token)
+
+
+def _set_csrf_cookie(response: Response, container: Container, token: str) -> str:
+    settings = container.settings
+    csrf = csrf_token_for(container.secret, token)
     response.set_cookie(
-        csrf_cookie,
+        cookie_names(settings.secure_cookies)[1],
         csrf,
-        max_age=max_age,
+        max_age=int(timedelta(days=settings.session_max_days).total_seconds()),
         httponly=False,
         secure=settings.secure_cookies,
         samesite="lax",
@@ -176,18 +181,27 @@ def audit(
 @router.get("/status", response_model=AuthStatus)
 def auth_status(
     request: Request,
+    response: Response,
     session: Session = Depends(get_session),
     container: Container = Depends(get_container),
 ) -> AuthStatus:
     owners = session.scalar(select(func.count()).select_from(User).where(User.role == "owner")) or 0
     user = None
     csrf = None
-    token = request.cookies.get(cookie_names(container.settings.secure_cookies)[0])
+    secure = container.settings.secure_cookies
+    token = request.cookies.get(cookie_names(secure)[0])
     if token:
         resolved = resolve_session(session, token, session_policy(container), container.clock.now())
         if resolved:
             user = UserOut.model_validate(resolved[0])
-            csrf = csrf_token_for(container.secret, token)
+            # The CSRF cookie the interface reads is put right on every visit. It can differ
+            # from the session: a plain cookie from before the __Host- names, a missing cookie,
+            # or a changed secret key. Every write would then be refused, logging out as well.
+            csrf = _set_csrf_cookie(response, container, token)
+            if secure:
+                for name in cookie_names(False):
+                    if name in request.cookies:
+                        response.delete_cookie(name, path="/", secure=True)
     return AuthStatus(
         setup_required=owners == 0,
         registration_open=container.settings.allow_registration,

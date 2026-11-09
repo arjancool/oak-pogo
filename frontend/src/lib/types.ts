@@ -177,7 +177,11 @@ export interface LeagueTarget {
     source: string;
     elite_moves: string[];
     unavailable: string[];
+    /** Elite, legacy or special moves of the moveset this Pokémon already knows. */
+    known_special: string[];
     needs: MoveNeed[];
+    /** Moves the way to this moveset overwrites and a normal TM does not give back. */
+    loses: { key: string; name: string; availability: string }[];
   } | null;
 }
 

@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from app.analysis.evolution import evolution_paths, path_candy
 from app.analysis.league import LEAGUES, Subject, analyze_leagues, league_cap
-from app.analysis.moves import availability, moveset_needs
+from app.analysis.moves import availability, lost_moves, moveset_needs
 from app.analysis.powerup import power_up_cost, reachable_max_level
 from app.analysis.purify import purify
 from app.analysis.stats import IVs, base_stats_of, combat_power, hit_points
@@ -330,6 +330,7 @@ def _subject(pokemon: Pokemon, trainer_level: int | None) -> Subject:
         purified=pokemon.alignment == Alignment.PURIFIED,
         lucky=bool(pokemon.lucky),
         trainer_level=trainer_level,
+        moves=tuple(m for m in (pokemon.move_fast_key, pokemon.move_charged_1_key, pokemon.move_charged_2_key) if m),
     )
 
 
@@ -487,10 +488,25 @@ def pokemon_analysis(
                     target.moveset.moveset,
                     second_move_unlocked=pokemon.move_charged_2 is not None,
                 )
+                # A move the Pokémon knows does not come with it after evolving, so nothing is
+                # overwritten then.
+                lost = (
+                    []
+                    if target.is_evolution
+                    else lost_moves(target_form, current_fast, current_charged, target.moveset.moveset)
+                )
                 item["moveset"] = {
                     **asdict(target.moveset),
                     "names": [str((gd.move(m) or {}).get("name", m)) for m in target.moveset.moveset],
                     "needs": [asdict(n) for n in needs],
+                    "loses": [
+                        {
+                            "key": m.move,
+                            "name": str((gd.move(m.move) or {}).get("name", m.move)),
+                            "availability": m.availability.value,
+                        }
+                        for m in lost
+                    ],
                 }
             entries.append(item)
         output[league] = {

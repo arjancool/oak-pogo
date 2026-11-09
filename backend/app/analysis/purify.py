@@ -55,8 +55,11 @@ def purify(subject: Subject, form: Mapping[str, Any] | None, rules: Mapping[str,
     )
     level = max(subject.level, floor)
     shadow = (form or {}).get("shadow") or {}
+    # Purification swaps the Shadow move for the Purified one (Frustration → Return).
+    old, new = shadow.get("shadow_move"), shadow.get("purified_move")
+    moves = tuple(new if old and new and move == old else move for move in subject.moves)
     return Purified(
-        subject=replace(subject, ivs=ivs, level=level, cp=None, shadow=False, purified=True),
+        subject=replace(subject, ivs=ivs, level=level, cp=None, shadow=False, purified=True, moves=moves),
         level=level,
         ivs=ivs,
         stardust=shadow.get("purify_stardust"),

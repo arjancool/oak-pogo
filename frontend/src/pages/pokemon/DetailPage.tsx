@@ -359,6 +359,12 @@ function AnalysisCard({ pokemonId, scenario }: { pokemonId: number; scenario: Sc
                         <span className="text-muted">{t("detail.analysis.recommended")} </span>
                         {target.moveset.names.join(" · ")}
                         {target.moveset.source === "pvpoke_usage_filtered" && <span className="text-amber-300"> {t("detail.analysis.withoutElite")}</span>}
+                        {target.moveset.known_special.length > 0 && (
+                          <span className="text-muted">
+                            {" "}
+                            {t("detail.analysis.knowsSpecial", { moves: target.moveset.known_special.map((key) => moveName(target.moveset, key)).join(", ") })}
+                          </span>
+                        )}
                         <ul className="mt-1 space-y-0.5">
                           {target.moveset.needs
                             .filter((n) => n.action !== "none")
@@ -372,6 +378,11 @@ function AnalysisCard({ pokemonId, scenario }: { pokemonId: number; scenario: Sc
                               </li>
                             ))}
                         </ul>
+                        {target.moveset.loses.map((m) => (
+                          <p key={m.key} className="mt-1 text-amber-300">
+                            {t(m.availability === "elite_tm" ? "detail.analysis.losesElite" : "detail.analysis.losesForGood", { move: m.name })}
+                          </p>
+                        ))}
                       </div>
                     )}
                   </td>

@@ -607,6 +607,7 @@
       "range": "{{from}} to {{to}}",
       "maxCp": "Max {{cp}} CP.",
       "noCpLimit": "No CP limit.",
+      "minCp": "Only Pokémon from {{cp}} CP, as set in your cleanup rules.",
       "levelCap": "Max level {{level}}.",
       "shadow": "Shadow",
       "rules": {
@@ -723,7 +724,7 @@
         "unknown": "Unknown"
       },
       "truncated": "You see the first {{shown}} of {{total}} Pokémon in this order. Sorting covers all {{total}}.",
-      "explanation": "Click a column header to sort. Species rank says how strong the species is (PvPoke). IV rank says how good this Pokémon is within its species. A strong IV rank in a weak species does not make a good battle Pokémon. Now says how much of the best stat product in the league this Pokémon has on its current level. A dash means it cannot play as it is, for example because it has to evolve first or is over the CP cap."
+      "explanation": "Click a column header to sort. Species rank says how strong the species is (PvPoke). IV rank says how good this Pokémon is within its species. A strong IV rank in a weak species does not make a good battle Pokémon. Now says how much of the best stat product in the league this Pokémon has on its current level. A dash means it cannot play as it is, for example because it has to evolve first, is over the CP cap or below the lowest CP."
     },
     "teamBuilder": {
       "title": "Team Builder",
@@ -733,6 +734,7 @@
       "cups": "Cups",
       "budget": "Stardust budget per Pokémon (limited upgrades)",
       "budgetHint": "Without a CP cap, as in the Master League, limited upgrades go up to the level that needs no XL Candy.",
+      "minCp": "Without a CP cap only Pokémon from {{cp}} CP count. For the team as your Pokémon are now that is the CP now, for the other teams the CP after the upgrades. You can change this in the cleanup rules.",
       "suggest": "Suggest teams",
       "save": "Save",
       "saved": "Team saved.",
@@ -1764,6 +1766,10 @@
           "label": "Ready now from this fraction of the best CP",
           "hint": "0.5–1"
         },
+        "masterMinCp": {
+          "label": "Lowest CP without a CP cap",
+          "hint": "Master League and cups without a cap. 0 means no lower bound"
+        },
         "maxLevel": {
           "label": "Maximum level",
           "hint": "Usually 50 according to the Game Data"
@@ -2006,6 +2012,7 @@
       "TEAM_LIMITED": "Best team with limited upgrades",
       "TEAM_FUTURE": "Best future team",
       "TEAM_TOO_FEW": "Too few suitable Pokémon for this variant: {{found}} found, {{needed}} needed.",
+      "TEAM_TOO_FEW_min_cp": "Too few suitable Pokémon for this variant: {{found}} found, {{needed}} needed. Without a CP cap only Pokémon from {{min_cp}} CP count.",
       "TEAM_NONE": "No team found.",
       "RAID_METHOD": "Simplified PvE model: cycle DPS with STAB, type advantage and the Shadow bonus. No weather, no energy from damage taken, no attacks from the boss. Meant for comparing attackers.",
       "ROCKET_METHOD": "Heuristic based on type advantage, PvP move values, your Pokémon's own stats and resistance. Not a simulation.",

@@ -607,6 +607,7 @@
       "range": "{{from}} t/m {{to}}",
       "maxCp": "Maximaal {{cp}} CP.",
       "noCpLimit": "Geen CP-limiet.",
+      "minCp": "Alleen Pokémon vanaf {{cp}} CP, volgens je cleanupregels.",
       "levelCap": "Maximaal level {{level}}.",
       "shadow": "Shadow",
       "rules": {
@@ -723,7 +724,7 @@
         "unknown": "Onbekend"
       },
       "truncated": "Je ziet de eerste {{shown}} van {{total}} Pokémon in deze volgorde. Het sorteren gebeurt over alle {{total}}.",
-      "explanation": "Klik op een kolomkop om te sorteren. Soortrang zegt hoe sterk de soort is (PvPoke). IV-rang zegt hoe goed dit exemplaar binnen die soort is. Een sterke IV-rang bij een zwakke soort maakt nog geen goede battle-Pokémon. Nu zegt hoeveel van het beste statproduct in de league deze Pokémon op zijn huidige level heeft. Een streepje betekent dat hij zo niet mee mag, bijvoorbeeld omdat hij eerst moet evolueren of boven de CP-limiet zit."
+      "explanation": "Klik op een kolomkop om te sorteren. Soortrang zegt hoe sterk de soort is (PvPoke). IV-rang zegt hoe goed dit exemplaar binnen die soort is. Een sterke IV-rang bij een zwakke soort maakt nog geen goede battle-Pokémon. Nu zegt hoeveel van het beste statproduct in de league deze Pokémon op zijn huidige level heeft. Een streepje betekent dat hij zo niet mee mag, bijvoorbeeld omdat hij eerst moet evolueren, boven de CP-limiet zit of onder de ondergrens in CP."
     },
     "teamBuilder": {
       "title": "Team Builder",
@@ -733,6 +734,7 @@
       "cups": "Cups",
       "budget": "Stardust-budget per Pokémon (beperkte upgrades)",
       "budgetHint": "Zonder CP-limiet, zoals in de Master League, gaan beperkte upgrades tot het level waarvoor geen XL Candy nodig is.",
+      "minCp": "Zonder CP-limiet tellen alleen Pokémon vanaf {{cp}} CP mee. Bij het team van nu gaat het om de huidige CP, bij de andere teams om de CP na de upgrades. Je past dit aan bij de cleanupregels.",
       "suggest": "Teams voorstellen",
       "save": "Opslaan",
       "saved": "Team opgeslagen.",
@@ -1764,6 +1766,10 @@
           "label": "Direct inzetbaar vanaf fractie van de beste CP",
           "hint": "0,5–1"
         },
+        "masterMinCp": {
+          "label": "Ondergrens in CP zonder CP-limiet",
+          "hint": "Master League en cups zonder limiet. 0 is geen ondergrens"
+        },
         "maxLevel": {
           "label": "Maximaal level",
           "hint": "Volgens Game Data meestal 50"
@@ -2006,6 +2012,7 @@
       "TEAM_LIMITED": "Beste team met beperkte upgrades",
       "TEAM_FUTURE": "Beste toekomstige team",
       "TEAM_TOO_FEW": "Te weinig geschikte Pokémon voor deze variant: {{found}} gevonden, {{needed}} nodig.",
+      "TEAM_TOO_FEW_min_cp": "Te weinig geschikte Pokémon voor deze variant: {{found}} gevonden, {{needed}} nodig. Zonder CP-limiet tellen alleen Pokémon vanaf {{min_cp}} CP mee.",
       "TEAM_NONE": "Geen team gevonden.",
       "RAID_METHOD": "Vereenvoudigd PvE-model: cyclus-DPS met STAB, typevoordeel en Shadow-bonus. Geen weer, geen energie uit schade, geen aanvallen van de baas. Bedoeld om aanvallers te vergelijken.",
       "ROCKET_METHOD": "Heuristiek op typevoordeel, PvP-aanvalswaarden, eigen statistieken en weerstand. Geen simulatie.",

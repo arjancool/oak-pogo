@@ -29,6 +29,7 @@ from app.services.battles import (
     TEAM_METHOD,
     build_teams,
     league_candidates,
+    league_min_cp,
     max_battle_overview,
     raid_counters,
     rocket_counters,
@@ -171,13 +172,17 @@ def league_overview(
     info = _known_league(gd, league)
     account = owned_account(session, auth.user, account_id)
     wanted = tuple(r for r in (readiness or "").split(",") if r) or None
-    candidates = sort_candidates(league_candidates(session, gd, account.id, league, readiness=wanted), sort)
+    min_cp = league_min_cp(gd, league, rules_for(account))
+    candidates = sort_candidates(
+        league_candidates(session, gd, account.id, league, readiness=wanted, min_cp=min_cp), sort
+    )
     method = league_method(info)
     return {
         "league": league,
         "info": info,
         "sort": sort,
         "max_cp": league_cap(gd, league),
+        "min_cp": min_cp,
         "method": method,
         "items": [
             {
@@ -195,7 +200,7 @@ def league_overview(
                 "is_evolution": c.ranking.is_evolution,
                 "iv_rank": c.ranking.rank,
                 "percent": c.ranking.percent_of_best,
-                "percent_now": c.ranking.percent_now,
+                "percent_now": c.percent_now,
                 "best_cp": c.ranking.best_cp,
                 "best_level": c.ranking.best_level,
                 "readiness": c.ranking.readiness,
@@ -270,10 +275,14 @@ def team_builder(
     gd = _gd(container)
     _known_league(gd, body.league)
     account = owned_account(session, auth.user, body.account_id)
-    variants = build_teams(session, gd, account.id, body.league, budget=body.stardust_budget, include=body.include)
+    min_cp = league_min_cp(gd, body.league, rules_for(account))
+    variants = build_teams(
+        session, gd, account.id, body.league, budget=body.stardust_budget, include=body.include, min_cp=min_cp
+    )
     return {
         "league": body.league,
         "method": TEAM_METHOD,
+        "min_cp": min_cp,
         "simulation": False,
         "variants": variants,
         "game_data_version": gd.version_id,

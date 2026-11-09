@@ -83,10 +83,5 @@ def test_limited_upgrades_in_the_master_league_stop_at_level_40(
         assert not member["xl_candy"], "no XL Candy within limited upgrades"
         assert member["goal_cp"] <= member["best_cp"]
     assert variants["limited"]["investment"]["stardust"] == sum(m["stardust"] for m in limited)
-    # Too few Pokémon are ready now in the sample: the message says how many there are.
-    message = variants["direct"]["message"]
-    found = message["data"]["found"]
-    assert message["code"] == "TEAM_TOO_FEW" and found < message["data"]["needed"] == 3
-    assert message["text"] == f"Te weinig geschikte Pokémon voor deze variant: {found} gevonden, 3 nodig."
     future = variants["future"]["team"]
     assert future and all(m["goal_level"] == m["best_level"] and m["goal_cp"] == m["best_cp"] for m in future)

@@ -5,7 +5,8 @@ Three different things are kept apart, as §10.2 requires:
 
 * ``rank`` / ``percent`` — how good the IVs are *within the species* for that league;
 * ``species_rank`` / ``species_score`` — how competitive the *species* is (PvPoke rankings);
-* ``readiness`` — whether *this individual* is usable now, after power-ups or after evolving.
+* ``readiness`` — whether *this individual* is usable now, after power-ups or after evolving;
+* ``percent_now`` — how strong *this individual* is as it is now, on its current level.
 """
 
 from __future__ import annotations
@@ -18,7 +19,7 @@ from app.analysis.evolution import evolution_paths
 from app.analysis.moves import Availability, availability
 from app.analysis.powerup import Cost, power_up_cost, reachable_max_level
 from app.analysis.pvp import RANK_TABLES
-from app.analysis.stats import BaseStats, IVs, base_stats_of, combat_power
+from app.analysis.stats import BaseStats, IVs, base_stats_of, combat_power, stat_product
 from app.gamedata.model import GameData
 
 LEAGUES = ("great", "ultra", "master")
@@ -67,6 +68,10 @@ class LeagueTarget:
     species_rank: int | None
     species_score: float | None
     moveset: MovesetAdvice | None
+    # The stat product on the current level as a percentage of the best in the league (the same
+    # reference as ``percent``). ``None`` when it cannot play now: an evolution, over the CP cap,
+    # above the level cap of a cup, or an unknown level.
+    percent_now: float | None = None
 
 
 def _levels(gd: GameData, maximum: float) -> list[tuple[float, float]]:
@@ -160,6 +165,11 @@ def analyze_leagues(
             current_cpm = gd.cpm(subject.level) if subject.level is not None else None
             if current_cpm is not None:
                 cp_now = combat_power(base, subject.ivs, current_cpm)
+            percent_now = None
+            if current_cpm is not None and cp_now is not None and not is_evolution:
+                percent_now = _percent_now(
+                    base, subject.ivs, current_cpm, cp_now, subject.level, cap, level_cap, table.best_product
+                )
             _ready, ready_cp = ready_point(gd, cap, base, subject.ivs, entry.level, entry.cp)
             readiness, reason = _readiness(
                 cap, ready_cp, entry.level, cp_now, subject.level, is_evolution, ready_cp_fraction
@@ -201,9 +211,29 @@ def analyze_leagues(
                         shadow=subject.shadow,
                         elite_tm_available=elite_tm_available,
                     ),
+                    percent_now=percent_now,
                 )
             )
     return result
+
+
+def _percent_now(
+    base: BaseStats,
+    ivs: IVs,
+    cpm: float,
+    cp_now: int,
+    level: float | None,
+    cap: int | None,
+    level_cap: float | None,
+    best_product: float,
+) -> float | None:
+    """How strong a Pokémon is as it is now: its stat product on the current level, as a
+    percentage of the best stat product in the league. Only for a Pokémon that may play now."""
+    over_cap = cap is not None and cp_now > cap
+    over_level_cap = bool(level_cap) and level is not None and level > level_cap
+    if over_cap or over_level_cap or not best_product:
+        return None
+    return round(stat_product(base, ivs, cpm) / best_product * 100, 2)
 
 
 def ready_level(gd: GameData, cap: int | None, best_level: float) -> float:

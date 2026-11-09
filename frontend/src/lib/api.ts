@@ -103,10 +103,37 @@ export function buildUrl(path: string, params?: Params): string {
   return url.pathname + url.search;
 }
 
-async function request<T>(method: string, path: string, options: { params?: Params; body?: unknown; form?: FormData } = {}): Promise<T> {
+const CSRF_FAILED = "CSRF_FAILED";
+const AUTH_STATUS = "/api/v1/auth/status";
+
+function isCsrfFailure(status: number, text: string): boolean {
+  if (status !== 403) return false;
+  const parsed = parseJson(text);
+  return parsed.ok && errorBody(parsed.value)?.code === CSRF_FAILED;
+}
+
+/**
+ * The CSRF token that belongs to the current session, from the server. The cookie can be out of
+ * step with the session: a plain cookie from before the __Host- names, a cookie the browser did
+ * not keep, or a secret key that changed. Asking for the status also puts the cookie right.
+ */
+async function freshCsrfToken(): Promise<string | null> {
+  try {
+    const response = await fetch(AUTH_STATUS, { headers: { Accept: "application/json" }, credentials: "same-origin" });
+    if (!response.ok) return null;
+    const value = (await response.json()) as { csrf_token?: unknown };
+    return typeof value.csrf_token === "string" && value.csrf_token ? value.csrf_token : null;
+  } catch {
+    return null;
+  }
+}
+
+type RequestOptions = { params?: Params; body?: unknown; form?: FormData; csrf?: string };
+
+async function request<T>(method: string, path: string, options: RequestOptions = {}): Promise<T> {
   const headers: Record<string, string> = { Accept: "application/json" };
   if (method !== "GET") {
-    const token = csrfToken();
+    const token = options.csrf ?? csrfToken();
     if (token) headers["X-CSRF-Token"] = token;
   }
   let body: BodyInit | undefined;
@@ -118,7 +145,13 @@ async function request<T>(method: string, path: string, options: { params?: Para
   }
   const response = await fetch(buildUrl(path, options.params), { method, headers, body, credentials: "same-origin" });
   if (response.status === 204) return undefined as T;
-  return readResponse<T>(response.status, await response.text());
+  const text = await response.text();
+  // A refused CSRF token is tried once more with the one the server gives for this session.
+  if (method !== "GET" && options.csrf === undefined && isCsrfFailure(response.status, text)) {
+    const fresh = await freshCsrfToken();
+    if (fresh && fresh !== headers["X-CSRF-Token"]) return request<T>(method, path, { ...options, csrf: fresh });
+  }
+  return readResponse<T>(response.status, text);
 }
 
 export const api = {
@@ -144,7 +177,7 @@ export function uploadWithProgress<T>(
   path: string,
   form: FormData,
   onProgress: (fraction: number) => void,
-  options: { signal?: AbortSignal; timeoutMs?: number } = {},
+  options: { signal?: AbortSignal; timeoutMs?: number; csrf?: string } = {},
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     const aborted = () => new ApiError(0, "ABORTED", i18n.t("errors.uploadAborted"));
@@ -160,17 +193,28 @@ export function uploadWithProgress<T>(
     };
     xhr.open("POST", path);
     xhr.timeout = options.timeoutMs ?? UPLOAD_TIMEOUT_MS;
-    const token = csrfToken();
+    const token = options.csrf ?? csrfToken();
     if (token) xhr.setRequestHeader("X-CSRF-Token", token);
     xhr.upload.onprogress = (event) => {
       if (event.lengthComputable) onProgress(event.loaded / event.total);
     };
-    xhr.onload = settle(() => {
+    const finish = () => {
       try {
         resolve(readResponse<T>(xhr.status, xhr.responseText));
       } catch (error) {
         reject(error instanceof ApiError ? error : new ApiError(xhr.status, "INVALID_RESPONSE", i18n.t("errors.invalidResponse")));
       }
+    };
+    xhr.onload = settle(() => {
+      // A refused CSRF token is tried once more with the one the server gives for this session.
+      if (options.csrf === undefined && isCsrfFailure(xhr.status, xhr.responseText)) {
+        void freshCsrfToken().then((fresh) => {
+          if (fresh && fresh !== token) resolve(uploadWithProgress<T>(path, form, onProgress, { ...options, csrf: fresh }));
+          else finish();
+        });
+        return;
+      }
+      finish();
     });
     xhr.onerror = settle(() => reject(new ApiError(0, "NETWORK", i18n.t("errors.network"))));
     xhr.ontimeout = settle(() => reject(new ApiError(0, "TIMEOUT", i18n.t("errors.uploadTimeout"))));

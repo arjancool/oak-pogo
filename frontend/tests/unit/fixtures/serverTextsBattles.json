@@ -198,7 +198,11 @@
   },
   {
    "code": "TEAM_TOO_FEW",
-   "text": "Te weinig geschikte Pokémon voor deze variant."
+   "data": {
+    "found": 2,
+    "needed": 3
+   },
+   "text": "Te weinig geschikte Pokémon voor deze variant: 2 gevonden, 3 nodig."
   }
  ],
  "pokedex": [

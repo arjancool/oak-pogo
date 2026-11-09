@@ -8,7 +8,7 @@ import { RequireAccount } from "../../components/layout/RequireAccount";
 import { ReadinessBadge, TypeBadge } from "../../components/pokemon";
 import { Alert, Button, Card, Field, Input, PageHeader, Select, Spinner } from "../../components/ui";
 import { api, errorMessage } from "../../lib/api";
-import { num } from "../../lib/format";
+import { level, num } from "../../lib/format";
 import { typeNames } from "../../lib/i18n";
 import { type ServerText, serverText } from "../../lib/serverText";
 import { useLeagues } from "./shared";
@@ -21,6 +21,9 @@ interface Member {
   is_evolution: boolean;
   cp: number | null;
   best_cp: number;
+  best_level: number;
+  goal_cp: number;
+  goal_level: number;
   iv_rank: number;
   species_rank: number | null;
   readiness: string;
@@ -109,7 +112,7 @@ function TeamBuilder({ accountId }: { accountId: number }) {
               {!leagues.data && <option value={league}>{league}</option>}
             </Select>
           </Field>
-          <Field label={t("battles.teamBuilder.budget")}>
+          <Field label={t("battles.teamBuilder.budget")} hint={t("battles.teamBuilder.budgetHint")}>
             <Input type="number" min={0} step={10000} value={budget} onChange={(e) => setBudget(Number(e.target.value))} className="w-48" />
           </Field>
           <Button variant="primary" loading={build.isPending} onClick={() => build.mutate()}>
@@ -155,7 +158,8 @@ function TeamBuilder({ accountId }: { accountId: number }) {
                           <p className="mt-1 text-xs text-muted">
                             {t("battles.teamBuilder.memberStats", {
                               cp: num(m.cp, "?"),
-                              bestCp: num(m.best_cp),
+                              goalCp: num(m.goal_cp),
+                              goalLevel: level(m.goal_level),
                               ivRank: m.iv_rank,
                               speciesRank: m.species_rank ?? "–",
                             })}

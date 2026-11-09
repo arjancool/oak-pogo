@@ -14,9 +14,11 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.analysis.league import league_cap, ready_point
 from app.analysis.moves import Availability, availability
+from app.analysis.powerup import Cost, power_up_cost
 from app.analysis.pve import boss_defense, moveset_dps
-from app.analysis.stats import IVs, base_stats_of
+from app.analysis.stats import IVs, base_stats_of, combat_power
 from app.domain.pokemon import Alignment, BreadMode
 from app.gamedata.model import GameData
 from app.models import Pokemon, PvpRanking
@@ -76,6 +78,41 @@ class Candidate:
     role_scores: Mapping[str, float]
     moveset_quality: str
     recommended: list[str]
+    # With a stardust budget in a league without a CP cap: the level reachable without XL Candy,
+    # instead of the best level (analysis/league.py ready_level).
+    goal: Goal | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class Goal:
+    level: float
+    cp: int
+    cost: Cost | None
+
+
+def _ready_goal(gd: GameData, pokemon: Pokemon, ranking: PvpRanking) -> Goal | None:
+    """The level a Pokémon reaches without XL Candy in a league without a CP cap, with its CP
+    and the cost to get there. ``None`` when a value for it is unknown."""
+    form = gd.forms.get(ranking.target_form_key)
+    base = base_stats_of(dict(form)) if form else None
+    attack, defense, stamina = pokemon.iv_attack, pokemon.iv_defense, pokemon.iv_stamina
+    if base is None or pokemon.level is None or attack is None or defense is None or stamina is None:
+        return None
+    ivs = IVs(attack, defense, stamina)
+    level, cp = ready_point(gd, None, base, ivs, ranking.best_level, ranking.best_cp)
+    # Already past that level, for instance with XL Candy: the goal is where it is now.
+    current_cpm = gd.cpm(pokemon.level) if pokemon.level > level else None
+    if current_cpm is not None:
+        level, cp = pokemon.level, combat_power(base, ivs, current_cpm)
+    cost = power_up_cost(
+        gd.mechanics,
+        pokemon.level,
+        level,
+        shadow=pokemon.alignment == Alignment.SHADOW,
+        purified=pokemon.alignment == Alignment.PURIFIED,
+        lucky=bool(pokemon.lucky),
+    )
+    return Goal(level, cp, cost)
 
 
 def _shadow(p: Pokemon) -> bool:
@@ -118,22 +155,25 @@ def league_candidates(
     ).all()
     # A cup PvPoke has no ranking for still lists its Pokémon, ordered by IV quality only.
     ranked = league in gd.rankings
-    best: dict[int, tuple[Pokemon, PvpRanking]] = {}
+    uncapped = league_cap(gd, league) is None
+    best: dict[int, tuple[Pokemon, PvpRanking, Goal | None]] = {}
     for pokemon, ranking in rows:
         if (ranked and ranking.species_rank is None) or ranking.readiness in ("not_suitable", "unknown"):
             continue
         if readiness and ranking.readiness not in readiness:
             continue
-        if max_stardust is not None and (ranking.stardust_cost or 0) > max_stardust:
+        goal = _ready_goal(gd, pokemon, ranking) if max_stardust is not None and uncapped else None
+        spend = goal.cost.stardust if goal and goal.cost else ranking.stardust_cost
+        if max_stardust is not None and (spend or 0) > max_stardust:
             continue
         current = best.get(pokemon.id)
         if current is None or (ranking.species_rank or 0, ranking.rank) < (
             current[1].species_rank or 0,
             current[1].rank,
         ):
-            best[pokemon.id] = (pokemon, ranking)
+            best[pokemon.id] = (pokemon, ranking, goal)
     candidates = []
-    for pokemon, ranking in best.values():
+    for pokemon, ranking, goal in best.values():
         form = gd.forms.get(ranking.target_form_key)
         if form is None:
             continue
@@ -151,6 +191,7 @@ def league_candidates(
                 role_scores=entry.get("role_scores") or {},
                 moveset_quality=quality,
                 recommended=recommended,
+                goal=goal,
             )
         )
     candidates.sort(key=lambda c: -c.score)
@@ -249,7 +290,12 @@ def build_teams(
                     "mode": mode,
                     "label": label,
                     "team": None,
-                    "message": _text("TEAM_TOO_FEW", "Te weinig geschikte Pokémon voor deze variant."),
+                    "message": _text(
+                        "TEAM_TOO_FEW",
+                        f"Te weinig geschikte Pokémon voor deze variant: {len(pool)} gevonden, {TEAM_SIZE} nodig.",
+                        found=len(pool),
+                        needed=TEAM_SIZE,
+                    ),
                 }
             )
             continue
@@ -269,7 +315,10 @@ def build_teams(
         total_dust = 0
         for role, candidate in _assign_roles(best_team):
             r = candidate.ranking
-            total_dust += r.stardust_cost or 0
+            goal = candidate.goal
+            cost = goal.cost if goal else None
+            stardust = cost.stardust if cost else r.stardust_cost
+            total_dust += stardust or 0
             members.append(
                 {
                     "role": role,
@@ -279,12 +328,16 @@ def build_teams(
                     "is_evolution": r.is_evolution,
                     "cp": candidate.pokemon.cp,
                     "best_cp": r.best_cp,
+                    "best_level": r.best_level,
+                    # The CP and level the cost leads to: the best, or the level without XL Candy.
+                    "goal_cp": goal.cp if goal else r.best_cp,
+                    "goal_level": goal.level if goal else r.best_level,
                     "iv_rank": r.rank,
                     "species_rank": r.species_rank,
                     "readiness": r.readiness,
-                    "stardust": r.stardust_cost,
-                    "candy": r.candy_cost,
-                    "xl_candy": r.xl_candy_cost,
+                    "stardust": stardust,
+                    "candy": cost.candy if cost else r.candy_cost,
+                    "xl_candy": cost.xl_candy if cost else r.xl_candy_cost,
                     "moveset_quality": candidate.moveset_quality,
                     "recommended_moveset": [str((gd.move(m) or {}).get("name", m)) for m in candidate.recommended],
                     "types": list(candidate.form.get("types", [])),

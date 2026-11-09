@@ -177,10 +177,6 @@
    "text": "OAK heeft geen gevalideerde, gedateerde bron voor actuele Team GO Rocket-opstellingen. Kies de tegenstanders zelf."
   },
   {
-   "code": "TEAM_DIRECT",
-   "text": "Beste direct inzetbare team"
-  },
-  {
    "code": "TEAM_FUTURE",
    "text": "Beste toekomstige team"
   },
@@ -190,11 +186,15 @@
   },
   {
    "code": "TEAM_METHOD",
-   "text": "Heuristiek: PvPoke-soortscore × IV-kwaliteit, met een straf voor gedeelde zwaktes en een bonus voor typedekking. Geen gevechtssimulatie."
+   "text": "Heuristiek: PvPoke-soortscore × statproduct als deel van het beste in de league. Bij het sterkste team nu geldt het statproduct op het huidige level, bij de andere teams dat op het doellevel. Met een straf voor gedeelde zwaktes en een bonus voor typedekking. Geen gevechtssimulatie."
   },
   {
    "code": "TEAM_NONE",
    "text": "Geen team gevonden."
+  },
+  {
+   "code": "TEAM_NOW",
+   "text": "Sterkste team zoals je Pokémon nu zijn"
   },
   {
    "code": "TEAM_TOO_FEW",

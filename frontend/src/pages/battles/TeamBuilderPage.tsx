@@ -8,7 +8,7 @@ import { RequireAccount } from "../../components/layout/RequireAccount";
 import { ReadinessBadge, TypeBadge } from "../../components/pokemon";
 import { Alert, Button, Card, Field, Input, PageHeader, Select, Spinner } from "../../components/ui";
 import { api, errorMessage } from "../../lib/api";
-import { level, num } from "../../lib/format";
+import { level, num, pct } from "../../lib/format";
 import { typeNames } from "../../lib/i18n";
 import { type ServerText, serverText } from "../../lib/serverText";
 import { useLeagues } from "./shared";
@@ -20,6 +20,8 @@ interface Member {
   target: string;
   is_evolution: boolean;
   cp: number | null;
+  level: number | null;
+  percent_now: number | null;
   best_cp: number;
   best_level: number;
   goal_cp: number;
@@ -156,13 +158,20 @@ function TeamBuilder({ accountId }: { accountId: number }) {
                             <ReadinessBadge readiness={m.readiness} />
                           </div>
                           <p className="mt-1 text-xs text-muted">
-                            {t("battles.teamBuilder.memberStats", {
-                              cp: num(m.cp, "?"),
-                              goalCp: num(m.goal_cp),
-                              goalLevel: level(m.goal_level),
-                              ivRank: m.iv_rank,
-                              speciesRank: m.species_rank ?? "–",
-                            })}
+                            {variant.mode === "now"
+                              ? t("battles.teamBuilder.memberStatsNow", {
+                                  cp: num(m.cp, "?"),
+                                  level: level(m.level),
+                                  percent: pct(m.percent_now),
+                                  speciesRank: m.species_rank ?? "–",
+                                })
+                              : t("battles.teamBuilder.memberStats", {
+                                  cp: num(m.cp, "?"),
+                                  goalCp: num(m.goal_cp),
+                                  goalLevel: level(m.goal_level),
+                                  ivRank: m.iv_rank,
+                                  speciesRank: m.species_rank ?? "–",
+                                })}
                           </p>
                           <p className="text-xs text-muted">
                             {t("battles.teamBuilder.moves", { moves: m.recommended_moveset.join(" · ") || t("common.unknown") })}

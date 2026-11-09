@@ -687,6 +687,7 @@
     },
     "league": {
       "sortSuitable": "Most suitable first",
+      "sortNow": "Strongest now first",
       "readiness": {
         "label": "Readiness",
         "all": "Any readiness",
@@ -707,6 +708,7 @@
         "ivRank": "IV rank",
         "cpNow": "CP now",
         "best": "best",
+        "now": "Now",
         "readiness": "Readiness",
         "investment": "Investment",
         "moves": "Moves"
@@ -721,11 +723,11 @@
         "unknown": "Unknown"
       },
       "truncated": "You see the first {{shown}} of {{total}} Pokémon in this order. Sorting covers all {{total}}.",
-      "explanation": "Click a column header to sort. Species rank says how strong the species is (PvPoke). IV rank says how good this Pokémon is within its species. A strong IV rank in a weak species does not make a good battle Pokémon."
+      "explanation": "Click a column header to sort. Species rank says how strong the species is (PvPoke). IV rank says how good this Pokémon is within its species. A strong IV rank in a weak species does not make a good battle Pokémon. Now says how much of the best stat product in the league this Pokémon has on its current level. A dash means it cannot play as it is, for example because it has to evolve first or is over the CP cap."
     },
     "teamBuilder": {
       "title": "Team Builder",
-      "description": "Three team variants from your own collection: ready now, with limited upgrades, and the best future team.",
+      "description": "Three team variants from your own collection: the strongest team as your Pokémon are now, a team with limited upgrades, and the best future team.",
       "league": "League or cup",
       "leagues": "Leagues",
       "cups": "Cups",
@@ -740,6 +742,7 @@
         "closer": "Closer"
       },
       "memberStats": "CP {{cp}} → {{goalCp}} (L{{goalLevel}}) · IV rank {{ivRank}} · species rank {{speciesRank}}",
+      "memberStatsNow": "CP {{cp}} (L{{level}}) · now {{percent}} of the best · species rank {{speciesRank}}",
       "moves": "Moves: {{moves}}",
       "summary": "Investment: {{stardust}} Stardust · Shared weaknesses: {{weaknesses}}",
       "noWeaknesses": "none",
@@ -1998,8 +2001,8 @@
       "LEAGUE_METHOD": "For each Pokémon, the most competitive species it can become (PvPoke rank), with its IV rank for that species.",
       "LEAGUE_METHOD_cup": "For each Pokémon, the most competitive species it can become (PvPoke rank), with its IV rank for that species. Only Pokémon that may enter under the cup's rules, as PvPoke describes them.",
       "LEAGUE_METHOD_unranked_cup": "For each Pokémon, the most competitive species it can become (PvPoke rank), with its IV rank for that species. Only Pokémon that may enter under the cup's rules, as PvPoke describes them. PvPoke has no rankings for this cup, so the order follows the IV rank only, not how strong a species is.",
-      "TEAM_METHOD": "Heuristic: PvPoke species score × IV quality, with a penalty for shared weaknesses and a bonus for type coverage. Not a battle simulation.",
-      "TEAM_DIRECT": "Best team that is ready now",
+      "TEAM_METHOD": "Heuristic: PvPoke species score × stat product as a share of the best in the league. The strongest team now uses the stat product on the current level, the other teams the one on the goal level. With a penalty for shared weaknesses and a bonus for type coverage. Not a battle simulation.",
+      "TEAM_NOW": "Strongest team as your Pokémon are now",
       "TEAM_LIMITED": "Best team with limited upgrades",
       "TEAM_FUTURE": "Best future team",
       "TEAM_TOO_FEW": "Too few suitable Pokémon for this variant: {{found}} found, {{needed}} needed.",

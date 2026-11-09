@@ -195,6 +195,7 @@ def league_overview(
                 "is_evolution": c.ranking.is_evolution,
                 "iv_rank": c.ranking.rank,
                 "percent": c.ranking.percent_of_best,
+                "percent_now": c.ranking.percent_now,
                 "best_cp": c.ranking.best_cp,
                 "best_level": c.ranking.best_level,
                 "readiness": c.ranking.readiness,
@@ -208,6 +209,7 @@ def league_overview(
                 "moveset_quality": c.moveset_quality,
                 "recommended_moveset": [str((gd.move(m) or {}).get("name", m)) for m in c.recommended],
                 "suitability": round(c.score, 1),
+                "suitability_now": round(c.score_now, 1) if c.score_now is not None else None,
             }
             for c in candidates[:limit]
         ],
@@ -233,6 +235,7 @@ def pokemon_battle(
                 "is_evolution": r.is_evolution,
                 "rank": r.rank,
                 "percent": r.percent_of_best,
+                "percent_now": r.percent_now,
                 "stat_product": r.stat_product,
                 "best_cp": r.best_cp,
                 "best_level": r.best_level,

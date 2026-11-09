@@ -687,6 +687,7 @@
     },
     "league": {
       "sortSuitable": "Meest geschikt eerst",
+      "sortNow": "Sterkst nu eerst",
       "readiness": {
         "label": "Inzetbaarheid",
         "all": "Alle inzetbaarheid",
@@ -707,6 +708,7 @@
         "ivRank": "IV-rang",
         "cpNow": "CP nu",
         "best": "beste",
+        "now": "Nu",
         "readiness": "Inzetbaarheid",
         "investment": "Investering",
         "moves": "Aanvallen"
@@ -721,11 +723,11 @@
         "unknown": "Onbekend"
       },
       "truncated": "Je ziet de eerste {{shown}} van {{total}} Pokémon in deze volgorde. Het sorteren gebeurt over alle {{total}}.",
-      "explanation": "Klik op een kolomkop om te sorteren. Soortrang zegt hoe sterk de soort is (PvPoke). IV-rang zegt hoe goed dit exemplaar binnen die soort is. Een sterke IV-rang bij een zwakke soort maakt nog geen goede battle-Pokémon."
+      "explanation": "Klik op een kolomkop om te sorteren. Soortrang zegt hoe sterk de soort is (PvPoke). IV-rang zegt hoe goed dit exemplaar binnen die soort is. Een sterke IV-rang bij een zwakke soort maakt nog geen goede battle-Pokémon. Nu zegt hoeveel van het beste statproduct in de league deze Pokémon op zijn huidige level heeft. Een streepje betekent dat hij zo niet mee mag, bijvoorbeeld omdat hij eerst moet evolueren of boven de CP-limiet zit."
     },
     "teamBuilder": {
       "title": "Team Builder",
-      "description": "Drie teamvarianten uit je eigen collectie: direct inzetbaar, met beperkte upgrades en het beste toekomstige team.",
+      "description": "Drie teamvarianten uit je eigen collectie: het sterkste team zoals je Pokémon nu zijn, een team met beperkte upgrades en het beste toekomstige team.",
       "league": "League of cup",
       "leagues": "Leagues",
       "cups": "Cups",
@@ -740,6 +742,7 @@
         "closer": "Closer"
       },
       "memberStats": "CP {{cp}} → {{goalCp}} (L{{goalLevel}}) · IV-rang {{ivRank}} · soortrang {{speciesRank}}",
+      "memberStatsNow": "CP {{cp}} (L{{level}}) · nu {{percent}} van de beste · soortrang {{speciesRank}}",
       "moves": "Aanvallen: {{moves}}",
       "summary": "Investering: {{stardust}} stardust · Gedeelde zwaktes: {{weaknesses}}",
       "noWeaknesses": "geen",
@@ -1998,8 +2001,8 @@
       "LEAGUE_METHOD": "Per Pokémon de meest competitieve soort die hij kan worden (PvPoke-rang), met zijn IV-rang voor die soort.",
       "LEAGUE_METHOD_cup": "Per Pokémon de meest competitieve soort die hij kan worden (PvPoke-rang), met zijn IV-rang voor die soort. Alleen Pokémon die volgens de regels van de cup mee mogen, zoals PvPoke ze beschrijft.",
       "LEAGUE_METHOD_unranked_cup": "Per Pokémon de meest competitieve soort die hij kan worden (PvPoke-rang), met zijn IV-rang voor die soort. Alleen Pokémon die volgens de regels van de cup mee mogen, zoals PvPoke ze beschrijft. PvPoke heeft voor deze cup geen ranglijst. De volgorde volgt daarom alleen de IV-rang, niet hoe sterk een soort is.",
-      "TEAM_METHOD": "Heuristiek: PvPoke-soortscore × IV-kwaliteit, met een straf voor gedeelde zwaktes en een bonus voor typedekking. Geen gevechtssimulatie.",
-      "TEAM_DIRECT": "Beste direct inzetbare team",
+      "TEAM_METHOD": "Heuristiek: PvPoke-soortscore × statproduct als deel van het beste in de league. Bij het sterkste team nu geldt het statproduct op het huidige level, bij de andere teams dat op het doellevel. Met een straf voor gedeelde zwaktes en een bonus voor typedekking. Geen gevechtssimulatie.",
+      "TEAM_NOW": "Sterkste team zoals je Pokémon nu zijn",
       "TEAM_LIMITED": "Beste team met beperkte upgrades",
       "TEAM_FUTURE": "Beste toekomstige team",
       "TEAM_TOO_FEW": "Te weinig geschikte Pokémon voor deze variant: {{found}} gevonden, {{needed}} nodig.",

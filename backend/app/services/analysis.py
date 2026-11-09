@@ -340,4 +340,5 @@ def _ranking_row(pokemon_id: int, account_id: int, run_id: int, league: str, tar
         "xl_candy_cost": target.cost.xl_candy if target.cost else None,
         "species_rank": target.species_rank,
         "species_score": target.species_score,
+        "percent_now": target.percent_now,
     }

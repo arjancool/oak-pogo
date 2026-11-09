@@ -14,6 +14,7 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 
 ### Beveiliging
 
+- De ontwikkelgereedschappen gebruiken minimatch 11.0.4 in plaats van 10.2.6, zodat `npm audit` geen meldingen meer geeft. eslint en typescript-eslint vragen zelf nog versie 10. Daarom zet `frontend/package.json` de versie vast met `overrides`, zie `docs/SECURITY.md`. eslint controleert dezelfde bestanden als voorheen. De image verandert hierdoor niet.
 - Over https heten de cookies `__Host-oak_session` en `__Host-oak_csrf`. Een subdomein kan ze dan niet zetten of vervangen. Wie OAK over https gebruikt, moet na deze update één keer opnieuw inloggen.
 - Het auditlogboek bewaart een regel 365 dagen (`OAK_AUDIT_RETENTION_DAYS`). Een beëindigde of verlopen sessie verdwijnt 30 dagen later uit de database. Bij een mislukte inlogpoging met een onbekende naam bewaart OAK alleen de eerste twee tekens en de lengte.
 - De ID van een verwijderd traineraccount komt nooit meer terug (migratie 0009). Migraties draaien voortaan met foreign keys uit en worden daarna gecontroleerd, zodat het herbouwen van een tabel geen rijen van andere tabellen meeneemt.

@@ -50,7 +50,9 @@ Stardust en candy per halve level komen uit de Game Data. Shadow kost 20 procent
 
 ## Aanvallen
 
-Voor iedere aanval bepaalt OAK of hij via een normale TM, alleen via een Elite TM, als legacy-aanval of helemaal niet meer te krijgen is. Het movesetadvies volgt de PvPoke-ranking. Vraagt die een Elite TM die je volgens de instellingen niet hebt, of een aanval die niet meer te krijgen is, dan zoekt OAK de meest gebruikte aanvallen die wel met een normale TM te krijgen zijn, en meldt dat.
+Voor iedere aanval bepaalt OAK of hij via een normale TM, alleen via een Elite TM, als legacy-aanval of helemaal niet meer te krijgen is. Het movesetadvies volgt de PvPoke-ranking. Vraagt die een Elite TM die je volgens de instellingen niet hebt, of een aanval die niet meer te krijgen is, dan zoekt OAK de meest gebruikte aanvallen die wel met een normale TM te krijgen zijn, en meldt dat. Een aanval die de Pokémon al kent, heeft geen TM nodig. Kent een Garchomp Earth Power al, dan blijft het advies dus de moveset van PvPoke, ook zonder Elite TM, en staat erbij dat hij die aanval al kent. Dat geldt alleen voor de vorm die hij nu heeft, want na een evolutie heeft een Pokémon andere aanvallen.
+
+Overschrijft de weg naar het advies een aanval die je met een normale TM niet terugkrijgt, dan waarschuwt OAK. Bij een elite-aanval staat erbij dat alleen een Elite TM hem terugbrengt, bij een legacy-aanval of Return dat geen enkele TM dat doet. Frustration valt daarbuiten, die wil je juist kwijt. Je kiest zelf welke charged-aanval een TM vervangt, dus OAK waarschuwt alleen als het advies geen plek voor die aanval overlaat.
 
 ## Raidmodel
 

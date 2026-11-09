@@ -11,7 +11,7 @@ Three different things are kept apart, as §10.2 requires:
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -38,6 +38,8 @@ class Subject:
     purified: bool
     lucky: bool
     trainer_level: int | None
+    # The moves it knows now, fast and charged. A move it already knows needs no TM.
+    moves: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,6 +48,9 @@ class MovesetAdvice:
     source: str  # pvpoke_ranking | pvpoke_usage_filtered | none
     elite_moves: list[str] = field(default_factory=list)
     unavailable: list[str] = field(default_factory=list)
+    # Elite, legacy or special moves of the PvPoke moveset the Pokémon already knows, which is
+    # why the advice keeps that moveset although an Elite TM is not available.
+    known_special: list[str] = field(default_factory=list)
 
 
 @dataclass(frozen=True, slots=True)
@@ -86,15 +91,28 @@ def league_cap(gd: GameData, league: str) -> int | None:
 
 
 def recommended_moveset(
-    gd: GameData, form: Mapping[str, Any], league: str, *, shadow: bool, elite_tm_available: bool
+    gd: GameData,
+    form: Mapping[str, Any],
+    league: str,
+    *,
+    shadow: bool,
+    elite_tm_available: bool,
+    known: Collection[str] = (),
 ) -> MovesetAdvice | None:
+    """The PvPoke moveset, or the best one a normal TM can give when part of it is out of reach.
+
+    ``known`` holds the moves the Pokémon already knows. Such a move needs no TM, so an elite
+    or legacy move it knows never pushes the advice to another moveset. Only pass it for the
+    form the Pokémon has now: an evolution does not keep its moves."""
     entry = gd.ranking(league, form.get("pvpoke_id"), shadow=shadow)
     if entry is None:
         return None
     moveset = list(entry.get("moveset", []))
     elite = [m for m in moveset if availability(form, m) is Availability.ELITE_TM]
     unavailable = [m for m in moveset if availability(form, m) in (Availability.LEGACY, Availability.NOT_LEARNABLE)]
-    if (elite and not elite_tm_available) or unavailable:
+    out_of_reach = [*([] if elite_tm_available else elite), *unavailable]
+    known_special = [m for m in out_of_reach if m in known]
+    if any(m not in known for m in out_of_reach):
         fast = next(
             (m for m in entry.get("fast_usage", []) if availability(form, m) is Availability.NORMAL_TM),
             None,
@@ -103,7 +121,7 @@ def recommended_moveset(
         if fast and charged:
             return MovesetAdvice([fast, *charged], "pvpoke_usage_filtered", elite, unavailable)
         return MovesetAdvice(moveset, "pvpoke_ranking", elite, unavailable)
-    return MovesetAdvice(moveset, "pvpoke_ranking", elite, unavailable)
+    return MovesetAdvice(moveset, "pvpoke_ranking", elite, unavailable, known_special)
 
 
 def analyze_leagues(
@@ -210,6 +228,7 @@ def analyze_leagues(
                         league,
                         shadow=subject.shadow,
                         elite_tm_available=elite_tm_available,
+                        known=() if is_evolution else subject.moves,
                     ),
                     percent_now=percent_now,
                 )

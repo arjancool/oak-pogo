@@ -164,6 +164,7 @@ class AnalysisService:
                     purified=pokemon.alignment == Alignment.PURIFIED,
                     lucky=bool(pokemon.lucky),
                     trainer_level=trainer_level,
+                    moves=tuple(view.moves),
                 )
                 options = {
                     "max_level": rules.max_level,

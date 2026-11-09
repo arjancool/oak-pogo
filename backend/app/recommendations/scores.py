@@ -96,13 +96,15 @@ def species_weight(species_rank: int | None, rules: CleanupRules) -> float:
     return (rules.meta_rank_threshold - species_rank) / (rules.meta_rank_threshold - rules.species_rank_full)
 
 
-def moveset_factor(view: PokemonView, target: LeagueTarget) -> tuple[float, dict[str, Any] | None]:
+def moveset_factor(target: LeagueTarget) -> tuple[float, dict[str, Any] | None]:
     advice = target.moveset
-    if advice is None or advice.source != "pvpoke_usage_filtered":
+    if advice is None:
         return 1.0, None
-    special = [*advice.elite_moves, *advice.unavailable]
-    if not target.is_evolution and special and all(move in view.moves for move in special):
+    # The analysis already counted the moves the Pokémon knows (analysis/league.py).
+    if advice.known_special:
         return 1.0, {"code": "KNOWS_SPECIAL_MOVE", "text": "kent de speciale aanval al"}
+    if advice.source != "pvpoke_usage_filtered":
+        return 1.0, None
     return MOVESET_PENALTY, {"code": "BEST_MOVES_UNAVAILABLE", "text": "de beste aanvallen zijn niet beschikbaar"}
 
 
@@ -122,7 +124,7 @@ def battle_score(view: PokemonView, rules: CleanupRules) -> Score:
             continue
         weight = species_weight(target.species_rank, rules)
         quality = iv_quality(target.rank)
-        factor, note = moveset_factor(view, target)
+        factor, note = moveset_factor(target)
         value = SCORE_MAX * weight * quality * factor
         species = (
             {"code": "SPECIES_RANK", "text": f"soortrang {target.species_rank}", "data": {"rank": target.species_rank}}

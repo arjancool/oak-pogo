@@ -61,7 +61,7 @@ function League({ accountId, league }: { accountId: number; league: string }) {
   const query = useQuery({
     queryKey: ["league", league, accountId, readiness, sort],
     queryFn: () =>
-      api.get<{ max_cp: number | null; method: ServerText; info: LeagueInfo; items: LeagueItem[]; total: number }>(`/api/v1/battles/league/${league}`, {
+      api.get<{ max_cp: number | null; min_cp: number | null; method: ServerText; info: LeagueInfo; items: LeagueItem[]; total: number }>(`/api/v1/battles/league/${league}`, {
         account_id: accountId,
         readiness: readiness || undefined,
         sort,
@@ -77,7 +77,13 @@ function League({ accountId, league }: { accountId: number; league: string }) {
         title={query.data?.info.name ?? leagueNames[league] ?? league}
         description={
           query.data
-            ? `${query.data.max_cp ? t("battles.shared.maxCp", { cp: num(query.data.max_cp) }) : t("battles.shared.noCpLimit")} ${serverText("battles", query.data.method)}`
+            ? [
+                query.data.max_cp ? t("battles.shared.maxCp", { cp: num(query.data.max_cp) }) : t("battles.shared.noCpLimit"),
+                query.data.min_cp ? t("battles.shared.minCp", { cp: num(query.data.min_cp) }) : null,
+                serverText("battles", query.data.method),
+              ]
+                .filter(Boolean)
+                .join(" ")
             : undefined
         }
         actions={

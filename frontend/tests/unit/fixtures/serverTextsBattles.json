@@ -203,6 +203,16 @@
     "needed": 3
    },
    "text": "Te weinig geschikte Pokémon voor deze variant: 2 gevonden, 3 nodig."
+  },
+  {
+   "code": "TEAM_TOO_FEW",
+   "data": {
+    "found": 2,
+    "needed": 3,
+    "min_cp": 2500,
+    "context": "min_cp"
+   },
+   "text": "Te weinig geschikte Pokémon voor deze variant: 2 gevonden, 3 nodig. Zonder CP-limiet tellen alleen Pokémon vanaf 2500 CP mee."
   }
  ],
  "pokedex": [

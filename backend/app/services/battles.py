@@ -85,8 +85,9 @@ class Candidate:
     # instead of the best level (analysis/league.py ready_level). For the team as the Pokémon
     # are now: the current level, at no cost.
     goal: Goal | None = None
-    # The same score with the stat product on the current level, or None when the Pokémon cannot
-    # play in this league as it is now.
+    # The stat product on the current level as a share of the best, and the score with it. None
+    # when the Pokémon cannot play in this league as it is now, also below the lower bound in CP.
+    percent_now: float | None = None
     score_now: float | None = None
 
 
@@ -129,6 +130,14 @@ def _now_goal(pokemon: Pokemon) -> Goal | None:
     return Goal(pokemon.level, pokemon.cp, Cost(0, 0, 0, 0))
 
 
+def league_min_cp(gd: GameData, league: str, rules: CleanupRules) -> int | None:
+    """The lower bound in CP for a league or cup without a CP cap (``master_min_cp``), or None
+    when the league has a cap or the rule is 0."""
+    if league_cap(gd, league) is not None or rules.master_min_cp <= 0:
+        return None
+    return rules.master_min_cp
+
+
 def _shadow(p: Pokemon) -> bool:
     return p.alignment == Alignment.SHADOW
 
@@ -158,9 +167,11 @@ def league_candidates(
     readiness: tuple[str, ...] | None = None,
     max_stardust: int | None = None,
     now: bool = False,
+    min_cp: int | None = None,
 ) -> list[Candidate]:
     """The best target per Pokémon, strongest first. With ``now`` only Pokémon that may play as
-    they are, scored on their current level instead of their best level."""
+    they are, scored on their current level instead of their best level. ``min_cp`` leaves out a
+    Pokémon below that CP where it would play: now, after the upgrades, or on its best level."""
     rows = session.execute(
         select(Pokemon, PvpRanking)
         .join(PvpRanking, PvpRanking.pokemon_id == Pokemon.id)
@@ -191,6 +202,9 @@ def league_candidates(
         spend = goal.cost.stardust if goal and goal.cost else ranking.stardust_cost
         if max_stardust is not None and (spend or 0) > max_stardust:
             continue
+        playing_cp = goal.cp if goal else None if now else ranking.best_cp
+        if min_cp is not None and (playing_cp is None or playing_cp < min_cp):
+            continue
         current = best.get(pokemon.id)
         if current is None or (ranking.species_rank or 0, ranking.rank) < (
             current[1].species_rank or 0,
@@ -207,7 +221,9 @@ def league_candidates(
         recommended = list(entry.get("moveset", []))
         current = [pokemon.move_fast_key, pokemon.move_charged_1_key, pokemon.move_charged_2_key]
         quality = moveset_quality(current, recommended) if not ranking.is_evolution else "after_evolution"
-        score_now = species_score * ranking.percent_now / 100 if ranking.percent_now is not None else None
+        fits_now = min_cp is None or (pokemon.cp is not None and pokemon.cp >= min_cp)
+        percent_now = ranking.percent_now if fits_now else None
+        score_now = species_score * percent_now / 100 if percent_now is not None else None
         candidates.append(
             Candidate(
                 pokemon=pokemon,
@@ -218,6 +234,7 @@ def league_candidates(
                 moveset_quality=quality,
                 recommended=recommended,
                 goal=goal,
+                percent_now=percent_now,
                 score_now=score_now,
             )
         )
@@ -234,7 +251,7 @@ LEAGUE_SORTS: dict[str, Callable[[Candidate], Any]] = {
     "species_rank": lambda c: c.ranking.species_rank,
     "iv_rank": lambda c: c.ranking.rank,
     "percent": lambda c: c.ranking.percent_of_best,
-    "percent_now": lambda c: c.ranking.percent_now,
+    "percent_now": lambda c: c.percent_now,
     "now": lambda c: c.score_now,
     "cp": lambda c: c.pokemon.cp,
     "best_cp": lambda c: c.ranking.best_cp,
@@ -252,6 +269,20 @@ def sort_candidates(candidates: list[Candidate], sort: str) -> list[Candidate]:
     known = [c for c in candidates if key(c) is not None]
     unknown = [c for c in candidates if key(c) is None]
     return sorted(known, key=key, reverse=descending) + unknown
+
+
+def _too_few(found: int, min_cp: int | None) -> dict[str, Any]:
+    text = f"Te weinig geschikte Pokémon voor deze variant: {found} gevonden, {TEAM_SIZE} nodig."
+    if min_cp is None:
+        return _text("TEAM_TOO_FEW", text, found=found, needed=TEAM_SIZE)
+    return _text(
+        "TEAM_TOO_FEW",
+        f"{text} Zonder CP-limiet tellen alleen Pokémon vanaf {min_cp} CP mee.",
+        found=found,
+        needed=TEAM_SIZE,
+        min_cp=min_cp,
+        context="min_cp",
+    )
 
 
 def _team_value(gd: GameData, team: tuple[Candidate, ...]) -> tuple[float, dict[str, Any]]:
@@ -292,6 +323,7 @@ def build_teams(
     *,
     budget: int | None,
     include: list[int] | None = None,
+    min_cp: int | None = None,
 ) -> list[dict[str, Any]]:
     variants = []
     for mode, label in TEAM_VARIANTS:
@@ -303,6 +335,7 @@ def build_teams(
             readiness=READINESS_BY_MODE[mode],
             max_stardust=budget if mode == "limited" else None,
             now=mode == "now",
+            min_cp=min_cp,
         )
         # One copy per target species keeps the team varied.
         seen: set[str] = set()
@@ -320,12 +353,7 @@ def build_teams(
                     "mode": mode,
                     "label": label,
                     "team": None,
-                    "message": _text(
-                        "TEAM_TOO_FEW",
-                        f"Te weinig geschikte Pokémon voor deze variant: {len(pool)} gevonden, {TEAM_SIZE} nodig.",
-                        found=len(pool),
-                        needed=TEAM_SIZE,
-                    ),
+                    "message": _too_few(len(pool), min_cp),
                 }
             )
             continue
@@ -358,7 +386,7 @@ def build_teams(
                     "is_evolution": r.is_evolution,
                     "cp": candidate.pokemon.cp,
                     "level": candidate.pokemon.level,
-                    "percent_now": r.percent_now,
+                    "percent_now": candidate.percent_now,
                     "best_cp": r.best_cp,
                     "best_level": r.best_level,
                     # The CP and level the cost leads to: the best, the level without XL Candy, or

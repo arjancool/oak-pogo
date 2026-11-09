@@ -73,7 +73,7 @@ function TeamBuilder({ accountId }: { accountId: number }) {
   const [budget, setBudget] = useState(100_000);
   const [message, setMessage] = useState<string | null>(null);
   const build = useMutation({
-    mutationFn: () => api.post<{ method: ServerText; variants: Variant[] }>("/api/v1/battles/team-builder", { account_id: accountId, league, stardust_budget: budget }),
+    mutationFn: () => api.post<{ method: ServerText; min_cp: number | null; variants: Variant[] }>("/api/v1/battles/team-builder", { account_id: accountId, league, stardust_budget: budget }),
   });
   const teams = useQuery({ queryKey: ["teams", accountId], queryFn: () => api.get<SavedTeam[]>("/api/v1/battles/teams", { account_id: accountId }) });
   const save = useMutation({
@@ -126,7 +126,10 @@ function TeamBuilder({ accountId }: { accountId: number }) {
       {message && <Alert tone="success">{message}</Alert>}
       {build.data && (
         <>
-          <Alert tone="info">{serverText("battles", build.data.method)}</Alert>
+          <Alert tone="info">
+            {serverText("battles", build.data.method)}
+            {build.data.min_cp ? ` ${t("battles.teamBuilder.minCp", { cp: num(build.data.min_cp) })}` : null}
+          </Alert>
           <div className="mt-4 grid gap-4 xl:grid-cols-3">
             {build.data.variants.map((variant) => (
               <Card

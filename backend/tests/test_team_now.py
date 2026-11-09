@@ -121,6 +121,16 @@ def test_too_few_pokemon_now_says_how_many(owner: Api, container: Any, gamedata:
     export["pokemons"] = [p for p in export["pokemons"] if p["pokemonId"] == MAGIKARP + 1]
     assert len(export["pokemons"]) == 2, "two Gyarados, one target species"
     account = _imported(owner, container, export)
+    # Both are below the lower bound of 2500 CP, and the message says so.
+    message = _variants(owner, account, "master")["now"]["message"]
+    assert message["code"] == "TEAM_TOO_FEW"
+    assert message["data"] == {"found": 0, "needed": 3, "min_cp": 2500, "context": "min_cp"}
+    assert message["text"] == (
+        "Te weinig geschikte Pokémon voor deze variant: 0 gevonden, 3 nodig. "
+        "Zonder CP-limiet tellen alleen Pokémon vanaf 2500 CP mee."
+    )
+    changed = owner.put("/api/v1/cleanup/rules", {"rules": {"master_min_cp": 0}}, params={"account_id": account})
+    assert changed.status_code == 200, changed.text
     message = _variants(owner, account, "master")["now"]["message"]
     assert message["code"] == "TEAM_TOO_FEW" and message["data"] == {"found": 1, "needed": 3}
     assert message["text"] == "Te weinig geschikte Pokémon voor deze variant: 1 gevonden, 3 nodig."

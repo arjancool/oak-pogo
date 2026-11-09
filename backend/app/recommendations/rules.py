@@ -22,10 +22,11 @@ from typing import Any
 
 from app.core.errors import ValidationFailedError
 
-ENGINE_VERSION = "cleanup-2.11"
+ENGINE_VERSION = "cleanup-2.12"
 SCORE_MAX = 100
 MAX_KEEP_MIN = 10
 MAX_EVENT_HOLD_DAYS = 60
+MAX_MIN_CP = 10_000
 IV_RANK_MAX = 4096
 
 
@@ -74,6 +75,10 @@ class CleanupRules:
     build_iv_rank_threshold: int = 500
     # A Pokémon at or above this fraction of the league cap counts as directly usable.
     ready_cp_fraction: float = 0.95
+    # In a league or cup without a CP cap, such as the Master League, the battle pages and the
+    # Team Builder only take Pokémon from this CP on: the CP now for the team as the Pokémon are
+    # now, the CP after the upgrades for the other teams. 0 means no lower bound.
+    master_min_cp: int = 2500
     max_level: float = 50.0
     include_best_buddy: bool = False
     elite_tm_available: bool = False
@@ -142,6 +147,12 @@ class CleanupRules:
             raise ValidationFailedError("Een IV-rang ligt tussen 1 en 4096.", context="iv_rank")
         if not 1 <= self.max_level <= 60:
             raise ValidationFailedError("max_level is ongeldig.", context="max_level")
+        if not 0 <= self.master_min_cp <= MAX_MIN_CP:
+            raise ValidationFailedError(
+                f"master_min_cp moet tussen 0 en {MAX_MIN_CP} liggen.",
+                context="out_of_range",
+                data={"field": "master_min_cp", "min": 0, "max": MAX_MIN_CP},
+            )
         if not 0 <= self.event_hold_days <= MAX_EVENT_HOLD_DAYS:
             raise ValidationFailedError(
                 f"event_hold_days moet tussen 0 en {MAX_EVENT_HOLD_DAYS} liggen.",

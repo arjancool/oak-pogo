@@ -680,10 +680,11 @@ const ANALYSIS_RULES: Record<string, [ParseKeys, ParseKeys]> = {
   good_iv_rank_threshold: ["cleanup.rules.items.goodIvRankThreshold.label", "cleanup.rules.of4096"],
   build_iv_rank_threshold: ["cleanup.rules.items.buildIvRankThreshold.label", "cleanup.rules.of4096"],
   ready_cp_fraction: ["cleanup.rules.items.readyCpFraction.label", "cleanup.rules.items.readyCpFraction.hint"],
+  master_min_cp: ["cleanup.rules.items.masterMinCp.label", "cleanup.rules.items.masterMinCp.hint"],
   max_level: ["cleanup.rules.items.maxLevel.label", "cleanup.rules.items.maxLevel.hint"],
   event_hold_days: ["cleanup.rules.items.eventHoldDays.label", "cleanup.rules.items.eventHoldDays.hint"],
 };
-const STEPS: Record<string, number> = { ready_cp_fraction: 0.01, max_level: 0.5 };
+const STEPS: Record<string, number> = { ready_cp_fraction: 0.01, max_level: 0.5, master_min_cp: 100 };
 
 function NumberRules({ rules, entries, set }: { rules: Rules; entries: Record<string, [ParseKeys, ParseKeys]>; set: (key: string, value: number | null) => void }) {
   const { t } = useTranslation();

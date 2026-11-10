@@ -6,6 +6,9 @@
 #   push naar main      → latest, sha-<kort>
 #   tag v2.1.0          → 2.1.0, 2.1, sha-<kort>
 #   handmatig (main/tag) → dezelfde tags, na dezelfde controles
+#   maandag (main)      → latest, sha-<kort>, ook met de updates die Dependabot die week
+#                         automatisch mergde (dependabot-automerge.yml); zo'n merge start zelf
+#                         geen run op main
 # De releasejob bouwt de image één keer voor amd64 en arm64, zet hem zonder tag op ghcr.io,
 # test precies die image per platform en geeft hem pas daarna de tags (audit F08).
 name: CI
@@ -203,7 +206,7 @@ jobs:
     # Only the commit that just passed every check, and only from main or a version tag.
     needs: [backend, frontend, e2e, docker]
     if: >-
-      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
       && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
     permissions:
       contents: read

@@ -1,0 +1,71 @@
+# Kleine Dependabot-updates (patch en minor) automatisch mergen, pas als alle verplichte
+# controles van de ruleset voor main groen zijn. Een nieuwe hoofdversie blijft handwerk.
+#
+# Deze workflow mergt zelf niets. Hij zet de auto-merge van GitHub aan, en GitHub mergt pas als
+# de ruleset het toelaat. Heeft main geen verplichte controles, dan zou GitHub meteen mergen.
+# Daarom zet hij de auto-merge dan niet aan en faalt hij met de reden (issue #34).
+#
+# Een merge met het token van deze workflow start geen nieuwe CI-run op main. De wekelijkse run
+# van ci.yml publiceert daarom ook de image, met alles wat die week is gemerged.
+name: Dependabot automatisch mergen
+
+on:
+  pull_request:
+
+permissions: {}
+
+concurrency:
+  group: dependabot-automerge-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  automerge:
+    name: Kleine update automatisch mergen
+    if: github.actor == 'dependabot[bot]' && github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
+      PR: ${{ github.event.pull_request.number }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      BASE: ${{ github.event.pull_request.base.ref }}
+    steps:
+      - name: Controleren en auto-merge aanzetten
+        run: |
+          set -euo pipefail
+
+          # Without required checks GitHub would merge at once, untested.
+          required=$(gh api "repos/$REPO/rules/branches/$BASE" \
+            --jq '[.[] | select(.type == "required_status_checks")] | length')
+          if [ "$required" -eq 0 ]; then
+            echo "::error::$BASE heeft geen verplichte controles. Zet eerst de ruleset voor $BASE aan (issue #34)."
+            exit 1
+          fi
+
+          # One commit, made and signed by Dependabot: nobody added anything to the branch.
+          commits=$(gh api "repos/$REPO/pulls/$PR/commits" --jq 'length')
+          commit=$(gh api "repos/$REPO/commits/$HEAD_SHA")
+          author=$(jq -r '.author.login // ""' <<<"$commit")
+          verified=$(jq -r '.commit.verification.verified' <<<"$commit")
+          if [ "$commits" -ne 1 ] || [ "$author" != "dependabot[bot]" ] || [ "$verified" != "true" ]; then
+            echo "::notice::Niet één ondertekende commit van Dependabot. Deze PR blijft handwerk."
+            exit 0
+          fi
+
+          # Dependabot names the kind of every update in its commit message.
+          types=$(jq -r '.commit.message' <<<"$commit" \
+            | grep -oE 'update-type: version-update:semver-(major|minor|patch)' | sort -u || true)
+          if [ -z "$types" ]; then
+            echo "::notice::De soort update staat niet in de commit. Deze PR blijft handwerk."
+            exit 0
+          fi
+          if grep -q 'semver-major' <<<"$types"; then
+            echo "::notice::Een nieuwe hoofdversie. Deze PR blijft handwerk."
+            exit 0
+          fi
+
+          echo "Kleine update ($(tr '\n' ' ' <<<"$types")). Auto-merge gaat aan."
+          gh pr merge "$PR" --repo "$REPO" --auto --squash

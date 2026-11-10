@@ -1,0 +1,54 @@
+# De backendtests op nieuwere Python-versies dan de 3.13 die OAK gebruikt. Dit blokkeert niets:
+# de image en de verplichte controles van de ruleset blijven op 3.13 (CLAUDE.md). Zo zie je op
+# tijd wanneer een overstap kan, of wat ervoor nog moet gebeuren.
+#
+# "3.14" is de eerstvolgende versie. "3.x" is steeds de nieuwste stabiele versie, zodat ook een
+# versie na 3.15 vanzelf meedoet zodra hij uitkomt. Faalt een versie, dan wordt deze workflow
+# rood en stuurt GitHub een melding, maar de rest van CI merkt er niets van.
+name: Nieuwere Python
+
+on:
+  schedule:
+    - cron: "41 5 * * 1"
+  workflow_dispatch:
+  pull_request:
+    paths: [".github/workflows/python-next.yml"]
+
+permissions:
+  contents: read
+
+env:
+  # Python comes from setup-python; uv must never download one of its own.
+  UV_PYTHON_DOWNLOADS: never
+
+jobs:
+  backend:
+    name: Backend op Python ${{ matrix.python }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.14", "3.x"]
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        id: python
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Afhankelijkheden installeren
+        # The same versions and hashes as on 3.13, from uv.lock.
+        run: |
+          python -m pip install --require-hashes -r build-requirements.txt
+          uv sync --locked --extra dev --python "$(command -v python)"
+      - name: Pytest
+        run: .venv/bin/pytest
+      - name: Samenvatting
+        if: always()
+        env:
+          VERSION: ${{ steps.python.outputs.python-version }}
+          RESULT: ${{ job.status }}
+        run: |
+          echo "Python $VERSION: $RESULT" >> "$GITHUB_STEP_SUMMARY"

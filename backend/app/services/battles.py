@@ -14,9 +14,11 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.analysis.league import league_cap, ready_point
 from app.analysis.moves import Availability, availability
+from app.analysis.powerup import Cost, power_up_cost
 from app.analysis.pve import boss_defense, moveset_dps
-from app.analysis.stats import IVs, base_stats_of
+from app.analysis.stats import IVs, base_stats_of, combat_power
 from app.domain.pokemon import Alignment, BreadMode
 from app.gamedata.model import GameData
 from app.models import Pokemon, PvpRanking
@@ -24,8 +26,10 @@ from app.recommendations.rules import CleanupRules
 
 TEAM_POOL = 24
 TEAM_SIZE = 3
-READINESS_BY_MODE = {
-    "direct": ("direct",),
+# The team as the Pokémon are now takes every Pokémon that may play now, ready or not, so a
+# collection always has a team when three Pokémon fit (percent_now, analysis/league.py).
+READINESS_BY_MODE: dict[str, tuple[str, ...] | None] = {
+    "now": None,
     "limited": ("direct", "power_up", "evolution"),
     "future": ("direct", "power_up", "evolution"),
 }
@@ -41,11 +45,12 @@ def _text(code: str, text: str, **data: Any) -> dict[str, Any]:
 
 TEAM_METHOD = _text(
     "TEAM_METHOD",
-    "Heuristiek: PvPoke-soortscore × IV-kwaliteit, met een straf voor gedeelde zwaktes en een bonus voor "
-    "typedekking. Geen gevechtssimulatie.",
+    "Heuristiek: PvPoke-soortscore × statproduct als deel van het beste in de league. Bij het sterkste team "
+    "nu geldt het statproduct op het huidige level, bij de andere teams dat op het doellevel. Met een straf "
+    "voor gedeelde zwaktes en een bonus voor typedekking. Geen gevechtssimulatie.",
 )
 TEAM_VARIANTS = (
-    ("direct", _text("TEAM_DIRECT", "Beste direct inzetbare team")),
+    ("now", _text("TEAM_NOW", "Sterkste team zoals je Pokémon nu zijn")),
     ("limited", _text("TEAM_LIMITED", "Beste team met beperkte upgrades")),
     ("future", _text("TEAM_FUTURE", "Beste toekomstige team")),
 )
@@ -76,6 +81,61 @@ class Candidate:
     role_scores: Mapping[str, float]
     moveset_quality: str
     recommended: list[str]
+    # With a stardust budget in a league without a CP cap: the level reachable without XL Candy,
+    # instead of the best level (analysis/league.py ready_level). For the team as the Pokémon
+    # are now: the current level, at no cost.
+    goal: Goal | None = None
+    # The stat product on the current level as a share of the best, and the score with it. None
+    # when the Pokémon cannot play in this league as it is now, also below the lower bound in CP.
+    percent_now: float | None = None
+    score_now: float | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class Goal:
+    level: float
+    cp: int
+    cost: Cost | None
+
+
+def _ready_goal(gd: GameData, pokemon: Pokemon, ranking: PvpRanking) -> Goal | None:
+    """The level a Pokémon reaches without XL Candy in a league without a CP cap, with its CP
+    and the cost to get there. ``None`` when a value for it is unknown."""
+    form = gd.forms.get(ranking.target_form_key)
+    base = base_stats_of(dict(form)) if form else None
+    attack, defense, stamina = pokemon.iv_attack, pokemon.iv_defense, pokemon.iv_stamina
+    if base is None or pokemon.level is None or attack is None or defense is None or stamina is None:
+        return None
+    ivs = IVs(attack, defense, stamina)
+    level, cp = ready_point(gd, None, base, ivs, ranking.best_level, ranking.best_cp)
+    # Already past that level, for instance with XL Candy: the goal is where it is now.
+    current_cpm = gd.cpm(pokemon.level) if pokemon.level > level else None
+    if current_cpm is not None:
+        level, cp = pokemon.level, combat_power(base, ivs, current_cpm)
+    cost = power_up_cost(
+        gd.mechanics,
+        pokemon.level,
+        level,
+        shadow=pokemon.alignment == Alignment.SHADOW,
+        purified=pokemon.alignment == Alignment.PURIFIED,
+        lucky=bool(pokemon.lucky),
+    )
+    return Goal(level, cp, cost)
+
+
+def _now_goal(pokemon: Pokemon) -> Goal | None:
+    """As the Pokémon is now: its current level and CP, at no cost."""
+    if pokemon.level is None or pokemon.cp is None:
+        return None
+    return Goal(pokemon.level, pokemon.cp, Cost(0, 0, 0, 0))
+
+
+def league_min_cp(gd: GameData, league: str, rules: CleanupRules) -> int | None:
+    """The lower bound in CP for a league or cup without a CP cap (``master_min_cp``), or None
+    when the league has a cap or the rule is 0."""
+    if league_cap(gd, league) is not None or rules.master_min_cp <= 0:
+        return None
+    return rules.master_min_cp
 
 
 def _shadow(p: Pokemon) -> bool:
@@ -106,7 +166,12 @@ def league_candidates(
     *,
     readiness: tuple[str, ...] | None = None,
     max_stardust: int | None = None,
+    now: bool = False,
+    min_cp: int | None = None,
 ) -> list[Candidate]:
+    """The best target per Pokémon, strongest first. With ``now`` only Pokémon that may play as
+    they are, scored on their current level instead of their best level. ``min_cp`` leaves out a
+    Pokémon below that CP where it would play: now, after the upgrades, or on its best level."""
     rows = session.execute(
         select(Pokemon, PvpRanking)
         .join(PvpRanking, PvpRanking.pokemon_id == Pokemon.id)
@@ -118,22 +183,36 @@ def league_candidates(
     ).all()
     # A cup PvPoke has no ranking for still lists its Pokémon, ordered by IV quality only.
     ranked = league in gd.rankings
-    best: dict[int, tuple[Pokemon, PvpRanking]] = {}
+    uncapped = league_cap(gd, league) is None
+    best: dict[int, tuple[Pokemon, PvpRanking, Goal | None]] = {}
     for pokemon, ranking in rows:
-        if (ranked and ranking.species_rank is None) or ranking.readiness in ("not_suitable", "unknown"):
+        if ranked and ranking.species_rank is None:
+            continue
+        if now:
+            if ranking.percent_now is None:
+                continue
+        elif ranking.readiness in ("not_suitable", "unknown"):
             continue
         if readiness and ranking.readiness not in readiness:
             continue
-        if max_stardust is not None and (ranking.stardust_cost or 0) > max_stardust:
+        if now:
+            goal = _now_goal(pokemon)
+        else:
+            goal = _ready_goal(gd, pokemon, ranking) if max_stardust is not None and uncapped else None
+        spend = goal.cost.stardust if goal and goal.cost else ranking.stardust_cost
+        if max_stardust is not None and (spend or 0) > max_stardust:
+            continue
+        playing_cp = goal.cp if goal else None if now else ranking.best_cp
+        if min_cp is not None and (playing_cp is None or playing_cp < min_cp):
             continue
         current = best.get(pokemon.id)
         if current is None or (ranking.species_rank or 0, ranking.rank) < (
             current[1].species_rank or 0,
             current[1].rank,
         ):
-            best[pokemon.id] = (pokemon, ranking)
+            best[pokemon.id] = (pokemon, ranking, goal)
     candidates = []
-    for pokemon, ranking in best.values():
+    for pokemon, ranking, goal in best.values():
         form = gd.forms.get(ranking.target_form_key)
         if form is None:
             continue
@@ -142,15 +221,21 @@ def league_candidates(
         recommended = list(entry.get("moveset", []))
         current = [pokemon.move_fast_key, pokemon.move_charged_1_key, pokemon.move_charged_2_key]
         quality = moveset_quality(current, recommended) if not ranking.is_evolution else "after_evolution"
+        fits_now = min_cp is None or (pokemon.cp is not None and pokemon.cp >= min_cp)
+        percent_now = ranking.percent_now if fits_now else None
+        score_now = species_score * percent_now / 100 if percent_now is not None else None
         candidates.append(
             Candidate(
                 pokemon=pokemon,
                 ranking=ranking,
                 form=form,
-                score=species_score * ranking.percent_of_best / 100,
+                score=score_now if now and score_now is not None else species_score * ranking.percent_of_best / 100,
                 role_scores=entry.get("role_scores") or {},
                 moveset_quality=quality,
                 recommended=recommended,
+                goal=goal,
+                percent_now=percent_now,
+                score_now=score_now,
             )
         )
     candidates.sort(key=lambda c: -c.score)
@@ -166,6 +251,8 @@ LEAGUE_SORTS: dict[str, Callable[[Candidate], Any]] = {
     "species_rank": lambda c: c.ranking.species_rank,
     "iv_rank": lambda c: c.ranking.rank,
     "percent": lambda c: c.ranking.percent_of_best,
+    "percent_now": lambda c: c.percent_now,
+    "now": lambda c: c.score_now,
     "cp": lambda c: c.pokemon.cp,
     "best_cp": lambda c: c.ranking.best_cp,
     "readiness": lambda c: READINESS_ORDER.get(c.ranking.readiness),
@@ -182,6 +269,20 @@ def sort_candidates(candidates: list[Candidate], sort: str) -> list[Candidate]:
     known = [c for c in candidates if key(c) is not None]
     unknown = [c for c in candidates if key(c) is None]
     return sorted(known, key=key, reverse=descending) + unknown
+
+
+def _too_few(found: int, min_cp: int | None) -> dict[str, Any]:
+    text = f"Te weinig geschikte Pokémon voor deze variant: {found} gevonden, {TEAM_SIZE} nodig."
+    if min_cp is None:
+        return _text("TEAM_TOO_FEW", text, found=found, needed=TEAM_SIZE)
+    return _text(
+        "TEAM_TOO_FEW",
+        f"{text} Zonder CP-limiet tellen alleen Pokémon vanaf {min_cp} CP mee.",
+        found=found,
+        needed=TEAM_SIZE,
+        min_cp=min_cp,
+        context="min_cp",
+    )
 
 
 def _team_value(gd: GameData, team: tuple[Candidate, ...]) -> tuple[float, dict[str, Any]]:
@@ -222,6 +323,7 @@ def build_teams(
     *,
     budget: int | None,
     include: list[int] | None = None,
+    min_cp: int | None = None,
 ) -> list[dict[str, Any]]:
     variants = []
     for mode, label in TEAM_VARIANTS:
@@ -232,6 +334,8 @@ def build_teams(
             league,
             readiness=READINESS_BY_MODE[mode],
             max_stardust=budget if mode == "limited" else None,
+            now=mode == "now",
+            min_cp=min_cp,
         )
         # One copy per target species keeps the team varied.
         seen: set[str] = set()
@@ -249,7 +353,7 @@ def build_teams(
                     "mode": mode,
                     "label": label,
                     "team": None,
-                    "message": _text("TEAM_TOO_FEW", "Te weinig geschikte Pokémon voor deze variant."),
+                    "message": _too_few(len(pool), min_cp),
                 }
             )
             continue
@@ -269,7 +373,10 @@ def build_teams(
         total_dust = 0
         for role, candidate in _assign_roles(best_team):
             r = candidate.ranking
-            total_dust += r.stardust_cost or 0
+            goal = candidate.goal
+            cost = goal.cost if goal else None
+            stardust = cost.stardust if cost else r.stardust_cost
+            total_dust += stardust or 0
             members.append(
                 {
                     "role": role,
@@ -278,13 +385,20 @@ def build_teams(
                     "target": r.target_name,
                     "is_evolution": r.is_evolution,
                     "cp": candidate.pokemon.cp,
+                    "level": candidate.pokemon.level,
+                    "percent_now": candidate.percent_now,
                     "best_cp": r.best_cp,
+                    "best_level": r.best_level,
+                    # The CP and level the cost leads to: the best, the level without XL Candy, or
+                    # where it is now for the team as the Pokémon are now.
+                    "goal_cp": goal.cp if goal else r.best_cp,
+                    "goal_level": goal.level if goal else r.best_level,
                     "iv_rank": r.rank,
                     "species_rank": r.species_rank,
                     "readiness": r.readiness,
-                    "stardust": r.stardust_cost,
-                    "candy": r.candy_cost,
-                    "xl_candy": r.xl_candy_cost,
+                    "stardust": stardust,
+                    "candy": cost.candy if cost else r.candy_cost,
+                    "xl_candy": cost.xl_candy if cost else r.xl_candy_cost,
                     "moveset_quality": candidate.moveset_quality,
                     "recommended_moveset": [str((gd.move(m) or {}).get("name", m)) for m in candidate.recommended],
                     "types": list(candidate.form.get("types", [])),

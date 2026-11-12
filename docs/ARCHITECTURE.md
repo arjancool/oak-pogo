@@ -12,7 +12,7 @@ browser ──https────▶ │   ├─ /api/v1/…   REST-API, sessies,
                      │  SQLite  /data/oak.db   ·   Game Data  /data/gamedata                 │
                      └──────────────────────────────────────────────────────────────────────┘
                                          ▲
-    PokeMiners, PvPoke, ScrapedDuck ─────┘  (Game Data en events, alleen ophalen)
+    alexelgt, PvPoke, ScrapedDuck ───────┘  (Game Data en events, alleen ophalen)
 ```
 
 ## Uitgangspunten
@@ -22,7 +22,7 @@ browser ──https────▶ │   ├─ /api/v1/…   REST-API, sessies,
 - **Huidige stand plus wijzigingshistorie** (ADR-0015). Iedere Pokémon heeft één rij met de actuele stand. Iedere wijziging bij een synchronisatie komt als onveranderbare gebeurtenis in `pokemon_change_events`. Een trigger in de database weigert wijzigingen aan die gebeurtenissen.
 - **Afgeleide gegevens zijn projecties.** Soortnamen, levels, PvP-rangen en cleanup-adviezen kunnen altijd opnieuw berekend worden uit de export, de Game Data en de regels.
 - **Gebruikers bezitten traineraccounts** (ADR-0016). Iedere query op accountgegevens filtert op traineraccount en gebruiker. Een object van een ander account geeft 404, niet 403.
-- **Game Data heeft versiebeheer** (ADR-0017). Een nieuwe dataset wordt eerst gecontroleerd en pas daarna actief. De vorige versies blijven bewaard om terug te kunnen.
+- **Game Data heeft versiebeheer** (ADR-0028). Een nieuwe dataset wordt eerst gecontroleerd en pas daarna actief. De vorige versies blijven bewaard om terug te kunnen.
 - **Geen meegeleverde artwork** (ADR-0020) en **geen afhankelijkheid van Hermes** (ADR-0010).
 
 ## Backend
@@ -60,7 +60,7 @@ Upload en webhook gebruiken vanaf stap 2 precies dezelfde code.
 
 ### Achtergrondverwerking
 
-De verwerker is een thread in hetzelfde proces. De wachtrij staat in de tabel `background_jobs`, zodat werk een herstart overleeft: bij het starten zet OAK onderbroken taken terug in de wachtrij. Taken zijn imports, analyses, Game Data-updates, het opnieuw afleiden na een Game Data-wissel en het ophalen van de eventkalender. Ieder uur draait onderhoud: opgeslagen exports opnieuw filteren als het privacyfilter strenger werd, ze opruimen na de bewaartermijn, zo nodig op nieuwe Game Data en een nieuwe eventkalender controleren, en analyses opnieuw inplannen als een event binnen de termijn komt of voorbij is.
+De verwerker is een thread in hetzelfde proces. De wachtrij staat in de tabel `background_jobs`, zodat werk een herstart overleeft: bij het starten zet OAK onderbroken taken terug in de wachtrij. Een taak die al drie keer is onderbroken, zet OAK op mislukt. Taken zijn imports, analyses, Game Data-updates, het opnieuw afleiden na een Game Data-wissel en het ophalen van de eventkalender. Ieder uur draait onderhoud: opgeslagen exports opnieuw filteren als het privacyfilter strenger werd, ze opruimen na de bewaartermijn, zo nodig op nieuwe Game Data en een nieuwe eventkalender controleren, en analyses opnieuw inplannen als een event binnen de termijn komt of voorbij is.
 
 ### Database
 

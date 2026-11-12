@@ -19,7 +19,15 @@ from app.api.deps import AuthContext, get_auth, get_container, get_session, owne
 from app.api.v1.pokemon import sync_bounds, tag_label_map
 from app.core.container import Container
 from app.core.errors import NotFoundError
-from app.domain.pokemon import FIRST_GAME_YEAR, VINTAGE_FIRST_YEAR, VINTAGE_LAST_YEAR
+from app.domain.pokemon import (
+    FIRST_GAME_YEAR,
+    IV_MAX,
+    VINTAGE_FIRST_YEAR,
+    VINTAGE_LAST_YEAR,
+    Alignment,
+    is_event_form,
+)
+from app.domain.search_strings import MAX_BUNDLE, SAFETY_TERMS, BoxPokemon, bundle
 from app.jobs.tasks import enqueue
 from app.models import (
     AnalysisRun,
@@ -31,9 +39,10 @@ from app.models import (
     TrainerAccount,
 )
 from app.recommendations.rules import ENGINE_VERSION, CleanupRules
+from app.schemas.common import MAX_PAGE
 from app.services.analysis import RULES_KEY, AnalysisService, rules_for
 from app.services.pokemon_view import summarize
-from app.services.transfer_guard import GuardContext, check_transfer, confirmation_item, guard_context
+from app.services.transfer_guard import GuardContext, check_transfer, confirmation_item, guard_context, with_list
 
 router = APIRouter(prefix="/cleanup", tags=["cleanup"])
 STATUSES = ("PROTECT", "KEEP", "BUILD", "REVIEW", "TRANSFER_CANDIDATE", "UNKNOWN")
@@ -92,7 +101,7 @@ def recommendations(
         description="best: de beste gymverdediger per soort; in_gym: staat nu in een gym",
     ),
     sort: str = Query(default="priority", pattern="^(priority|cp|-cp|name|iv|battle|-battle|keep|-keep)$"),
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=MAX_PAGE),
     page_size: int = Query(100, ge=1, le=500),
     auth: AuthContext = Depends(get_auth),
     session: Session = Depends(get_session),
@@ -375,12 +384,17 @@ def update_action_list(
         for action in current.values():
             session.delete(action)
         current = {}
+    # The list as it will be: what is open on it now, and what this request adds.
+    listed = {pid for pid, action in current.items() if action.status == "open"}
+    if body.mode in ("add", "replace"):
+        listed |= set(body.ids)
+    guard = with_list(session, guard, account.id, listed)
     if body.mode in ("add", "replace"):
         for pid in body.ids:
             if pid not in found:
                 continue
-            pokemon, metadata, _analysis = found[pid]
-            check = check_transfer(pokemon, metadata, guard)
+            pokemon, metadata, analysis = found[pid]
+            check = check_transfer(pokemon, metadata, guard, analysis)
             if check.blocked:
                 skipped.append({"pokemon_id": pid, "reason": check.blocked, "reason_text": check.blocked_text})
                 continue
@@ -413,8 +427,8 @@ def update_action_list(
             if pid not in current:
                 continue
             if pid in found:
-                pokemon, metadata, _analysis = found[pid]
-                check = check_transfer(pokemon, metadata, guard)
+                pokemon, metadata, analysis = found[pid]
+                check = check_transfer(pokemon, metadata, guard, analysis)
                 if check.blocked or check.unconfirmed(current[pid].confirmed):
                     reason = check.blocked or "; ".join(check.messages)
                     text = check.blocked_text or {
@@ -446,7 +460,8 @@ def _action_list(
         .order_by(Pokemon.cp.desc() if sort == "-cp" else Pokemon.cp.asc(), Pokemon.id)
     ).all()
     gd = container.gamedata.active()
-    guard = _guard_for(session, account_id, container.settings.tz)
+    open_ids = {action.pokemon_id for action, *_ in rows if action.status == "open"}
+    guard = with_list(session, _guard_for(session, account_id, container.settings.tz), account_id, open_ids)
     items = []
     for action, pokemon, meta, analysis in rows:
         summary = summarize(pokemon, meta, analysis, gd)
@@ -454,7 +469,7 @@ def _action_list(
         protection = [r["text"] for r in (analysis.protection_reasons if analysis else [])]
         # The protection is checked again on every read: what was fine when the Pokémon was
         # added may be protected now (audit A03).
-        check = check_transfer(pokemon, meta, guard)
+        check = check_transfer(pokemon, meta, guard, analysis)
         unconfirmed = check.unconfirmed(action.confirmed)
         still_in_inventory = pokemon.inventory_status == "in_inventory"
         items.append(
@@ -482,7 +497,7 @@ def _action_list(
         "list_name": list_name,
         "count": len(items),
         "items": items,
-        "search_hint": search_hint(items),
+        "search_hint": search_hint(session, account_id, items),
     }
 
 
@@ -493,38 +508,91 @@ def _guard_for(session: Session, account_id: int, tz: ZoneInfo) -> GuardContext:
     return guard_context(session, account, tz)
 
 
-def search_hint(items: list[dict[str, Any]]) -> dict[str, Any]:
-    """Pokémon GO search strings that narrow the in-game box down to the listed species and CP.
+def _known_terms(pokemon: Pokemon) -> tuple[frozenset[str], frozenset[str]]:
+    """The safety terms of the search string this Pokémon certainly matches, and the ones it may
+    match because a value is unknown."""
+    has: set[str] = set()
+    maybe: set[str] = set()
 
-    The game cannot search for OAK's or PGSharp's internal IDs. The string uses the Pokédex
-    number and an exact CP per Pokémon, which is precise enough to find each one by hand.
-    "pokemon_ids" says which listed Pokémon a string finds, so the interface can name them.
+    def note(term: str, value: bool | None) -> None:
+        if value:
+            has.add(term)
+        if value is not False:
+            maybe.add(term)
+
+    note("favorite", pokemon.favorite)
+    note("shiny", pokemon.shiny)
+    note("lucky", pokemon.lucky)
+    ivs = (pokemon.iv_attack, pokemon.iv_defense, pokemon.iv_stamina)
+    note("4*", None if None in ivs else all(iv == IV_MAX for iv in ivs))
+    # Without Game Data the class is unknown.
+    known_class = pokemon.derived_version_id is not None
+    note("legendary", pokemon.pokemon_class == "legendary" if known_class else None)
+    note("mythical", pokemon.pokemon_class == "mythical" if known_class else None)
+    note("shadow", None if pokemon.alignment is None else pokemon.alignment == Alignment.SHADOW)
+    costume: bool | None = bool(pokemon.costume_id) or pokemon.costume_form is True
+    # Whether the game's "costume" search finds an event form the Game Master does not mark as a
+    # costume, such as the goggles of 2026, is not known.
+    if not costume and (pokemon.costume_id is None or pokemon.costume_form is None or is_event_form(pokemon.form_name)):
+        costume = None
+    note("costume", costume)
+    return frozenset(has), frozenset(maybe)
+
+
+def _box_pokemon(pokemon: Pokemon) -> BoxPokemon | None:
+    if pokemon.cp is None:
+        return None
+    has, maybe = _known_terms(pokemon)
+    return BoxPokemon(id=pokemon.id, species_id=pokemon.species_id, cp=pokemon.cp, has=has, maybe=maybe)
+
+
+def search_hint(session: Session, account_id: int, items: list[dict[str, Any]]) -> dict[str, Any]:
+    """Pokémon GO search strings that find the listed Pokémon, at most ten per string.
+
+    The game cannot search for OAK's or PGSharp's internal IDs. A string combines Pokédex
+    numbers and exact CPs, and OAK checks it against every Pokémon in the inventory of the
+    account (search_strings.py). "pokemon_ids" says which listed Pokémon a string finds, so the
+    interface can name them, and "other_matches" counts the Pokémon it also finds.
     """
-    open_items = [i for i in items if i["executable"]]
-    by_species: dict[int, list[dict[str, Any]]] = defaultdict(list)
-    for item in open_items:
-        if item["pokemon"]["cp"] is not None:
-            by_species[item["pokemon"]["species_id"]].append(item["pokemon"])
-    queries = []
-    for dex, pokemon in sorted(by_species.items()):
-        pokemon.sort(key=lambda p: (p["cp"], p["id"]))
-        cps = sorted({p["cp"] for p in pokemon})
-        queries.append(
-            {
-                "species_id": dex,
-                "query": f"{dex}&" + ",".join(f"cp{cp}" for cp in cps),
-                "pokemon_ids": [p["id"] for p in pokemon],
-            }
-        )
+    listed_ids = {i["pokemon"]["id"] for i in items if i["executable"]}
+    listed: list[BoxPokemon] = []
+    box: list[BoxPokemon] = []
+    if listed_ids:
+        species = select(Pokemon.species_id).where(Pokemon.id.in_(listed_ids))
+        rows = session.scalars(
+            select(Pokemon).where(
+                Pokemon.trainer_account_id == account_id,
+                Pokemon.inventory_status == "in_inventory",
+                Pokemon.species_id.in_(species),
+            )
+        ).all()
+        for row in rows:
+            searchable = _box_pokemon(row)
+            if searchable is None:
+                continue
+            box.append(searchable)
+            if row.id in listed_ids:
+                listed.append(searchable)
+    queries = [
+        {
+            "species_ids": found.species_ids,
+            "query": found.query,
+            "search": found.search,
+            "pokemon_ids": [p.id for p in sorted(found.members, key=lambda p: (p.species_id, p.cp, p.id))],
+            "other_matches": found.other_matches,
+        }
+        for found in bundle(listed, box)
+    ]
     note = (
-        "Pokémon GO kan niet op Pokémon-ID zoeken. Gebruik per soort het Pokédex-nummer met de exacte CP, "
-        "en controleer de Pokémon in het spel voordat je hem overzet. '&!favorite&!shiny&!lucky' sluit "
-        "extra veilig uit."
+        f"Pokémon GO kan niet op Pokémon-ID zoeken. Iedere zoektekst zoekt tot {MAX_BUNDLE} Pokémon op "
+        "Pokédex-nummer en exacte CP. OAK heeft nagerekend dat hij volgens de laatste synchronisatie alleen "
+        "de Pokémon vindt die erboven staan. Pokémon die je daarna hebt gevangen kent OAK niet, dus controleer "
+        "in het spel wat je selecteert voordat je iets overzet."
     )
     return {
         "note": note,
-        "note_text": {"code": "SEARCH_NOTE", "text": note},
-        "safety_suffix": "&!favorite&!shiny&!lucky&!4*&!legendary&!mythical&!shadow&!costume",
+        "note_text": {"code": "SEARCH_NOTE", "text": note, "data": {"max": MAX_BUNDLE}},
+        "safety_suffix": "".join(f"&!{term}" for term in SAFETY_TERMS),
         "queries": queries,
     }
 

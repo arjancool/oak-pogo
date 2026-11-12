@@ -13,8 +13,18 @@ from app.models import User, UserSession
 
 SESSION_COOKIE = "oak_session"
 CSRF_COOKIE = "oak_csrf"
+# Over https the names start with __Host-. A browser then only accepts the cookie as Secure, for
+# the whole site and set by this host itself, so a subdomain cannot set or replace it (issue #55).
+HOST_PREFIX = "__Host-"
 CSRF_HEADER = "x-csrf-token"
 TOUCH_INTERVAL = timedelta(minutes=5)
+
+
+def cookie_names(secure: bool) -> tuple[str, str]:
+    """The names of the session and the CSRF cookie. Over https only the __Host- names count: a
+    cookie without the prefix could come from a subdomain."""
+    prefix = HOST_PREFIX if secure else ""
+    return prefix + SESSION_COOKIE, prefix + CSRF_COOKIE
 
 
 @dataclass(frozen=True, slots=True)

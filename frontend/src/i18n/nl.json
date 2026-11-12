@@ -116,7 +116,9 @@
       "favorite": "Favoriet",
       "vintage": "Vintage, bescherming opgeheven",
       "unknown_date": "Vangstdatum onbekend",
-      "protected": "Beschermd door een regel"
+      "protected": "Beschermd door een regel",
+      "advice": "Volgens het advies bewaren",
+      "last_copy": "Laatste exemplaar van deze soort"
     },
     "readiness": {
       "direct": "Direct inzetbaar",
@@ -242,6 +244,7 @@
     "mythical": "Mythical",
     "ultraBeast": "Ultra Beast",
     "costume": "Kostuum",
+    "eventForm": "Eventvorm",
     "background": "Achtergrond",
     "traded": "Geruild",
     "inGym": "In gym",
@@ -604,6 +607,7 @@
       "range": "{{from}} t/m {{to}}",
       "maxCp": "Maximaal {{cp}} CP.",
       "noCpLimit": "Geen CP-limiet.",
+      "minCp": "Alleen Pokémon vanaf {{cp}} CP, volgens je cleanupregels.",
       "levelCap": "Maximaal level {{level}}.",
       "shadow": "Shadow",
       "rules": {
@@ -684,6 +688,7 @@
     },
     "league": {
       "sortSuitable": "Meest geschikt eerst",
+      "sortNow": "Sterkst nu eerst",
       "readiness": {
         "label": "Inzetbaarheid",
         "all": "Alle inzetbaarheid",
@@ -704,6 +709,7 @@
         "ivRank": "IV-rang",
         "cpNow": "CP nu",
         "best": "beste",
+        "now": "Nu",
         "readiness": "Inzetbaarheid",
         "investment": "Investering",
         "moves": "Aanvallen"
@@ -718,15 +724,17 @@
         "unknown": "Onbekend"
       },
       "truncated": "Je ziet de eerste {{shown}} van {{total}} Pokémon in deze volgorde. Het sorteren gebeurt over alle {{total}}.",
-      "explanation": "Klik op een kolomkop om te sorteren. Soortrang zegt hoe sterk de soort is (PvPoke). IV-rang zegt hoe goed dit exemplaar binnen die soort is. Een sterke IV-rang bij een zwakke soort maakt nog geen goede battle-Pokémon."
+      "explanation": "Klik op een kolomkop om te sorteren. Soortrang zegt hoe sterk de soort is (PvPoke). IV-rang zegt hoe goed dit exemplaar binnen die soort is. Een sterke IV-rang bij een zwakke soort maakt nog geen goede battle-Pokémon. Nu zegt hoeveel van het beste statproduct in de league deze Pokémon op zijn huidige level heeft. Een streepje betekent dat hij zo niet mee mag, bijvoorbeeld omdat hij eerst moet evolueren, boven de CP-limiet zit of onder de ondergrens in CP."
     },
     "teamBuilder": {
       "title": "Team Builder",
-      "description": "Drie teamvarianten uit je eigen collectie: direct inzetbaar, met beperkte upgrades en het beste toekomstige team.",
+      "description": "Drie teamvarianten uit je eigen collectie: het sterkste team zoals je Pokémon nu zijn, een team met beperkte upgrades en het beste toekomstige team.",
       "league": "League of cup",
       "leagues": "Leagues",
       "cups": "Cups",
       "budget": "Stardust-budget per Pokémon (beperkte upgrades)",
+      "budgetHint": "Zonder CP-limiet, zoals in de Master League, gaan beperkte upgrades tot het level waarvoor geen XL Candy nodig is.",
+      "minCp": "Zonder CP-limiet tellen alleen Pokémon vanaf {{cp}} CP mee. Bij het team van nu gaat het om de huidige CP, bij de andere teams om de CP na de upgrades. Je past dit aan bij de cleanupregels.",
       "suggest": "Teams voorstellen",
       "save": "Opslaan",
       "saved": "Team opgeslagen.",
@@ -735,7 +743,8 @@
         "switch": "Safe switch",
         "closer": "Closer"
       },
-      "memberStats": "CP {{cp}} → {{bestCp}} · IV-rang {{ivRank}} · soortrang {{speciesRank}}",
+      "memberStats": "CP {{cp}} → {{goalCp}} (L{{goalLevel}}) · IV-rang {{ivRank}} · soortrang {{speciesRank}}",
+      "memberStatsNow": "CP {{cp}} (L{{level}}) · nu {{percent}} van de beste · soortrang {{speciesRank}}",
       "moves": "Aanvallen: {{moves}}",
       "summary": "Investering: {{stardust}} stardust · Gedeelde zwaktes: {{weaknesses}}",
       "noWeaknesses": "geen",
@@ -889,9 +898,9 @@
       "check": "Controleren op updates",
       "updateNow": "Nu bijwerken",
       "repairNeeded": "Het bestand van de actieve versie ontbreekt. Kies Nu bijwerken om het opnieuw op te bouwen.",
-      "available": "Er is nieuwe data beschikbaar ({{sources}}).",
+      "available": "Er is een nieuwere versie ({{sources}}).",
       "noActiveVersion": "nog geen actieve versie",
-      "upToDate": "De actieve versie is actueel.",
+      "upToDate": "Je hebt de nieuwste versie.",
       "updateStarted": "Update gestart. OAK downloadt, controleert en activeert de nieuwe versie op de achtergrond.",
       "versionActivated": "Versie geactiveerd. Analyses worden opnieuw berekend.",
       "noActiveTitle": "Geen actieve Game Data",
@@ -899,6 +908,15 @@
       "lastErrorTitle": "Laatste update mislukt",
       "lastErrorText": "{{error}} De actieve versie is niet aangeraakt.",
       "activeTitle": "Actieve versie",
+      "latest": {
+        "title": "Nieuwste versie",
+        "never": "Nog niet gecontroleerd.",
+        "neverOwner": "Nog niet gecontroleerd. Kies Controleren op updates.",
+        "gameMaster": "Nieuwste bij {{source}}: Game Master van {{date}}, gecontroleerd op {{checked}}.",
+        "failed": "De controle is mislukt: {{error}}",
+        "stale": "De actieve versie is nieuwer dan deze controle. Controleer opnieuw om te zien of er een nieuwere versie is.",
+        "theSource": "de bron"
+      },
       "noActive": "Geen.",
       "autoUpdate": "Automatisch bijwerken: {{state}}. Laatste controle: {{checked}}.",
       "autoUpdateOn_one": "aan, ieder uur",
@@ -926,6 +944,8 @@
         "version": "Versie",
         "originUpload": "handmatige upload",
         "originDownload": "download",
+        "gameMasterDate": "Game Master van",
+        "pvpokeDate": "PvPoke van",
         "activated": "Geactiveerd",
         "species": "Soorten",
         "forms": "Vormen",
@@ -996,6 +1016,14 @@
       "system": {
         "title": "Systeem",
         "version": "Versie",
+        "release": {
+          "label": "Nieuwste release",
+          "off": "niet opgevraagd (OAK_RELEASE_CHECK=false)",
+          "unknown": "onbekend ({{reason}})",
+          "newer": "Versie {{version}} is beschikbaar, van {{date}}",
+          "same": "Je hebt de nieuwste versie ({{version}}, {{date}})",
+          "ahead": "Je draait een nieuwere versie dan de nieuwste release ({{version}}, {{date}})"
+        },
         "started": "Gestart",
         "timezone": "Tijdzone",
         "baseUrl": "Basis-URL",
@@ -1253,6 +1281,15 @@
       "powerUps": "Power-ups gedaan",
       "buddyKm": "Buddy-km",
       "fromEgg": "Uit ei",
+      "origin": "Herkomst",
+      "origins": {
+        "egg": "Uitgebroed uit een ei",
+        "raid": "Gevangen in een raid",
+        "rocket": "Gevangen na een gevecht met Team GO Rocket",
+        "max_battle": "Gevangen in een Max Battle"
+      },
+      "originCode": "onbekend (code {{code}})",
+      "originMissing": "onbekend (niet in de export)",
       "firstSeen": "Eerst gezien in OAK",
       "lastChanged": "Laatst gewijzigd",
       "event": "Event: {{events}}",
@@ -1336,6 +1373,9 @@
       "recommended": "Aanbevolen:",
       "withoutElite": "(zonder Elite TM)",
       "randomFrom": "(willekeurig uit {{size}})",
+      "knowsSpecial": "(kent {{moves}} al)",
+      "losesElite": "Let op: hiermee overschrijf je {{move}}. Die krijg je alleen met een Elite TM terug.",
+      "losesForGood": "Let op: hiermee overschrijf je {{move}}. Die krijg je met geen enkele TM terug.",
       "cpNow": "nu {{cp}}",
       "score": "score {{score}}",
       "currentMoves": "Huidige aanvallen",
@@ -1490,6 +1530,8 @@
       "searches": "Zoekopdrachten voor Pokémon GO",
       "copied": "Gekopieerd",
       "copy": "Kopiëren",
+      "otherMatches_one": "Volgens de laatste synchronisatie vindt deze zoektekst ook {{count}} Pokémon die er niet boven staat, met dezelfde soort en CP. Een zoektekst kan ze niet uit elkaar halen. Kijk in het spel goed welke je selecteert.",
+      "otherMatches_other": "Volgens de laatste synchronisatie vindt deze zoektekst ook {{count}} Pokémon die er niet boven staan, met dezelfde soort en CP. Een zoektekst kan ze niet uit elkaar halen. Kijk in het spel goed welke je selecteert.",
       "columns": {
         "reason": "Reden",
         "protection": "Bescherming",
@@ -1503,7 +1545,36 @@
       "done": "Afgerond",
       "remove": "Verwijderen",
       "searchPokemon": "{{name}} CP {{cp}}",
-      "searchPokemonNickname": "{{name}} “{{nickname}}” CP {{cp}}"
+      "searchPokemonNickname": "{{name}} “{{nickname}}” CP {{cp}}",
+      "csv": {
+        "pokemon": "pokemon",
+        "form": "vorm",
+        "cp": "cp",
+        "atk": "atk",
+        "def": "def",
+        "sta": "sta",
+        "ivPercent": "iv_pct",
+        "reason": "reden",
+        "protection": "bescherming",
+        "sourceId": "bron_pokemon_id",
+        "status": "status",
+        "executable": "uitvoerbaar",
+        "heldBack": "geblokkeerd",
+        "yes": "ja",
+        "no": "nee"
+      }
+    },
+    "checklist": {
+      "title": "Cleanup-checklist",
+      "print": "Afdrukken",
+      "introAsc": "Gesorteerd op CP, van laag naar hoog. OAK voert zelf niets uit. Controleer iedere Pokémon in het spel voordat je hem overzet.",
+      "introDesc": "Gesorteerd op CP, van hoog naar laag. OAK voert zelf niets uit. Controleer iedere Pokémon in het spel voordat je hem overzet.",
+      "heldBack_one": "{{count}} Pokémon van de lijst staat hier niet op, omdat hij beschermd is, opnieuw bevestigd moet worden of niet meer in je inventaris staat. Bekijk hem in OAK.",
+      "heldBack_other": "{{count}} Pokémon van de lijst staan hier niet op, omdat ze beschermd zijn, opnieuw bevestigd moeten worden of niet meer in je inventaris staan. Bekijk ze in OAK.",
+      "columns": {
+        "pokemon": "Pokémon",
+        "form": "Vorm"
+      }
     },
     "rules": {
       "saved": "Regels opgeslagen. De analyse wordt opnieuw berekend.",
@@ -1667,7 +1738,7 @@
         },
         "keepMinPerSpecies": {
           "label": "Minimaal aantal exemplaren per soort",
-          "hint": "0–10. Het beste exemplaar blijft altijd"
+          "hint": "0–10. Bij 1 of meer blijft het beste exemplaar van iedere soort altijd staan. Bij 0 kan ook het enige exemplaar transfer-kandidaat worden."
         },
         "metaRankThreshold": {
           "label": "Soort telt mee tot PvPoke-rang",
@@ -1694,6 +1765,10 @@
         "readyCpFraction": {
           "label": "Direct inzetbaar vanaf fractie van de beste CP",
           "hint": "0,5–1"
+        },
+        "masterMinCp": {
+          "label": "Ondergrens in CP zonder CP-limiet",
+          "hint": "Master League en cups zonder limiet. 0 is geen ondergrens"
         },
         "maxLevel": {
           "label": "Maximaal level",
@@ -1809,6 +1884,7 @@
       "INVESTMENT": "{{target}} {{leagueName}}: {{stardust, number}} stardust, {{candy}} candy, {{xl_candy}} XL candy",
       "BEST_COPY_one": "Enige exemplaar van deze soort in je collectie",
       "BEST_COPY_other": "Beste exemplaar van deze soort in je collectie",
+      "ONLY_COPY_NO_USE": "Enige exemplaar van deze soort in je collectie, maar zonder waarde in gevechten",
       "PARTIAL_IMPORT": "De laatste import was niet volledig; geen transferadvies",
       "FAVORITE_REVIEW": "Favoriet: OAK stelt een favoriet nooit direct voor als transfer. Beoordeel hem zelf.",
       "UNKNOWN_DATE": "Vangstdatum onbekend: dit kan een vintage Pokémon zijn",
@@ -1840,6 +1916,7 @@
       "HUNDO": "Hundo (15/15/15)",
       "LOCATION_CARD": "Speciale achtergrond",
       "COSTUME": "Kostuum",
+      "EVENT_FORM": "Eventvorm",
       "MYTHICAL": "Mythical",
       "LEGENDARY": "Legendary",
       "ULTRA_BEAST": "Ultra Beast",
@@ -1893,6 +1970,7 @@
       "RARITY_mythical": "Mythical",
       "RARITY_ultra_beast": "Ultra Beast",
       "COSTUME": "Kostuum",
+      "EVENT_FORM": "Eventvorm",
       "LOCATION_CARD": "Speciale achtergrond",
       "EVENT": "Event-Pokémon",
       "MAX_gigantamax": "Gigantamax",
@@ -1911,7 +1989,11 @@
       "UNKNOWN_DATE": "Vangstdatum onbekend",
       "PROTECTED": "Beschermd: {{protections}}",
       "PROTECTION": "{{protections}}",
-      "UNCONFIRMED": "{{items}}"
+      "UNCONFIRMED": "{{items}}",
+      "ADVICE": "OAK raadt aan deze Pokémon te bewaren",
+      "ADVICE_keep": "OAK raadt aan deze Pokémon te bewaren",
+      "ADVICE_build": "OAK raadt aan in deze Pokémon te investeren",
+      "LAST_COPY": "Laatste {{name}} in je inventaris"
     },
     "rules": {
       "VINTAGE": "Vintage Pokémon (2016–2019) zijn altijd beschermd. Ze worden wel volledig geanalyseerd en vergeleken.",
@@ -1919,17 +2001,18 @@
       "FAVORITE": "Favorieten krijgen extra bewaarpunten en worden nooit direct als transfer voorgesteld."
     },
     "actionList": {
-      "SEARCH_NOTE": "Pokémon GO kan niet op Pokémon-ID zoeken. Gebruik per soort het Pokédex-nummer met de exacte CP, en controleer de Pokémon in het spel voordat je hem overzet. '&!favorite&!shiny&!lucky' sluit extra veilig uit."
+      "SEARCH_NOTE": "Pokémon GO kan niet op Pokémon-ID zoeken. Iedere zoektekst zoekt tot {{max}} Pokémon op Pokédex-nummer en exacte CP. OAK heeft nagerekend dat hij volgens de laatste synchronisatie alleen de Pokémon vindt die erboven staan. Pokémon die je daarna hebt gevangen kent OAK niet, dus controleer in het spel wat je selecteert voordat je iets overzet."
     },
     "battles": {
       "LEAGUE_METHOD": "Per Pokémon de meest competitieve soort die hij kan worden (PvPoke-rang), met zijn IV-rang voor die soort.",
       "LEAGUE_METHOD_cup": "Per Pokémon de meest competitieve soort die hij kan worden (PvPoke-rang), met zijn IV-rang voor die soort. Alleen Pokémon die volgens de regels van de cup mee mogen, zoals PvPoke ze beschrijft.",
       "LEAGUE_METHOD_unranked_cup": "Per Pokémon de meest competitieve soort die hij kan worden (PvPoke-rang), met zijn IV-rang voor die soort. Alleen Pokémon die volgens de regels van de cup mee mogen, zoals PvPoke ze beschrijft. PvPoke heeft voor deze cup geen ranglijst. De volgorde volgt daarom alleen de IV-rang, niet hoe sterk een soort is.",
-      "TEAM_METHOD": "Heuristiek: PvPoke-soortscore × IV-kwaliteit, met een straf voor gedeelde zwaktes en een bonus voor typedekking. Geen gevechtssimulatie.",
-      "TEAM_DIRECT": "Beste direct inzetbare team",
+      "TEAM_METHOD": "Heuristiek: PvPoke-soortscore × statproduct als deel van het beste in de league. Bij het sterkste team nu geldt het statproduct op het huidige level, bij de andere teams dat op het doellevel. Met een straf voor gedeelde zwaktes en een bonus voor typedekking. Geen gevechtssimulatie.",
+      "TEAM_NOW": "Sterkste team zoals je Pokémon nu zijn",
       "TEAM_LIMITED": "Beste team met beperkte upgrades",
       "TEAM_FUTURE": "Beste toekomstige team",
-      "TEAM_TOO_FEW": "Te weinig geschikte Pokémon voor deze variant.",
+      "TEAM_TOO_FEW": "Te weinig geschikte Pokémon voor deze variant: {{found}} gevonden, {{needed}} nodig.",
+      "TEAM_TOO_FEW_min_cp": "Te weinig geschikte Pokémon voor deze variant: {{found}} gevonden, {{needed}} nodig. Zonder CP-limiet tellen alleen Pokémon vanaf {{min_cp}} CP mee.",
       "TEAM_NONE": "Geen team gevonden.",
       "RAID_METHOD": "Vereenvoudigd PvE-model: cyclus-DPS met STAB, typevoordeel en Shadow-bonus. Geen weer, geen energie uit schade, geen aanvallen van de baas. Bedoeld om aanvallers te vergelijken.",
       "ROCKET_METHOD": "Heuristiek op typevoordeel, PvP-aanvalswaarden, eigen statistieken en weerstand. Geen simulatie.",
@@ -2022,7 +2105,7 @@
       "CONFIRMATION_MISMATCH": "Typ de naam van het traineraccount exact over om te bevestigen.",
       "NO_GAME_DATA": "Geen actieve Game Data. Werk de Game Data bij onder Beheer.",
       "UNKNOWN_SORT": "Onbekende sortering '{{sort}}'.",
-      "FILE_REQUIRED_game_master": "Het Game Master-bestand van PokeMiners is verplicht.",
+      "FILE_REQUIRED_game_master": "Het Game Master-bestand is verplicht.",
       "FILE_REQUIRED_import": "Kies een bestand om te uploaden.",
       "PAYLOAD_TOO_LARGE_file": "Het bestand is groter dan de ingestelde limiet.",
       "PAYLOAD_TOO_LARGE_game_data_file": "Bestand te groot.",
@@ -2035,6 +2118,9 @@
       "UNSUPPORTED_MEDIA_TYPE_corrupt": "De gecomprimeerde inhoud is beschadigd.",
       "RATE_LIMITED_register": "Te veel pogingen. Probeer het later opnieuw.",
       "RATE_LIMITED_login": "Te veel mislukte inlogpogingen. Probeer het later opnieuw.",
+      "RATE_LIMITED_imports": "Te veel imports in korte tijd. Probeer het later opnieuw.",
+      "IMPORT_QUEUED": "Er wacht al een import voor dit traineraccount. Probeer het opnieuw als die klaar is.",
+      "RATE_LIMITED_change_password": "Te veel mislukte pogingen om je wachtwoord te wijzigen. Probeer het later opnieuw.",
       "RATE_LIMITED_webhook_invalid": "Te veel ongeldige verzoeken.",
       "RATE_LIMITED_webhook": "Te veel exports in korte tijd voor deze webhook.",
       "INTERNAL_ERROR": "Er ging iets mis aan de serverkant.",
@@ -2059,12 +2145,13 @@
       "VALIDATION_FAILED_password_too_long": "Dit wachtwoord is te lang.",
       "VALIDATION_FAILED_disable_self": "Je kunt jezelf niet uitschakelen.",
       "VALIDATION_FAILED_own_password": "Wijzig je eigen wachtwoord via Wachtwoord wijzigen, met je huidige wachtwoord.",
-      "VALIDATION_FAILED_sprite_template": "Een eigen spritebron moet met https:// beginnen en {dex} bevatten.",
+      "VALIDATION_FAILED_sprite_template": "Een eigen spritebron moet met https:// beginnen, een gewone hostnaam hebben en {dex} bevatten.",
+      "VALIDATION_FAILED_number_too_large": "Een getal in het verzoek is te groot.",
       "VALIDATION_FAILED_account_id": "Ongeldig traineraccount.",
       "VALIDATION_FAILED_team_member": "Een teamlid hoort niet bij dit account.",
       "VALIDATION_FAILED_event_period": "Het einde moet na het begin liggen.",
       "VALIDATION_FAILED_event_species": "Een van de gekozen Pokémon staat niet in de Game Data.",
-      "VALIDATION_FAILED_game_master_required": "Een PokeMiners Game Master-bestand (latest.json) is verplicht.",
+      "VALIDATION_FAILED_game_master_required": "Een Game Master-bestand (GAME_MASTER.json of latest.json) is verplicht.",
       "VALIDATION_FAILED_purify_not_shadow": "Alleen een Shadow Pokémon kan worden gepurifyd.",
       "VALIDATION_FAILED_purify_rules_missing": "De regels voor purify ontbreken in deze Game Data-versie.",
       "VALIDATION_FAILED_purify_stats_unknown": "IV's of level onbekend.",
@@ -2081,7 +2168,8 @@
       "VALIDATION_FAILED_iv_rank": "Een IV-rang ligt tussen 1 en 4096.",
       "VALIDATION_FAILED_max_level": "max_level is ongeldig.",
       "VALIDATION_FAILED_review_threshold": "De reviewdrempel mag niet boven de bewaardrempel liggen.",
-      "VALIDATION_FAILED_rules": "Ongeldige regelinstellingen."
+      "VALIDATION_FAILED_rules": "Ongeldige regelinstellingen.",
+      "PAYLOAD_TOO_LARGE_request": "Het verzoek is groter dan toegestaan."
     },
     "imports": {
       "POKEMON_LIST_MISSING": "De export bevat geen Pokémon-lijst.",
@@ -2122,13 +2210,23 @@
       "ISSUES_TRUNCATED_one": "{{count}} melding niet opgeslagen.",
       "ISSUES_TRUNCATED_other": "{{count}} meldingen niet opgeslagen.",
       "PAYLOAD_MISSING": "De opgeslagen export ontbreekt.",
+      "USER_DISABLED": "De gebruiker van dit traineraccount is uitgeschakeld. De import is niet verwerkt.",
       "PAYLOAD_UNREADABLE": "De opgeslagen export kan niet gelezen worden. Upload hem opnieuw.",
       "NORMALIZATION_FAILED": "De export kon niet gelezen worden door een interne fout. Er is niets gewijzigd.",
       "PROCESSING_FAILED": "Verwerking mislukt door een interne fout. Er is niets gewijzigd.",
       "MULTIPART_WITHOUT_FILE": "Het multipart-verzoek bevat geen bestand.",
       "ENCODING_INVALID": "De inhoud is geen geldige {{charset}}-tekst.",
+      "ENCODING_INVALID_character": "De export bevat tekst met een ongeldig teken.",
+      "NUMBER_INVALID": "De export bevat een getal dat niet eindig is, zoals NaN of Infinity.",
       "EMPTY_BODY": "Het verzoek bevat geen inhoud.",
-      "INVALID_JSON": "Ongeldige JSON op regel {{line}}, kolom {{column}}."
+      "INVALID_JSON": "Ongeldige JSON op regel {{line}}, kolom {{column}}.",
+      "STRUCTURE_TOO_LARGE_pokemons": "De export bevat meer dan {{max, number}} Pokémon-records.",
+      "STRUCTURE_TOO_LARGE_containers": "De export bevat meer dan {{max, number}} objecten en lijsten.",
+      "STRUCTURE_TOO_LARGE_values": "De export bevat meer dan {{max, number}} waarden.",
+      "STRUCTURE_TOO_LARGE_depth": "De export is dieper genest dan {{max, number}} niveaus.",
+      "STRUCTURE_TOO_LARGE_keys": "Een object in de export heeft meer dan {{max, number}} velden.",
+      "STRUCTURE_TOO_LARGE_number": "Een getal in de export heeft meer dan {{max, number}} cijfers.",
+      "PROCESSING_INTERRUPTED": "De verwerking is {{attempts}} keer onderbroken, bijvoorbeeld door een herstart of te weinig geheugen. OAK probeert het niet opnieuw. Er is niets gewijzigd."
     },
     "sync": {
       "PROCESSING": "Er wordt een import verwerkt.",
@@ -2143,7 +2241,12 @@
       "SOURCES_UNCHANGED": "De bronnen zijn niet gewijzigd sinds de actieve versie.",
       "VERSION_ACTIVATED": "Nieuwe Game Data-versie geactiveerd.",
       "SOURCE_UNREACHABLE": "Bron niet bereikbaar: {{error}}",
-      "GAME_MASTER_NOT_A_LIST": "PokeMiners-bestand is geen lijst met templates",
+      "DATE_UNREACHABLE": "De datum van de bron was niet bereikbaar: {{error}}",
+      "DATE_INVALID": "De bron gaf geen datum die OAK kan lezen.",
+      "DATE_NOT_PUBLISHED": "De bron vermeldt geen datum bij deze gegevens.",
+      "DATE_UPLOAD": "Een geüpload bestand heeft geen datum van de bron.",
+      "DATE_NOT_RECORDED": "Deze versie is gedownload voordat OAK de datum van de Game Master bewaarde.",
+      "GAME_MASTER_NOT_A_LIST": "Het Game Master-bestand is geen lijst met templates",
       "SCHEMA_UNSUPPORTED": "schema_version {{version}} wordt niet ondersteund",
       "CPM_NOT_ASCENDING": "CP-multipliers zijn niet oplopend",
       "CPM_NOT_POSITIVE": "CP-multipliertabel bevat niet-positieve waarden",
@@ -2178,12 +2281,14 @@
       "SOURCE_PVPOKE": "PvPoke gamemaster en rankings",
       "SPRITE_NOTICE": "Pokémon-afbeeldingen zijn auteursrechtelijk beschermd (The Pokémon Company). OAK levert ze niet mee. Als je een externe bron inschakelt, laadt je browser de afbeeldingen daar direct. Dat is je eigen keuze en verantwoordelijkheid (ADR-0020).",
       "CPM_TOO_SHORT_one": "CP-multipliertabel heeft {{count}} regel, minimaal {{min}} verwacht",
-      "CPM_TOO_SHORT_other": "CP-multipliertabel heeft {{count}} regels, minimaal {{min}} verwacht"
+      "CPM_TOO_SHORT_other": "CP-multipliertabel heeft {{count}} regels, minimaal {{min}} verwacht",
+      "SOURCE_GAME_MASTER": "Game Master van {{source}}"
     },
     "events": {
       "FEED_NOT_A_LIST": "De eventkalender is geen lijst.",
       "FEED_TOO_LARGE": "De eventkalender bevat meer dan {{max}} events.",
       "FEED_NOTHING_USABLE": "Geen enkel event in de kalender is bruikbaar.",
+      "FEED_NOTHING_USABLE_empty": "De eventkalender is leeg.",
       "FEED_UNAVAILABLE": "Eventkalender niet bruikbaar of niet bereikbaar: {{error}}",
       "MANUAL_SOURCE": "Eigen event"
     },
@@ -2204,6 +2309,12 @@
       "ITEM_GROUP_max": "Max Battles",
       "ITEM_GROUP_event": "Eventpunten",
       "ITEM_GROUP_other": "Overig"
+    },
+    "system": {
+      "RELEASE_UNREACHABLE": "GitHub was niet bereikbaar: {{error}}",
+      "RELEASE_NONE": "Er staat nog geen release van OAK op GitHub.",
+      "RELEASE_INVALID": "GitHub gaf een antwoord dat OAK niet kan lezen.",
+      "VERSION_UNREADABLE": "De draaiende versie {{version}} is niet te vergelijken met een release."
     }
   }
 }

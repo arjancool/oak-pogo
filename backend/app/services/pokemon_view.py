@@ -8,7 +8,15 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
-from app.domain.pokemon import Alignment, BreadMode, catch_date_known, has_costume, vintage_year
+from app.domain.pokemon import (
+    Alignment,
+    BreadMode,
+    catch_date_known,
+    has_costume,
+    is_event_form,
+    origin_kind,
+    vintage_year,
+)
 from app.gamedata.model import GameData
 from app.models import Pokemon, PokemonAnalysis, PokemonUserMetadata
 from app.schemas.common import UtcDatetime
@@ -87,6 +95,8 @@ class PokemonSummary(BaseModel):
     dynamax: bool | None
     gigantamax: bool | None
     costume: bool | None
+    # A form of an event, such as the goggles of 2026 (domain/pokemon.py is_event_form).
+    event_form: bool = False
     location_card: int | None
     traded: bool
     hatched_from_egg: bool | None
@@ -203,6 +213,7 @@ def summarize(
         dynamax=None if pokemon.bread_mode is None else pokemon.bread_mode in (BreadMode.DYNAMAX, BreadMode.GIGANTAMAX),
         gigantamax=_optional(pokemon.bread_mode, BreadMode.GIGANTAMAX),
         costume=has_costume(pokemon.costume_id, pokemon.costume_form),
+        event_form=is_event_form(pokemon.form_name),
         location_card=pokemon.location_card,
         traded=pokemon.traded_at is not None,
         hatched_from_egg=pokemon.hatched_from_egg,
@@ -250,6 +261,9 @@ def detail_extras(pokemon: Pokemon) -> dict[str, Any]:
         "size_class": pokemon.size_class,
         "pokeball": pokemon.pokeball,
         "origin_case": pokemon.origin_case,
+        # The checked meaning of origin_case, or None: the interface then shows "onbekend" with the
+        # number (issue #32).
+        "origin": origin_kind(pokemon.origin_case),
         "origin_events": pokemon.origin_events,
         "limited_identifier": pokemon.limited_identifier,
         "traded_at": _iso(pokemon.traded_at),

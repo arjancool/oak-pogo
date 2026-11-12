@@ -18,7 +18,7 @@ COPY frontend/ ./
 RUN npm run build
 
 # --- backend dependencies -----------------------------------------------------------------------
-FROM python:3.13.18-slim-bookworm@sha256:93498f36dc7e24ef233bfdf6cc17d4b8bd32d94ee737143e906460d5f5a914c5 AS backend-deps
+FROM python:3.13.18-slim-bookworm@sha256:a5a7017efc5969e00ae2b91c8eb0631049a569652aa4ffc4501769049ae45c72 AS backend-deps
 ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1 PYTHONDONTWRITEBYTECODE=1 UV_PYTHON_DOWNLOADS=never
 WORKDIR /src
 COPY backend/build-requirements.txt backend/pyproject.toml backend/uv.lock ./
@@ -31,7 +31,7 @@ RUN python -m pip install --require-hashes -r build-requirements.txt \
     && /opt/venv/bin/pip install --require-virtualenv --require-hashes --no-deps -r requirements.txt
 
 # --- runtime ------------------------------------------------------------------------------------
-FROM python:3.13.18-slim-bookworm@sha256:93498f36dc7e24ef233bfdf6cc17d4b8bd32d94ee737143e906460d5f5a914c5 AS runtime
+FROM python:3.13.18-slim-bookworm@sha256:a5a7017efc5969e00ae2b91c8eb0631049a569652aa4ffc4501769049ae45c72 AS runtime
 
 ARG OAK_VERSION=dev
 ARG OAK_BUILD_SHA=unknown

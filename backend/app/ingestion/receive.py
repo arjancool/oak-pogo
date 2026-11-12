@@ -1,5 +1,9 @@
 """Receiving an export, from the webhook or an upload, and turning it into a durable import job
 (spec §4.6, steps 1–8). Webhook and upload share this module and everything after it.
+
+Reading, summarizing, filtering and storing an export takes the most time and memory, so it
+happens before the write transaction (``prepare_import``). The transaction only checks for a
+duplicate and adds the job.
 """
 
 from __future__ import annotations
@@ -9,9 +13,12 @@ import hashlib
 import hmac
 import json
 import logging
+import math
 import re
 import uuid
 import zlib
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -42,6 +49,25 @@ DIAGNOSTIC_LIST_SAMPLES = 20_000
 # without one are a connection test, such as PGSharp's "Test Connection" button.
 CONNECTION_TEST_MAX_BYTES = 4096
 CONNECTION_TEST_ERRORS = ("EMPTY_BODY", "MULTIPART_WITHOUT_FILE", "INVALID_JSON")
+# Limits on the structure of an export, so reading one never costs much more memory than its size.
+# They are far above a real export: one with about 1,000 Pokémon has some 8,400 objects and lists,
+# 100,000 values, 9 levels and at most 82 fields in an object.
+MAX_POKEMON_RECORDS = 25_000
+MAX_CONTAINERS = 500_000
+MAX_VALUES = 4_000_000
+MAX_DEPTH = 32
+MAX_KEYS = 1_000
+STRUCTURE_MESSAGES = {
+    "pokemons": "De export bevat meer dan {max} Pokémon-records.",
+    "containers": "De export bevat meer dan {max} objecten en lijsten.",
+    "values": "De export bevat meer dan {max} waarden.",
+    "depth": "De export is dieper genest dan {max} niveaus.",
+    "keys": "Een object in de export heeft meer dan {max} velden.",
+    "number": "Een getal in de export heeft meer dan {max} cijfers.",
+}
+# Python's own limit on the digits of a number it reads (sys.get_int_max_str_digits).
+MAX_NUMBER_DIGITS = 4300
+_JSON_STRING = re.compile(r'"[^"\\]*(?:\\.[^"\\]*)*"')
 
 
 @dataclass(slots=True)
@@ -130,8 +156,15 @@ def decode_payload(payload: IncomingPayload, max_bytes: int) -> DecodedPayload:
         )
     if not text.strip():
         return DecodedPayload(body, None, "EMPTY_BODY", "Het verzoek bevat geen inhoud.", meta)
+    too_large = _count_problem(text)
+    if too_large:
+        return _structure_rejected(body, meta, too_large)
     try:
-        data = json.loads(text)
+        data = json.loads(text, parse_constant=_not_finite, parse_float=_finite_float)
+    except NonFiniteNumberError:
+        return DecodedPayload(
+            body, None, "NUMBER_INVALID", "De export bevat een getal dat niet eindig is, zoals NaN of Infinity.", meta
+        )
     except json.JSONDecodeError as exc:
         return DecodedPayload(
             body,
@@ -141,7 +174,111 @@ def decode_payload(payload: IncomingPayload, max_bytes: int) -> DecodedPayload:
             meta,
             {"line": exc.lineno, "column": exc.colno},
         )
+    except RecursionError:
+        return _structure_rejected(body, meta, "depth")
+    except ValueError:
+        return _structure_rejected(body, meta, "number")
+    too_large = _shape_problem(data)
+    if too_large == "text":
+        # Valid JSON can still hold a lone surrogate ("\ud800"), which no file or database can
+        # store as UTF-8 (issue #47).
+        return DecodedPayload(
+            body,
+            None,
+            "ENCODING_INVALID",
+            "De export bevat tekst met een ongeldig teken.",
+            meta,
+            {"charset": "utf-8", "context": "character"},
+        )
+    if too_large:
+        return _structure_rejected(body, meta, too_large)
     return DecodedPayload(body, data, None, None, meta)
+
+
+class NonFiniteNumberError(ValueError):
+    """NaN, Infinity or a number too large for a float: not a value an export can hold."""
+
+
+def _not_finite(name: str) -> float:
+    raise NonFiniteNumberError(name)
+
+
+def _finite_float(text: str) -> float:
+    value = float(text)
+    if not math.isfinite(value):
+        raise NonFiniteNumberError(text)
+    return value
+
+
+def _valid_text(value: str) -> bool:
+    if value.isascii():
+        return True
+    try:
+        value.encode("utf-8")
+    except UnicodeEncodeError:
+        return False
+    return True
+
+
+def _structure_rejected(body: bytes, meta: dict[str, Any], context: str) -> DecodedPayload:
+    limit = {
+        "pokemons": MAX_POKEMON_RECORDS,
+        "containers": MAX_CONTAINERS,
+        "values": MAX_VALUES,
+        "depth": MAX_DEPTH,
+        "keys": MAX_KEYS,
+        "number": MAX_NUMBER_DIGITS,
+    }[context]
+    message = STRUCTURE_MESSAGES[context].format(max=f"{limit:,}".replace(",", "."))
+    return DecodedPayload(body, None, "STRUCTURE_TOO_LARGE", message, meta, {"context": context, "max": limit})
+
+
+def _count_problem(text: str) -> str | None:
+    """Count objects, lists and values before parsing, because parsing makes every '{}' a full
+    dictionary. The quick count includes brackets and commas inside strings, so it is never too
+    low. Only when it is over a limit does OAK count again without the strings."""
+    containers = text.count("{") + text.count("[")
+    values = text.count(",") + containers + 1
+    if containers > MAX_CONTAINERS or values > MAX_VALUES:
+        bare = _JSON_STRING.sub('""', text)
+        containers = bare.count("{") + bare.count("[")
+        values = bare.count(",") + containers + 1
+    if containers > MAX_CONTAINERS:
+        return "containers"
+    if values > MAX_VALUES:
+        return "values"
+    return None
+
+
+def _shape_problem(data: Any) -> str | None:
+    """Depth, fields per object, text that cannot be stored and Pokémon records, checked
+    without recursion."""
+    if isinstance(data, str):
+        return None if _valid_text(data) else "text"
+    stack: list[tuple[Any, int]] = [(data, 1)]
+    while stack:
+        node, depth = stack.pop()
+        if depth > MAX_DEPTH:
+            return "depth"
+        if isinstance(node, dict):
+            if len(node) > MAX_KEYS:
+                return "keys"
+            if not all(_valid_text(key) for key in node):
+                return "text"
+            children: Any = node.values()
+        elif isinstance(node, list):
+            children = node
+        else:
+            continue
+        for child in children:
+            if isinstance(child, dict | list):
+                stack.append((child, depth + 1))
+            elif isinstance(child, str) and not _valid_text(child):
+                return "text"
+    records = data.get("pokemons") if isinstance(data, dict) else None
+    if isinstance(records, list) and len(records) > MAX_POKEMON_RECORDS:
+        return "pokemons"
+    return None
 
 
 def _bounded_decompress(body: bytes, max_bytes: int, *, wbits: int) -> bytes:
@@ -203,11 +340,16 @@ def store_payload(imports_dir: Path, data: Any) -> str:
 
 
 def write_payload(imports_dir: Path, file_name: str, data: Any) -> None:
-    """Write through a temporary file, so a reader sees either the old or the new export."""
+    """Write through a temporary file, so a reader sees either the old or the new export. A
+    write that fails, for example on a full disk, leaves no temporary file behind."""
     tmp = imports_dir / f".{file_name}.tmp"
-    with gzip.open(tmp, "wb", compresslevel=6) as handle:
-        handle.write(json.dumps(data, separators=(",", ":"), ensure_ascii=False).encode("utf-8"))
-    tmp.replace(imports_dir / file_name)
+    try:
+        with gzip.open(tmp, "wb", compresslevel=6) as handle:
+            handle.write(json.dumps(data, separators=(",", ":"), ensure_ascii=False).encode("utf-8"))
+        tmp.replace(imports_dir / file_name)
+    except BaseException:
+        tmp.unlink(missing_ok=True)
+        raise
 
 
 def load_payload(imports_dir: Path, file_name: str) -> Any:
@@ -229,6 +371,49 @@ def is_connection_test(decoded: DecodedPayload) -> bool:
     return not (isinstance(decoded.data, dict) and "pokemons" in decoded.data)
 
 
+@dataclass(slots=True)
+class PreparedImport:
+    """The work on an export that needs no database. ``payload_file`` is the filtered copy on
+    disk; it stays only when a queued job uses it."""
+
+    digest: str
+    summary: dict[str, Any] | None = None
+    fingerprint: str | None = None
+    payload_file: str | None = None
+    used: bool = False
+
+
+@contextmanager
+def prepare_import(
+    decoded: DecodedPayload, *, secret: str, imports_dir: Path, detailed_structure: bool = False
+) -> Iterator[PreparedImport]:
+    """Summarize, filter and store the export before the write transaction starts. Open the
+    transaction inside this block: when it fails, or the export turns out to be a duplicate, the
+    stored copy is removed again."""
+    prepared = PreparedImport(digest=hashlib.sha256(decoded.text_bytes).hexdigest())
+    if decoded.data is not None:
+        summary = summarize_structure(
+            decoded.data, max_list_samples=DIAGNOSTIC_LIST_SAMPLES if detailed_structure else None
+        )
+        if detailed_structure:
+            summary["diagnostics"] = True
+        prepared.summary = summary
+        prepared.fingerprint = fingerprint_for(secret, player_identifier(decoded.data))
+        prepared.payload_file = store_payload(imports_dir, sanitize_export(decoded.data))
+    try:
+        yield prepared
+    except BaseException:
+        _discard(imports_dir, prepared)
+        raise
+    if not prepared.used:
+        _discard(imports_dir, prepared)
+
+
+def _discard(imports_dir: Path, prepared: PreparedImport) -> None:
+    if prepared.payload_file:
+        (imports_dir / prepared.payload_file).unlink(missing_ok=True)
+
+
 def create_import_job(
     session: Session,
     *,
@@ -236,12 +421,10 @@ def create_import_job(
     user_id: int | None,
     incoming: IncomingPayload,
     decoded: DecodedPayload,
-    secret: str,
-    imports_dir: Path,
+    prepared: PreparedImport,
     now: datetime,
-    detailed_structure: bool = False,
 ) -> ImportJob:
-    digest = hashlib.sha256(decoded.text_bytes).hexdigest()
+    digest = prepared.digest
     job = ImportJob(
         trainer_account_id=account.id,
         user_id=user_id,
@@ -265,13 +448,8 @@ def create_import_job(
         log.info("import rejected", extra={"import_id": job.id, "code": decoded.error_code})
         return job
 
-    summary = summarize_structure(
-        decoded.data, max_list_samples=DIAGNOSTIC_LIST_SAMPLES if detailed_structure else None
-    )
-    if detailed_structure:
-        summary["diagnostics"] = True
-    job.schema_summary = summary
-    job.fingerprint = fingerprint_for(secret, player_identifier(decoded.data))
+    job.schema_summary = prepared.summary
+    job.fingerprint = prepared.fingerprint
 
     duplicate_of = session.scalar(
         select(ImportJob.id)
@@ -293,7 +471,8 @@ def create_import_job(
         log.info("import duplicate", extra={"import_id": job.id, "duplicate_of": duplicate_of})
         return job
 
-    job.payload_file = store_payload(imports_dir, sanitize_export(decoded.data))
+    job.payload_file = prepared.payload_file
+    prepared.used = True
     job.status = "queued"
     job.stage = "queued"
     session.add(job)

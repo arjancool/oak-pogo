@@ -36,6 +36,8 @@ docker compose start oak
 
 Bewaar `.secret_key` mee. Zonder die sleutel blijven je gegevens leesbaar, maar moet iedereen opnieuw inloggen en herkent OAK een export niet meer als afkomstig van hetzelfde Pokémon GO-account. Je moet het traineraccount dan opnieuw koppelen.
 
+Een leeg of afgebroken `.secret_key` vervangt OAK niet stil. OAK start dan niet en meldt in het logboek welk bestand het is. Zet de sleutel terug uit je back-up.
+
 ## Herstellen
 
 1. Stop de container: `docker compose stop oak`.

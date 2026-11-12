@@ -573,7 +573,7 @@
   "status": 422,
   "error": {
    "code": "VALIDATION_FAILED",
-   "message": "Een eigen spritebron moet met https:// beginnen en {dex} bevatten.",
+   "message": "Een eigen spritebron moet met https:// beginnen, een gewone hostnaam hebben en {dex} bevatten.",
    "details": null,
    "data": {
     "context": "sprite_template"

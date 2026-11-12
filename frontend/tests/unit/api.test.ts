@@ -33,6 +33,16 @@ describe("csrf", () => {
     expect(csrfToken()).toBe("abc+123");
   });
 
+  it("prefers the __Host- cookie that the server sets over https", () => {
+    // jsdom runs on http and refuses a __Host- cookie, so the cookie string is given directly.
+    const spy = vi.spyOn(document, "cookie", "get").mockReturnValue("oak_csrf=old; __Host-oak_csrf=new%2B1");
+    try {
+      expect(csrfToken()).toBe("new+1");
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
   it("sends the CSRF header on writes but not on reads", async () => {
     document.cookie = "oak_csrf=token-1; path=/";
     const fetchMock = vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 }));
@@ -45,6 +55,56 @@ describe("csrf", () => {
     expect(readHeaders["X-CSRF-Token"]).toBeUndefined();
     expect(writeHeaders["X-CSRF-Token"]).toBe("token-1");
     expect(writeHeaders["Content-Type"]).toBe("application/json");
+  });
+});
+
+const CSRF_REFUSED = JSON.stringify({ error: { code: "CSRF_FAILED", message: "Ongeldige of ontbrekende CSRF-token." } });
+
+function header(call: unknown): string | undefined {
+  const [, init] = call as [string, RequestInit | undefined];
+  return (init?.headers as Record<string, string> | undefined)?.["X-CSRF-Token"];
+}
+
+describe("a refused CSRF token", () => {
+  it("is tried once more with the token the server gives for this session", async () => {
+    document.cookie = "oak_csrf=stale; path=/";
+    const fetchMock = vi.fn(async (url: string) => {
+      if (url === "/api/v1/auth/status") return new Response(JSON.stringify({ authenticated: true, csrf_token: "fresh" }), { status: 200 });
+      return fetchMock.mock.calls.length === 1 ? new Response(CSRF_REFUSED, { status: 403 }) : new Response(JSON.stringify({ ok: true }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(api.post("/api/v1/cleanup/action-list", { mode: "add" })).resolves.toEqual({ ok: true });
+    const calls = fetchMock.mock.calls as unknown as [string, RequestInit?][];
+    expect(calls.map(([url]) => url)).toEqual(["/api/v1/cleanup/action-list", "/api/v1/auth/status", "/api/v1/cleanup/action-list"]);
+    expect([header(calls[0]), header(calls[2])]).toEqual(["stale", "fresh"]);
+    expect(calls[1]?.[1]?.method).toBeUndefined();
+  });
+
+  it("keeps the error when the server has no other token, and tries only once", async () => {
+    document.cookie = "oak_csrf=same; path=/";
+    const fetchMock = vi.fn(async (url: string) =>
+      url === "/api/v1/auth/status"
+        ? new Response(JSON.stringify({ authenticated: true, csrf_token: "same" }), { status: 200 })
+        : new Response(CSRF_REFUSED, { status: 403 }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const error = await api.post("/api/v1/accounts", { nickname: "Test" }).catch((e: unknown) => e);
+    expect(error).toMatchObject({ status: 403, code: "CSRF_FAILED" });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    fetchMock.mockClear();
+    fetchMock.mockImplementation(async (url: string) =>
+      url === "/api/v1/auth/status" ? new Response(JSON.stringify({ authenticated: true, csrf_token: "other" }), { status: 200 }) : new Response(CSRF_REFUSED, { status: 403 }),
+    );
+    await expect(api.post("/api/v1/accounts", { nickname: "Test" })).rejects.toMatchObject({ code: "CSRF_FAILED" });
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it("does not retry another refusal", async () => {
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ error: { code: "FORBIDDEN", message: "Alleen de eigenaar mag dit doen." } }), { status: 403 }));
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(api.post("/api/v1/admin/backups")).rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -173,6 +233,18 @@ describe("uploadWithProgress", () => {
     const cancelled = startUpload(controller.signal);
     controller.abort();
     await expect(cancelled.promise).rejects.toMatchObject({ code: "ABORTED" });
+  });
+
+  it("sends an upload once more with a fresh CSRF token", async () => {
+    document.cookie = "oak_csrf=stale; path=/";
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ authenticated: true, csrf_token: "fresh" }), { status: 200 })));
+    const { promise, xhr } = startUpload();
+    expect(xhr?.headers["X-CSRF-Token"]).toBe("stale");
+    xhr?.respond(403, CSRF_REFUSED);
+    await vi.waitFor(() => expect(FakeXhr.last).not.toBe(xhr));
+    expect(FakeXhr.last?.headers["X-CSRF-Token"]).toBe("fresh");
+    FakeXhr.last?.respond(202, JSON.stringify({ status: "queued" }));
+    await expect(promise).resolves.toEqual({ status: "queued" });
   });
 
   it("does not start when the signal was already aborted", async () => {

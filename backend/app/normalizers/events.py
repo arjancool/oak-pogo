@@ -92,6 +92,10 @@ def parse_events(raw: Any, tz: ZoneInfo) -> tuple[list[ParsedEvent], int]:
     """
     if not isinstance(raw, list):
         raise EventFeedError("FEED_NOT_A_LIST", "De eventkalender is geen lijst.")
+    # An empty calendar is a broken download, not a world without events: replacing the stored
+    # events by nothing would end every "keep for now" rule (ADR-0021, issue #50).
+    if not raw:
+        raise EventFeedError("FEED_NOTHING_USABLE", "De eventkalender is leeg.", context="empty")
     if len(raw) > MAX_EVENTS:
         raise EventFeedError("FEED_TOO_LARGE", f"De eventkalender bevat meer dan {MAX_EVENTS} events.", max=MAX_EVENTS)
     events: list[ParsedEvent] = []

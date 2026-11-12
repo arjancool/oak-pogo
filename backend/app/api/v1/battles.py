@@ -22,12 +22,14 @@ from app.core.container import Container
 from app.core.errors import NotFoundError, ServiceUnavailableError, ValidationFailedError
 from app.gamedata.model import GameData
 from app.models import BattleTeam, BattleTeamMember, Pokemon, PvpRanking
+from app.schemas.common import MAX_ID
 from app.services.analysis import rules_for
 from app.services.battles import (
     LEAGUE_SORTS,
     TEAM_METHOD,
     build_teams,
     league_candidates,
+    league_min_cp,
     max_battle_overview,
     raid_counters,
     rocket_counters,
@@ -170,13 +172,17 @@ def league_overview(
     info = _known_league(gd, league)
     account = owned_account(session, auth.user, account_id)
     wanted = tuple(r for r in (readiness or "").split(",") if r) or None
-    candidates = sort_candidates(league_candidates(session, gd, account.id, league, readiness=wanted), sort)
+    min_cp = league_min_cp(gd, league, rules_for(account))
+    candidates = sort_candidates(
+        league_candidates(session, gd, account.id, league, readiness=wanted, min_cp=min_cp), sort
+    )
     method = league_method(info)
     return {
         "league": league,
         "info": info,
         "sort": sort,
         "max_cp": league_cap(gd, league),
+        "min_cp": min_cp,
         "method": method,
         "items": [
             {
@@ -194,6 +200,7 @@ def league_overview(
                 "is_evolution": c.ranking.is_evolution,
                 "iv_rank": c.ranking.rank,
                 "percent": c.ranking.percent_of_best,
+                "percent_now": c.percent_now,
                 "best_cp": c.ranking.best_cp,
                 "best_level": c.ranking.best_level,
                 "readiness": c.ranking.readiness,
@@ -207,6 +214,7 @@ def league_overview(
                 "moveset_quality": c.moveset_quality,
                 "recommended_moveset": [str((gd.move(m) or {}).get("name", m)) for m in c.recommended],
                 "suitability": round(c.score, 1),
+                "suitability_now": round(c.score_now, 1) if c.score_now is not None else None,
             }
             for c in candidates[:limit]
         ],
@@ -232,6 +240,7 @@ def pokemon_battle(
                 "is_evolution": r.is_evolution,
                 "rank": r.rank,
                 "percent": r.percent_of_best,
+                "percent_now": r.percent_now,
                 "stat_product": r.stat_product,
                 "best_cp": r.best_cp,
                 "best_level": r.best_level,
@@ -266,14 +275,25 @@ def team_builder(
     gd = _gd(container)
     _known_league(gd, body.league)
     account = owned_account(session, auth.user, body.account_id)
-    variants = build_teams(session, gd, account.id, body.league, budget=body.stardust_budget, include=body.include)
+    min_cp = league_min_cp(gd, body.league, rules_for(account))
+    variants = build_teams(
+        session, gd, account.id, body.league, budget=body.stardust_budget, include=body.include, min_cp=min_cp
+    )
     return {
         "league": body.league,
         "method": TEAM_METHOD,
+        "min_cp": min_cp,
         "simulation": False,
         "variants": variants,
         "game_data_version": gd.version_id,
     }
+
+
+class TeamMemberIn(BaseModel):
+    """One team member: a Pokémon of the account and an optional role (issue #53)."""
+
+    pokemon_id: int = Field(ge=1, le=MAX_ID)
+    role: str | None = Field(default=None, max_length=40)
 
 
 class TeamIn(BaseModel):
@@ -282,7 +302,7 @@ class TeamIn(BaseModel):
     kind: str = Field(default="pvp", pattern="^(pvp|raid|max|rocket)$")
     league: str | None = Field(default=None, pattern=LEAGUE_ID)
     notes: str | None = Field(default=None, max_length=2000)
-    members: list[dict[str, Any]] = Field(default_factory=list, max_length=6)
+    members: list[TeamMemberIn] = Field(default_factory=list, max_length=6)
 
 
 def _team_out(session: Session, team: BattleTeam) -> dict[str, Any]:
@@ -334,7 +354,7 @@ def save_team(
 ) -> dict[str, Any]:
     account = owned_account(session, auth.user, body.account_id)
     now = container.clock.now()
-    ids = [int(m["pokemon_id"]) for m in body.members if "pokemon_id" in m]
+    ids = [m.pokemon_id for m in body.members]
     owned = set(
         session.scalars(select(Pokemon.id).where(Pokemon.trainer_account_id == account.id, Pokemon.id.in_(ids)))
     )
@@ -369,8 +389,8 @@ def save_team(
             BattleTeamMember(
                 team_id=team.id,
                 position=position,
-                pokemon_id=int(member["pokemon_id"]),
-                role=member.get("role"),
+                pokemon_id=member.pokemon_id,
+                role=member.role,
             )
         )
     session.flush()

@@ -33,7 +33,7 @@ OAK draait als één Docker-container op je eigen server, NAS of computer. Alles
 
 OAK vraagt nooit om je Pokémon GO-wachtwoord. Het leest alleen de export die PGSharp maakt.
 
-De interface is Nederlands of Engels. Je kiest de taal rechtsboven in het scherm of op de inlogpagina. Ook de uitleg en meldingen van de server, zoals de redenen in het cleanupadvies, volgen die taal. Alleen de CSV-export, de printbare checklist en een paar itemnamen zijn nog Nederlands.
+De interface is Nederlands of Engels. Bij je eerste bezoek volgt OAK de taal van je browser: Engels als je browser Engels voorop heeft staan, anders Nederlands. Je kiest de taal rechtsboven in het scherm of op de inlogpagina, en die keuze gaat daarna altijd voor. Ook de uitleg en meldingen van de server, zoals de redenen in het cleanupadvies, volgen die taal, net als de CSV-exports, de printbare checklist en de namen van items. De Engelse itemnamen zijn de namen uit het spel zelf.
 
 ## Functies
 
@@ -48,7 +48,7 @@ De interface is Nederlands of Engels. Je kiest de taal rechtsboven in het scherm
 - **PvE**: raidcounters, Team GO Rocket-counters, Max Battles en je beste gymverdedigers.
 - **Evolutieplanner** voor evoluties en power-ups, met kosten in Stardust, Candy en XL Candy.
 - **Account**: trainerstatistieken, item bag, Stardust en Candy, en de historie.
-- **Beheer**: traineraccounts, webhooks, Game Data met versiebeheer, gebruikers, instellingen en back-ups.
+- **Beheer**: traineraccounts, webhooks, Game Data met versiebeheer en de datum van de gegevens, gebruikers, instellingen met de draaiende en de nieuwste versie van OAK, en back-ups.
 
 ## Wat je nodig hebt
 
@@ -236,9 +236,9 @@ Onder **Regels** stel je in welke kenmerken hard beschermen, hoeveel punten iede
 
 ### De actielijst
 
-Zet transfer-kandidaten op de actielijst en werk die daarna zelf in het spel af. In het tabblad **Dubbelen** zet je met de knop *Transfer-kandidaat* alle transfer-kandidaten van een soort in één keer op de lijst. Vintage Pokémon slaat die knop over, en favorieten vragen eerst je bevestiging per Pokémon. Het tabblad **Actielijst** geeft per soort een zoektekst met het Pokédex-nummer en de exacte CP, zodat je de Pokémon in het spel terugvindt. Boven iedere zoektekst staat welke Pokémon het zijn. Je kunt de lijst ook als CSV downloaden of als checklist printen.
+Zet transfer-kandidaten op de actielijst en werk die daarna zelf in het spel af. In het tabblad **Dubbelen** zet je met de knop *Transfer-kandidaat* alle transfer-kandidaten van een soort in één keer op de lijst. Vintage Pokémon slaat die knop over, en favorieten vragen eerst je bevestiging per Pokémon. Ook een Pokémon die volgens het advies bewaard moet worden, of het laatste exemplaar van een soort, komt pas na je bevestiging op de lijst. Het tabblad **Actielijst** geeft zoekteksten met Pokédex-nummers en exacte CP's, zodat je de Pokémon in het spel terugvindt. Een zoektekst bundelt hoogstens 10 Pokémon, ook van verschillende soorten. OAK rekent iedere bundel na tegen je hele collectie, zodat hij volgens de laatste synchronisatie geen Pokémon vindt die niet op de lijst staat. Boven iedere zoektekst staat welke Pokémon het zijn. Je kunt de lijst ook als CSV downloaden of als checklist printen.
 
-Pokémon GO kan niet zoeken op ID. Controleer iedere Pokémon daarom in het spel voordat je hem overzet. Voor de zekerheid sluiten de zoekteksten favorieten, shiny's, lucky's, hundo's, Legendary, Mythical, Shadow en kostuums uit.
+Pokémon GO kan niet zoeken op ID, en Pokémon die je na de laatste synchronisatie hebt gevangen kent OAK niet. Controleer iedere Pokémon daarom in het spel voordat je hem overzet. Voor de zekerheid sluiten de zoekteksten favorieten, shiny's, lucky's, hundo's, Legendary, Mythical, Shadow en kostuums uit, behalve als een Pokémon op de lijst zelf zo'n eigenschap heeft. Hoe de bundels werken staat in [docs/QUERY_SYNTAX.md](docs/QUERY_SYNTAX.md#zoekteksten-voor-in-het-spel).
 
 ## Analyses lezen
 
@@ -294,7 +294,7 @@ Bij het starten voert OAK database-migraties zelf uit, na een automatische back-
 | De container wordt niet *healthy* | Bekijk `docker logs oak`. Vaak kan OAK niet schrijven in de datamap. Controleer `PUID` en `PGID`. |
 | `docker compose pull` geeft *denied* | Het pakket staat op privé. Log in met `docker login ghcr.io`. |
 | Na inloggen sta je weer op het inlogscherm | `OAK_BASE_URL` begint met `https://`, maar je opent OAK via http. Open het https-adres, of pas `OAK_BASE_URL` aan. |
-| "Te veel mislukte inlogpogingen" | Wacht hooguit een kwartier. Draait OAK achter een reverse proxy, stel dan `OAK_TRUSTED_PROXY_CIDRS` in. |
+| "Te veel mislukte inlogpogingen" | Wacht hooguit een kwartier. De blokkade geldt alleen voor het adres waar de pogingen vandaan kwamen. Draait OAK achter een reverse proxy, stel dan `OAK_TRUSTED_PROXY_CIDRS` in op het adres van de proxy. |
 | De poort is al in gebruik | Kies een andere hostpoort in `ports`, bijvoorbeeld `"8093:8080"`. |
 | Geen namen, PvP-rangen of cleanup-advies | Er is nog geen Game Data. Kijk op **Beheer → Game Data**. Zonder internet kun je de bestanden daar uploaden. |
 | De import verschijnt niet | Controleer of OAK bereikbaar is op het adres in de webhook-URL en of je opnieuw hebt ingelogd in PGSharp. Upload anders `PGSStats.json`. |
@@ -309,7 +309,7 @@ Bij het starten voert OAK database-migraties zelf uit, na een automatische back-
 |---|---|
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Installatie, instellingen en reverse proxies |
 | [docs/PGSHARP_INTEGRATION.md](docs/PGSHARP_INTEGRATION.md) | De PGSharp-koppeling en de geverifieerde velden |
-| [docs/QUERY_SYNTAX.md](docs/QUERY_SYNTAX.md) | Alle zoektermen van de Pokémon Box |
+| [docs/QUERY_SYNTAX.md](docs/QUERY_SYNTAX.md) | Alle zoektermen van de Pokémon Box, en de zoekteksten voor in het spel |
 | [docs/ANALYSIS_ENGINE.md](docs/ANALYSIS_ENGINE.md) | Formules, scores en het cleanup-advies |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Opbouw van de applicatie |
 | [docs/DATA_MODEL.md](docs/DATA_MODEL.md) | Database en bestanden |

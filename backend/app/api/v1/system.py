@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import os
+import re
 import shutil
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, Depends, Request, Response
@@ -22,10 +24,12 @@ from app.auth.sessions import revoke_all_for_user
 from app.core.container import Container
 from app.core.errors import ConflictError, NotFoundError, ValidationFailedError
 from app.core.migrations import backup_database
+from app.core.sprites import sprite_origin
 from app.models import AuditLog, BackgroundJob, GameDataVersion, ImportJob, TrainerAccount, User
 from app.repositories.settings import set_setting
 from app.services.settings import POKEAPI_SPRITE_TEMPLATE, SPRITE_KEY
 
+BACKUP_NAME = re.compile(r"oak-[A-Za-z0-9_-]{1,100}\.db")
 router = APIRouter(tags=["system"])
 BUILD_INFO_KEYS = ("OAK_BUILD_SHA", "OAK_BUILD_DATE", "OAK_BUILD_REF")
 
@@ -35,8 +39,19 @@ def _build_info() -> dict[str, str | None]:
 
 
 @router.get("/system/version", response_model=dict[str, Any])
-def version() -> dict[str, Any]:
+def version(auth: AuthContext = Depends(get_auth)) -> dict[str, Any]:
+    """Only after login: the exact version tells an outsider which known weaknesses to try
+    (issue #52)."""
     return {"version": __version__, "build": _build_info()}
+
+
+@router.get("/system/release", response_model=dict[str, Any])
+async def release(
+    auth: AuthContext = Depends(require_owner), container: Container = Depends(get_container)
+) -> dict[str, Any]:
+    """Only for the owner: the newest release on GitHub next to the running version. OAK keeps
+    the answer for a while and asks nothing when OAK_RELEASE_CHECK is off (issue #29)."""
+    return await run_in_threadpool(container.releases.status)
 
 
 @router.get("/system/status", response_model=dict[str, Any])
@@ -45,10 +60,9 @@ def system_status(
     session: Session = Depends(get_session),
     container: Container = Depends(get_container),
 ) -> dict[str, Any]:
+    """The owner sees the whole installation. Another user sees only what concerns them: their
+    failed imports, their last synchronisation and the active Game Data (issue #52)."""
     settings = container.settings
-    usage = shutil.disk_usage(settings.data_dir)
-    db_size = settings.database_path.stat().st_size if settings.database_path.exists() else 0
-    jobs = dict(session.execute(select(BackgroundJob.status, func.count()).group_by(BackgroundJob.status)).all())
     failed_imports = (
         session.scalar(
             select(func.count())
@@ -62,7 +76,21 @@ def system_status(
         select(func.max(TrainerAccount.last_successful_sync_at)).where(TrainerAccount.user_id == auth.user.id)
     )
     active = session.scalars(select(GameDataVersion).where(GameDataVersion.status == "active")).first()
+    own = {
+        "failed_imports": failed_imports,
+        "last_successful_sync": last_sync.isoformat() if last_sync else None,
+        "game_data": {
+            "version_id": active.id if active else None,
+            "activated_at": active.activated_at.isoformat() if active and active.activated_at else None,
+        },
+    }
+    if auth.user.role != "owner":
+        return own
+    usage = shutil.disk_usage(settings.data_dir)
+    db_size = settings.database_path.stat().st_size if settings.database_path.exists() else 0
+    jobs = dict(session.execute(select(BackgroundJob.status, func.count()).group_by(BackgroundJob.status)).all())
     return {
+        **own,
         "version": __version__,
         "build": _build_info(),
         "started_at": container.started_at.isoformat(),
@@ -78,12 +106,6 @@ def system_status(
         "jobs": {
             "pending": jobs.get("queued", 0) + jobs.get("running", 0),
             "failed": jobs.get("failed", 0),
-        },
-        "failed_imports": failed_imports,
-        "last_successful_sync": last_sync.isoformat() if last_sync else None,
-        "game_data": {
-            "version_id": active.id if active else None,
-            "activated_at": active.activated_at.isoformat() if active and active.activated_at else None,
         },
         "secret_key_source": "generated" if container.secret_generated else "environment",
         "registration_open": settings.allow_registration,
@@ -131,9 +153,10 @@ def put_app_settings(
         template = POKEAPI_SPRITE_TEMPLATE
     else:
         template = (body.sprite_url_template or "").strip()
-        if not template.startswith("https://") or "{dex}" not in template:
+        if sprite_origin(template) is None:
             raise ValidationFailedError(
-                "Een eigen spritebron moet met https:// beginnen en {dex} bevatten.", context="sprite_template"
+                "Een eigen spritebron moet met https:// beginnen, een gewone hostnaam hebben en {dex} bevatten.",
+                context="sprite_template",
             )
     set_setting(session, SPRITE_KEY, template)
     audit(
@@ -289,11 +312,7 @@ def download_backup(
     auth: AuthContext = Depends(require_owner),
     container: Container = Depends(get_container),
 ) -> Response:
-    if "/" in name or "\\" in name or not name.startswith("oak-") or not name.endswith(".db"):
-        raise NotFoundError("Back-up niet gevonden.", context="backup")
-    path = container.settings.backups_dir / name
-    if not path.is_file():
-        raise NotFoundError("Back-up niet gevonden.", context="backup")
+    path = _backup_path(container, name)
     with container.db.transaction() as session:
         audit(session, auth.user.id, "backup_downloaded", name, container)
     return FileResponse(path, media_type="application/vnd.sqlite3", filename=name)
@@ -305,7 +324,19 @@ def delete_backup(
     auth: AuthContext = Depends(require_owner),
     container: Container = Depends(get_container),
 ) -> Response:
-    if "/" in name or "\\" in name or not name.startswith("oak-") or not name.endswith(".db"):
-        raise NotFoundError("Back-up niet gevonden.", context="backup")
-    (container.settings.backups_dir / name).unlink(missing_ok=True)
+    path = _backup_path(container, name)
+    path.unlink(missing_ok=True)
+    with container.db.transaction() as session:
+        audit(session, auth.user.id, "backup_deleted", name, container)
     return Response(status_code=204)
+
+
+def _backup_path(container: Container, name: str) -> Path:
+    """A back-up OAK made itself, by its exact name pattern. Anything else is a 404, never an
+    error 500 for an odd character (issue #55)."""
+    if not BACKUP_NAME.fullmatch(name):
+        raise NotFoundError("Back-up niet gevonden.", context="backup")
+    path = container.settings.backups_dir / name
+    if not path.is_file():
+        raise NotFoundError("Back-up niet gevonden.", context="backup")
+    return path

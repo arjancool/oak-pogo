@@ -18,7 +18,7 @@ OAK is een self-hosted, Docker-first Pokémon GO-collectiebeheerder. PGSharp lev
 - Pokémon-ID's, tag-ID's en andere 64-bitsidentificaties blijven verliesvrij. Ze zijn strings in de database (`TEXT`), in de API en in de frontend. Gebruik nooit een JavaScript `Number` voor zo'n ID.
 - PGSharp-data is leidend voor de accountstatus. OAK-metadata (bescherming, notities, tags, plannen) staat in eigen tabellen en gaat nooit verloren door een import.
 - Een ontbrekende Pokémon is alleen verdwenen na een aantoonbaar volledige, geldige import van hetzelfde account. Noem dat `Niet meer in inventaris`, nooit `Transferred`.
-- Game Master-gegevens hebben versiebeheer en bronvermelding (ADR-0017). Spelmechanica komt uit de actieve dataset, niet uit constanten in de code.
+- Game Master-gegevens hebben versiebeheer en bronvermelding (ADR-0028). Spelmechanica komt uit de actieve dataset, niet uit constanten in de code.
 - Domeinlogica in `backend/app/domain`, `analysis`, `recommendations` en `normalizers` importeert geen FastAPI, SQLAlchemy of andere infrastructuur. `tests/test_architecture.py` bewaakt dat.
 - Iedere aanbeveling bevat actie, redenen, betrouwbaarheid, databron en datasetversie.
 - Iedere Pokémon wordt geanalyseerd en vergeleken, ook beschermde, favoriete en vintage Pokémon. Bescherming bepaalt alleen de status (ADR-0019).

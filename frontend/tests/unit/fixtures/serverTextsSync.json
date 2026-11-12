@@ -165,7 +165,11 @@
    "text": "Raid-, Rocket- en Max Battle-analyse"
   },
   {
-   "text": "PokeMiners Game Master"
+   "code": "SOURCE_GAME_MASTER",
+   "data": {
+    "source": "alexelgt"
+   },
+   "text": "Game Master van alexelgt"
   },
   {
    "code": "LICENSE_NONE",
@@ -319,7 +323,7 @@
   {
    "code": "GAME_MASTER_NOT_A_LIST",
    "data": {},
-   "text": "PokeMiners-bestand is geen lijst met templates"
+   "text": "Het Game Master-bestand is geen lijst met templates"
   },
   {
    "code": "CPM_TOO_SHORT",

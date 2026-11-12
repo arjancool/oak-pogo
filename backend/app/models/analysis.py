@@ -83,6 +83,9 @@ class PvpRanking(Base):
     xl_candy_cost: Mapped[int | None] = mapped_column(Integer)
     species_rank: Mapped[int | None] = mapped_column(Integer)
     species_score: Mapped[float | None] = mapped_column(Float)
+    # The stat product on the current level as a percentage of the best in the league, or NULL
+    # when the Pokémon cannot play in it as it is now (analysis/league.py).
+    percent_now: Mapped[float | None] = mapped_column(Float)
 
 
 class BattleTeam(Base):

@@ -6,6 +6,8 @@ carry this value*; it never stands in for ``False`` or ``0``.
 
 from __future__ import annotations
 
+import re
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import IntEnum, StrEnum
@@ -46,12 +48,32 @@ class BreadMode(IntEnum):
     GIGANTAMAX = 2
 
 
+# Where a Pokémon came from, read from PGSharp ``originDetail.originDetailCase`` (issue #32). Only
+# values checked against a real export get a name; any other value is shown as unknown, with its
+# number, and never guessed. See docs/PGSHARP_INTEGRATION.md for how each one was checked.
+VERIFIED_ORIGINS: dict[int, str] = {
+    # Every Pokémon with 2 had hatchedFromEgg.
+    2: "egg",
+    # Every Pokémon with 3 was caught with a Premier Ball, some of them Shadow: a (shadow) raid.
+    3: "raid",
+    # Every Pokémon with 6 is Shadow or Purified and was caught with a Premier Ball.
+    6: "rocket",
+    # Every Pokémon with 13 is Dynamax and was caught with a Premier Ball: a Max Battle.
+    13: "max_battle",
+}
+
+
+def origin_kind(case: int | None) -> str | None:
+    """The checked origin of a Pokémon, or None when the number is missing or not checked."""
+    return None if case is None else VERIFIED_ORIGINS.get(case)
+
+
 class PokemonSize(IntEnum):
     """PGSharp ``size``: the size class the game shows, from XXS to XXL.
 
-    Verified in a real export: a Pokémon with 1 is the one the game called XXS, and most
-    Pokémon have 3. The order of the other values follows the community protocol definitions.
-    0 means the export did not say.
+    Verified in a real export: a Pokémon with 1 is the one the game called XXS, a Jynx with 5 is
+    the one the game called XXL (issue #33), and most Pokémon have 3. The values 2 and 4 follow
+    the community protocol definitions. 0 means the export did not say.
     """
 
     UNSET = 0
@@ -78,6 +100,34 @@ class Issue:
     # The values in the message, so the interface can show it in another language (ADR-0025).
     # "context" names the variant when one code has more than one message.
     data: dict[str, Any] = field(default_factory=dict)
+
+
+# Issues kept per severity while reading an export. OAK stores at most this many in total, errors
+# first, so keeping this many of each severity stores exactly the same issues as keeping them all.
+MAX_ISSUES_PER_SEVERITY = 500
+
+
+class IssueLog:
+    """The issues found while reading an export, in the order they were found. After
+    ``MAX_ISSUES_PER_SEVERITY`` of one severity, further ones are only counted, so an export full
+    of unreadable records does not fill the memory with messages."""
+
+    def __init__(self, limit: int = MAX_ISSUES_PER_SEVERITY) -> None:
+        self.limit = limit
+        self.items: list[Issue] = []
+        self.dropped = 0
+        self._counts: dict[Severity, int] = dict.fromkeys(Severity, 0)
+
+    def append(self, issue: Issue) -> None:
+        if self._counts[issue.severity] < self.limit:
+            self._counts[issue.severity] += 1
+            self.items.append(issue)
+        else:
+            self.dropped += 1
+
+    def extend(self, issues: Iterable[Issue]) -> None:
+        for issue in issues:
+            self.append(issue)
 
 
 @dataclass(frozen=True, slots=True)
@@ -188,6 +238,8 @@ class NormalizedExport:
     # Records with a readable ID but unreadable content. They prove presence, not state.
     unreadable_records: list[str]
     issues: list[Issue]
+    # Issues found but not kept, see IssueLog.
+    issues_dropped: int = 0
 
 
 def iv_percent(attack: int | None, defense: int | None, stamina: int | None) -> float | None:
@@ -215,6 +267,19 @@ def has_costume(costume_id: int | None, costume_form: bool | None) -> bool | Non
     if costume_id is None and costume_form is None:
         return None
     return False
+
+
+# A year in the name of a form marks a form of an event, such as CHARMANDER_GOGGLES_2026 in the
+# Game Master or CharmanderGoggles2026 in the export. In the Game Master of November 2026 each of
+# the 91 forms with a year was a costume or an event form; 8 of them have no costume mark, such as
+# the goggles of 2026 and the clones of 2019. The year is in the export as well, so this also works
+# while the Game Master does not know the form yet. A name that is only a number is no year.
+_EVENT_YEAR = re.compile(r"[A-Za-z_](?:19|20)\d{2}(?!\d)")
+
+
+def is_event_form(form_name: str | None) -> bool:
+    """Whether the form belongs to an event: its name carries a year."""
+    return bool(form_name) and _EVENT_YEAR.search(str(form_name)) is not None
 
 
 def extreme_size(size_class: int | None) -> str | None:

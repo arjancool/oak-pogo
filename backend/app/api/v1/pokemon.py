@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from app.analysis.evolution import evolution_paths, path_candy
 from app.analysis.league import LEAGUES, Subject, analyze_leagues, league_cap
-from app.analysis.moves import availability, moveset_needs
+from app.analysis.moves import availability, lost_moves, moveset_needs
 from app.analysis.powerup import power_up_cost, reachable_max_level
 from app.analysis.purify import purify
 from app.analysis.stats import IVs, base_stats_of, combat_power, hit_points
@@ -53,9 +53,16 @@ from app.repositories.pokemon_query import (
     order_by,
     term_condition,
 )
+from app.schemas.common import MAX_PAGE
 from app.services.analysis import rules_for
 from app.services.pokemon_view import PokemonSummary, detail_extras, summarize
-from app.services.transfer_guard import bulk_vintage_text, check_transfer, confirmation_item, guard_context
+from app.services.transfer_guard import (
+    bulk_vintage_text,
+    check_transfer,
+    confirmation_item,
+    guard_context,
+    with_list,
+)
 
 router = APIRouter(prefix="/pokemon", tags=["pokemon"])
 MAX_PAGE_SIZE = 500
@@ -185,7 +192,7 @@ class BoxQuery(BaseModel):
     tag: str | None = None
     planned: str | None = None
     sort: str = "-cp"
-    page: int = Field(default=1, ge=1)
+    page: int = Field(default=1, ge=1, le=MAX_PAGE)
     page_size: int = Field(default=50, ge=1, le=MAX_PAGE_SIZE)
     shiny: str | None = None
     lucky: str | None = None
@@ -323,6 +330,7 @@ def _subject(pokemon: Pokemon, trainer_level: int | None) -> Subject:
         purified=pokemon.alignment == Alignment.PURIFIED,
         lucky=bool(pokemon.lucky),
         trainer_level=trainer_level,
+        moves=tuple(m for m in (pokemon.move_fast_key, pokemon.move_charged_1_key, pokemon.move_charged_2_key) if m),
     )
 
 
@@ -480,10 +488,25 @@ def pokemon_analysis(
                     target.moveset.moveset,
                     second_move_unlocked=pokemon.move_charged_2 is not None,
                 )
+                # A move the Pokémon knows does not come with it after evolving, so nothing is
+                # overwritten then.
+                lost = (
+                    []
+                    if target.is_evolution
+                    else lost_moves(target_form, current_fast, current_charged, target.moveset.moveset)
+                )
                 item["moveset"] = {
                     **asdict(target.moveset),
                     "names": [str((gd.move(m) or {}).get("name", m)) for m in target.moveset.moveset],
                     "needs": [asdict(n) for n in needs],
+                    "loses": [
+                        {
+                            "key": m.move,
+                            "name": str((gd.move(m.move) or {}).get("name", m.move)),
+                            "availability": m.availability.value,
+                        }
+                        for m in lost
+                    ],
                 }
             entries.append(item)
         output[league] = {
@@ -834,6 +857,25 @@ def bulk_action(
         body.action == "add_to_list" and (body.value or "cleanup") == "cleanup"
     )
     guard = guard_context(session, account, container.settings.tz)
+    analyses: dict[int, PokemonAnalysis] = {}
+    if transfer_actions:
+        # The list as it will be, so the guard sees when every copy of a species would go.
+        on_list = set(
+            session.scalars(
+                select(PlannedAction.pokemon_id).where(
+                    PlannedAction.trainer_account_id == account.id,
+                    PlannedAction.list_name == "cleanup",
+                    PlannedAction.status == "open",
+                )
+            )
+        )
+        guard = with_list(session, guard, account.id, on_list | {p.id for p in rows})
+        analyses = {
+            a.pokemon_id: a
+            for a in session.scalars(
+                select(PokemonAnalysis).where(PokemonAnalysis.pokemon_id.in_([p.id for p in rows]))
+            )
+        }
     for pokemon in rows:
         metadata = _metadata(session, pokemon, now)
         confirmed_kinds: list[str] = []
@@ -845,7 +887,7 @@ def bulk_action(
                 text = bulk_vintage_text(year)
                 skipped.append({"pokemon_id": pokemon.id, "reason": text["text"], "reason_text": text})
                 continue
-            check = check_transfer(pokemon, metadata, guard)
+            check = check_transfer(pokemon, metadata, guard, analyses.get(pokemon.id))
             if check.blocked:
                 skipped.append({"pokemon_id": pokemon.id, "reason": check.blocked, "reason_text": check.blocked_text})
                 continue
@@ -951,9 +993,83 @@ def _csv_safe(value: Any) -> Any:
     return value
 
 
+# Column names of the Box CSV per language (issue #31). The values are data: names from the Game
+# Data, numbers, True/False and the status codes, the same in every language.
+BOX_CSV_COLUMNS = {
+    "nl": [
+        "oak_id",
+        "pokemon_id",
+        "soort",
+        "vorm",
+        "bijnaam",
+        "cp",
+        "level",
+        "atk",
+        "def",
+        "sta",
+        "iv_pct",
+        "snelle_aanval",
+        "geladen_aanval_1",
+        "geladen_aanval_2",
+        "shiny",
+        "lucky",
+        "shadow",
+        "purified",
+        "favoriet",
+        "dynamax",
+        "gevangen",
+        "cleanup_status",
+        "great_rang",
+        "ultra_rang",
+        "beschermd",
+        "notities",
+        "oak_tags",
+    ],
+    "en": [
+        "oak_id",
+        "pokemon_id",
+        "species",
+        "form",
+        "nickname",
+        "cp",
+        "level",
+        "atk",
+        "def",
+        "sta",
+        "iv_pct",
+        "fast_move",
+        "charged_move_1",
+        "charged_move_2",
+        "shiny",
+        "lucky",
+        "shadow",
+        "purified",
+        "favorite",
+        "dynamax",
+        "caught",
+        "cleanup_status",
+        "great_rank",
+        "ultra_rank",
+        "protected",
+        "notes",
+        "oak_tags",
+    ],
+}
+
+
+def _export_language(lang: str | None, auth: AuthContext) -> str:
+    """The language the interface asks for, else the one the user chose, else Dutch."""
+    chosen = (auth.user.preferences or {}).get("language")
+    for candidate in (lang, chosen):
+        if candidate in BOX_CSV_COLUMNS:
+            return str(candidate)
+    return "nl"
+
+
 @router.get("/export/csv")
 def export_csv(
     query: BoxQuery = Depends(),
+    lang: str | None = Query(default=None, pattern="^(nl|en)$"),
     auth: AuthContext = Depends(get_auth),
     session: Session = Depends(get_session),
     container: Container = Depends(get_container),
@@ -966,37 +1082,7 @@ def export_csv(
     gd = container.gamedata.active()
     buffer = io.StringIO()
     writer = csv.writer(buffer, delimiter=";")
-    writer.writerow(
-        [
-            "oak_id",
-            "pokemon_id",
-            "soort",
-            "vorm",
-            "bijnaam",
-            "cp",
-            "level",
-            "atk",
-            "def",
-            "sta",
-            "iv_pct",
-            "snelle_aanval",
-            "geladen_aanval_1",
-            "geladen_aanval_2",
-            "shiny",
-            "lucky",
-            "shadow",
-            "purified",
-            "favoriet",
-            "dynamax",
-            "gevangen",
-            "cleanup_status",
-            "great_rang",
-            "ultra_rang",
-            "beschermd",
-            "notities",
-            "oak_tags",
-        ]
-    )
+    writer.writerow(BOX_CSV_COLUMNS[_export_language(lang, auth)])
     for pokemon, meta, analysis in rows:
         s = summarize(pokemon, meta, analysis, gd, latest_sync_id=latest, first_sync_id=first)
         writer.writerow(

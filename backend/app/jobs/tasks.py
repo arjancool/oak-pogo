@@ -6,12 +6,12 @@ import logging
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
-from sqlalchemy import func, select
+from sqlalchemy import case, delete, func, or_, select, update
 from sqlalchemy.exc import OperationalError
 
 from app.ingestion.derive import DERIVE_REVISION, apply_derived
 from app.ingestion.receive import load_payload, write_payload
-from app.models import AnalysisRun, BackgroundJob, ImportJob, Pokemon, TrainerAccount
+from app.models import AnalysisRun, AuditLog, BackgroundJob, ImportJob, Pokemon, TrainerAccount, UserSession
 from app.normalizers.sanitize import SANITIZER_REVISION, sanitize_export
 from app.recommendations.rules import ENGINE_VERSION
 from app.repositories.settings import get_setting, set_setting
@@ -67,6 +67,7 @@ def register_tasks(container: Container) -> None:
     runner.maintenance.append(lambda: resanitize_payloads(container))
     runner.maintenance.append(lambda: refresh_derived(container))
     runner.maintenance.append(lambda: purge_payloads(container))
+    runner.maintenance.append(lambda: purge_audit_and_sessions(container))
     runner.maintenance.append(lambda: schedule_gamedata_check(container))
     runner.maintenance.append(lambda: schedule_events_check(container))
     # Holds start when an event comes within reach and end with the event (ADR-0021).
@@ -215,34 +216,67 @@ def resanitize_payloads(container: Container) -> None:
 
 
 def purge_payloads(container: Container) -> None:
-    """Delete stored (sanitized) exports older than OAK_RAW_IMPORT_RETENTION_DAYS."""
+    """Delete stored (sanitized) exports older than OAK_RAW_IMPORT_RETENTION_DAYS.
+
+    A retry uses the file of the import it retries. So the retention period of a file counts
+    from the newest import that uses it, and a file goes only when no import that uses it is
+    waiting or running. All imports that used it are then marked as purged (issue #35)."""
     days = container.settings.raw_import_retention_days
-    cutoff = container.clock.now() - timedelta(days=days)
+    now = container.clock.now()
+    cutoff = now - timedelta(days=days)
+    active = case((ImportJob.status.in_(("queued", "processing")), 1), else_=0)
     with container.db.transaction() as session:
-        jobs = session.scalars(
-            select(ImportJob).where(
-                ImportJob.payload_file.is_not(None),
-                ImportJob.payload_purged_at.is_(None),
-                ImportJob.received_at < cutoff,
-                ImportJob.status.not_in(("queued", "processing")),
-            )
+        usage = session.execute(
+            select(ImportJob.payload_file, func.max(ImportJob.received_at), func.max(active))
+            .where(ImportJob.payload_file.is_not(None), ImportJob.payload_purged_at.is_(None))
+            .group_by(ImportJob.payload_file)
         ).all()
-        files = {j.payload_file for j in jobs}
-        still_needed = set(
-            session.scalars(
-                select(ImportJob.payload_file).where(
-                    ImportJob.payload_file.in_(files),
-                    ImportJob.status.in_(("queued", "processing")),
+        expired = [str(name) for name, newest, in_use in usage if newest < cutoff and not in_use]
+        for name in expired:
+            (container.settings.imports_dir / name).unlink(missing_ok=True)
+        if expired:
+            session.execute(
+                update(ImportJob)
+                .where(ImportJob.payload_file.in_(expired), ImportJob.payload_purged_at.is_(None))
+                .values(payload_purged_at=now)
+            )
+    if expired:
+        log.info("purged stored exports", extra={"count": len(expired), "retention_days": days})
+
+
+# An ended session stays this long before it is deleted, so a recent logout can still be traced.
+ENDED_SESSION_DAYS = 30
+
+
+def _deleted(result: object) -> int:
+    """How many rows a DELETE removed."""
+    return int(getattr(result, "rowcount", 0) or 0)
+
+
+def purge_audit_and_sessions(container: Container) -> None:
+    """Delete audit entries older than OAK_AUDIT_RETENTION_DAYS, and sessions that ended more than
+    ENDED_SESSION_DAYS ago: revoked, past their absolute end, or idle for longer than allowed
+    (issue #55)."""
+    settings = container.settings
+    now = container.clock.now()
+    audit_cutoff = now - timedelta(days=settings.audit_retention_days)
+    ended = now - timedelta(days=ENDED_SESSION_DAYS)
+    idle_ended = ended - timedelta(hours=settings.session_idle_hours)
+    with container.db.transaction() as session:
+        audits = _deleted(session.execute(delete(AuditLog).where(AuditLog.created_at < audit_cutoff)))
+        sessions = _deleted(
+            session.execute(
+                delete(UserSession).where(
+                    or_(
+                        UserSession.revoked_at < ended,
+                        UserSession.expires_at < ended,
+                        UserSession.last_seen_at < idle_ended,
+                    )
                 )
             )
         )
-        for job in jobs:
-            if job.payload_file in still_needed:
-                continue
-            (container.settings.imports_dir / str(job.payload_file)).unlink(missing_ok=True)
-            job.payload_purged_at = container.clock.now()
-    if jobs:
-        log.info("purged stored exports", extra={"count": len(jobs), "retention_days": days})
+    if audits or sessions:
+        log.info("purged audit entries and sessions", extra={"audit": audits, "sessions": sessions})
 
 
 def schedule_gamedata_check(container: Container) -> None:

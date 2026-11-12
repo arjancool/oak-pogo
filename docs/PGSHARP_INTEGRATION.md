@@ -61,11 +61,28 @@ OAK accepteert:
 | `202` met `"status": "queued"` | Ontvangen en in de wachtrij gezet. |
 | `202` met `"status": "duplicate"` | Precies deze export was al ontvangen. Er verandert niets. |
 | `200` met `"status": "connection_test"` | Een verbindingstest. Er is niets geïmporteerd. |
-| `400` | De inhoud is geen leesbare JSON. De import staat als geweigerd in OAK, met de reden. |
+| `400` | De inhoud is geen leesbare JSON, of de structuur valt buiten de grenzen hieronder. De import staat als geweigerd in OAK, met de reden. |
 | `404` | Onbekend of ingetrokken token. |
 | `413` | Groter dan `OAK_MAX_IMPORT_MB` (standaard 64 MB). |
 | `415` | Een niet-ondersteunde `Content-Encoding`. |
-| `429` | Te veel verzoeken. Per webhook standaard 60 per uur. Per IP-adres blokkeert OAK na 20 ongeldige tokens 10 minuten lang. |
+| `429` | Te veel verzoeken. Per webhook standaard 60 per uur. Per IP-adres weigert OAK na 20 ongeldige tokens 10 minuten lang verdere ongeldige tokens. Een geldig token werkt dan gewoon. |
+
+### Grenzen aan de structuur
+
+Naast de grootte in bytes controleert OAK de opbouw van een export. Zo kost het lezen nooit veel meer geheugen dan de export groot is. Een echte export met ongeveer 1.000 Pokémon heeft zo'n 8.400 objecten en lijsten, 100.000 waarden, 9 niveaus en hoogstens 82 velden in één object. De grenzen liggen daar ruim boven:
+
+| Grens | Maximum |
+|---|---|
+| Pokémon-records in `pokemons` | 25.000 |
+| Objecten en lijsten samen | 500.000 |
+| Waarden | 4.000.000 |
+| Niveaus | 32 |
+| Velden in één object | 1.000 |
+| Cijfers in één getal | 4.300 |
+
+Ook tekst met een ongeldig teken (een losse surrogate) en getallen die niet eindig zijn, zoals `NaN`, `Infinity` en `1e999`, weigert OAK met een eigen code. Het aantal objecten, lijsten en waarden telt OAK voordat het de JSON leest. Een export die over een grens gaat, weigert OAK met de code `STRUCTURE_TOO_LARGE` en de grens die overschreden is.
+
+OAK leest, filtert en bewaart een export voordat het de database op slot zet voor de import. Een grote export houdt andere schrijvers dus niet op. Hoogstens twee exports worden tegelijk gelezen. De rest wacht even.
 
 ### Verbindingstest
 
@@ -109,7 +126,7 @@ Alle velden in deze tabel kwamen voor in de geverifieerde export.
 | `pokeball` | Gebruikte bal. |
 | `creationTimeMs` | Vangstmoment. Bepaalt het vangstjaar en daarmee of de Pokémon vintage is (ADR-0019). |
 | `tradedTimeMs` | Ruilmoment, als de Pokémon geruild is. |
-| `hatchedFromEgg`, `fromFort`, `originDetail`, `originEvents` | Herkomst. |
+| `hatchedFromEgg`, `fromFort`, `originDetail`, `originEvents` | Herkomst. Zie *Herkomst* hieronder. |
 | `isLucky`, `favorite`, `nickname` | Lucky, favoriet en bijnaam. |
 | `pokemonTagIds` | In-game tags, als tekst bewaard. De namen exporteert PGSharp niet. |
 | `breadMoves` | Max Moves met level. |
@@ -118,18 +135,35 @@ Alle velden in deze tabel kwamen voor in de geverifieerde export.
 | `limitedPokemonIdentifier` | Beperkte uitgave, bijvoorbeeld van een event. |
 | `isEgg` | Eieren telt OAK mee in de opslag, maar niet als Pokémon. |
 
-Andere velden zonder privacygevoelige naam bewaart OAK alleen als ze een waarde hebben die afwijkt van nul of leeg. Zo kan een latere versie ze nog interpreteren.
+Een ander veld van een Pokémon bewaart OAK alleen als de naam niet privacygevoelig is en de waarde een getal, een vlag, korte tekst of een object met getallen is, en niet nul of leeg. Zo kan een latere versie het nog interpreteren. Alle andere onbekende velden komen niet in de opgeslagen export.
+
+### Herkomst
+
+OAK bewaart `originDetail.originDetailCase` als `origin_case`. De detailpagina toont de herkomst alleen voor een waarde die met een echte export is gecontroleerd. Iedere andere waarde staat er als `onbekend`, met de code erbij. OAK raadt nooit. Het geneste object `originDetail.originDetail` was in de echte export bij iedere Pokémon leeg, dus het nummer is het enige gegeven.
+
+De controle gebeurde met een echte export. Daarbij is per waarde gekeken naar velden die los van het nummer staan: `hatchedFromEgg`, de Shadow- of Purified-stand en de gebruikte bal. Raids, Team GO Rocket en Max Battles vang je met een Premier Ball.
+
+| Waarde | Herkomst | Status |
+|---|---|---|
+| 2 | Uitgebroed uit een ei | Gecontroleerd. Iedere Pokémon met 2 had `hatchedFromEgg`. |
+| 3 | Raid | Gecontroleerd. Iedere Pokémon met 3 was gevangen met een Premier Ball, en een deel was Shadow of Purified, zoals bij een Shadow-raid. |
+| 6 | Team GO Rocket | Gecontroleerd. Iedere Pokémon met 6 was Shadow of Purified en gevangen met een Premier Ball. |
+| 1, 4, 5 | Volgens de communityprotocollen wild, onderzoek en GO Battle League | Niet gecontroleerd. Geen ander veld onderscheidt ze. OAK toont `onbekend`. |
+| 13 | Max Battle | Gecontroleerd. Iedere Pokémon met 13 was Dynamax en gevangen met een Premier Ball. Een Dynamax-Pokémon vang je in een Max Battle. |
+| 0, 9 | Onbekend | Niet gecontroleerd. OAK toont `onbekend`. |
+
+Een nieuwe gecontroleerde waarde voeg je toe aan `VERIFIED_ORIGINS` in `backend/app/domain/pokemon.py`, met de manier waarop hij is gecontroleerd.
 
 ### Wat OAK niet bewaart
 
 OAK verwijdert bij ontvangst, nog voor er iets op schijf komt:
 
-- Locaties: `capturedS2CellId` en de coördinaten en ID's van gyms, PokéStops en stations. Van `deployedFortId` bewaart OAK alleen of de Pokémon nu in een gym staat, als `inGym` (ADR-0026).
-- Namen en hashes van andere spelers: `ownerName`, `originalOwnerNickname`, `tradingOriginalOwnerHash`.
+- Locaties: `capturedS2CellId`, coördinaten, en de ID's van gyms, PokéStops, stations, spawnpunten en ontmoetingen. Van `deployedFortId` bewaart OAK alleen of de Pokémon nu in een gym staat, als `inGym` (ADR-0026).
+- Namen, codes en hashes van andere spelers: `ownerName`, `originalOwnerNickname`, `tradingOriginalOwnerHash`, en velden voor vrienden, ruilpartners en trainers.
 - Interne spelers-ID's en accountvelden die OAK niet gebruikt.
-- Velden waarvan de naam op locatie, speler, account, apparaat, sessie of token wijst.
+- Velden waarvan de naam op een locatie, een speler, een account, een apparaat, een sessie of een token wijst.
 
-Dat geldt op ieder niveau en in iedere sectie van de export: account, speler, items en Pokémon, ook binnen geneste objecten en lijsten zoals gevechtsstatistieken en badges. Daar kijkt OAK per woord van de veldnaam, zodat `playerId` en `latitude` verdwijnen, maar `bonusIndividualAttack` blijft. Per sectie bewaart OAK alleen de velden die het leest, en iedere waarde daarvan gaat door hetzelfde filter, wat voor type het ook is.
+Dat geldt op ieder niveau en in iedere sectie van de export: account, speler, items en Pokémon, ook binnen geneste objecten en lijsten zoals gevechtsstatistieken en badges. Daar kijkt OAK per woord van de veldnaam, ook naar woorden met cijfers en twee woorden samen. Zo verdwijnen `playerId`, `s2Id`, `pokeStopId` en `latitude`, maar blijft `bonusIndividualAttack`. `locationCard` blijft ook, want dat is een achtergrond en geen plaats. Per sectie bewaart OAK alleen de velden die het leest, en iedere waarde daarvan gaat door hetzelfde filter, wat voor type het ook is.
 
 Wordt het filter strenger, dan filtert OAK de nog bewaarde exports bij de eerstvolgende start één keer opnieuw. Ze hoeven dus niet eerst de bewaartermijn van `OAK_RAW_IMPORT_RETENTION_DAYS` uit te dienen.
 
@@ -159,7 +193,7 @@ Was een gedeeltelijke import toch volledig, bijvoorbeeld na een grote opruimacti
 
 ## Diagnose
 
-Bij iedere import legt OAK vast hoe het verzoek eruitzag: methode, `Content-Type`, compressie, tekenset, user-agent, grootte en de namen van de headers. Daarnaast maakt OAK een samenvatting van de structuur: de veldpaden met hun typen (maximaal 1.500 paden en 6 niveaus diep), de aantallen, en welke velden nieuw zijn of ontbreken ten opzichte van de geverifieerde export. Je ziet dit bij de details van een import.
+Bij iedere import legt OAK vast hoe het verzoek eruitzag: methode, `Content-Type`, compressie, tekenset, user-agent, grootte en de namen van de headers. Daarnaast maakt OAK een samenvatting van de structuur: de veldpaden met hun typen (maximaal 1.500 paden en 6 niveaus diep), de aantallen, en welke velden nieuw zijn of ontbreken ten opzichte van de geverifieerde export. Iedere lijst daarin houdt hoogstens 200 namen, met het volledige aantal erbij. Een sleutel die geen veldnaam is, zoals de naam van een gym, staat er als `*`, zodat er geen gegevens in de samenvatting komen. Een nieuwe poging neemt de samenvatting niet over. Je ziet dit bij de details van een import.
 
 Normaal kijkt OAK voor die samenvatting naar de eerste 200 records van iedere lijst. Met de diagnosemodus, die je onder **Beheer → PGSharp Sync** 24 uur aanzet, bekijkt OAK alle records, tot 20.000 per lijst. Dat helpt als een zeldzaam veld maar bij enkele Pokémon voorkomt.
 
@@ -167,7 +201,11 @@ De inhoud van de export legt OAK in geen van beide gevallen vast. Van de headers
 
 ## Bewaren van exports
 
-Een ontvangen export bewaart OAK opgeschoond en gecomprimeerd in `/data/imports`, zodat een mislukte import opnieuw kan. Na `OAK_RAW_IMPORT_RETENTION_DAYS` (standaard 14) dagen verwijdert OAK het bestand. De resultaten van de import blijven staan.
+Een ontvangen export bewaart OAK opgeschoond en gecomprimeerd in `/data/imports`, zodat een mislukte import opnieuw kan. Na `OAK_RAW_IMPORT_RETENTION_DAYS` (standaard 14) dagen verwijdert OAK het bestand. De resultaten van de import blijven staan. Een nieuwe poging gebruikt het bestand van de import die hij opnieuw probeert. Daarom telt de termijn vanaf de nieuwste import die het bestand gebruikt, en verwijdert OAK nooit een bestand van een import die nog wacht of loopt.
+
+Wordt OAK midden in een import gestopt, bijvoorbeeld door een herstart, dan verwerkt OAK de import bij het starten opnieuw. Na drie onderbroken pogingen stopt OAK ermee en zet de import op mislukt, met de reden. Zo kan een import die OAK steeds laat vastlopen dat niet bij iedere start opnieuw doen.
+
+Een import met veel fouten bewaart hoogstens 500 meldingen. De rest telt OAK alleen, en het aantal staat bij de import.
 
 ## Problemen oplossen
 

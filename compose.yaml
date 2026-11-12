@@ -19,6 +19,10 @@ services:
     image: ${OAK_IMAGE:-oak-pogo:local}
     container_name: ${OAK_CONTAINER_NAME:-oak}
     restart: unless-stopped
+    # The entrypoint only needs these to give /data to PUID:PGID and drop root; OAK itself
+    # runs without any capability (docs/DEPLOYMENT.md).
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_READ_SEARCH, FOWNER, SETGID, SETPCAP, SETUID]
     ports:
       - "${OAK_HOST_PORT:-8080}:8080"
     env_file:
@@ -35,7 +39,9 @@ services:
       OAK_ALLOW_REGISTRATION: ${OAK_ALLOW_REGISTRATION:-false}
       OAK_GAMEDATA_AUTO_UPDATE: ${OAK_GAMEDATA_AUTO_UPDATE:-true}
       OAK_EVENTS_AUTO_UPDATE: ${OAK_EVENTS_AUTO_UPDATE:-true}
+      OAK_RELEASE_CHECK: ${OAK_RELEASE_CHECK:-true}
       OAK_RAW_IMPORT_RETENTION_DAYS: ${OAK_RAW_IMPORT_RETENTION_DAYS:-14}
+      OAK_AUDIT_RETENTION_DAYS: ${OAK_AUDIT_RETENTION_DAYS:-365}
       OAK_LOG_LEVEL: ${OAK_LOG_LEVEL:-INFO}
       # Fixed: the volume below and the port mapping above assume these values.
       OAK_DATA_DIR: /data

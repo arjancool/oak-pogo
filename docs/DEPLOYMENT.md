@@ -15,7 +15,7 @@ Open daarna het adres uit `OAK_BASE_URL`. De eerste gebruiker die zich aanmeldt,
 
 ## Kant-en-klare image
 
-Iedere push naar `main` publiceert `ghcr.io/arjancool/oak-pogo:latest` en `ghcr.io/arjancool/oak-pogo:sha-<commit>`. Een tag `v2.1.0` publiceert ook `2.1.0` en `2.1`. De image is er voor amd64 en arm64. De eerste uitgebrachte versie is `2.0.0`. Met een vaste versie zoals `2.0` bepaal je zelf wanneer je naar een nieuwe minor-versie overstapt.
+Iedere push naar `main` publiceert `ghcr.io/arjancool/oak-pogo:latest` en `ghcr.io/arjancool/oak-pogo:sha-<commit>`. Iedere maandag publiceert de wekelijkse controle `latest` opnieuw, met de kleine updates die Dependabot die week automatisch heeft gemerged. Wie `latest` gebruikt met een hulpmiddel dat images bijwerkt, zoals Watchtower, krijgt die updates dus één keer per week. Ook als er niets is veranderd, kan de image een nieuwe digest krijgen. Een tag `v2.1.0` publiceert ook `2.1.0` en `2.1`. De image is er voor amd64 en arm64. De eerste uitgebrachte versie is `2.0.0`. Met een vaste versie zoals `2.0` bepaal je zelf wanneer je naar een nieuwe minor-versie overstapt.
 
 Publiceren is de laatste stap van de CI-run voor die commit. Hij start pas als de backend-, frontend- en browsertests, de Docker-build, de beveiligingscontroles en de kwetsbaarheidsscan allemaal zijn geslaagd. Faalt er één, dan verschijnt er geen nieuwe image. Een handmatige run via **Actions → CI → Run workflow** doorloopt dezelfde controles en publiceert alleen vanaf `main` of een versietag. De releasejob bouwt de image één keer voor amd64 en arm64, zet hem zonder tag op ghcr.io en test precies die image per platform: starten, gezondheid, beveiliging en een scan op bekende kwetsbaarheden. De arm64-image draait daarbij onder emulatie. Pas als dat slaagt, krijgt de image zijn tags.
 
@@ -33,8 +33,12 @@ services:
     image: ghcr.io/arjancool/oak-pogo:latest
     container_name: oak
     restart: unless-stopped
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_READ_SEARCH, FOWNER, SETGID, SETPCAP, SETUID]
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
+    networks:
+      - proxy
     volumes:
       - /pad/naar/oak/data:/data
     environment:
@@ -42,14 +46,29 @@ services:
       - PUID=1000
       - PGID=1000
       - OAK_BASE_URL=https://oak.example.org
-      - OAK_TRUSTED_PROXY_CIDRS=172.16.0.0/12
+      - OAK_TRUSTED_PROXY_CIDRS=172.30.0.2/32
+
+networks:
+  proxy:
+    name: proxy
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+          gateway: 172.30.0.1
+          ip_range: 172.30.0.128/25
 ```
+
+De reverse proxy zit hier in hetzelfde netwerk `proxy`, met het vaste adres `172.30.0.2`. Containers zonder vast adres krijgen er een uit `ip_range`, zodat ze dat adres nooit eerder pakken. Zie [Alleen de proxy vertrouwen](#alleen-de-proxy-vertrouwen).
 
 Bijwerken gaat met `docker compose pull && docker compose up -d`. Voor iedere databasemigratie maakt OAK zelf een back-up in `/data/backups`.
 
 ## Gebruiker en rechten
 
-De container start als root, maakt de datamap eigendom van `PUID:PGID` en laat daarna alle rechten vallen. OAK zelf draait nooit als root. `PUID` of `PGID` 0 weigert de container. Wie de container liever direct als vaste gebruiker start (`user: "1000:1000"` in compose of `runAsUser` in Kubernetes), moet zelf zorgen dat die gebruiker in de datamap kan schrijven.
+De container start als root, maakt de datamap eigendom van `PUID:PGID` en laat daarna alle rechten vallen. OAK zelf draait nooit als root, zonder enige capability en met `no_new_privs`. `PUID` en `PGID` moeten getallen zijn, en 0 weigert de container in iedere schrijfwijze, ook als `00`. De entrypoint heeft alleen `CHOWN`, `DAC_READ_SEARCH`, `FOWNER`, `SETGID`, `SETPCAP` en `SETUID` nodig. Met `cap_drop: [ALL]` en die `cap_add`, zoals in de voorbeelden, krijgt de container verder niets. Wie de container liever direct als vaste gebruiker start (`user: "1000:1000"` in compose of `runAsUser` in Kubernetes), moet zelf zorgen dat die gebruiker in de datamap kan schrijven.
+
+De datamap is alleen voor OAK zelf. De container zet `/data` op rechten 700 en maakt nieuwe bestanden met `umask 077`, zodat de database, de back-ups, de imports en de Game Data alleen leesbaar zijn voor `PUID`. Start je OAK zonder container, dan doet OAK hetzelfde bij het starten. Wil je de map vanaf de host lezen, bijvoorbeeld voor een back-up, doe dat dan als die gebruiker of als root.
+
+Zonder `OAK_SECRET_KEY` maakt OAK eenmalig `/data/.secret_key`, meteen met rechten 600. Heeft een bestaand bestand ruimere rechten, dan zet OAK die terug naar 600. Is het bestand leeg of korter dan 32 tekens, dan start OAK niet en zegt in het logboek waarom. Een nieuwe sleutel zou alle sessies laten vervallen en de koppeling tussen exports en traineraccounts veranderen. Zet de juiste sleutel terug uit een back-up, of verwijder het bestand als je bewust een nieuwe sleutel wilt.
 
 ## Instellingen
 
@@ -68,54 +87,91 @@ docker exec oak env | grep OAK_
 |---|---|---|
 | `OAK_BASE_URL` | `http://localhost:8080` | Het adres waarop je OAK opent. Bepaalt de webhook-URL en of cookies alleen via https gaan. Met `https://` stuurt OAK ook een HSTS-header. |
 | `OAK_SECRET_KEY` | leeg | Sleutel voor sessies en vingerafdrukken, minimaal 32 tekens. Leeg betekent dat OAK eenmalig een sleutel maakt in `/data/.secret_key`. |
-| `OAK_TRUSTED_PROXY_CIDRS` | leeg | Netwerken van reverse proxies, komma-gescheiden. Alleen hun `X-Forwarded-*`-headers worden vertrouwd. |
+| `OAK_TRUSTED_PROXY_CIDRS` | leeg | Adressen of netwerken van reverse proxies, komma-gescheiden. Alleen hun `X-Forwarded-*`-headers worden vertrouwd. Zet hier alleen de proxy zelf. |
 | `OAK_ALLOW_REGISTRATION` | `false` | Of nieuwe gebruikers zichzelf mogen registreren. De eigenaar kan altijd gebruikers toevoegen. |
 | `OAK_TIMEZONE` | `Europe/Amsterdam` | Tijdzone voor vangstjaren en weergave. |
 | `OAK_LOG_LEVEL` | `INFO` | `DEBUG`, `INFO`, `WARNING` of `ERROR`. |
 | `OAK_RAW_IMPORT_RETENTION_DAYS` | `14` | Dagen dat een ontvangen export bewaard blijft voor diagnose en opnieuw verwerken. 0 bewaart niets. |
+| `OAK_AUDIT_RETENTION_DAYS` | `365` | Dagen dat een regel in het auditlogboek bewaard blijft. |
 | `OAK_MAX_IMPORT_MB` | `64` | Maximale grootte van een export. |
 | `OAK_SESSION_IDLE_HOURS` | `168` | Een sessie verloopt na zoveel uur zonder gebruik. |
 | `OAK_SESSION_MAX_DAYS` | `30` | Een sessie verloopt na zoveel dagen, ook bij gebruik. |
-| `OAK_LOGIN_MAX_ATTEMPTS` | `10` | Mislukte inlogpogingen per venster voordat OAK tijdelijk blokkeert. |
+| `OAK_LOGIN_MAX_ATTEMPTS` | `10` | Mislukte inlogpogingen voor één gebruikersnaam vanaf één adres per venster, voordat OAK dat adres voor die naam tijdelijk blokkeert. Zie `docs/SECURITY.md` voor de andere grenzen. |
 | `OAK_LOGIN_WINDOW_MINUTES` | `15` | Lengte van dat venster. |
 | `OAK_WEBHOOK_RATE_LIMIT_PER_HOUR` | `60` | Maximaal aantal webhookverzoeken per token per uur. |
-| `OAK_GAMEDATA_AUTO_UPDATE` | `true` | Game Data automatisch bijwerken vanaf PokeMiners en PvPoke. |
+| `OAK_GAMEDATA_AUTO_UPDATE` | `true` | Game Data automatisch bijwerken vanaf de Game Master en PvPoke. |
+| `OAK_GAMEDATA_POKEMINERS_URL` | Game Master van alexelgt | Adres van de Game Master (ADR-0028). De naam is ouder dan de bron. `https://raw.githubusercontent.com/PokeMiners/game_masters/master/latest/latest.json` gebruikt weer die van PokeMiners. Moet met `https://` beginnen. |
 | `OAK_GAMEDATA_UPDATE_INTERVAL_HOURS` | `24` | Hoe vaak OAK op nieuwe Game Data controleert. |
 | `OAK_EVENTS_AUTO_UPDATE` | `true` | De eventkalender automatisch bijwerken vanaf LeekDuck.com via ScrapedDuck (ADR-0021). |
 | `OAK_EVENTS_UPDATE_INTERVAL_HOURS` | `12` | Hoe vaak OAK de eventkalender ophaalt. |
-| `OAK_EVENTS_URL` | ScrapedDuck `events.json` | Adres van de eventkalender, bijvoorbeeld voor een eigen spiegel. |
-| `OAK_SPRITE_URL_TEMPLATE` | leeg | Beginwaarde voor een externe spritebron (ADR-0020). Beheer je normaal in de instellingen. |
+| `OAK_EVENTS_URL` | ScrapedDuck `events.json` | Adres van de eventkalender, bijvoorbeeld voor een eigen spiegel. Moet met `https://` beginnen, net als de adressen van de Game Data. |
+| `OAK_RELEASE_CHECK` | `true` | Op de pagina Instellingen de nieuwste release van OAK op GitHub tonen. Alleen de eigenaar ziet dit. Met `false` vraagt OAK niets aan GitHub. |
+| `OAK_RELEASE_CHECK_HOURS` | `12` | Hoe lang OAK het antwoord van GitHub bewaart. Een mislukte vraag probeert OAK na 15 minuten opnieuw. |
+| `OAK_SPRITE_URL_TEMPLATE` | leeg | Beginwaarde voor een externe spritebron (ADR-0020). Beheer je normaal in de instellingen. Alleen een `https://`-adres met een gewone hostnaam en `{dex}` werkt. Een andere waarde negeert OAK, met een melding in het logboek. |
 | `OAK_PORT` | `8080` | Poort binnen de container. |
 | `PUID`, `PGID` | `1000` | Eigenaar van de datamap en gebruiker waaronder OAK draait. |
 | `TZ` | `Europe/Amsterdam` | Tijdzone van de container. |
 
 ## Reverse proxy
 
-Zet OAK achter een reverse proxy met https. Stel `OAK_BASE_URL` in op het publieke adres en `OAK_TRUSTED_PROXY_CIDRS` op het netwerk waar de proxy vandaan komt. Zonder die laatste instelling ziet OAK ieder verzoek als afkomstig van de proxy, en delen alle gebruikers dan één limiet voor inlogpogingen.
+Zet OAK achter een reverse proxy met https. Stel `OAK_BASE_URL` in op het publieke adres en `OAK_TRUSTED_PROXY_CIDRS` op het adres van de proxy. Zonder die laatste instelling ziet OAK ieder verzoek als afkomstig van de proxy. Dan delen alle gebruikers één limiet voor inlogpogingen, en telt OAK de ongeldige webhook-tokens van iedereen samen.
+
+### Alleen de proxy vertrouwen
+
+OAK neemt het adres van de bezoeker uit `X-Forwarded-For` alleen over als de verbinding komt van een adres in `OAK_TRUSTED_PROXY_CIDRS`. Wie OAK vanaf zo'n adres rechtstreeks bereikt, kan dus ieder adres opgeven en zo de limiet voor inlogpogingen ontlopen. Vertrouw daarom alleen de proxy zelf.
+
+- Laat de proxy en OAK een eigen Docker-netwerk delen. Geef de proxy daarin een vast adres en zet alleen dat adres in `OAK_TRUSTED_PROXY_CIDRS`.
+- Vertrouw niet de hele Docker-range `172.16.0.0/12`. Daar valt iedere container op de host onder.
+- Gebruik je OAK alleen via de proxy, laat `ports` dan weg of bind de poort aan `127.0.0.1`. Wil je OAK ook rechtstreeks in je eigen netwerk openen, dan kan de poort blijven. Een bezoeker die zo binnenkomt, heeft geen vertrouwd adres.
+
+Met het netwerk `proxy` uit het voorbeeld hierboven krijgt de proxy in zijn eigen compose-bestand:
+
+```yaml
+services:
+  proxy:
+    # je reverse proxy, bijvoorbeeld Nginx Proxy Manager, Caddy of Traefik
+    networks:
+      proxy:
+        ipv4_address: 172.30.0.2
+
+networks:
+  proxy:
+    external: true
+```
+
+De proxy bereikt OAK dan op `http://oak:8080`, en `OAK_TRUSTED_PROXY_CIDRS=172.30.0.2/32`.
 
 De webhook-URL bevat een geheim token. OAK schrijft dat token nooit in zijn eigen logboek, maar de toegangslogs van je proxy doen dat standaard wel. Zet die logs uit voor `/api/v1/ingest/` of maskeer het pad.
 
-Exports kunnen enkele megabytes groot zijn. Zorg dat de proxy verzoeken tot de ingestelde `OAK_MAX_IMPORT_MB` doorlaat.
+Exports kunnen enkele megabytes groot zijn. Alleen de webhook en de twee uploads (`/api/v1/imports/upload` en `/api/v1/gamedata/upload`) nemen grote verzoeken aan, tot `OAK_MAX_IMPORT_MB`. Iedere andere body boven 1 MB weigert OAK zelf met 413. Geef de grote grens in de proxy daarom alleen aan die paden en houd de rest klein, zoals in de voorbeelden hieronder.
 
 ### Nginx Proxy Manager
 
 1. Maak een Proxy Host met als domein het adres uit `OAK_BASE_URL`.
-2. Forward naar het IP-adres van de Docker-host en de gepubliceerde poort, bijvoorbeeld `8093`.
+2. Forward naar `oak` op poort `8080`. Nginx Proxy Manager zit daarvoor in het netwerk `proxy`, met een vast adres, zoals [hierboven](#alleen-de-proxy-vertrouwen).
 3. Zet onder SSL een certificaat aan, met **Force SSL** en **HTTP/2**.
 4. Voeg onder **Advanced** toe:
 
 ```nginx
-client_max_body_size 64m;
+client_max_body_size 2m;
 location /api/v1/ingest/ {
     access_log off;
-    proxy_pass http://<docker-host>:8093;
+    client_max_body_size 64m;
+    proxy_pass http://oak:8080;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+location ~ ^/api/v1/(imports|gamedata)/upload$ {
+    client_max_body_size 64m;
+    proxy_pass http://oak:8080;
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
 }
 ```
 
-Nginx Proxy Manager draait zelf in Docker. `OAK_TRUSTED_PROXY_CIDRS=172.16.0.0/12` dekt de standaard Docker-netwerken.
+Vertrouw in OAK alleen het adres van Nginx Proxy Manager: `OAK_TRUSTED_PROXY_CIDRS=172.30.0.2/32`.
 
 ### Nginx
 
@@ -125,10 +181,19 @@ server {
     server_name oak.example.org;
     # ssl_certificate ...;
 
-    client_max_body_size 64m;
+    client_max_body_size 2m;
 
     location /api/v1/ingest/ {
         access_log off;
+        client_max_body_size 64m;
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location ~ ^/api/v1/(imports|gamedata)/upload$ {
+        client_max_body_size 64m;
         proxy_pass http://127.0.0.1:8080;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -144,14 +209,24 @@ server {
 }
 ```
 
-Hier draait nginx op de host zelf: `OAK_TRUSTED_PROXY_CIDRS=127.0.0.1/32` en in compose `ports: ["127.0.0.1:8080:8080"]`.
+Hier draait nginx op de host zelf en gebruikt de poort `127.0.0.1:8080`. Docker geeft zo'n verbinding aan OAK door vanaf de gateway van het Docker-netwerk van OAK, niet vanaf `127.0.0.1`. Met het netwerk `proxy` uit het voorbeeld is dat `OAK_TRUSTED_PROXY_CIDRS=172.30.0.1/32`. Bind de poort aan `127.0.0.1`, zodat alleen de host zelf dat adres heeft.
 
 ### Caddy
 
 ```caddy
 oak.example.org {
-    request_body {
-        max_size 64MB
+    @large path /api/v1/ingest/* /api/v1/imports/upload /api/v1/gamedata/upload
+    handle @large {
+        request_body {
+            max_size 64MB
+        }
+        reverse_proxy oak:8080
+    }
+    handle {
+        request_body {
+            max_size 2MB
+        }
+        reverse_proxy oak:8080
     }
     log {
         output file /var/log/caddy/oak.log
@@ -162,7 +237,6 @@ oak.example.org {
             }
         }
     }
-    reverse_proxy oak:8080
 }
 ```
 
@@ -174,7 +248,9 @@ services:
     image: ghcr.io/arjancool/oak-pogo:latest
     environment:
       - OAK_BASE_URL=https://oak.example.org
-      - OAK_TRUSTED_PROXY_CIDRS=172.16.0.0/12
+      - OAK_TRUSTED_PROXY_CIDRS=172.30.0.2/32  # het vaste adres van Traefik in het netwerk proxy
+    networks:
+      - proxy
     labels:
       - traefik.enable=true
       - traefik.http.routers.oak.rule=Host(`oak.example.org`)

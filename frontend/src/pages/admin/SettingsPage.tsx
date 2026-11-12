@@ -7,10 +7,10 @@ import { Alert, Badge, Button, Card, Checkbox, Dialog, Field, Input, KeyValue, P
 import { useAccount } from "../../lib/account";
 import { useAuth } from "../../lib/auth";
 import { api, errorMessage } from "../../lib/api";
-import { bytes, dateTime, num } from "../../lib/format";
+import { bytes, date, dateTime, num } from "../../lib/format";
 import { serverText } from "../../lib/serverText";
 import { useAppSettings } from "../../lib/settings";
-import type { AppSettings, Facets, User } from "../../lib/types";
+import type { AppSettings, Facets, ReleaseStatus, User } from "../../lib/types";
 
 type Message = { tone: "success" | "error"; text: string } | null;
 
@@ -296,9 +296,39 @@ interface SystemStatus {
   worker_running: boolean;
 }
 
+/** The newest release on GitHub. The server keeps the answer for a while (issue #29). */
+export function ReleaseInfo({ release }: { release: ReleaseStatus }) {
+  const { t } = useTranslation();
+  if (!release.enabled) return <span className="text-muted">{t("admin.settings.system.release.off")}</span>;
+  const latest = release.latest;
+  const values = { version: latest?.version ?? "", date: date(latest?.published_at) };
+  if (release.status === "unknown" || !latest) {
+    return <span>{t("admin.settings.system.release.unknown", { reason: serverText("system", release.reason) })}</span>;
+  }
+  const text =
+    release.status === "newer"
+      ? t("admin.settings.system.release.newer", values)
+      : release.status === "ahead"
+        ? t("admin.settings.system.release.ahead", values)
+        : t("admin.settings.system.release.same", values);
+  return latest.url && release.status === "newer" ? (
+    <a href={latest.url} target="_blank" rel="noreferrer" className="text-oak-400 underline">
+      {text}
+    </a>
+  ) : (
+    <span>{text}</span>
+  );
+}
+
 function SystemCard() {
   const { t } = useTranslation();
   const status = useQuery({ queryKey: ["system-status"], queryFn: () => api.get<SystemStatus>("/api/v1/system/status") });
+  const release = useQuery({
+    queryKey: ["system-release"],
+    queryFn: () => api.get<ReleaseStatus>("/api/v1/system/release"),
+    staleTime: 60 * 60 * 1000,
+    retry: false,
+  });
   const s = status.data;
   if (!s) return null;
   return (
@@ -306,6 +336,10 @@ function SystemCard() {
       <KeyValue
         items={[
           [t("admin.settings.system.version"), `${s.version}${s.build.sha ? ` (${s.build.sha.slice(0, 7)})` : ""}`],
+          [
+            t("admin.settings.system.release.label"),
+            release.data ? <ReleaseInfo release={release.data} /> : release.isError ? errorMessage(release.error) : "…",
+          ],
           [t("admin.settings.system.started"), dateTime(s.started_at)],
           [t("admin.settings.system.timezone"), s.timezone],
           [t("admin.settings.system.baseUrl"), s.base_url],

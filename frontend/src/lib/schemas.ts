@@ -58,6 +58,8 @@ export const pokemonSummary = z.object({
   dynamax: z.boolean().nullable(),
   gigantamax: z.boolean().nullable(),
   costume: z.boolean().nullable(),
+  // A form of an event that the Game Master does not mark as a costume, such as the goggles of 2026.
+  event_form: z.boolean().default(false),
   location_card: z.number().nullable(),
   traded: z.boolean(),
   hatched_from_egg: z.boolean().nullable(),
@@ -107,6 +109,7 @@ export const pokemonPage = z.object({
 export type PokemonPage = z.infer<typeof pokemonPage>;
 
 const reason = z.object({ code: z.string(), text: z.string(), data: z.record(z.string(), z.unknown()).optional() });
+const itemNames = z.object({ nl: z.string(), en: z.string() });
 export type Reason = z.infer<typeof reason>;
 
 /** One part of a battle or keep score. Battle parts are values from 0 to 100, keep parts points. */
@@ -239,9 +242,18 @@ export const actionList = z.object({
     note: z.string(),
     note_text: reason.optional(),
     safety_suffix: z.string(),
+    // Bundles of at most ten Pokémon, checked against the whole collection (issue #27).
     // pokemon_ids: the listed Pokémon a search string finds, so the page can name them.
-    // pokemon_ids: the listed Pokémon a search string finds, so the page can name them.
-    queries: z.array(z.object({ species_id: z.number(), query: z.string(), pokemon_ids: z.array(z.number()).default([]) })),
+    // other_matches: Pokémon it also finds, with the same species and CP as one on the list.
+    queries: z.array(
+      z.object({
+        species_ids: z.array(z.number()),
+        query: z.string(),
+        search: z.string(),
+        pokemon_ids: z.array(z.number()).default([]),
+        other_matches: z.number().default(0),
+      }),
+    ),
   }),
 });
 export type ActionList = z.infer<typeof actionList>;
@@ -260,10 +272,13 @@ const pokedexStep = z.object({
   candy_purified: z.number().nullable(),
   item: z.string().nullable(),
   item_name: z.string().nullable(),
+  // The names in Dutch and English (issue #31); item_name is the Dutch one.
+  item_names: itemNames.nullable().default(null),
   item_cost: z.number().nullable(),
   item_have: z.number().nullable().optional(),
   lure: z.string().nullable(),
   lure_name: z.string().nullable(),
+  lure_names: itemNames.nullable().default(null),
   buddy_km: z.number().nullable(),
   conditions: z.array(z.string()),
   quest: z.string().nullable(),

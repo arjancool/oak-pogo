@@ -135,6 +135,8 @@ def protection_reasons(view: PokemonView, rules: CleanupRules) -> list[dict[str,
         reasons.append(_reason("LOCATION_CARD", "Speciale achtergrond"))
     if rules.protect_costume and view.costume:
         reasons.append(_reason("COSTUME", "Kostuum"))
+    elif rules.protect_costume and view.event_form:
+        reasons.append(_reason("EVENT_FORM", "Eventvorm"))
     if rules.protect_mythical and view.species_class == "mythical":
         reasons.append(_reason("MYTHICAL", "Mythical"))
     if rules.protect_legendary and view.species_class == "legendary":
@@ -585,6 +587,16 @@ def _promote(result: Recommendation, reason: dict[str, Any]) -> None:
     result.roles.append({"role": "minimum", "league": None})
 
 
+def _review_only_copy(result: Recommendation) -> None:
+    """The only copy of a species, without any value in battle, such as a weak Shelmet. It is not
+    a transfer candidate, but it shows up for review instead of being kept silently: whether it
+    may go is the player's call. A transfer list still asks to confirm the last copy."""
+    result.status = Status.REVIEW
+    result.priority = PRIORITY_BASE
+    text = "Enige exemplaar van deze soort in je collectie, maar zonder waarde in gevechten"
+    result.reasons = [_reason("ONLY_COPY_NO_USE", text), *[r for r in result.reasons if r["code"] == "WEAK_PVP"]]
+
+
 def _keep_best_of_group(
     groups: dict[str, list[PokemonView]],
     results: dict[int, Recommendation],
@@ -593,7 +605,10 @@ def _keep_best_of_group(
 ) -> None:
     """The best copy of every group is kept, and at least ``keep_min_per_species`` copies.
 
-    This guarantees that every transfer candidate has a better or equal copy that stays."""
+    This guarantees that every transfer candidate has a better or equal copy that stays. The only
+    copy of a species with a battle score of 0 goes to review instead of being kept. With
+    ``keep_min_per_species`` at 0 none of this applies: the best or only copy can be a transfer
+    candidate too."""
     if rules.keep_min_per_species <= 0:
         return
     for members in groups.values():
@@ -602,10 +617,13 @@ def _keep_best_of_group(
         if not best.overridden and (
             best.status is Status.TRANSFER_CANDIDATE or (best.status is Status.REVIEW and best.codes <= SCORE_DOUBT)
         ):
-            text = "Beste exemplaar van deze soort in je collectie"
-            if len(members) == 1:
-                text = "Enige exemplaar van deze soort in je collectie"
-            _promote(best, _reason("BEST_COPY", text, size=len(members), count=len(members)))
+            if len(members) == 1 and battle[ordered[0].id].score == 0:
+                _review_only_copy(best)
+            else:
+                text = "Beste exemplaar van deze soort in je collectie"
+                if len(members) == 1:
+                    text = "Enige exemplaar van deze soort in je collectie"
+                _promote(best, _reason("BEST_COPY", text, size=len(members), count=len(members)))
         missing = rules.keep_min_per_species - sum(1 for m in members if results[m.id].status in KEPT)
         for member in ordered[1:]:
             if missing <= 0:

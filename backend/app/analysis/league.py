@@ -5,12 +5,13 @@ Three different things are kept apart, as §10.2 requires:
 
 * ``rank`` / ``percent`` — how good the IVs are *within the species* for that league;
 * ``species_rank`` / ``species_score`` — how competitive the *species* is (PvPoke rankings);
-* ``readiness`` — whether *this individual* is usable now, after power-ups or after evolving.
+* ``readiness`` — whether *this individual* is usable now, after power-ups or after evolving;
+* ``percent_now`` — how strong *this individual* is as it is now, on its current level.
 """
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -18,7 +19,7 @@ from app.analysis.evolution import evolution_paths
 from app.analysis.moves import Availability, availability
 from app.analysis.powerup import Cost, power_up_cost, reachable_max_level
 from app.analysis.pvp import RANK_TABLES
-from app.analysis.stats import IVs, base_stats_of, combat_power
+from app.analysis.stats import BaseStats, IVs, base_stats_of, combat_power, stat_product
 from app.gamedata.model import GameData
 
 LEAGUES = ("great", "ultra", "master")
@@ -37,6 +38,8 @@ class Subject:
     purified: bool
     lucky: bool
     trainer_level: int | None
+    # The moves it knows now, fast and charged. A move it already knows needs no TM.
+    moves: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -45,6 +48,9 @@ class MovesetAdvice:
     source: str  # pvpoke_ranking | pvpoke_usage_filtered | none
     elite_moves: list[str] = field(default_factory=list)
     unavailable: list[str] = field(default_factory=list)
+    # Elite, legacy or special moves of the PvPoke moveset the Pokémon already knows, which is
+    # why the advice keeps that moveset although an Elite TM is not available.
+    known_special: list[str] = field(default_factory=list)
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,6 +73,10 @@ class LeagueTarget:
     species_rank: int | None
     species_score: float | None
     moveset: MovesetAdvice | None
+    # The stat product on the current level as a percentage of the best in the league (the same
+    # reference as ``percent``). ``None`` when it cannot play now: an evolution, over the CP cap,
+    # above the level cap of a cup, or an unknown level.
+    percent_now: float | None = None
 
 
 def _levels(gd: GameData, maximum: float) -> list[tuple[float, float]]:
@@ -81,15 +91,28 @@ def league_cap(gd: GameData, league: str) -> int | None:
 
 
 def recommended_moveset(
-    gd: GameData, form: Mapping[str, Any], league: str, *, shadow: bool, elite_tm_available: bool
+    gd: GameData,
+    form: Mapping[str, Any],
+    league: str,
+    *,
+    shadow: bool,
+    elite_tm_available: bool,
+    known: Collection[str] = (),
 ) -> MovesetAdvice | None:
+    """The PvPoke moveset, or the best one a normal TM can give when part of it is out of reach.
+
+    ``known`` holds the moves the Pokémon already knows. Such a move needs no TM, so an elite
+    or legacy move it knows never pushes the advice to another moveset. Only pass it for the
+    form the Pokémon has now: an evolution does not keep its moves."""
     entry = gd.ranking(league, form.get("pvpoke_id"), shadow=shadow)
     if entry is None:
         return None
     moveset = list(entry.get("moveset", []))
     elite = [m for m in moveset if availability(form, m) is Availability.ELITE_TM]
     unavailable = [m for m in moveset if availability(form, m) in (Availability.LEGACY, Availability.NOT_LEARNABLE)]
-    if (elite and not elite_tm_available) or unavailable:
+    out_of_reach = [*([] if elite_tm_available else elite), *unavailable]
+    known_special = [m for m in out_of_reach if m in known]
+    if any(m not in known for m in out_of_reach):
         fast = next(
             (m for m in entry.get("fast_usage", []) if availability(form, m) is Availability.NORMAL_TM),
             None,
@@ -98,7 +121,7 @@ def recommended_moveset(
         if fast and charged:
             return MovesetAdvice([fast, *charged], "pvpoke_usage_filtered", elite, unavailable)
         return MovesetAdvice(moveset, "pvpoke_ranking", elite, unavailable)
-    return MovesetAdvice(moveset, "pvpoke_ranking", elite, unavailable)
+    return MovesetAdvice(moveset, "pvpoke_ranking", elite, unavailable, known_special)
 
 
 def analyze_leagues(
@@ -160,8 +183,14 @@ def analyze_leagues(
             current_cpm = gd.cpm(subject.level) if subject.level is not None else None
             if current_cpm is not None:
                 cp_now = combat_power(base, subject.ivs, current_cpm)
+            percent_now = None
+            if current_cpm is not None and cp_now is not None and not is_evolution:
+                percent_now = _percent_now(
+                    base, subject.ivs, current_cpm, cp_now, subject.level, cap, level_cap, table.best_product
+                )
+            _ready, ready_cp = ready_point(gd, cap, base, subject.ivs, entry.level, entry.cp)
             readiness, reason = _readiness(
-                cap, entry.cp, entry.level, cp_now, subject.level, is_evolution, ready_cp_fraction
+                cap, ready_cp, entry.level, cp_now, subject.level, is_evolution, ready_cp_fraction
             )
             cost = None
             if subject.level is not None and entry.level > subject.level and readiness != "not_suitable":
@@ -199,10 +228,54 @@ def analyze_leagues(
                         league,
                         shadow=subject.shadow,
                         elite_tm_available=elite_tm_available,
+                        known=() if is_evolution else subject.moves,
                     ),
+                    percent_now=percent_now,
                 )
             )
     return result
+
+
+def _percent_now(
+    base: BaseStats,
+    ivs: IVs,
+    cpm: float,
+    cp_now: int,
+    level: float | None,
+    cap: int | None,
+    level_cap: float | None,
+    best_product: float,
+) -> float | None:
+    """How strong a Pokémon is as it is now: its stat product on the current level, as a
+    percentage of the best stat product in the league. Only for a Pokémon that may play now."""
+    over_cap = cap is not None and cp_now > cap
+    over_level_cap = bool(level_cap) and level is not None and level > level_cap
+    if over_cap or over_level_cap or not best_product:
+        return None
+    return round(stat_product(base, ivs, cpm) / best_product * 100, 2)
+
+
+def ready_level(gd: GameData, cap: int | None, best_level: float) -> float:
+    """The level at which a Pokémon counts as usable in a league.
+
+    With a CP cap that is the best level under the cap. Without one, such as the Master League,
+    the best level is the highest there is, and the last levels take XL Candy. Usable then means
+    the level reachable without XL Candy (``xlCandyMinPokemonLevel`` in the Game Master, 40),
+    when that is lower. The best level stays the goal for the future team."""
+    xl_from = gd.mechanics.get("upgrade", {}).get("xl_min_pokemon_level")
+    if cap is None and isinstance(xl_from, int | float) and not isinstance(xl_from, bool):
+        return min(float(xl_from), best_level)
+    return best_level
+
+
+def ready_point(
+    gd: GameData, cap: int | None, base: BaseStats, ivs: IVs, best_level: float, best_cp: int
+) -> tuple[float, int]:
+    """The level from ``ready_level`` and the CP there. Without the multiplier for that level in
+    the dataset it stays the best level and its CP."""
+    level = ready_level(gd, cap, best_level)
+    cpm = gd.cpm(level) if level < best_level else None
+    return (level, combat_power(base, ivs, cpm)) if cpm is not None else (best_level, best_cp)
 
 
 def _display_name(form: Mapping[str, Any]) -> str:
@@ -217,7 +290,7 @@ def _reason(code: str, text: str) -> dict[str, Any]:
 
 def _readiness(
     cap: int | None,
-    best_cp: int,
+    ready_cp: int,
     best_level: float,
     cp_now: int | None,
     level: float | None,
@@ -232,7 +305,7 @@ def _readiness(
         return "not_suitable", _reason("OVER_CAP", "Boven de CP-limiet")
     if level > best_level:
         return "not_suitable", _reason("ABOVE_BEST_LEVEL", "Al boven het optimale level")
-    usable = cp_now >= best_cp * ready_fraction
+    usable = cp_now >= ready_cp * ready_fraction
     if is_evolution:
         if usable:
             return "evolution", _reason("READY_AFTER_EVOLUTION", "Inzetbaar na evolutie")

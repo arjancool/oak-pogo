@@ -13,6 +13,8 @@ from app.models.base import Base, JSONText, UTCDateTime
 
 class TrainerAccount(Base):
     __tablename__ = "trainer_accounts"
+    # The ID of a deleted account is never given to a new one (migration 0009, issue #55).
+    __table_args__ = {"sqlite_autoincrement": True}  # noqa: RUF012
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)

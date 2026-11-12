@@ -1,6 +1,6 @@
 # Analyse-engine
 
-Dit document beschrijft hoe OAK rekent. Alles is deterministisch: dezelfde export, dezelfde Game Data en dezelfde instellingen geven altijd hetzelfde advies. Spelmechanica komt uit de actieve Game Data-versie (ADR-0017). Elk advies vermeldt de engineversie en de Game Data-versie waarmee het is berekend.
+Dit document beschrijft hoe OAK rekent. Alles is deterministisch: dezelfde export, dezelfde Game Data en dezelfde instellingen geven altijd hetzelfde advies. Spelmechanica komt uit de actieve Game Data-versie (ADR-0028). Elk advies vermeldt de engineversie en de Game Data-versie waarmee het is berekend.
 
 De code staat in `backend/app/analysis` (berekeningen) en `backend/app/recommendations` (cleanup). Beide mappen bevatten pure Python zonder database of webframework.
 
@@ -26,6 +26,16 @@ OAK houdt drie dingen uit elkaar:
 
 Inzetbaarheid heeft vijf waarden. *Direct inzetbaar* betekent dat de huidige CP minstens 95 procent is van de beste CP binnen de limiet (instelbaar). *Na power-up* en *na evolutie* spreken voor zich. *Niet geschikt* betekent boven de limiet of al boven het optimale level. *Onbekend* betekent dat het level ontbreekt.
 
+De Master League heeft geen CP-limiet. Het beste level is daar het hoogste level dat je kunt halen, en de levels boven 40 kosten XL Candy. *Direct inzetbaar* telt daarom vanaf het level waarvoor geen XL Candy nodig is (`xlCandyMinPokemonLevel` in de Game Master, nu 40). Een Pokémon op level 40 heeft ongeveer 88 procent van zijn CP op level 50 en is dus direct inzetbaar. De beste CP en de kosten tot het beste level blijven op level 50.
+
+Naast de inzetbaarheid berekent OAK hoe sterk een Pokémon nu is: het statproduct op zijn huidige level, als percentage van het beste statproduct in de league. Dat is dezelfde maatstaf als het percentage van de IV-rang, alleen op het level waar hij nu staat. De waarde geldt alleen voor een Pokémon die zo mee mag. Een evolutie, een Pokémon boven de CP-limiet of boven de levelgrens van een cup en een Pokémon zonder level krijgen geen waarde. Op de leaguepagina staat hij in de kolom *Nu*, en *Sterkst nu eerst* sorteert op PvPoke-soortscore × die waarde.
+
+De Team Builder maakt drie varianten. *Sterkste team zoals je Pokémon nu zijn* kiest uit iedere Pokémon die nu mee mag, ook als hij nog niet direct inzetbaar is, en rekent met de sterkte nu. Zo krijgt een collectie altijd een team als er drie verschillende doelvormen passen. Dat geldt ook voor de Master League, waar bijna niemand 95 procent van zijn CP op level 40 haalt. *Beperkte upgrades* neemt ook Pokémon die binnen het Stardust-budget per Pokémon bruikbaar worden. Zonder CP-limiet rekent die variant met de kosten tot het level zonder XL Candy, niet tot level 50. *Beste toekomstige team* kijkt niet naar kosten. Bij ieder teamlid staat de CP en het level waar de kosten naartoe gaan, en bij het team van nu de huidige CP en de sterkte nu. Een team heeft drie Pokémon nodig, elk met een andere doelvorm. Vindt een variant er minder, dan noemt de melding het aantal.
+
+Een league of cup zonder CP-limiet, zoals de Master League, heeft een ondergrens in CP. Die staat in de cleanupregels (`master_min_cp`), standaard op 2500 CP. Op 0 is er geen ondergrens. Het team van nu neemt alleen Pokémon die nu minstens zoveel CP hebben. *Beperkte upgrades* kijkt naar de CP na de upgrades, dus op level 40 of het level binnen het budget. *Beste toekomstige team* en de leaguepagina kijken naar de beste CP. Onder de ondergrens heeft een Pokémon op de leaguepagina geen waarde in de kolom *Nu*. De pagina en de Team Builder noemen de ondergrens, en een melding over te weinig Pokémon ook. Het cleanupadvies, zoals het beste Master League-exemplaar, gebruikt de ondergrens niet.
+
+De sterkte nu kijkt naar statistieken, niet naar de aanvallen die een Pokémon nu heeft. De soortscore van PvPoke gaat uit van de aanbevolen aanvallen. Of een teamlid die heeft, staat bij het movesetadvies.
+
 Voor evoluties rekent OAK met dezelfde IV's op de geëvolueerde vorm, en vermeldt het de candy- en itemkosten uit de Game Data.
 
 ## Cups
@@ -42,7 +52,9 @@ Stardust en candy per halve level komen uit de Game Data. Shadow kost 20 procent
 
 ## Aanvallen
 
-Voor iedere aanval bepaalt OAK of hij via een normale TM, alleen via een Elite TM, als legacy-aanval of helemaal niet meer te krijgen is. Het movesetadvies volgt de PvPoke-ranking. Vraagt die een Elite TM die je volgens de instellingen niet hebt, of een aanval die niet meer te krijgen is, dan zoekt OAK de meest gebruikte aanvallen die wel met een normale TM te krijgen zijn, en meldt dat.
+Voor iedere aanval bepaalt OAK of hij via een normale TM, alleen via een Elite TM, als legacy-aanval of helemaal niet meer te krijgen is. Het movesetadvies volgt de PvPoke-ranking. Vraagt die een Elite TM die je volgens de instellingen niet hebt, of een aanval die niet meer te krijgen is, dan zoekt OAK de meest gebruikte aanvallen die wel met een normale TM te krijgen zijn, en meldt dat. Een aanval die de Pokémon al kent, heeft geen TM nodig. Kent een Garchomp Earth Power al, dan blijft het advies dus de moveset van PvPoke, ook zonder Elite TM, en staat erbij dat hij die aanval al kent. Dat geldt alleen voor de vorm die hij nu heeft, want na een evolutie heeft een Pokémon andere aanvallen.
+
+Overschrijft de weg naar het advies een aanval die je met een normale TM niet terugkrijgt, dan waarschuwt OAK. Bij een elite-aanval staat erbij dat alleen een Elite TM hem terugbrengt, bij een legacy-aanval of Return dat geen enkele TM dat doet. Frustration valt daarbuiten, die wil je juist kwijt. Je kiest zelf welke charged-aanval een TM vervangt, dus OAK waarschuwt alleen als het advies geen plek voor die aanval overlaat.
 
 ## Raidmodel
 
@@ -171,7 +183,7 @@ De bewaarscore zegt hoeveel reden er is om dit exemplaar te bewaren. OAK telt pu
 | Shiny | 15 | `keep_points_shiny` |
 | Lucky | 10 | `keep_points_lucky` |
 | Legendary, Mythical of Ultra Beast | 10 | `keep_points_rarity` |
-| Kostuum | 10 | `keep_points_costume` |
+| Kostuum of eventvorm | 10 | `keep_points_costume` |
 | Speciale achtergrond | 10 | `keep_points_location_card` |
 | Event-Pokémon | 10 | `keep_points_event` |
 | Dynamax of Gigantamax | 10 | `keep_points_max` |
@@ -184,7 +196,7 @@ De bewaarscore zegt hoeveel reden er is om dit exemplaar te bewaren. OAK telt pu
 
 "Beste exemplaar" volgt uit een vaste volgorde binnen de groep: eerst bruikbaarheid, dan IV-percentage, dan CP.
 
-XXL en XXS zijn de zeldzaamste groottes. Bij een showcase op een PokéStop maakt een XXL de meeste kans, en een XXS heeft vooral waarde voor een verzameling. Daarom krijgt een XXL meer punten dan een XXS. De grootte telt net als de andere bijzondere kenmerken alleen als punten mee. Ze is geen harde bescherming en telt niet mee in de bruikbaarheid, want ze verandert niets aan CP, IV's of aanvallen. OAK leest de grootte uit het veld `size` van de export: 1 is XXS en 5 is XXL. Dat 1 voor XXS staat, is gecontroleerd met een echte export en het spel. Voor 5 volgt het uit dezelfde nummering. Een onbekende grootte geeft geen punten.
+XXL en XXS zijn de zeldzaamste groottes. Bij een showcase op een PokéStop maakt een XXL de meeste kans, en een XXS heeft vooral waarde voor een verzameling. Daarom krijgt een XXL meer punten dan een XXS. De grootte telt net als de andere bijzondere kenmerken alleen als punten mee. Ze is geen harde bescherming en telt niet mee in de bruikbaarheid, want ze verandert niets aan CP, IV's of aanvallen. OAK leest de grootte uit het veld `size` van de export: 1 is XXS en 5 is XXL. Beide zijn gecontroleerd met een echte export en het spel. Een Pokémon die het spel XXS noemt, had 1, en een Jynx die het spel XXL noemt, had 5. Een onbekende grootte geeft geen punten.
 
 ### Harde bescherming
 
@@ -198,6 +210,10 @@ Harde bescherming staat los van beide scores. Een Pokémon met een harde reden k
 Zet je zo'n regel uit, dan telt het kenmerk alleen nog als punten in de bewaarscore.
 
 Een kostuum herkent OAK op twee manieren. PGSharp vult het kostuumveld van de Pokémon, of de Game Master markeert de vorm als kostuum (`isCostume`). Het tweede geldt bijvoorbeeld voor een Pikachu met een eventhoed, waarbij PGSharp het kostuumveld niet altijd vult. Staat een nieuwe vorm nog niet in de Game Data, dan rekent OAK met de standaardvorm en zet hij de Pokémon op Beoordelen, nooit op transfer-kandidaat.
+
+Een eventvorm telt als een kostuum, met de reden *Eventvorm*. Het is een vorm met een jaartal in de naam, zoals `CHARMANDER_GOGGLES_2026` in de Game Master of `CharmanderGoggles2026` in de export. In de Game Master van november 2026 hebben 91 vormen een jaartal in de naam. Daarvan zijn er 83 als kostuum gemarkeerd. De andere 8 zijn allemaal eventvormen zonder kostuummarkering: Charmander, Charmeleon en Charizard met de bril van 2026, de klonen van 2019 en Psyduck met de zwemband van 2025. Het jaartal staat ook in de export, dus de regel werkt al voordat de Game Data de vorm kent. Een vorm die zowel kostuum als eventvorm is, telt één keer. De regel *Kostuums beschermen* geldt voor beide.
+
+In de zoekteksten voor het spel telt een eventvorm niet als zeker kostuum. Of de zoekterm `costume` in het spel zo'n Pokémon vindt, is niet vastgesteld. Een zoektekst laat `!costume` daarom weg als er een eventvorm in zit, en bij het narekenen sluit `!costume` geen eventvorm uit.
 
 ### Van scores naar status
 
@@ -214,7 +230,9 @@ OAK beslist in deze volgorde:
 
 Daarna volgen drie correcties:
 
-- Het beste exemplaar van iedere groep blijft altijd bewaard, en er blijven minstens `keep_min_per_species` exemplaren. Zo heeft iedere transfer-kandidaat een beter of gelijkwaardig exemplaar dat blijft.
+- Bij `keep_min_per_species` van 1 of meer blijft het beste exemplaar van iedere groep bewaard, en er blijven minstens zoveel exemplaren. Zo heeft iedere transfer-kandidaat een beter of gelijkwaardig exemplaar dat blijft.
+- Is het beste exemplaar het enige van zijn groep en is de bruikbaarheid 0, dan krijgt het *Beoordelen* in plaats van *Bewaren*, met de reden *Enige exemplaar van deze soort in je collectie, maar zonder waarde in gevechten*. Het is dan geen transfer-kandidaat, maar je ziet het terug in de Cleanup Manager. Zet je het zelf op de actielijst, dan vraagt OAK eerst een bevestiging, omdat het het laatste exemplaar is. Een onbekende bruikbaarheid telt niet als 0.
+- Bij `keep_min_per_species` van 0 vervalt dit allemaal. Dan kan ook het beste of enige exemplaar transfer-kandidaat worden.
 - Een transfer-kandidaat wordt `REVIEW` als hij favoriet is, als zijn vangstdatum onbekend is, als hij nu in een gym staat, of als de laatste import niet volledig was.
 - Bij iedere transfer-kandidaat en ieder te beoordelen exemplaar noemt OAK het betere exemplaar dat bewaard blijft en waarin het beter is. Bij een vintage Pokémon noemt OAK ter vergelijking het nieuwere exemplaar dat beter is voor gevechten.
 
@@ -237,6 +255,8 @@ OAK zet zelf nooit iets over. De actielijst is een hulpmiddel om in het spel af 
 - Een handmatig beschermde Pokémon komt nooit op de lijst.
 - Een vintage Pokémon komt er alleen op als je de bescherming bij die ene Pokémon hebt opgeheven en het daarna nog eens per Pokémon bevestigt. Een bulkactie slaat vintage Pokémon altijd over.
 - Een favoriet, een Pokémon met onbekende vangstdatum en een Pokémon met een andere harde bescherming vragen een bevestiging per Pokémon.
+- Dat geldt ook voor een Pokémon die volgens het huidige advies bewaard moet worden (Bewaren of Investeren), hoe hij ook op de lijst kwam, bijvoorbeeld met een bulkactie in de Box. Verandert het advies nadat hij op de lijst staat, dan vraagt OAK opnieuw.
+- Staan alle exemplaren van een soort in je inventaris op de lijst, dan vraagt OAK een bevestiging voor het exemplaar dat het advies het hoogst waardeert. Zolang je die niet bevestigt, staat hij niet in de zoekteksten. Zo verdwijnt een soort nooit ongemerkt uit je collectie. Een soort telt hier zoals in het advies: dezelfde vorm, en Shadow apart.
 - De harde bescherming volgt uit de actuele gegevens van de Pokémon en de regels van het account, niet uit de opgeslagen analyse. Ook vlak na een import, als de analyse nog niet klaar is, geldt ze dus al.
 - Een bevestiging geldt voor de concrete redenen van dat moment: favoriet, onbekende vangstdatum, vintage, iedere regel afzonderlijk (zoals shiny of bijnaam) en iedere beschermende tag met zijn tag-ID.
 - OAK controleert de bescherming opnieuw bij het lezen, exporteren en afronden van de lijst. Komt er een reden bij die niet in je bevestiging zat, dan houdt OAK de Pokémon tegen, ook als hij al om een andere reden beschermd was. Een tweede beschermende tag naast een eerste vraagt dus opnieuw om bevestiging. De Pokémon staat dan niet in de zoekteksten en niet op de checklist, tot je hem opnieuw bevestigt of de nieuwe reden verdwijnt. Bij de vraag noemt OAK wat er nieuw is.

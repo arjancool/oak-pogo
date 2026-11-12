@@ -21,7 +21,7 @@ from app.analysis.stats import IVs
 from app.core.clock import Clock
 from app.core.config import Settings
 from app.core.db import Database
-from app.domain.pokemon import Alignment, BreadMode, extreme_size, has_costume
+from app.domain.pokemon import Alignment, BreadMode, extreme_size, has_costume, is_event_form
 from app.gamedata.store import GameDataStore
 from app.models import (
     AnalysisRun,
@@ -164,6 +164,7 @@ class AnalysisService:
                     purified=pokemon.alignment == Alignment.PURIFIED,
                     lucky=bool(pokemon.lucky),
                     trainer_level=trainer_level,
+                    moves=tuple(view.moves),
                 )
                 options = {
                     "max_level": rules.max_level,
@@ -268,10 +269,15 @@ class AnalysisService:
         return AnalysisOutcome(run_id, counts)
 
 
+def group_key(pokemon: Pokemon) -> str:
+    """The copies the cleanup advice compares: the same form, Shadow or not."""
+    shadow = pokemon.alignment == Alignment.SHADOW
+    return f"{pokemon.form_key or pokemon.species_id}|{'shadow' if shadow else 'regular'}"
+
+
 def pokemon_view(pokemon: Pokemon, meta: PokemonUserMetadata | None, protecting: dict[str, str]) -> PokemonView:
     """The engine's view of one Pokémon, also used by the transfer guard."""
-    shadow = pokemon.alignment == Alignment.SHADOW
-    group = f"{pokemon.form_key or pokemon.species_id}|{'shadow' if shadow else 'regular'}"
+    group = group_key(pokemon)
     name = pokemon.species_name or f"#{pokemon.species_id}"
     return PokemonView(
         id=pokemon.id,
@@ -288,9 +294,10 @@ def pokemon_view(pokemon: Pokemon, meta: PokemonUserMetadata | None, protecting:
         favorite=bool(pokemon.favorite),
         shiny=bool(pokemon.shiny),
         lucky=bool(pokemon.lucky),
-        shadow=shadow,
+        shadow=pokemon.alignment == Alignment.SHADOW,
         purified=pokemon.alignment == Alignment.PURIFIED,
         costume=bool(has_costume(pokemon.costume_id, pokemon.costume_form)),
+        event_form=is_event_form(pokemon.form_name),
         location_card=pokemon.location_card is not None,
         dynamax=pokemon.bread_mode == BreadMode.DYNAMAX,
         gigantamax=pokemon.bread_mode == BreadMode.GIGANTAMAX,
@@ -333,4 +340,5 @@ def _ranking_row(pokemon_id: int, account_id: int, run_id: int, league: str, tar
         "xl_candy_cost": target.cost.xl_candy if target.cost else None,
         "species_rank": target.species_rank,
         "species_score": target.species_score,
+        "percent_now": target.percent_now,
     }

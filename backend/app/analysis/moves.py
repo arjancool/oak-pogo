@@ -90,6 +90,47 @@ def moveset_needs(
     return needs
 
 
+@dataclass(frozen=True, slots=True)
+class LostMove:
+    move: str
+    availability: Availability
+
+
+def lost_moves(
+    form: Mapping[str, Any],
+    current_fast: str | None,
+    current_charged: list[str],
+    target: list[str],
+) -> list[LostMove]:
+    """Moves the Pokémon knows that the way to ``target`` overwrites, and that a normal TM does
+    not give back: elite, legacy and Purified moves. The Shadow move (Frustration) is left out,
+    because players want to be rid of it.
+
+    The player picks which charged move a TM replaces, so a move only counts as lost when the
+    target leaves no slot for it."""
+    if not target:
+        return []
+    shadow = form.get("shadow") or {}
+
+    def special(move: str) -> Availability | None:
+        value = availability(form, move)
+        if value is Availability.NORMAL_TM or move == shadow.get("shadow_move"):
+            return None
+        return value
+
+    lost: list[LostMove] = []
+    fast_value = special(current_fast) if current_fast and current_fast != target[0] else None
+    if current_fast and fast_value is not None:
+        lost.append(LostMove(current_fast, fast_value))
+    charged_targets = target[1:]
+    others = [m for m in current_charged if m not in charged_targets]
+    free_slots = max(len(current_charged), len(charged_targets)) - len(charged_targets)
+    specials = [(m, v) for m in others if (v := special(m)) is not None]
+    if len(specials) > free_slots:
+        lost.extend(LostMove(m, v) for m, v in specials)
+    return lost
+
+
 def _tm(value: Availability, kind: str) -> str:
     if value is Availability.NORMAL_TM:
         return f"{kind}_tm"

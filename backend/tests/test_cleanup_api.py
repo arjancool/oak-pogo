@@ -191,7 +191,10 @@ def test_action_list_checks_protection_again_on_every_read(
     for query in queries:
         for listed_id in query["pokemon_ids"]:
             pokemon = items[listed_id]["pokemon"]
-            assert pokemon["species_id"] == query["species_id"] and f"cp{pokemon['cp']}" in query["query"]
+            assert pokemon["species_id"] in query["species_ids"] and f"cp{pokemon['cp']}" in query["query"]
+    # The confirmed favorite is found: its search string leaves out "!favorite".
+    favorite_search = next(q["search"] for q in queries if fid in q["pokemon_ids"])
+    assert "!favorite" not in favorite_search
 
     # Protection that appears after the Pokémon was listed takes it out of everything executable.
     assert owner.patch(f"/api/v1/pokemon/{pid}/metadata", {"protected": True}).status_code == 200
@@ -280,7 +283,12 @@ def test_confirmations_from_before_concrete_reasons_ask_again_for_rules_only(
     owner: Any, container: Any, gamedata: Any, export: dict[str, Any]
 ) -> None:
     account = _imported(owner, container, export)
-    favorite = _all(owner, account, favorite="true", vintage="false")[0]["pokemon"]["id"]
+    # A favorite the advice does not say to keep: that would be a reason of its own.
+    favorite = next(
+        i["pokemon"]["id"]
+        for i in _all(owner, account, favorite="true", vintage="false")
+        if i["status"] not in ("KEEP", "BUILD")
+    )
     shiny = next(
         i["pokemon"]["id"]
         for i in _all(owner, account, vintage="false", favorite="false")

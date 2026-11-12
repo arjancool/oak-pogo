@@ -22,7 +22,7 @@ Grote identificaties (Pokémon-ID's, tag-ID's) zijn overal tekst, ook in de data
 
 | Tabel | Inhoud |
 |---|---|
-| `trainer_accounts` | Eén Pokémon GO-account van een gebruiker. Naam in OAK, naam in het spel, level, XP, Stardust, PokéCoins, team, opslag, trainerstatistieken, syncstatus en instellingen (volledigheidsgrenzen en cleanup-regels). `source_fingerprint` is de HMAC-vingerafdruk van het Pokémon GO-account. |
+| `trainer_accounts` | Eén Pokémon GO-account van een gebruiker. Naam in OAK, naam in het spel, level, XP, Stardust, PokéCoins, team, opslag, trainerstatistieken, syncstatus en instellingen (volledigheidsgrenzen en cleanup-regels). `source_fingerprint` is de HMAC-vingerafdruk van het Pokémon GO-account. De ID heeft `AUTOINCREMENT` (migratie 0009), zodat de ID van een verwijderd account nooit terugkomt. |
 | `webhook_credentials` | Webhook-tokens: een openbaar deel om het record te vinden en de SHA-256-hash van het geheel. Status actief of ingetrokken. |
 | `item_inventory` | De huidige item bag. |
 | `inventory_snapshots` | Items en trainerstand per synchronisatie, voor de historie. |
@@ -85,7 +85,7 @@ Een nieuwe kalender vervangt alle `leekduck`-events in één transactie. Eigen e
 |---|---|
 | `analysis_runs` | Iedere analyse per traineraccount: engineversie, Game Data-versie, regels met hun hash, een vingerafdruk van de invoer en een samenvatting. Is de invoer veranderd, dan meldt de Cleanup Manager dat het advies verouderd is. |
 | `cleanup_recommendations` | Per Pokémon het laatste advies: status, prioriteit, betrouwbaarheid, beschermingsredenen, redenen, rollen, vergelijkbare Pokémon, waarschuwingen, de beste league-rangen, de bruikbaarheidsscore, de bewaarscore en de opbouw van beide scores (`scores`). |
-| `pvp_rankings` | Per Pokémon, league of cup en doelsoort: IV-rang, statproduct, percentage van de beste, beste CP en level, inzetbaarheid, kosten en de soortrang uit PvPoke. Een cup staat er onder zijn ID, zoals `fantasy-1500` (ADR-0027). |
+| `pvp_rankings` | Per Pokémon, league of cup en doelsoort: IV-rang, statproduct, percentage van de beste, beste CP en level, inzetbaarheid, kosten, de soortrang uit PvPoke en de sterkte nu (`percent_now`). Een cup staat er onder zijn ID, zoals `fantasy-1500` (ADR-0027). |
 | `battle_teams`, `battle_team_members` | Teams die je in de Team Builder bewaart. |
 
 Een nieuwe analyse vervangt de vorige projectie van dat traineraccount in één transactie.
@@ -112,5 +112,7 @@ Een nieuwe analyse vervangt de vorige projectie van dat traineraccount in één 
 | `0006` | De kolom `league` in `pvp_rankings` en `battle_teams` is 48 tekens breed, voor cup-ID's (ADR-0027). |
 | `0007` | `data` in `import_errors`, `error_data` in `import_jobs` en `errors` in `game_data_versions`: de gegevens in een opgeslagen melding, zodat de interface hem in de gekozen taal toont (ADR-0025). |
 | `0008` | `costume_form` in `pokemon`: de Game Master markeert de vorm als kostuum. Een afgeleide kolom, die OAK bij het starten voor iedere Pokémon vult. |
+| `0009` | `trainer_accounts` met AUTOINCREMENT, zodat de ID van een verwijderd traineraccount nooit terugkomt. |
+| `0010` | `percent_now` in `pvp_rankings`: het statproduct op het huidige level als percentage van het beste in de league. De analyse die bij het starten draait voor de nieuwe engineversie vult het. |
 
 OAK voert migraties zelf uit bij het starten en maakt daarvoor een back-up in `backups/`.

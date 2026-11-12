@@ -27,7 +27,6 @@ from app.analysis.pokedex import (
 )
 from app.analysis.stats import IVs, base_stats_of, combat_power, hit_points
 from app.api.deps import AuthContext, get_auth, get_container, get_session, owned_account
-from app.api.v1.account_data import ITEM_NAMES
 from app.api.v1.pokemon import sync_bounds, tag_label_map
 from app.core.container import Container
 from app.core.errors import NotFoundError, ServiceUnavailableError
@@ -35,6 +34,7 @@ from app.domain.pokemon import IV_MAX, Alignment
 from app.gamedata.model import GameData
 from app.gamedata.transform import norm_key
 from app.models import ItemInventory, ManualResource, Pokemon, PokemonAnalysis, PokemonUserMetadata, TrainerAccount
+from app.services.item_names import ITEMS, ItemName
 from app.services.pokemon_view import summarize
 
 router = APIRouter(prefix="/pokedex", tags=["pokedex"])
@@ -58,7 +58,7 @@ CP_LEVELS = (
 )
 OWNED_LIMIT = 50
 CANDIDATE_LIMIT = 100
-ITEM_LABELS = {norm_key(name): label for name, (label, _group) in ITEM_NAMES.items()}
+ITEM_LABELS = {norm_key(name): names for name, names in ITEMS.items()}
 
 
 def _gd(container: Container) -> GameData:
@@ -74,11 +74,14 @@ def _form_label(form: Mapping[str, Any]) -> str:
     return f"{form['name']} ({form['label']})" if form.get("label") else str(form["name"])
 
 
-def _item_label(item: str | None) -> str | None:
+def _item_names(item: str | None) -> ItemName | None:
+    """The names of an evolution item in both languages (issue #31). An item OAK does not know
+    keeps its Game Master name."""
     if not item:
         return None
     key = norm_key(item.removeprefix("ITEM_"))
-    return ITEM_LABELS.get(key) or item.removeprefix("ITEM_").replace("_", " ").title()
+    fallback = item.removeprefix("ITEM_").replace("_", " ").title()
+    return ITEM_LABELS.get(key) or ItemName(fallback, fallback, "evolution")
 
 
 def _step(step: EvolutionStep, gd: GameData) -> dict[str, Any]:
@@ -86,8 +89,10 @@ def _step(step: EvolutionStep, gd: GameData) -> dict[str, Any]:
     return {
         **asdict(step),
         "to_name": _form_label(target) if target else step.to_key,
-        "item_name": _item_label(step.item),
-        "lure_name": _item_label(step.lure),
+        "item_name": item.nl if (item := _item_names(step.item)) else None,
+        "item_names": {"nl": item.nl, "en": item.en} if item else None,
+        "lure_name": lure.nl if (lure := _item_names(step.lure)) else None,
+        "lure_names": {"nl": lure.nl, "en": lure.en} if lure else None,
     }
 
 

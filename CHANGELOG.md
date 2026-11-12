@@ -42,6 +42,7 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 
 ### Gewijzigd
 
+- De frontend wordt gebouwd en getest met Node 26 in plaats van 22, zowel in CI als in de Docker-build.
 - De Python-image blijft op 3.13. Dependabot stelt alleen nog updates binnen 3.13 voor. Een nieuwe workflow draait iedere maandag de backendtests op Python 3.14 en op de nieuwste stabiele versie, zonder iets te blokkeren. Zo is te zien wanneer een overstap kan.
 - Kleine updates van Dependabot (patch en minor) worden automatisch gemerged zodra alle verplichte controles slagen. Dat gebeurt alleen als de ruleset voor `main` verplichte controles heeft. Een nieuwe hoofdversie blijft handwerk. De wekelijkse controle op maandag publiceert `latest` opnieuw, zodat die updates ook in de image komen. Zie `docs/SECURITY.md`.
 - In de Master League en in cups zonder CP-limiet tellen op de battlepagina's en in de Team Builder alleen Pokémon vanaf 2500 CP mee. Dat is een nieuwe cleanupregel (`master_min_cp`), die je kunt aanpassen of op 0 zetten. Het team van nu kijkt naar de huidige CP, beperkte upgrades naar de CP na de upgrades en het beste toekomstige team naar de beste CP. De leaguepagina en de Team Builder noemen de ondergrens (engine cleanup-2.12).

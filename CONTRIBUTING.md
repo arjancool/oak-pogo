@@ -4,7 +4,7 @@ OAK werkt met korte branches, kleine pull requests, squash-merges en [Convention
 
 ## Ontwikkelomgeving
 
-Je hebt Python 3.13 en Node 22 nodig.
+Je hebt Python 3.13 en Node 26 nodig.
 
 ### Backend
 

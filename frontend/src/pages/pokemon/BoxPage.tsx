@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createColumnHelper, flexRender, getCoreRowModel, useReactTable, type VisibilityState } from "@tanstack/react-table";
 import clsx from "clsx";
 import type { ParseKeys } from "i18next";
-import { Download, Filter, HelpCircle, LayoutGrid, Rows3, X } from "lucide-react";
+import { CircleQuestionMark, Download, Filter, LayoutGrid, Rows3, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
@@ -554,7 +554,7 @@ function Box({ accountId }: { accountId: number }) {
         <div className="relative min-w-64 flex-1">
           <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("box.toolbar.searchPlaceholder")} aria-label={t("box.toolbar.search")} />
         </div>
-        <Button variant="ghost" onClick={() => setHelp(true)} icon={<HelpCircle className="h-4 w-4" />}>
+        <Button variant="ghost" onClick={() => setHelp(true)} icon={<CircleQuestionMark className="h-4 w-4" />}>
           {t("box.toolbar.syntax")}
         </Button>
         <Select value={sort} onChange={(e) => update({ sort: e.target.value })} aria-label={t("box.toolbar.sort")}>

@@ -1,6 +1,6 @@
 /** Small component kit in the style of shadcn/ui, kept in the repository. */
 import clsx from "clsx";
-import { ArrowDown, ArrowUp, Loader2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, LoaderCircle, X } from "lucide-react";
 import {
   forwardRef,
   useEffect,
@@ -51,7 +51,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       disabled={disabled || loading}
       {...props}
     >
-      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : icon}
+      {loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : icon}
       {children}
     </button>
   );
@@ -185,7 +185,7 @@ export function Spinner({ label }: { label?: string }) {
   const { t } = useTranslation();
   return (
     <div className="flex items-center gap-2 p-6 text-sm text-muted" role="status">
-      <Loader2 className="h-4 w-4 animate-spin" /> {label ?? t("common.loading")}
+      <LoaderCircle className="h-4 w-4 animate-spin" /> {label ?? t("common.loading")}
     </div>
   );
 }

@@ -25,10 +25,13 @@ COPY backend/build-requirements.txt backend/pyproject.toml backend/uv.lock ./
 # Only the runtime dependencies, also the indirect ones, exactly as locked in uv.lock and checked
 # against their hashes (audit F08). uv itself is pinned by hash and stays in this stage. The
 # application code is copied into the final stage, so a code change does not reinstall anything.
+# pip leaves the venv once it has installed: OAK does not need it to run, and it carries its own
+# old copies of urllib3, msgpack and setuptools, which scanners such as Trivy report.
 RUN python -m pip install --require-hashes -r build-requirements.txt \
     && uv export --locked --no-dev --no-emit-project --format requirements-txt -o requirements.txt \
     && python -m venv /opt/venv \
-    && /opt/venv/bin/pip install --require-virtualenv --require-hashes --no-deps -r requirements.txt
+    && /opt/venv/bin/pip install --require-virtualenv --require-hashes --no-deps -r requirements.txt \
+    && /opt/venv/bin/python -m pip uninstall --yes pip
 
 # --- runtime ------------------------------------------------------------------------------------
 FROM python:3.13.18-slim-bookworm@sha256:a5a7017efc5969e00ae2b91c8eb0631049a569652aa4ffc4501769049ae45c72 AS runtime
@@ -64,7 +67,9 @@ COPY backend/migrations ./migrations
 COPY backend/alembic.ini ./
 COPY --from=frontend /src/frontend/dist ./frontend
 COPY docker/entrypoint.sh /usr/local/bin/oak-entrypoint
-RUN chmod 0755 /usr/local/bin/oak-entrypoint \
+# The base image's own pip goes too, for the same reason (the venv has none left).
+RUN /usr/local/bin/python -m pip uninstall --yes pip \
+    && chmod 0755 /usr/local/bin/oak-entrypoint \
     && python -m compileall -q /app/app \
     && mkdir -p /data
 

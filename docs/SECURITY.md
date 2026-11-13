@@ -73,6 +73,7 @@ Bij iedere push, iedere pull request en iedere maandagochtend bouwt CI de image,
 - Een webhookverzoek staat in het logboek met `[redacted]` in plaats van het token.
 - OAK draait niet als root. `/data` heeft de rechten 700, en de bestanden daarin, waaronder `/data/.secret_key`, zijn alleen voor OAK leesbaar.
 - De image weigert te starten met `PUID=0` of `PGID=0`.
+- Er staat geen pip in de image, niet in de venv van OAK en niet in de Python van de basisimage. pip is alleen nodig om te bouwen, en het neemt eigen, oudere kopieën van urllib3, msgpack en setuptools mee. Grype ziet die kopieën niet, Trivy wel.
 
 Daarna scant [Grype](https://github.com/anchore/grype) de image op bekende kwetsbaarheden in de pakketten van het besturingssysteem en in de Python-afhankelijkheden. CI faalt bij een hoog of kritiek lek waarvoor een opgeloste versie bestaat. Grype staat vast op een digest. Trivy is bewust niet gekozen, omdat de toeleveringsketen daarvan in maart 2026 is gehackt (CVE-2026-33634). De scanner krijgt de image als archief en geen toegang tot de Docker-socket.
 

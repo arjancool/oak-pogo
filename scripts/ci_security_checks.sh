@@ -57,6 +57,14 @@ echo "Webhook-token blijft uit het logboek."
 [ "$(docker exec "$container" stat -c %a /data/oak.db)" = "600" ] || fail "/data/oak.db heeft niet de rechten 600"
 echo "OAK draait niet als root en de geheime sleutel heeft de rechten 600."
 
+# No pip in the image: it is only needed to build, and it brings old copies of urllib3, msgpack
+# and setuptools along. Both Pythons are checked: the venv's and the base image's own.
+for python in /opt/venv/bin/python /usr/local/bin/python3; do
+  found=$(docker exec "$container" "$python" -c "import importlib.util; print(importlib.util.find_spec('pip') is not None)")
+  [ "$found" = "False" ] || fail "pip staat nog in de image ($python)"
+done
+echo "Geen pip in de image."
+
 # The image refuses to run OAK as root, also when asked to.
 for variable in PUID PGID; do
   set +e

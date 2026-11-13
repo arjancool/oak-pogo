@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Copy, UploadCloud } from "lucide-react";
+import { Check, CloudUpload, Copy } from "lucide-react";
 import { useRef, useState, type DragEvent } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -215,7 +215,7 @@ function UploadCard({ accountId }: { accountId: number }) {
         onDrop={onDrop}
         className={`flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed p-8 text-center text-sm ${dragging ? "border-oak-400 bg-oak-500/10" : "border-line"}`}
       >
-        <UploadCloud className="text-muted" />
+        <CloudUpload className="text-muted" />
         <span>{t("admin.sync.upload.drop")}</span>
         <span className="text-xs text-muted">{t("admin.sync.upload.samePipeline")}</span>
         <input

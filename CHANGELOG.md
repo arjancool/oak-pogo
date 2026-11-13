@@ -43,6 +43,7 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 
 ### Gewijzigd
 
+- De frontend gebruikt Vite 8 en lucide-react 1. Vite 8 bouwt met Rolldown in plaats van Rollup. De bundel blijft ongeveer even groot. Drie iconen hebben de namen uit lucide 1 gekregen: `CircleQuestionMark`, `LoaderCircle` en `CloudUpload`. Ook de indirecte pakketten zijn minstens een week oud, net als bij Dependabot.
 - De frontend wordt gebouwd en getest met Node 26 in plaats van 22, zowel in CI als in de Docker-build.
 - De Python-image blijft op 3.13. Dependabot stelt alleen nog updates binnen 3.13 voor. Een nieuwe workflow draait iedere maandag de backendtests op Python 3.14 en op de nieuwste stabiele versie, zonder iets te blokkeren. Zo is te zien wanneer een overstap kan.
 - Kleine updates van Dependabot (patch en minor) worden automatisch gemerged zodra alle verplichte controles slagen. Dat gebeurt alleen als de ruleset voor `main` verplichte controles heeft. Een nieuwe hoofdversie blijft handwerk. De wekelijkse controle op maandag publiceert `latest` opnieuw, zodat die updates ook in de image komen. Zie `docs/SECURITY.md`.

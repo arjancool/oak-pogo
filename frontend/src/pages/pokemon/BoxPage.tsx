@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createColumnHelper, flexRender, getCoreRowModel, useReactTable, type VisibilityState } from "@tanstack/react-table";
+import { columnVisibilityFeature, createColumnHelper, tableFeatures, useTable, type ColumnVisibilityState } from "@tanstack/react-table";
 import clsx from "clsx";
 import type { ParseKeys } from "i18next";
 import { CircleQuestionMark, Download, Filter, LayoutGrid, Rows3, X } from "lucide-react";
@@ -101,15 +101,18 @@ const COLUMN_LABELS: Record<string, ParseKeys | string> = {
 };
 const DEFAULT_PAGE_SIZE = 50;
 
-function loadColumns(): VisibilityState {
+function loadColumns(): ColumnVisibilityState {
   try {
-    return JSON.parse(window.localStorage.getItem(COLUMNS_KEY) ?? "{}") as VisibilityState;
+    return JSON.parse(window.localStorage.getItem(COLUMNS_KEY) ?? "{}") as ColumnVisibilityState;
   } catch {
     return {};
   }
 }
 
-const column = createColumnHelper<PokemonSummary>();
+// The table only hides columns. Sorting and paging happen on the server, so the rows stay in the
+// order the API sends them.
+const features = tableFeatures({ columnVisibilityFeature });
+const column = createColumnHelper<typeof features, PokemonSummary>();
 
 function TriState({ name, label, value, onChange }: { name: string; label: string; value: string | undefined; onChange: (v: string | null) => void }) {
   const { t } = useTranslation();
@@ -352,7 +355,7 @@ function Box({ accountId }: { accountId: number }) {
   const [tagDialog, setTagDialog] = useState(false);
   const [tagValue, setTagValue] = useState("");
   const [message, setMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
-  const [columns, setColumns] = useState<VisibilityState>(loadColumns);
+  const [columns, setColumns] = useState<ColumnVisibilityState>(loadColumns);
   const view = state.view === "cards" ? "cards" : "table";
   const sort = state.sort ?? "-cp";
   const page = Number(state.page ?? 1);
@@ -418,112 +421,111 @@ function Box({ accountId }: { accountId: number }) {
     });
 
   const columnDefs = useMemo(
-    () => [
-      column.display({
-        id: "select",
-        header: () => (
-          <Checkbox
-            checked={allSelected}
-            onChange={(checked) =>
-              setSelected((current) => {
-                const next = new Set(current);
-                for (const p of items) {
-                  if (checked) next.add(p.id);
-                  else next.delete(p.id);
-                }
-                return next;
-              })
-            }
-          />
-        ),
-        cell: ({ row }) => <Checkbox checked={selected.has(row.original.id)} onChange={() => toggle(row.original.id)} />,
-        enableHiding: false,
-      }),
-      column.accessor("species_name", {
-        id: "name",
-        header: () => <SortHeader label="Pokémon" sortKey="name" sort={sort} onSort={(s) => update({ sort: s })} />,
-        cell: ({ row }) => (
-          <Link to={`/pokemon/${row.original.id}`} className="flex min-w-56 items-center gap-3">
-            <PokemonSprite dex={row.original.species_id} shiny={row.original.shiny} types={row.original.types} size={40} />
-            <div className="min-w-0">
-              <p className="truncate font-medium hover:text-oak-300">
-                {pokemonName(row.original)}
-                {row.original.nickname && <span className="ml-1 text-xs text-muted">“{row.original.nickname}”</span>}
-              </p>
-              <StatusBadges pokemon={row.original} compact />
+    () =>
+      column.columns([
+        column.display({
+          id: "select",
+          header: () => (
+            <Checkbox
+              checked={allSelected}
+              onChange={(checked) =>
+                setSelected((current) => {
+                  const next = new Set(current);
+                  for (const p of items) {
+                    if (checked) next.add(p.id);
+                    else next.delete(p.id);
+                  }
+                  return next;
+                })
+              }
+            />
+          ),
+          cell: ({ row }) => <Checkbox checked={selected.has(row.original.id)} onChange={() => toggle(row.original.id)} />,
+          enableHiding: false,
+        }),
+        column.accessor("species_name", {
+          id: "name",
+          header: () => <SortHeader label="Pokémon" sortKey="name" sort={sort} onSort={(s) => update({ sort: s })} />,
+          cell: ({ row }) => (
+            <Link to={`/pokemon/${row.original.id}`} className="flex min-w-56 items-center gap-3">
+              <PokemonSprite dex={row.original.species_id} shiny={row.original.shiny} types={row.original.types} size={40} />
+              <div className="min-w-0">
+                <p className="truncate font-medium hover:text-oak-300">
+                  {pokemonName(row.original)}
+                  {row.original.nickname && <span className="ml-1 text-xs text-muted">“{row.original.nickname}”</span>}
+                </p>
+                <StatusBadges pokemon={row.original} compact />
+              </div>
+            </Link>
+          ),
+          enableHiding: false,
+        }),
+        column.accessor("cp", {
+          header: () => <SortHeader label="CP" sortKey="cp" sort={sort} onSort={(s) => update({ sort: s })} />,
+          cell: (info) => <span className="font-semibold tabular-nums">{num(info.getValue(), "?")}</span>,
+        }),
+        column.accessor("level", {
+          header: () => <SortHeader label={t("box.columns.level")} sortKey="level" sort={sort} onSort={(s) => update({ sort: s })} />,
+          cell: (info) => level(info.getValue()),
+        }),
+        column.display({
+          id: "ivs",
+          header: t("box.columns.ivs"),
+          cell: ({ row }) => <span className="font-mono text-xs">{ivs(row.original.iv_attack, row.original.iv_defense, row.original.iv_stamina)}</span>,
+        }),
+        column.accessor("iv_percent", {
+          header: () => <SortHeader label="IV%" sortKey="iv" sort={sort} onSort={(s) => update({ sort: s })} />,
+          cell: (info) => <IvPercent value={info.getValue()} />,
+        }),
+        column.display({ id: "moves", header: t("box.columns.moves"), cell: ({ row }) => <MoveLine pokemon={row.original} /> }),
+        column.display({
+          id: "types",
+          header: t("box.columns.type"),
+          cell: ({ row }) => (
+            <div className="flex gap-1">
+              {row.original.types.map((t) => (
+                <TypeBadge key={t} type={t} />
+              ))}
             </div>
-          </Link>
-        ),
-        enableHiding: false,
-      }),
-      column.accessor("cp", {
-        header: () => <SortHeader label="CP" sortKey="cp" sort={sort} onSort={(s) => update({ sort: s })} />,
-        cell: (info) => <span className="font-semibold tabular-nums">{num(info.getValue(), "?")}</span>,
-      }),
-      column.accessor("level", {
-        header: () => <SortHeader label={t("box.columns.level")} sortKey="level" sort={sort} onSort={(s) => update({ sort: s })} />,
-        cell: (info) => level(info.getValue()),
-      }),
-      column.display({
-        id: "ivs",
-        header: t("box.columns.ivs"),
-        cell: ({ row }) => <span className="font-mono text-xs">{ivs(row.original.iv_attack, row.original.iv_defense, row.original.iv_stamina)}</span>,
-      }),
-      column.accessor("iv_percent", {
-        header: () => <SortHeader label="IV%" sortKey="iv" sort={sort} onSort={(s) => update({ sort: s })} />,
-        cell: (info) => <IvPercent value={info.getValue()} />,
-      }),
-      column.display({ id: "moves", header: t("box.columns.moves"), cell: ({ row }) => <MoveLine pokemon={row.original} /> }),
-      column.display({
-        id: "types",
-        header: t("box.columns.type"),
-        cell: ({ row }) => (
-          <div className="flex gap-1">
-            {row.original.types.map((t) => (
-              <TypeBadge key={t} type={t} />
-            ))}
-          </div>
-        ),
-      }),
-      column.accessor("caught_at", {
-        header: () => <SortHeader label={t("box.columns.caught")} sortKey="caught" sort={sort} onSort={(s) => update({ sort: s })} />,
-        cell: (info) => <span className="whitespace-nowrap text-xs">{date(info.getValue())}</span>,
-      }),
-      column.display({
-        id: "great",
-        header: () => <SortHeader label={t("box.columns.greatRank")} sortKey="great" sort={sort} onSort={(s) => update({ sort: s === "-great" ? "great" : "-great" })} />,
-        cell: ({ row }) => <span className="tabular-nums">{row.original.pvp.great.rank ?? "–"}</span>,
-      }),
-      column.display({
-        id: "ultra",
-        header: () => <SortHeader label={t("box.columns.ultraRank")} sortKey="ultra" sort={sort} onSort={(s) => update({ sort: s === "-ultra" ? "ultra" : "-ultra" })} />,
-        cell: ({ row }) => <span className="tabular-nums">{row.original.pvp.ultra.rank ?? "–"}</span>,
-      }),
-      column.display({
-        id: "battle",
-        header: () => <SortHeader label={t("box.columns.battle")} sortKey="battle" sort={sort} onSort={(s) => update({ sort: s === "-battle" ? "battle" : "-battle" })} />,
-        cell: ({ row }) => <span className="tabular-nums">{row.original.cleanup?.battle_score ?? "–"}</span>,
-      }),
-      column.display({
-        id: "keep",
-        header: () => <SortHeader label={t("box.columns.keep")} sortKey="keep" sort={sort} onSort={(s) => update({ sort: s === "-keep" ? "keep" : "-keep" })} />,
-        cell: ({ row }) => <span className="tabular-nums">{row.original.cleanup?.keep_score ?? "–"}</span>,
-      }),
-      column.display({
-        id: "cleanup",
-        header: () => <SortHeader label={t("box.columns.cleanup")} sortKey="cleanup" sort={sort} onSort={(s) => update({ sort: s })} />,
-        cell: ({ row }) => <CleanupBadge status={row.original.cleanup?.status} />,
-      }),
-    ],
+          ),
+        }),
+        column.accessor("caught_at", {
+          header: () => <SortHeader label={t("box.columns.caught")} sortKey="caught" sort={sort} onSort={(s) => update({ sort: s })} />,
+          cell: (info) => <span className="whitespace-nowrap text-xs">{date(info.getValue())}</span>,
+        }),
+        column.display({
+          id: "great",
+          header: () => <SortHeader label={t("box.columns.greatRank")} sortKey="great" sort={sort} onSort={(s) => update({ sort: s === "-great" ? "great" : "-great" })} />,
+          cell: ({ row }) => <span className="tabular-nums">{row.original.pvp.great.rank ?? "–"}</span>,
+        }),
+        column.display({
+          id: "ultra",
+          header: () => <SortHeader label={t("box.columns.ultraRank")} sortKey="ultra" sort={sort} onSort={(s) => update({ sort: s === "-ultra" ? "ultra" : "-ultra" })} />,
+          cell: ({ row }) => <span className="tabular-nums">{row.original.pvp.ultra.rank ?? "–"}</span>,
+        }),
+        column.display({
+          id: "battle",
+          header: () => <SortHeader label={t("box.columns.battle")} sortKey="battle" sort={sort} onSort={(s) => update({ sort: s === "-battle" ? "battle" : "-battle" })} />,
+          cell: ({ row }) => <span className="tabular-nums">{row.original.cleanup?.battle_score ?? "–"}</span>,
+        }),
+        column.display({
+          id: "keep",
+          header: () => <SortHeader label={t("box.columns.keep")} sortKey="keep" sort={sort} onSort={(s) => update({ sort: s === "-keep" ? "keep" : "-keep" })} />,
+          cell: ({ row }) => <span className="tabular-nums">{row.original.cleanup?.keep_score ?? "–"}</span>,
+        }),
+        column.display({
+          id: "cleanup",
+          header: () => <SortHeader label={t("box.columns.cleanup")} sortKey="cleanup" sort={sort} onSort={(s) => update({ sort: s })} />,
+          cell: ({ row }) => <CleanupBadge status={row.original.cleanup?.status} />,
+        }),
+      ]),
     [allSelected, items, selected, sort, t, update],
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features,
     data: items,
     columns: columnDefs,
-    getCoreRowModel: getCoreRowModel(),
-    manualSorting: true,
-    manualPagination: true,
     state: { columnVisibility: columns },
     onColumnVisibilityChange: setColumns,
     getRowId: (row) => String(row.id),
@@ -631,7 +633,7 @@ function Box({ accountId }: { accountId: number }) {
                 <tr key={group.id}>
                   {group.headers.map((header) => (
                     <th key={header.id} className="whitespace-nowrap px-3 py-2 font-medium">
-                      {flexRender(header.column.columnDef.header, header.getContext())}
+                      <table.FlexRender header={header} />
                     </th>
                   ))}
                 </tr>
@@ -642,7 +644,7 @@ function Box({ accountId }: { accountId: number }) {
                 <tr key={row.id} className={clsx("border-t border-line hover:bg-surface-3/40", selected.has(row.original.id) && "bg-oak-500/5")}>
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-3 py-2 align-middle">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      <table.FlexRender cell={cell} />
                     </td>
                   ))}
                 </tr>

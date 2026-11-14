@@ -112,7 +112,11 @@ def test_vintage_can_hold_a_battle_role(gamedata: Any) -> None:
     results = evaluate([old, newer], CleanupRules(), CTX)
     assert any(r["role"] == "best_great" for r in result_of(results, 1).roles)
     assert "VINTAGE_BEST" in codes(result_of(results, 1).reasons)
-    assert status_of(results, 2) in (Status.TRANSFER_CANDIDATE, Status.REVIEW)
+    # A vintage copy is protected, so the newer one is the best regular copy and stays too.
+    assert status_of(results, 2) is Status.KEEP
+    assert result_of(results, 2).reasons[0]["code"] == "BEST_REGULAR_COPY"
+    without_minimum = evaluate([old, newer], CleanupRules(keep_min_per_species=0), CTX)
+    assert status_of(without_minimum, 2) in (Status.TRANSFER_CANDIDATE, Status.REVIEW)
 
 
 def test_vintage_override_keeps_a_warning() -> None:
@@ -340,6 +344,32 @@ def test_minimum_per_species() -> None:
     assert status_of(results, 2) is Status.KEEP
     assert result_of(results, 2).reasons[0]["code"] == "BEST_COPY"
     assert status_of(results, 1) is Status.TRANSFER_CANDIDATE
+
+
+def test_a_regular_copy_stays_next_to_protected_ones() -> None:
+    """A shiny or a special background always stays, but it does not count towards the minimum:
+    next to it the best regular copy stays too (14 November)."""
+    shiny = view(1, ivs=(15, 15, 14), shiny=True)
+    background = view(2, ivs=(14, 14, 14), location_card=True)
+    regular_best = view(3, ivs=(10, 10, 10))
+    regular_weak = view(4, ivs=(1, 1, 1))
+    results = evaluate([shiny, background, regular_best, regular_weak], CleanupRules(), CTX)
+    assert status_of(results, 1) is Status.PROTECT and status_of(results, 2) is Status.PROTECT
+    assert status_of(results, 3) is Status.KEEP
+    reason = result_of(results, 3).reasons[0]
+    assert reason["code"] == "BEST_REGULAR_COPY" and reason["data"] == {"count": 2}
+    assert reason["text"] == "Beste gewone exemplaar van deze soort, naast 2 beschermde exemplaren"
+    assert status_of(results, 4) is Status.TRANSFER_CANDIDATE
+    # The minimum counts regular copies only.
+    two = evaluate([shiny, background, regular_best, regular_weak], CleanupRules(keep_min_per_species=2), CTX)
+    assert status_of(two, 4) is Status.KEEP
+    assert result_of(two, 4).reasons[0]["text"] == "Minimaal 2 gewone exemplaren per soort bewaren"
+    # Only protected copies: nothing to add, and each of them stays.
+    only = evaluate([view(1, shiny=True), view(2, lucky=True)], CleanupRules(), CTX)
+    assert {r.status for r in only} == {Status.PROTECT}
+    # At 0 the regular copies can all go.
+    zero = evaluate([shiny, regular_best], CleanupRules(keep_min_per_species=0), CTX)
+    assert status_of(zero, 3) is Status.TRANSFER_CANDIDATE
 
 
 def test_only_copy_without_battle_value_goes_to_review() -> None:

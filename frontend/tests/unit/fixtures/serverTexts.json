@@ -213,6 +213,34 @@
     "year": 2022
    },
    "text": "Ter vergelijking: Squirtle (CP 767, gevangen in 2022) is beter voor gevechten: Master League IV-rang 349 tegen 1402, IV 73,3% tegen 57,8%. Deze vintage Pokémon blijft beschermd."
+  },
+  {
+   "code": "BEST_REGULAR_COPY",
+   "data": {
+    "count": 1
+   },
+   "text": "Beste gewone exemplaar van deze soort, naast 1 beschermd exemplaar"
+  },
+  {
+   "code": "BEST_REGULAR_COPY",
+   "data": {
+    "count": 3
+   },
+   "text": "Beste gewone exemplaar van deze soort, naast 3 beschermde exemplaren"
+  },
+  {
+   "code": "MINIMUM",
+   "data": {
+    "count": 1
+   },
+   "text": "Minimaal 1 gewoon exemplaar per soort bewaren"
+  },
+  {
+   "code": "MINIMUM",
+   "data": {
+    "count": 2
+   },
+   "text": "Minimaal 2 gewone exemplaren per soort bewaren"
   }
  ],
  "warnings": [
@@ -450,6 +478,22 @@
    "code": "NICKNAME",
    "text": "Heeft een bijnaam",
    "value": 5
+  }
+ ],
+ "guard": [
+  {
+   "code": "LAST_COPY",
+   "data": {
+    "name": "Pikachu"
+   },
+   "text": "Laatste Pikachu in je inventaris"
+  },
+  {
+   "code": "LAST_REGULAR_COPY",
+   "data": {
+    "name": "Pikachu"
+   },
+   "text": "Laatste gewone Pikachu in je inventaris, naast beschermde exemplaren"
   }
  ]
 }

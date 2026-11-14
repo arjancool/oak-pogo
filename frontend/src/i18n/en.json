@@ -118,7 +118,8 @@
       "unknown_date": "Catch date unknown",
       "protected": "Protected by a rule",
       "advice": "Keep, according to the advice",
-      "last_copy": "Last copy of this species"
+      "last_copy": "Last copy of this species",
+      "last_regular_copy": "Last regular copy of this species"
     },
     "readiness": {
       "direct": "Ready now",
@@ -1737,8 +1738,8 @@
           "hint": "0–100, below that transfer candidate"
         },
         "keepMinPerSpecies": {
-          "label": "Minimum number per species",
-          "hint": "0–10. At 1 or more the best one of each species always stays. At 0 even the only one can become a transfer candidate."
+          "label": "Minimum number of regular ones per species",
+          "hint": "0–10. Protected ones, such as a shiny, a costume or a special background, always stay and do not count here. At 1 or more the best regular one of each species stays next to them. At 0 even the only one can become a transfer candidate."
         },
         "metaRankThreshold": {
           "label": "Species counts up to PvPoke rank",
@@ -1877,13 +1878,15 @@
       "BEST_MASTER": "Best Master League pick for {{target}}",
       "BEST_RAID": "Best raid attacker (Attack IV) for {{target}}",
       "BEST_GYM": "Best gym defender (Defense and HP) for {{target}}",
-      "MINIMUM": "Minimum number per species",
-      "MINIMUM_one": "Keep at least {{count}} per species",
-      "MINIMUM_other": "Keep at least {{count}} per species",
+      "MINIMUM": "Minimum number of regular ones per species",
+      "MINIMUM_one": "Keep at least {{count}} regular one per species",
+      "MINIMUM_other": "Keep at least {{count}} regular ones per species",
       "WEAK_BEST_COPY": "The best one you have, but its IVs are too weak to invest in",
       "INVESTMENT": "{{target}} {{leagueName}}: {{stardust, number}} Stardust, {{candy}} Candy, {{xl_candy}} XL Candy",
       "BEST_COPY_one": "The only one of its kind in your collection",
       "BEST_COPY_other": "The best of its kind in your collection",
+      "BEST_REGULAR_COPY_one": "The best regular one of its kind, next to {{count}} protected one",
+      "BEST_REGULAR_COPY_other": "The best regular one of its kind, next to {{count}} protected ones",
       "ONLY_COPY_NO_USE": "The only one of its kind in your collection, but without value in battle",
       "PARTIAL_IMPORT": "The last import was incomplete; no transfer advice",
       "FAVORITE_REVIEW": "Favorite: OAK never suggests a favorite as a transfer directly. Decide for yourself.",
@@ -1993,7 +1996,8 @@
       "ADVICE": "OAK advises keeping this Pokémon",
       "ADVICE_keep": "OAK advises keeping this Pokémon",
       "ADVICE_build": "OAK advises investing in this Pokémon",
-      "LAST_COPY": "Last {{name}} in your inventory"
+      "LAST_COPY": "Last {{name}} in your inventory",
+      "LAST_REGULAR_COPY": "Last regular {{name}} in your inventory, next to protected ones"
     },
     "rules": {
       "VINTAGE": "Vintage Pokémon (2016–2019) are always protected. They are still fully analyzed and compared.",

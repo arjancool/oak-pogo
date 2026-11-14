@@ -60,6 +60,22 @@ def test_a_pokemon_to_keep_needs_a_confirmation(
     assert _items(owner, account)[kept]["executable"]
 
 
+def test_the_last_regular_copy_next_to_protected_ones_needs_a_confirmation(
+    owner: Api, container: Any, gamedata: Any, export: dict[str, Any]
+) -> None:
+    """With a protected copy of the species, such as a shiny, the last regular copy still asks
+    for a confirmation before it can go (14 November)."""
+    account = _imported(owner, container, export)
+    kept, candidates = _group(owner, account)
+    protected, *others = candidates
+    with container.db.transaction() as session:
+        session.execute(update(PokemonAnalysis).where(PokemonAnalysis.pokemon_id == protected).values(status="PROTECT"))
+    asked = _post(owner, account, [kept, *others])["needs_confirmation"]
+    kinds = {a["pokemon_id"]: set(a["kinds"]) for a in asked}
+    assert kinds == {kept: {"advice", "last_regular_copy"}}
+    assert kept not in _items(owner, account), "nothing is added without the confirmation"
+
+
 def test_the_last_copy_is_held_back_until_confirmed(
     owner: Api, container: Any, gamedata: Any, export: dict[str, Any]
 ) -> None:

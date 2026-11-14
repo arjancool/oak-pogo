@@ -603,41 +603,47 @@ def _keep_best_of_group(
     battle: dict[int, Score],
     rules: CleanupRules,
 ) -> None:
-    """The best copy of every group is kept, and at least ``keep_min_per_species`` copies.
+    """The best regular copy of every group is kept, and at least ``keep_min_per_species``
+    regular copies.
 
-    This guarantees that every transfer candidate has a better or equal copy that stays. The only
-    copy of a species with a battle score of 0 goes to review instead of being kept. With
-    ``keep_min_per_species`` at 0 none of this applies: the best or only copy can be a transfer
-    candidate too."""
+    A regular copy is one without protection. Protected copies, such as a shiny, a costume or a
+    special background, always stay, but they do not count towards the minimum: next to them at
+    least one regular copy stays too. This also guarantees that every transfer candidate has a
+    better or equal copy that stays. The only copy of a species with a battle score of 0 goes to
+    review instead of being kept. With ``keep_min_per_species`` at 0 none of this applies: the
+    best or only copy can be a transfer candidate too."""
     if rules.keep_min_per_species <= 0:
         return
     for members in groups.values():
         ordered = sorted(members, key=lambda m: comparison_key(m, battle[m.id]))
-        best = results[ordered[0].id]
+        regular = [m for m in ordered if results[m.id].status is not Status.PROTECT]
+        if not regular:
+            continue
+        protected = len(members) - len(regular)
+        best = results[regular[0].id]
         if not best.overridden and (
             best.status is Status.TRANSFER_CANDIDATE or (best.status is Status.REVIEW and best.codes <= SCORE_DOUBT)
         ):
-            if len(members) == 1 and battle[ordered[0].id].score == 0:
+            if len(members) == 1 and battle[regular[0].id].score == 0:
                 _review_only_copy(best)
+            elif protected:
+                copies = "1 beschermd exemplaar" if protected == 1 else f"{protected} beschermde exemplaren"
+                text = f"Beste gewone exemplaar van deze soort, naast {copies}"
+                _promote(best, _reason("BEST_REGULAR_COPY", text, count=protected))
             else:
                 text = "Beste exemplaar van deze soort in je collectie"
                 if len(members) == 1:
                     text = "Enige exemplaar van deze soort in je collectie"
                 _promote(best, _reason("BEST_COPY", text, size=len(members), count=len(members)))
-        missing = rules.keep_min_per_species - sum(1 for m in members if results[m.id].status in KEPT)
-        for member in ordered[1:]:
+        minimum = rules.keep_min_per_species
+        missing = minimum - sum(1 for m in regular if results[m.id].status in KEPT)
+        for member in regular[1:]:
             if missing <= 0:
                 break
             result = results[member.id]
             if result.status is Status.TRANSFER_CANDIDATE and not result.overridden:
-                _promote(
-                    result,
-                    _reason(
-                        "MINIMUM",
-                        f"Minimaal {rules.keep_min_per_species} exemplaren per soort bewaren",
-                        count=rules.keep_min_per_species,
-                    ),
-                )
+                copies = "1 gewoon exemplaar" if minimum == 1 else f"{minimum} gewone exemplaren"
+                _promote(result, _reason("MINIMUM", f"Minimaal {copies} per soort bewaren", count=minimum))
                 missing -= 1
 
 

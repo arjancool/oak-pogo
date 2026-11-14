@@ -43,6 +43,7 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 
 ### Gewijzigd
 
+- Naast beschermde exemplaren blijft er altijd minstens één gewoon exemplaar van iedere soort. Een shiny, een kostuum, een speciale achtergrond of een vintage Pokémon telt niet meer mee voor *Minimaal aantal exemplaren per soort*. Was zo'n beschermd exemplaar ook het beste, dan konden voorheen alle gewone exemplaren transferkandidaat worden. Nu blijft het beste gewone exemplaar, met de reden *Beste gewone exemplaar van deze soort*. Zet je op de actielijst alle gewone exemplaren van een soort, dan vraagt OAK eerst een bevestiging. De analyses worden opnieuw berekend (engine cleanup-2.13).
 - De frontend wordt gebouwd en getest met Node 26 in plaats van 22, zowel in CI als in de Docker-build.
 - De Python-image blijft op 3.13. Dependabot stelt alleen nog updates binnen 3.13 voor. Een nieuwe workflow draait iedere maandag de backendtests op Python 3.14 en op de nieuwste stabiele versie, zonder iets te blokkeren. Zo is te zien wanneer een overstap kan.
 - Kleine updates van Dependabot (patch en minor) worden automatisch gemerged zodra alle verplichte controles slagen. Dat gebeurt alleen als de ruleset voor `main` verplichte controles heeft. Een nieuwe hoofdversie blijft handwerk. De wekelijkse controle op maandag publiceert `latest` opnieuw, zodat die updates ook in de image komen. Zie `docs/SECURITY.md`.

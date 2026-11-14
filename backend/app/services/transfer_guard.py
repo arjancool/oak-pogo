@@ -52,6 +52,9 @@ class GuardContext:
     tz: ZoneInfo
     # The best copy of every species whose copies would all be gone with the list (see last_copies).
     last_copies: frozenset[int] = frozenset()
+    # The best regular copy of every species whose regular copies would all be gone with the list,
+    # while protected copies stay (see last_copies).
+    last_regular_copies: frozenset[int] = frozenset()
 
 
 def guard_context(session: Session, account: TrainerAccount, tz: ZoneInfo) -> GuardContext:
@@ -72,12 +75,17 @@ ADVICE_TEXTS = {
 
 def with_list(session: Session, context: GuardContext, account_id: int, listed: Iterable[int]) -> GuardContext:
     """The context for a list that holds ``listed``, the open transfer actions."""
-    return replace(context, last_copies=last_copies(session, account_id, set(listed)))
+    copies, regular = last_copies(session, account_id, set(listed))
+    return replace(context, last_copies=copies, last_regular_copies=regular)
 
 
-def last_copies(session: Session, account_id: int, listed: set[int]) -> frozenset[int]:
+def last_copies(session: Session, account_id: int, listed: set[int]) -> tuple[frozenset[int], frozenset[int]]:
     """For every species group whose copies in the inventory are all on the list, the copy the
-    advice values most: one confirmation for it keeps the species from disappearing."""
+    advice values most: one confirmation for it keeps the species from disappearing.
+
+    The second set does the same for the regular copies, those without protection: when they are
+    all on the list and only protected copies would stay, the best regular one needs a
+    confirmation too, so a regular copy stays next to a shiny or a costume."""
     rows = session.execute(
         select(Pokemon, PokemonAnalysis)
         .outerjoin(PokemonAnalysis, PokemonAnalysis.pokemon_id == Pokemon.id)
@@ -87,10 +95,21 @@ def last_copies(session: Session, account_id: int, listed: set[int]) -> frozense
     for pokemon, analysis in rows:
         groups[group_key(pokemon)].append((pokemon, analysis))
     best: set[int] = set()
+    best_regular: set[int] = set()
     for members in groups.values():
-        if all(pokemon.id in listed for pokemon, _ in members):
+        remaining = [member for member in members if member[0].id not in listed]
+        if not remaining:
             best.add(min(members, key=_keep_order)[0].id)
-    return frozenset(best)
+            continue
+        regular = [member for member in members if not _protected(member)]
+        if regular and all(_protected(member) for member in remaining):
+            best_regular.add(min(regular, key=_keep_order)[0].id)
+    return frozenset(best), frozenset(best_regular)
+
+
+def _protected(member: tuple[Pokemon, PokemonAnalysis | None]) -> bool:
+    analysis = member[1]
+    return analysis is not None and analysis.status == "PROTECT"
 
 
 def _keep_order(member: tuple[Pokemon, PokemonAnalysis | None]) -> tuple[Any, ...]:
@@ -202,6 +221,11 @@ def check_transfer(
         name = pokemon.species_name or f"#{pokemon.species_id}"
         last = _text("LAST_COPY", f"Laatste {name} in je inventaris", name=name)
         check.need("last_copy", last, {"last_copy": last})
+    if pokemon.id in context.last_regular_copies:
+        name = pokemon.species_name or f"#{pokemon.species_id}"
+        text = f"Laatste gewone {name} in je inventaris, naast beschermde exemplaren"
+        last = _text("LAST_REGULAR_COPY", text, name=name)
+        check.need("last_regular_copy", last, {"last_regular_copy": last})
     return check
 
 

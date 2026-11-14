@@ -43,6 +43,7 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 
 ### Gewijzigd
 
+- De frontend gebruikt Vite 8 en lucide-react 1. Vite 8 bouwt met Rolldown in plaats van Rollup. De bundel blijft ongeveer even groot. Drie iconen hebben de namen uit lucide 1 gekregen: `CircleQuestionMark`, `LoaderCircle` en `CloudUpload`. Ook de indirecte pakketten zijn minstens een week oud, net als bij Dependabot.
 - Naast beschermde exemplaren blijft er altijd minstens één gewoon exemplaar van iedere soort. Een shiny, een kostuum, een speciale achtergrond of een vintage Pokémon telt niet meer mee voor *Minimaal aantal exemplaren per soort*. Was zo'n beschermd exemplaar ook het beste, dan konden voorheen alle gewone exemplaren transferkandidaat worden. Nu blijft het beste gewone exemplaar, met de reden *Beste gewone exemplaar van deze soort*. Zet je op de actielijst alle gewone exemplaren van een soort, dan vraagt OAK eerst een bevestiging. De analyses worden opnieuw berekend (engine cleanup-2.13).
 - De frontend wordt gebouwd en getest met Node 26 in plaats van 22, zowel in CI als in de Docker-build.
 - De Python-image blijft op 3.13. Dependabot stelt alleen nog updates binnen 3.13 voor. Een nieuwe workflow draait iedere maandag de backendtests op Python 3.14 en op de nieuwste stabiele versie, zonder iets te blokkeren. Zo is te zien wanneer een overstap kan.

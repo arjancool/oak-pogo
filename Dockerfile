@@ -9,7 +9,7 @@
 # --- frontend -----------------------------------------------------------------------------------
 # The built files are the same on every platform, so this stage always runs natively, also when
 # the image is built for arm64 on an amd64 machine.
-FROM --platform=$BUILDPLATFORM node:26.13.0-bookworm-slim@sha256:bc0a2afd3b74ce12222fc8bab99271e66257f021078f5f4a5d687a77d280c1d9 AS frontend
+FROM --platform=$BUILDPLATFORM node:26.13.0-bookworm-slim@sha256:add5c17c14752c54d2f3d519ec46a3815684d41c33f198bcb09fb998f7dcbf68 AS frontend
 WORKDIR /src/frontend
 ENV npm_config_fund=false npm_config_audit=false npm_config_update_notifier=false
 COPY frontend/package.json frontend/package-lock.json ./

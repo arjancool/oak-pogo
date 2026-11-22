@@ -14,11 +14,11 @@ license = { text = "Apache-2.0" }
 dependencies = [
     "alembic==1.20.1",
     "argon2-cffi==25.1.0",
-    "fastapi==0.162.2",
+    "fastapi==0.163.0",
     "httpx==0.28.1",
     "numpy==2.5.4",
     "pydantic==2.14.3",
-    "pydantic-settings==2.16.2",
+    "pydantic-settings==2.16.3",
     "python-multipart==0.0.33",
     "sqlalchemy==2.1.8",
     # IANA time zones where the system has none, such as on Windows (audit F09 of 25 October).
@@ -31,7 +31,7 @@ dev = [
     "pyright==1.1.414",
     "pytest==9.2.0",
     "pytest-cov==7.1.0",
-    "ruff==0.17.4",
+    "ruff==0.17.5",
 ]
 
 [tool.hatch.build.targets.wheel]

@@ -42,7 +42,7 @@ De interface is Nederlands of Engels. Bij je eerste bezoek volgt OAK de taal van
 - **Pokémon Box** met filters, een eigen zoeksyntax, sorteren, kaarten of een tabel, bulkacties op je OAK-gegevens en een CSV-export.
 - **Pokédex** om iedere Pokémon uit de Game Data op te zoeken, ook als je hem niet hebt. Je ziet zijn waarden en aanvallen, hoeveel je er hebt en welke Pokémon uit je collectie ernaartoe kunnen evolueren, met de kosten en de CP na evolutie.
 - **Detailpagina** per Pokémon met IV's, level, aanvallen, league-analyse, evoluties, power-upkosten, cleanup-advies en historie.
-- **Cleanup Manager** met harde en zachte bescherming, twee scores, dubbelen, vergelijkbare exemplaren, een actielijst en zoekteksten voor in het spel. Je kunt filteren op je beste gymverdedigers en op Pokémon die nu in een gym staan.
+- **Cleanup Manager** met harde en zachte bescherming, twee scores, dubbelen, vergelijkbare exemplaren, een actielijst en zoekteksten voor in het spel. Je kunt filteren op je beste gymverdedigers, op Pokémon die nu in een gym staan en op het enige exemplaar van een soort.
 - **Komende events** uit de kalender van LeekDuck.com. Een Pokémon blijft bewaard tot na de Community Day van zijn evolutielijn, en bij dubbele Transfer Candy krijg je een tip om te wachten.
 - **PvP** voor Great, Ultra en Master League en voor cups zoals de Fantasy Cup: IV-rang, soortrang, inzetbaarheid, movesetadvies en een Team Builder. OAK past de regels van iedere cup toe, ook op Pokémon die pas na evolutie mee mogen.
 - **PvE**: raidcounters, Team GO Rocket-counters, Max Battles en je beste gymverdedigers.

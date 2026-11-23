@@ -1483,6 +1483,8 @@
       "favorites": "Favorites: {{choice}}",
       "vintageLabel": "Vintage",
       "vintage": "Vintage (2016–2019): {{choice}}",
+      "onlyCopyLabel": "Last of their kind",
+      "onlyCopy": "Last of their kind: {{choice}}",
       "gymLabel": "Gyms",
       "gym": {
         "all": "Gyms: all",

@@ -95,6 +95,10 @@ def recommendations(
     favorite: bool | None = None,
     vintage: bool | None = None,
     unknown_date: bool | None = None,
+    only_copy: bool | None = Query(
+        default=None,
+        description="true: alleen het enige exemplaar van een soort en vorm; false: die juist niet",
+    ),
     gym: str | None = Query(
         default=None,
         pattern="^(best|in_gym)$",
@@ -125,6 +129,18 @@ def recommendations(
     date_unknown = or_(Pokemon.caught_year.is_(None), Pokemon.caught_year < FIRST_GAME_YEAR)
     if unknown_date is not None:
         stmt = stmt.where(date_unknown if unknown_date else not_(date_unknown))
+    if only_copy is not None:
+        # The copies the advice compared: the same group as in the latest analysis, counted over
+        # the Pokémon in the inventory now.
+        single = (
+            select(PokemonAnalysis.group_key)
+            .join(Pokemon, Pokemon.id == PokemonAnalysis.pokemon_id)
+            .where(Pokemon.trainer_account_id == account.id, Pokemon.inventory_status == "in_inventory")
+            .group_by(PokemonAnalysis.group_key)
+            .having(func.count() == 1)
+        )
+        alone = PokemonAnalysis.group_key.in_(single)
+        stmt = stmt.where(alone if only_copy else or_(PokemonAnalysis.group_key.is_(None), not_(alone)))
     if gym == "best":
         # Roles are stored as compact JSON with sorted keys, so this text is exact.
         stmt = stmt.where(type_coerce(PokemonAnalysis.roles, String).like('%"role":"best_gym"%'))

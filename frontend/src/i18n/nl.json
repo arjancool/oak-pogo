@@ -1483,6 +1483,8 @@
       "favorites": "Favorieten: {{choice}}",
       "vintageLabel": "Vintage",
       "vintage": "Vintage (2016–2019): {{choice}}",
+      "onlyCopyLabel": "Enige exemplaren van een soort",
+      "onlyCopy": "Enige exemplaren: {{choice}}",
       "gymLabel": "Gyms",
       "gym": {
         "all": "Gyms: alle",

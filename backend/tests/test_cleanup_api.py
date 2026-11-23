@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import Counter
 from typing import Any
 
 from sqlalchemy import select
@@ -80,6 +81,43 @@ def test_vintage_pokemon_are_analysed_but_protected(
     assert search["total"] == SAMPLE_VINTAGE
     dashboard = owner.get("/api/v1/dashboard", account_id=account).json()
     assert dashboard["cards"]["vintage"] == SAMPLE_VINTAGE
+
+
+def test_the_only_copy_of_a_species_can_be_shown_or_hidden(
+    owner: Any, container: Any, gamedata: Any, export: dict[str, Any]
+) -> None:
+    account = _imported(owner, container, export)
+    everything = _all(owner, account)
+    sizes = Counter(item["group_key"] for item in everything)
+    alone = {i["pokemon"]["id"] for i in everything if sizes[i["group_key"]] == 1}
+    assert alone and len(alone) < len(everything)
+    # The notices that say a Pokémon is the only one of its kind all belong to these.
+    notices = {
+        i["pokemon"]["id"]
+        for i in everything
+        for r in i["reasons"]
+        if r["code"] == "ONLY_COPY_NO_USE" or (r["code"] == "BEST_COPY" and r.get("data", {}).get("size") == 1)
+    }
+    assert notices and notices <= alone
+
+    only = owner.get("/api/v1/cleanup/recommendations", account_id=account, only_copy="true", page_size=500).json()
+    assert {i["pokemon"]["id"] for i in only["items"]} == alone and only["total"] == len(alone)
+    hidden = owner.get("/api/v1/cleanup/recommendations", account_id=account, only_copy="false", page_size=500).json()
+    assert {i["pokemon"]["id"] for i in hidden["items"]} == {i["pokemon"]["id"] for i in everything} - alone
+    assert hidden["total"] == len(everything) - len(alone)
+    for status in ("REVIEW", "KEEP"):
+        shown = _all(owner, account, status=status, only_copy="false")
+        assert all(i["status"] == status and i["pokemon"]["id"] not in alone for i in shown)
+
+    # A copy that is no longer in the inventory does not count: the other one is now alone.
+    pair = next(key for key, size in sizes.items() if size == 2)
+    gone, stays = (i["pokemon"]["id"] for i in everything if i["group_key"] == pair)
+    with container.db.transaction() as session:
+        pokemon = session.get(Pokemon, gone)
+        assert pokemon is not None
+        pokemon.inventory_status = "not_in_inventory"
+    assert stays in {i["pokemon"]["id"] for i in _all(owner, account, only_copy="true")}
+    assert stays not in {i["pokemon"]["id"] for i in _all(owner, account, only_copy="false")}
 
 
 def test_sorting_and_rules(owner: Any, container: Any, gamedata: Any, export: dict[str, Any]) -> None:

@@ -190,11 +190,12 @@ function Recommendations({ accountId }: { accountId: number }) {
   const page = Number(state.page ?? 1);
   const favorite = state.favorite ?? "";
   const vintage = state.vintage ?? "";
+  const onlyCopy = state.only_copy ?? "";
   const gym = state.gym ?? "";
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const addToList = useAddToActionList(accountId, () => setSelected(new Set()));
   const query = useQuery({
-    queryKey: ["cleanup", accountId, status, sort, page, favorite, vintage, gym],
+    queryKey: ["cleanup", accountId, status, sort, page, favorite, vintage, onlyCopy, gym],
     queryFn: async () =>
       cleanupPage.parse(
         await api.get("/api/v1/cleanup/recommendations", {
@@ -202,6 +203,7 @@ function Recommendations({ accountId }: { accountId: number }) {
           status: status === "ALL" ? null : status,
           favorite: favorite || null,
           vintage: vintage || null,
+          only_copy: onlyCopy || null,
           gym: gym || null,
           sort,
           page,
@@ -281,6 +283,13 @@ function Recommendations({ accountId }: { accountId: number }) {
           {TRISTATE.map((o) => (
             <option key={o.value} value={o.value}>
               {t("cleanup.filters.vintage", { choice: t(o.text) })}
+            </option>
+          ))}
+        </Select>
+        <Select value={onlyCopy} onChange={(e) => update({ only_copy: e.target.value || null })} aria-label={t("cleanup.filters.onlyCopyLabel")}>
+          {TRISTATE.map((o) => (
+            <option key={o.value} value={o.value}>
+              {t("cleanup.filters.onlyCopy", { choice: t(o.text) })}
             </option>
           ))}
         </Select>

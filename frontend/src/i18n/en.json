@@ -229,6 +229,16 @@
     "none": "No results",
     "range": "{{from}}–{{to}} of {{total}}"
   },
+  "filters": {
+    "button": "Filters",
+    "clear": "Clear",
+    "triStateHint": "Click: only these → exclude these → no filter",
+    "state": {
+      "only": "only these",
+      "without": "excluded",
+      "off": "no filter"
+    }
+  },
   "badges": {
     "vintage": "Vintage {{year}}",
     "noDate": "Catch date unknown",
@@ -470,7 +480,6 @@
       "changed": "Last changed"
     },
     "filters": {
-      "flagHint": "Click: only these → exclude these → no filter",
       "min": "min",
       "max": "max",
       "ivPercent": "IV percentage",
@@ -538,8 +547,6 @@
       "search": "Search",
       "syntax": "Syntax",
       "sort": "Sort",
-      "filters": "Filters",
-      "clear": "Clear",
       "columns": "Columns"
     },
     "selection": {
@@ -1476,21 +1483,12 @@
       "ivAsc": "IV low–high"
     },
     "filters": {
-      "all": "all",
-      "only": "only",
-      "without": "excluded",
-      "favoritesLabel": "Favorites",
-      "favorites": "Favorites: {{choice}}",
-      "vintageLabel": "Vintage",
-      "vintage": "Vintage (2016–2019): {{choice}}",
-      "onlyCopyLabel": "Last of their kind",
-      "onlyCopy": "Last of their kind: {{choice}}",
-      "gymLabel": "Gyms",
-      "gym": {
-        "all": "Gyms: all",
-        "best": "Gyms: best defender per species",
-        "inGym": "Gyms: in a gym now"
-      }
+      "favorite": "Favorite",
+      "vintage": "Vintage (2016–2019)",
+      "onlyCopy": "Last of its kind",
+      "gyms": "Gyms",
+      "gymBest": "Best defender per species",
+      "inGym": "In a gym now"
     },
     "recommendations": {
       "addSelected": "Add {{n}} to action list",

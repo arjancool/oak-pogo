@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { z } from "zod";
 
+import { ChoiceChips, FilterButton, FilterGroup, FilterPanel, TriStateChips, useFilterPanel } from "../../components/filters";
 import { RequireAccount } from "../../components/layout/RequireAccount";
 import { ConfirmTransferDialog } from "../../components/cleanup/ConfirmTransferDialog";
 import { CleanupBadge, IvPercent, PokemonSprite, ScoreMeter, StatusBadges, pokemonName } from "../../components/pokemon";
@@ -130,16 +131,7 @@ function RecommendationRow({ item, selected, onSelect }: { item: CleanupItem; se
 }
 
 const SELECTABLE = new Set(["TRANSFER_CANDIDATE", "REVIEW"]);
-const TRISTATE = [
-  { value: "", text: "cleanup.filters.all" },
-  { value: "true", text: "cleanup.filters.only" },
-  { value: "false", text: "cleanup.filters.without" },
-] as const;
-const GYM_FILTERS = [
-  { value: "", text: "cleanup.filters.gym.all" },
-  { value: "best", text: "cleanup.filters.gym.best" },
-  { value: "in_gym", text: "cleanup.filters.gym.inGym" },
-] as const;
+const FILTER_KEYS = ["favorite", "vintage", "only_copy", "gym"] as const;
 
 /**
  * Puts Pokémon on the action list. The server checks every one of them again: vintage Pokémon are
@@ -192,6 +184,8 @@ function Recommendations({ accountId }: { accountId: number }) {
   const vintage = state.vintage ?? "";
   const onlyCopy = state.only_copy ?? "";
   const gym = state.gym ?? "";
+  const activeFilters = FILTER_KEYS.filter((key) => state[key]);
+  const [showFilters, toggleFilters] = useFilterPanel(activeFilters.length);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const addToList = useAddToActionList(accountId, () => setSelected(new Set()));
   const query = useQuery({
@@ -272,39 +266,12 @@ function Recommendations({ accountId }: { accountId: number }) {
           <option value="name">{t("cleanup.sort.name")}</option>
           <option value="iv">{t("cleanup.sort.ivAsc")}</option>
         </Select>
-        <Select value={favorite} onChange={(e) => update({ favorite: e.target.value || null })} aria-label={t("cleanup.filters.favoritesLabel")}>
-          {TRISTATE.map((o) => (
-            <option key={o.value} value={o.value}>
-              {t("cleanup.filters.favorites", { choice: t(o.text) })}
-            </option>
-          ))}
-        </Select>
-        <Select value={vintage} onChange={(e) => update({ vintage: e.target.value || null })} aria-label={t("cleanup.filters.vintageLabel")}>
-          {TRISTATE.map((o) => (
-            <option key={o.value} value={o.value}>
-              {t("cleanup.filters.vintage", { choice: t(o.text) })}
-            </option>
-          ))}
-        </Select>
-        <Select value={onlyCopy} onChange={(e) => update({ only_copy: e.target.value || null })} aria-label={t("cleanup.filters.onlyCopyLabel")}>
-          {TRISTATE.map((o) => (
-            <option key={o.value} value={o.value}>
-              {t("cleanup.filters.onlyCopy", { choice: t(o.text) })}
-            </option>
-          ))}
-        </Select>
-        <Select
-          value={gym}
-          // A best defender is usually kept, so a gym filter looks at every status.
-          onChange={(e) => update(e.target.value ? { gym: e.target.value, status: "ALL" } : { gym: null })}
-          aria-label={t("cleanup.filters.gymLabel")}
-        >
-          {GYM_FILTERS.map((o) => (
-            <option key={o.value} value={o.value}>
-              {t(o.text)}
-            </option>
-          ))}
-        </Select>
+        <FilterButton
+          open={showFilters}
+          onToggle={toggleFilters}
+          active={activeFilters.length}
+          onClear={() => update(Object.fromEntries(FILTER_KEYS.map((key) => [key, null])))}
+        />
         {selected.size > 0 && (
           <Button variant="primary" onClick={() => addToList.add([...selected])} loading={addToList.busy}>
             {t("cleanup.recommendations.addSelected", { n: num(selected.size) })}
@@ -316,6 +283,31 @@ function Recommendations({ accountId }: { accountId: number }) {
           </Button>
         )}
       </div>
+      {showFilters && (
+        <FilterPanel>
+          <TriStateChips
+            flags={[
+              { key: "favorite", label: t("cleanup.filters.favorite") },
+              { key: "vintage", label: t("cleanup.filters.vintage") },
+              { key: "only_copy", label: t("cleanup.filters.onlyCopy") },
+            ]}
+            state={state}
+            onChange={(key, value) => update({ [key]: value })}
+          />
+          <FilterGroup label={t("cleanup.filters.gyms")}>
+            <ChoiceChips
+              name={t("cleanup.filters.gyms")}
+              options={[
+                { value: "best", label: t("cleanup.filters.gymBest") },
+                { value: "in_gym", label: t("cleanup.filters.inGym") },
+              ]}
+              value={gym || undefined}
+              // A best defender is usually kept, so a gym filter looks at every status.
+              onChange={(value) => update(value ? { gym: value, status: "ALL" } : { gym: null })}
+            />
+          </FilterGroup>
+        </FilterPanel>
+      )}
       {addToList.message && <Alert tone="info">{addToList.message}</Alert>}
       {query.isLoading ? (
         <Spinner />

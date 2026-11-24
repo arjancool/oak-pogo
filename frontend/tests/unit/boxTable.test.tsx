@@ -1,8 +1,9 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { api } from "../../src/lib/api";
 import { BoxPage } from "../../src/pages/pokemon/BoxPage";
 
 // The table on the Pokémon Box page: columns can be hidden and rows ticked. This guards the
@@ -13,7 +14,11 @@ vi.mock("../../src/lib/api", async (importOriginal) => {
   const { pokemonFixture } = await import("./fixtures");
   const items = [pokemonFixture(), pokemonFixture({ id: 2, source_pokemon_id: "2", species_id: 1, species_name: "Bulbasaur", cp: 300 })];
   const get = (path: string) =>
-    Promise.resolve(path === "/api/v1/pokemon" ? { total: items.length, page: 1, page_size: 50, items, game_data_version: 1 } : {});
+    Promise.resolve(
+      path === "/api/v1/pokemon"
+        ? { total: items.length, page: 1, page_size: 50, items, game_data_version: 1 }
+        : { species: [], years: [], families: [], types: [], tags: [] },
+    );
   return { ...actual, api: { ...actual.api, get: vi.fn(get), post: vi.fn() } };
 });
 
@@ -84,6 +89,18 @@ describe("the table in the Pokémon Box", () => {
     await screen.findByRole("link", { name: /Pikachu/ });
     expect(headers()).not.toContain("CP");
     expect(within(row("Pikachu")).queryByText("512")).toBeNull();
+  });
+
+  it("filters with the same filter button as the Cleanup Manager", async () => {
+    renderBox();
+    await screen.findByRole("link", { name: /Pikachu/ });
+    fireEvent.click(screen.getByRole("button", { name: "Filters" }));
+    fireEvent.click(screen.getByRole("button", { name: "Favoriet: geen filter" }));
+    await waitFor(() =>
+      expect(vi.mocked(api.get).mock.calls.filter(([path]) => path === "/api/v1/pokemon").at(-1)?.[1]).toMatchObject({ favorite: "true" }),
+    );
+    expect(screen.getByRole("button", { name: "Filters (1)" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Favoriet: alleen deze" })).toBeInTheDocument();
   });
 
   it("ticks one row, and all rows with the box in the header", async () => {

@@ -2,16 +2,17 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { columnVisibilityFeature, createColumnHelper, tableFeatures, useTable, type ColumnVisibilityState } from "@tanstack/react-table";
 import clsx from "clsx";
 import type { ParseKeys } from "i18next";
-import { CircleQuestionMark, Download, Filter, LayoutGrid, Rows3, X } from "lucide-react";
+import { CircleQuestionMark, Download, LayoutGrid, Rows3, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 import { z } from "zod";
 
 import { ConfirmTransferDialog } from "../../components/cleanup/ConfirmTransferDialog";
+import { FilterButton, FilterPanel, TriStateChips, useFilterPanel } from "../../components/filters";
 import { RequireAccount } from "../../components/layout/RequireAccount";
 import { CleanupBadge, IvPercent, MoveLine, PokemonSprite, StatusBadges, TypeBadge, pokemonName } from "../../components/pokemon";
-import { Alert, Badge, Button, Card, Checkbox, Dialog, EmptyState, Input, PageHeader, Pagination, Select, SortHeader, Spinner } from "../../components/ui";
+import { Alert, Badge, Button, Checkbox, Dialog, EmptyState, Input, PageHeader, Pagination, Select, SortHeader, Spinner } from "../../components/ui";
 import { api, buildUrl, errorMessage } from "../../lib/api";
 import { date, ivs, level, num } from "../../lib/format";
 import { statusLabels, typeNames } from "../../lib/i18n";
@@ -114,27 +115,7 @@ function loadColumns(): ColumnVisibilityState {
 const features = tableFeatures({ columnVisibilityFeature });
 const column = createColumnHelper<typeof features, PokemonSummary>();
 
-function TriState({ name, label, value, onChange }: { name: string; label: string; value: string | undefined; onChange: (v: string | null) => void }) {
-  const { t } = useTranslation();
-  const next = value === "true" ? "false" : value === "false" ? null : "true";
-  return (
-    <button
-      data-flag={name}
-      onClick={() => onChange(next)}
-      className={clsx(
-        "rounded-full border px-3 py-1 text-xs transition",
-        value === "true" && "border-oak-500 bg-oak-500/15 text-oak-300",
-        value === "false" && "border-red-500/60 bg-red-500/10 text-red-300 line-through",
-        !value && "border-line text-muted hover:text-ink",
-      )}
-      title={t("box.filters.flagHint")}
-    >
-      {label}
-    </button>
-  );
-}
-
-function FilterPanel({ state, update, facets }: { state: Record<string, string>; update: (c: Record<string, string | null>) => void; facets: Facets | undefined }) {
+function BoxFilters({ state, update, facets }: { state: Record<string, string>; update: (c: Record<string, string | null>) => void; facets: Facets | undefined }) {
   const { t } = useTranslation();
   const [speciesInput, setSpeciesInput] = useState("");
   const selectedSpecies = (state.species ?? "").split(",").filter(Boolean);
@@ -156,153 +137,147 @@ function FilterPanel({ state, update, facets }: { state: Record<string, string>;
     />
   );
   return (
-    <Card className="mb-4">
-      <div className="space-y-4">
-        <div className="flex flex-wrap gap-1.5">
-          {FLAGS.map(([key, text]) => (
-            <TriState key={key} name={key} label={t(text)} value={state[key]} onChange={(v) => update({ [key]: v })} />
-          ))}
-        </div>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <div>
-            <p className="mb-1 text-xs text-muted">CP</p>
-            <div className="flex items-center gap-2">
-              {range("cp_min", t("box.filters.min"))} – {range("cp_max", t("box.filters.max"))}
-            </div>
-          </div>
-          <div>
-            <p className="mb-1 text-xs text-muted">{t("box.filters.ivPercent")}</p>
-            <div className="flex items-center gap-2">
-              {range("iv_min", t("box.filters.min"))} – {range("iv_max", t("box.filters.max"))}
-            </div>
-          </div>
-          <div>
-            <p className="mb-1 text-xs text-muted">{t("box.filters.level")}</p>
-            <div className="flex items-center gap-2">
-              {range("level_min", t("box.filters.min"))} – {range("level_max", t("box.filters.max"))}
-            </div>
-          </div>
-          <div>
-            <p className="mb-1 text-xs text-muted">{t("box.filters.league")}</p>
-            <Select value={state.league ?? ""} onChange={(e) => update({ league: e.target.value || null })} className="w-full">
-              <option value="">{t("box.filters.all")}</option>
-              <option value="great">Great League</option>
-              <option value="ultra">Ultra League</option>
-              <option value="master">Master League</option>
-            </Select>
-          </div>
-        </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <p className="mb-1 text-xs text-muted">{t("box.filters.species")}</p>
-            <div className="flex flex-wrap items-center gap-1.5">
-              {selectedSpecies.map((id) => {
-                const name = facets?.species.find((s) => String(s.species_id) === id)?.name ?? `#${id}`;
-                return (
-                  <Badge key={id}>
-                    {name}
-                    <button aria-label={t("box.filters.removeSpecies", { name })} onClick={() => toggleList("species", selectedSpecies, id)}>
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                );
-              })}
-              <Input
-                list="oak-species"
-                placeholder={t("box.filters.addSpecies")}
-                value={speciesInput}
-                className="w-48"
-                onChange={(event) => {
-                  const value = event.target.value;
-                  const match = facets?.species.find((s) => `${s.name} (#${s.species_id})` === value);
-                  if (match) {
-                    toggleList("species", selectedSpecies, String(match.species_id));
-                    setSpeciesInput("");
-                  } else setSpeciesInput(value);
-                }}
-              />
-              <datalist id="oak-species">
-                {facets?.species.map((s) => (
-                  <option key={s.species_id} value={`${s.name} (#${s.species_id})`}>
-                    {s.count}×
-                  </option>
-                ))}
-              </datalist>
-            </div>
-          </div>
-          <div>
-            <p className="mb-1 text-xs text-muted">{t("box.filters.year")}</p>
-            <div className="flex flex-wrap gap-1.5">
-              {facets?.years.map((y) => (
-                <button
-                  key={y.year}
-                  onClick={() => toggleList("years", selectedYears, String(y.year))}
-                  className={clsx(
-                    "rounded-full border px-3 py-1 text-xs",
-                    selectedYears.includes(String(y.year)) ? "border-oak-500 bg-oak-500/15 text-oak-300" : "border-line text-muted",
-                  )}
-                >
-                  {y.year} <span className="opacity-60">{y.count}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <div>
-            <p className="mb-1 text-xs text-muted">{t("box.filters.cleanup")}</p>
-            <div className="flex flex-wrap gap-1.5">
-              {Object.entries(statusLabels).map(([key, text]) => (
-                <button
-                  key={key}
-                  onClick={() => toggleList("cleanup", selectedStatuses, key)}
-                  className={clsx(
-                    "rounded-full border px-3 py-1 text-xs",
-                    selectedStatuses.includes(key) ? "border-oak-500 bg-oak-500/15 text-oak-300" : "border-line text-muted",
-                  )}
-                >
-                  {text}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <p className="mb-1 text-xs text-muted">{t("box.filters.type")}</p>
-            <Select value={state.type ?? ""} onChange={(e) => update({ type: e.target.value || null })} className="w-full">
-              <option value="">{t("box.filters.allTypes")}</option>
-              {facets?.types.map((t) => (
-                <option key={t} value={t}>
-                  {typeNames[t] ?? t}
-                </option>
-              ))}
-            </Select>
-          </div>
-          <div>
-            <p className="mb-1 text-xs text-muted">{t("box.filters.move")}</p>
-            <Input defaultValue={state.move ?? ""} key={`move-${state.move ?? ""}`} placeholder={t("box.filters.movePlaceholder")} onBlur={(e) => update({ move: e.target.value || null })} />
-          </div>
-          <div>
-            <p className="mb-1 text-xs text-muted">{t("box.filters.family")}</p>
-            <Select value={state.family ?? ""} onChange={(e) => update({ family: e.target.value || null })} className="w-full">
-              <option value="">{t("box.filters.allFamilies")}</option>
-              {facets?.families.map((f) => (
-                <option key={f} value={f}>
-                  {f.replace("FAMILY_", "").replaceAll("_", " ").toLowerCase()}
-                </option>
-              ))}
-            </Select>
+    <FilterPanel className="mb-4">
+      <TriStateChips flags={FLAGS.map(([key, text]) => ({ key, label: t(text) }))} state={state} onChange={(key, value) => update({ [key]: value })} />
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div>
+          <p className="mb-1 text-xs text-muted">CP</p>
+          <div className="flex items-center gap-2">
+            {range("cp_min", t("box.filters.min"))} – {range("cp_max", t("box.filters.max"))}
           </div>
         </div>
         <div>
-          <p className="mb-1 text-xs text-muted">{t("box.filters.inventory")}</p>
-          <Select value={state.status ?? ""} onChange={(e) => update({ status: e.target.value || null })}>
-            <option value="">{t("box.filters.inInventory")}</option>
-            <option value="not_in_inventory">{t("box.filters.notInInventory")}</option>
-            <option value="all">{t("box.filters.everything")}</option>
+          <p className="mb-1 text-xs text-muted">{t("box.filters.ivPercent")}</p>
+          <div className="flex items-center gap-2">
+            {range("iv_min", t("box.filters.min"))} – {range("iv_max", t("box.filters.max"))}
+          </div>
+        </div>
+        <div>
+          <p className="mb-1 text-xs text-muted">{t("box.filters.level")}</p>
+          <div className="flex items-center gap-2">
+            {range("level_min", t("box.filters.min"))} – {range("level_max", t("box.filters.max"))}
+          </div>
+        </div>
+        <div>
+          <p className="mb-1 text-xs text-muted">{t("box.filters.league")}</p>
+          <Select value={state.league ?? ""} onChange={(e) => update({ league: e.target.value || null })} className="w-full">
+            <option value="">{t("box.filters.all")}</option>
+            <option value="great">Great League</option>
+            <option value="ultra">Ultra League</option>
+            <option value="master">Master League</option>
           </Select>
         </div>
       </div>
-    </Card>
+      <div className="grid gap-4 md:grid-cols-2">
+        <div>
+          <p className="mb-1 text-xs text-muted">{t("box.filters.species")}</p>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {selectedSpecies.map((id) => {
+              const name = facets?.species.find((s) => String(s.species_id) === id)?.name ?? `#${id}`;
+              return (
+                <Badge key={id}>
+                  {name}
+                  <button aria-label={t("box.filters.removeSpecies", { name })} onClick={() => toggleList("species", selectedSpecies, id)}>
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              );
+            })}
+            <Input
+              list="oak-species"
+              placeholder={t("box.filters.addSpecies")}
+              value={speciesInput}
+              className="w-48"
+              onChange={(event) => {
+                const value = event.target.value;
+                const match = facets?.species.find((s) => `${s.name} (#${s.species_id})` === value);
+                if (match) {
+                  toggleList("species", selectedSpecies, String(match.species_id));
+                  setSpeciesInput("");
+                } else setSpeciesInput(value);
+              }}
+            />
+            <datalist id="oak-species">
+              {facets?.species.map((s) => (
+                <option key={s.species_id} value={`${s.name} (#${s.species_id})`}>
+                  {s.count}×
+                </option>
+              ))}
+            </datalist>
+          </div>
+        </div>
+        <div>
+          <p className="mb-1 text-xs text-muted">{t("box.filters.year")}</p>
+          <div className="flex flex-wrap gap-1.5">
+            {facets?.years.map((y) => (
+              <button
+                key={y.year}
+                onClick={() => toggleList("years", selectedYears, String(y.year))}
+                className={clsx(
+                  "rounded-full border px-3 py-1 text-xs",
+                  selectedYears.includes(String(y.year)) ? "border-oak-500 bg-oak-500/15 text-oak-300" : "border-line text-muted",
+                )}
+              >
+                {y.year} <span className="opacity-60">{y.count}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div>
+          <p className="mb-1 text-xs text-muted">{t("box.filters.cleanup")}</p>
+          <div className="flex flex-wrap gap-1.5">
+            {Object.entries(statusLabels).map(([key, text]) => (
+              <button
+                key={key}
+                onClick={() => toggleList("cleanup", selectedStatuses, key)}
+                className={clsx(
+                  "rounded-full border px-3 py-1 text-xs",
+                  selectedStatuses.includes(key) ? "border-oak-500 bg-oak-500/15 text-oak-300" : "border-line text-muted",
+                )}
+              >
+                {text}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <p className="mb-1 text-xs text-muted">{t("box.filters.type")}</p>
+          <Select value={state.type ?? ""} onChange={(e) => update({ type: e.target.value || null })} className="w-full">
+            <option value="">{t("box.filters.allTypes")}</option>
+            {facets?.types.map((t) => (
+              <option key={t} value={t}>
+                {typeNames[t] ?? t}
+              </option>
+            ))}
+          </Select>
+        </div>
+        <div>
+          <p className="mb-1 text-xs text-muted">{t("box.filters.move")}</p>
+          <Input defaultValue={state.move ?? ""} key={`move-${state.move ?? ""}`} placeholder={t("box.filters.movePlaceholder")} onBlur={(e) => update({ move: e.target.value || null })} />
+        </div>
+        <div>
+          <p className="mb-1 text-xs text-muted">{t("box.filters.family")}</p>
+          <Select value={state.family ?? ""} onChange={(e) => update({ family: e.target.value || null })} className="w-full">
+            <option value="">{t("box.filters.allFamilies")}</option>
+            {facets?.families.map((f) => (
+              <option key={f} value={f}>
+                {f.replace("FAMILY_", "").replaceAll("_", " ").toLowerCase()}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </div>
+      <div>
+        <p className="mb-1 text-xs text-muted">{t("box.filters.inventory")}</p>
+        <Select value={state.status ?? ""} onChange={(e) => update({ status: e.target.value || null })}>
+          <option value="">{t("box.filters.inInventory")}</option>
+          <option value="not_in_inventory">{t("box.filters.notInInventory")}</option>
+          <option value="all">{t("box.filters.everything")}</option>
+        </Select>
+      </div>
+    </FilterPanel>
   );
 }
 
@@ -349,7 +324,8 @@ function Box({ accountId }: { accountId: number }) {
   const navigate = useNavigate();
   const client = useQueryClient();
   const [search, setSearch] = useState(state.q ?? "");
-  const [showFilters, setShowFilters] = useState(() => FILTER_KEYS.some((k) => state[k]));
+  const activeFilters = FILTER_KEYS.filter((k) => state[k]);
+  const [showFilters, toggleFilters] = useFilterPanel(activeFilters.length);
   const [help, setHelp] = useState(false);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [tagDialog, setTagDialog] = useState(false);
@@ -531,7 +507,6 @@ function Box({ accountId }: { accountId: number }) {
     getRowId: (row) => String(row.id),
   });
 
-  const activeFilters = FILTER_KEYS.filter((k) => state[k]);
   // The column names follow the chosen language (issue #31).
   const exportUrl = buildUrl("/api/v1/pokemon/export/csv", { ...params, page: undefined, page_size: undefined, lang: i18n.resolvedLanguage ?? i18n.language });
 
@@ -566,20 +541,16 @@ function Box({ accountId }: { accountId: number }) {
             </option>
           ))}
         </Select>
-        <Button variant={showFilters ? "primary" : "outline"} onClick={() => setShowFilters((v) => !v)} icon={<Filter className="h-4 w-4" />}>
-          {t("box.toolbar.filters")}{activeFilters.length ? ` (${activeFilters.length})` : ""}
-        </Button>
-        {(activeFilters.length > 0 || state.q) && (
-          <Button
-            variant="ghost"
-            onClick={() => {
-              setSearch("");
-              update(Object.fromEntries([...FILTER_KEYS, "q"].map((k) => [k, null])));
-            }}
-          >
-            {t("box.toolbar.clear")}
-          </Button>
-        )}
+        <FilterButton
+          open={showFilters}
+          onToggle={toggleFilters}
+          active={activeFilters.length}
+          canClear={activeFilters.length > 0 || Boolean(state.q)}
+          onClear={() => {
+            setSearch("");
+            update(Object.fromEntries([...FILTER_KEYS, "q"].map((k) => [k, null])));
+          }}
+        />
         {view === "table" && (
           <details className="relative">
             <summary className="cursor-pointer list-none rounded-lg border border-line px-3 py-2 text-sm text-muted">{t("box.toolbar.columns")}</summary>
@@ -596,7 +567,7 @@ function Box({ accountId }: { accountId: number }) {
           </details>
         )}
       </div>
-      {showFilters && <FilterPanel state={state} update={update} facets={facets.data} />}
+      {showFilters && <BoxFilters state={state} update={update} facets={facets.data} />}
       {message && (
         <div className="mb-3">
           <Alert tone={message.tone}>{message.text}</Alert>

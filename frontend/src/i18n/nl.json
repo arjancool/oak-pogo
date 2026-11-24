@@ -229,6 +229,16 @@
     "none": "Geen resultaten",
     "range": "{{from}}–{{to}} van {{total}}"
   },
+  "filters": {
+    "button": "Filters",
+    "clear": "Wissen",
+    "triStateHint": "Klik: alleen deze → juist niet → geen filter",
+    "state": {
+      "only": "alleen deze",
+      "without": "juist niet",
+      "off": "geen filter"
+    }
+  },
   "badges": {
     "vintage": "Vintage {{year}}",
     "noDate": "Vangstdatum onbekend",
@@ -470,7 +480,6 @@
       "changed": "Laatst gewijzigd"
     },
     "filters": {
-      "flagHint": "Klik: alleen deze → juist niet → geen filter",
       "min": "min",
       "max": "max",
       "ivPercent": "IV-percentage",
@@ -538,8 +547,6 @@
       "search": "Zoeken",
       "syntax": "Syntax",
       "sort": "Sorteren",
-      "filters": "Filters",
-      "clear": "Wissen",
       "columns": "Kolommen"
     },
     "selection": {
@@ -1476,21 +1483,12 @@
       "ivAsc": "IV laag–hoog"
     },
     "filters": {
-      "all": "alle",
-      "only": "alleen",
-      "without": "zonder",
-      "favoritesLabel": "Favorieten",
-      "favorites": "Favorieten: {{choice}}",
-      "vintageLabel": "Vintage",
-      "vintage": "Vintage (2016–2019): {{choice}}",
-      "onlyCopyLabel": "Enige exemplaren van een soort",
-      "onlyCopy": "Enige exemplaren: {{choice}}",
-      "gymLabel": "Gyms",
-      "gym": {
-        "all": "Gyms: alle",
-        "best": "Gyms: beste verdediger per soort",
-        "inGym": "Gyms: staat nu in een gym"
-      }
+      "favorite": "Favoriet",
+      "vintage": "Vintage (2016–2019)",
+      "onlyCopy": "Enig exemplaar",
+      "gyms": "Gyms",
+      "gymBest": "Beste gymverdediger per soort",
+      "inGym": "Staat nu in een gym"
     },
     "recommendations": {
       "addSelected": "{{n}} op actielijst zetten",

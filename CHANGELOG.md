@@ -15,6 +15,7 @@ Alle noemenswaardige wijzigingen in OAK. De opbouw volgt [Keep a Changelog](http
 
 ### Beveiliging
 
+- opentelemetry-api, dat met FastAPI meekomt, gaat van 1.45.1 naar 1.45.2. Grype vond in 1.45.1 een lek met ernst gemiddeld (GHSA-mf5v-w3w3-f6cg). Dependabot werkt alleen pakketten bij die OAK zelf noemt, dus deze update bleef liggen.
 - De image bevat geen pip meer. pip is alleen nodig tijdens het bouwen, en het nam eigen, oudere kopieën van urllib3, msgpack en setuptools mee. Trivy meldde daarin vijf lekken met ernst hoog. CI controleert nu dat pip ontbreekt.
 - De ontwikkelgereedschappen gebruiken minimatch 11.0.4 in plaats van 10.2.6, zodat `npm audit` geen meldingen meer geeft. eslint en typescript-eslint vragen zelf nog versie 10. Daarom zet `frontend/package.json` de versie vast met `overrides`, zie `docs/SECURITY.md`. eslint controleert dezelfde bestanden als voorheen. De image verandert hierdoor niet.
 - Over https heten de cookies `__Host-oak_session` en `__Host-oak_csrf`. Een subdomein kan ze dan niet zetten of vervangen. Wie OAK over https gebruikt, moet na deze update één keer opnieuw inloggen.
